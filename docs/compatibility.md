@@ -10,8 +10,8 @@ The five packages use English Markdown, standard Agent Skills frontmatter, relat
 | Sequential execution | One agent performs each companion skill and returns artifacts | Reference workflow; no delegation API needed |
 | Delegated execution | Optional isolated workers with the same artifact contract | Host adapter is outside this collection |
 | Text-only/manual execution | Local procedures and manual checks | Official conformance still requires execution; unavailable required checks block readiness |
-| Python helpers | Python 3.10+ on Linux/macOS with required POSIX no-follow operations | Automated regressions cover exercised environments; no Windows helper claim |
-| Windows or hosts without helper support | Portable prose and manual checks | Python helpers may fail clearly instead of weakening filesystem checks |
+| Local helpers | Node.js 22+ built-ins on an owned, stable workspace | Automated regressions cover exercised environments; no concurrent-adversary confinement claim |
+| Hosts without helper support | Portable prose and manual checks | Unsupported filesystem primitives fail explicitly; official validation can return through CI |
 
 ## Host integration research
 

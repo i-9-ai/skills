@@ -38,20 +38,21 @@ Packages live in `.agents/skills`, so compatible project agents can use the same
 
 ## Optional local tooling
 
-The scaffold and custom integrity helper use Python 3.10+ on Linux or macOS, with no dependencies or API credential. From the repository root:
+Local tooling uses Node.js 22+ built-ins, with no dependency installation or API credential. From the repository root:
 
 ```sh
 mkdir -p .work
-python3 .agents/skills/skill-creator/scripts/skill_tools.py init example-skill --output .work
-python3 .agents/skills/skill-creator/scripts/skill_tools.py validate-skill .work/example-skill
-python3 .agents/skills/skill-creator/scripts/skill_tools.py validate-run .agents/skills/skill-creator/examples/merge-run/run.json
+node .agents/skills/skill-creator/scripts/skill_tools.mjs init example-skill --output .work
+node .agents/skills/skill-creator/scripts/skill_tools.mjs validate-skill .work/example-skill
+node .agents/skills/skill-creator/scripts/skill_tools.mjs validate-run .agents/skills/skill-creator/examples/merge-run/run.json
+npm run check
 ```
 
 The initializer creates a licensed scaffold; an agent still authors and evaluates the skill. The custom checks assess structure and evidence integrity, not model quality or licensing compatibility. [Tooling documentation](.agents/skills/skill-creator/references/tooling.md) covers supported inputs, bounds, and errors. Manual inspection can continue where the optional helper is unavailable.
 
-Every new or modified skill also requires the official **`skills-ref validate`** check. Follow the [pinned validation setup](docs/validation.md), using Python 3.12 and Node.js 22+. The GitHub workflow runs this official tool on every canonical skill in every PR, alongside repository checks and Python/Node tests. A missing or failed official check blocks readiness.
+Every new or modified skill also requires the official **`skills-ref validate`** check. The [GitHub workflow](docs/validation.md) runs the pinned official tool on every canonical skill in every PR. Python is a workflow dependency for that external tool only; contributors use Node.js locally. A missing or failed official check blocks readiness.
 
-Add `--with-openai` when creating a scaffold to include the optional Codex interface and local icon. New skill utilities should prefer Node.js; this Python helper is a documented exception for safe descriptor-relative filesystem operations, with no native dependency.
+Add `--with-openai` when creating a scaffold to include the optional Codex interface and local icon. Repository checks use a small layered architecture in `src/`; the standalone skill helper remains inside its package. [package.json](package.json) centralizes commands and the official tool's pins. There is no repository requirements file or owned Python implementation.
 
 ## Provenance and maintenance
 

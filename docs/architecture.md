@@ -4,7 +4,20 @@
 
 The collection is organized around independently useful tasks, not vendors or platforms. The initial five skills own discovery, synthesis, design, authoring, and evaluation respectively. `skill-creator` is the entrypoint for producing a package and only coordinates the other procedures. `skills-merger` produces the synthesis contract; it does not also search the web, author code, or grade its own output.
 
-An entire GitHub workflow is not one skill merely because it uses one API. CLI command selection, issue preparation, pull request delivery, action usage, and workflow authoring should have separate skills when their outputs and acceptance boundaries differ. Keep cohesive steps together when splitting them would create no independently useful capability.
+For example, a GitHub collection might separate CLI command selection, issue preparation, pull request delivery, action usage, and workflow authoring when their outcomes and acceptance criteria differ. This illustrates the general responsibility test rather than prescribing domain categories. Keep cohesive steps together when splitting them would create no independently useful capability.
+
+## Repository tooling layers
+
+All owned tooling is Node.js. `package.json` centralizes commands and the official external tool's pins; local execution uses built-ins and requires no dependency installation. `src/` contains repository validation, while the creator's self-contained helper remains inside its skill package.
+
+| Layer | Responsibility |
+| --- | --- |
+| CLI | Select a use case, present results, and set the process exit status |
+| Application | Order collection checks and the separate official CI validation use case |
+| Domain | Apply pure catalog, provenance, public-hygiene, and official-source rules |
+| Infrastructure | Inspect the filesystem, reuse the standalone package helper, query the Git index, and invoke the external official tool |
+
+Domain rules do not launch processes or read files. Application use cases coordinate policy and adapters; infrastructure handles concrete I/O. The [source index](../src/AGENTS.md) records these boundaries. Python is installed only by the workflow for the upstream `skills-ref` command; no repository-owned validation logic is implemented in Python.
 
 ## Execution contract
 

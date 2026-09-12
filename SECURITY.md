@@ -8,6 +8,7 @@ This repository is designed for eventual public use. Treat every tracked byte, i
 - Discovery and synthesis do not install packages, run source scripts, access private stores, or publish. The run manifest records evidence and grants no execution authority.
 - Test only in disposable workspaces with synthetic data and bounded resources. Avoid real home directories, installed skills, production services, and private fixtures.
 - Reject unsafe paths, symlinks, special files, changed artifact bytes, and incomplete captures when using the helpers. Do not weaken checks to make a fixture pass.
+- Validate only an owned workspace that remains stable during the run. Node filesystem checks reject unsafe entries and detected changes; they are not a sandbox or a guarantee of confinement against concurrent adversarial mutation. Do not execute candidate scripts or allow other writers to alter the selected tree during validation.
 - Do not import hidden configuration, environment files, tokens, logs, client examples, internal infrastructure, or local absolute paths into a package. Minimize and sanitize evidence before sharing it.
 - Preserve scoped licensing and attribution. An unknown license blocks copying even when source code is publicly readable.
 

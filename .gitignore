@@ -1,9 +1,6 @@
 # Local run evidence and source snapshots may contain private input.
 .work/
 tmp/
-.venv/
-__pycache__/
-*.py[cod]
 .DS_Store
 .env
 .env.*

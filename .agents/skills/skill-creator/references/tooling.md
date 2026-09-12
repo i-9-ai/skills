@@ -1,20 +1,20 @@
 # Deterministic tooling
 
-The package's `scripts/skill_tools.py` uses Python 3.10+ and the standard library. The executable path is relative to this package; no installation, network, provider API, or agent runtime is required.
+The package's `scripts/skill_tools.mjs` uses Node.js 22+ built-ins. The executable path is relative to this package; no installation, network, provider API, Python, or agent runtime is required.
 
-The secure filesystem implementation requires POSIX directory descriptors and no-follow opens, available on Linux and macOS. Unsupported platforms fail explicitly. An agent can perform the documented workflow manually and record the same artifacts, but must not claim that unexecuted structural checks passed. Other operating systems have not been tested.
+Use an owned workspace that remains stable throughout the run. The filesystem checks reject unsafe entries and detected changes, but do not provide race-proof confinement against a concurrent adversary. Required no-follow primitives must be available; unsupported environments fail explicitly. An agent can perform manual inspection and record the same artifacts, but must not claim unexecuted checks passed. Platform coverage is limited to recorded test environments.
 
-The repository prefers Node.js for new scripts. This helper is an explicit exception: Python's standard library exposes descriptor-relative directory traversal and no-follow opens for every path component. The equivalent guarantee is not available through Node's ordinary path-based filesystem APIs without a native extension. No Python requirement is added to generated skill cores.
+Do not execute source scripts or permit another writer to alter the selected tree while validating it. Node's path-based filesystem APIs do not expose portable directory-descriptor traversal. No native dependency or hidden runtime is added to conceal that limitation.
 
 ## Commands
 
 From this package directory:
 
 ```sh
-python3 scripts/skill_tools.py init example-skill --output ./workspace
-python3 scripts/skill_tools.py init example-skill-ui --output ./workspace --with-openai
-python3 scripts/skill_tools.py validate-skill ./workspace/example-skill
-python3 scripts/skill_tools.py validate-run ./workspace/example-run/run.json
+node scripts/skill_tools.mjs init example-skill --output ./workspace
+node scripts/skill_tools.mjs init example-skill-ui --output ./workspace --with-openai
+node scripts/skill_tools.mjs validate-skill ./workspace/example-skill
+node scripts/skill_tools.mjs validate-run ./workspace/example-run/run.json
 ```
 
 The destination parent must already exist. `init` exclusively creates a new directory and never overwrites an existing file, directory, or symlink. Names start with a lowercase letter, contain lowercase letters, digits, and single hyphens, and are at most 64 characters. It creates a draft `SKILL.md` with one responsibility and a boundary, plus an exact copy of this package's Apache-2.0 `LICENSE`. Resolve the draft's task-specific instructions and tests before use. The default license covers new original work; it cannot relicense material copied from other sources.
@@ -23,7 +23,7 @@ The default scaffold has no provider files. `--with-openai` adds optional `agent
 
 Successful commands print a compact JSON result and exit zero. Validation failures print an error to standard error and exit one. Argument errors exit two. `validate-skill` and `validate-run` do not write files.
 
-This helper complements the official `skills-ref validate` conformance check required by the repository; it does not replace that check. Use the repository's documented pinned validation environment for official conformance, and retain this helper for local file safety, I-9 metadata, and handoff integrity.
+This helper complements the required official `skills-ref validate` conformance check; it does not replace it. A trusted workflow can provide the official result for the exact candidate without adding Python locally. See [official validation](validation.md), and retain this helper for local file checks, I-9 metadata, and handoff integrity.
 
 ## Skill checks
 
@@ -35,7 +35,7 @@ When `agents/openai.yaml` exists, validation supports an `interface` mapping wit
 
 Ordinary Markdown inline links, images, and reference definitions are checked outside code fences and inline code. Relative links may reach sibling resources inside the package; they may not escape it. HTTP, HTTPS, and email links are not fetched. HTML links, escaped Markdown, generated references, anchors, semantic completeness, license compatibility, and command safety need review.
 
-Packages reject symlinks, special files, more than 2,048 entries, nesting beyond 24 components, files above 4 MiB, and total files above 32 MiB. File reads also reject hard links so an outside file cannot be introduced as an ordinary read target. Markdown and license reads are bounded to 256 KiB. The explicitly selected root is trusted; descendant reads use descriptor-relative no-follow traversal. The validator does not execute package scripts or inspect remote sources. Keep the workspace stable during validation so results apply to a reviewable snapshot.
+Packages reject symlinks, special files, more than 2,048 entries, nesting beyond 24 components, files above 4 MiB, and total files above 32 MiB. File reads also reject hard links. Markdown and license reads are bounded to 256 KiB. The selected root is trusted; component inspection, final no-follow opens, descriptor checks, and bounded reads reject unsafe entries and detected changes. These checks assume a stable tree and cannot eliminate every concurrent path race. The validator does not execute package scripts or inspect remote sources.
 
 ## Run protocol version 1
 
@@ -54,14 +54,14 @@ Each stage contains only `name`, `status`, `summary`, and `artifacts`. Stage sta
 
 Artifacts contain only `path` and `sha256`. Paths are relative POSIX file paths under the run root, with no absolute paths, backslashes, empty components, `.` or `..`, or symlinks. Hashes are lowercase SHA-256 hex strings over the exact file bytes. The manifest cannot hash itself. Reusing an artifact in another stage is allowed only with the same digest. Evaluation artifacts must document the checks, observations, failures, and remaining limits required by the evaluator; the checker verifies their presence and bytes, not the truth of their contents.
 
-Input is bounded to 1 MiB of UTF-8 JSON, 128 sources, six stages, 64 artifacts per stage, 4 MiB per artifact, and 32 MiB of unique artifact contents. Duplicate JSON fields, non-finite numbers, malformed schemas, unreadable files, and hash mismatches fail. JSON Schema expresses static shape; the Python validator also enforces ordering, source sufficiency, confinement, and hashes.
+Input is bounded to 1 MiB of UTF-8 JSON, 128 sources, six stages, 64 artifacts per stage, 4 MiB per artifact, and 32 MiB of unique artifact contents. Duplicate JSON fields, non-finite numbers, malformed schemas, unreadable files, and hash mismatches fail. JSON Schema expresses static shape; the Node validator also enforces ordering, source sufficiency, safe relative paths, and hashes.
 
 ## Collection checks and limits
 
-The repository's `scripts/validate_repository.py` discovers catalog packages, checks ordinary local links across repository documents, validates committed example runs named `run.json`, and checks `upstreams.lock.json` if present. Its public hygiene scan recognizes a small set of high-confidence credential, private-key, authenticated-URL, and local-user-path patterns without echoing matched values. It is a basic guard, not proof that no sensitive data exists; binary content and less recognizable secrets still need review.
+The repository's `npm run validate` command discovers catalog packages, checks ordinary local links across repository documents, validates committed example runs named `run.json`, and checks `upstreams.lock.json` if present. This repository-only use case lives in layered `src/` modules and is not required by a standalone package. Its public hygiene scan recognizes a small set of high-confidence credential, private-key, authenticated-URL, and local-user-path patterns without echoing matched values. It is a basic guard, not proof that no sensitive data exists; binary content and less recognizable secrets still need review.
 
 Canonical repository packages live in `.agents/skills/`. Collection validation permits only these exact repository aliases: `CLAUDE.md` to `AGENTS.md`, `.claude/skills` to `../.agents/skills`, and `.github/skills` to `../.agents/skills`. It verifies their targets, does not traverse them during inventory, and counts the canonical packages once. This collection-only exception never permits symlinks inside a package or run.
 
-Root `.work/` and `tmp/` are private scratch and are never read or traversed by collection validation. When Git metadata is available, a bounded read-only index check rejects tracked scratch without returning its names or contents. Git is required for that collection-only check; exported trees cannot establish what the publication index contains. Nested directories named `.work` or `tmp` inside packages remain part of the checked publication corpus. Git metadata, root virtual environments, and bytecode caches are excluded from the collection inventory.
+Root `.work/` and `tmp/` are private scratch and are never read or traversed by collection validation. When Git metadata is available, a bounded read-only index check rejects tracked scratch without returning its names or contents. Git is required for that collection-only check; exported trees cannot establish what the publication index contains. Nested directories named `.work` or `tmp` inside packages remain part of the checked publication corpus. Root Git metadata is excluded. Cache-like names do not create additional exemptions; keep local environments and generated scratch under the designated root scratch directories.
 
 Lock verification is offline. It checks source identity, immutable revisions, safe file paths, known consumers, digest formatting, and the package aggregate: SHA-256 of the UTF-8 concatenation of sorted `path`, a NUL byte, the file's hexadecimal SHA-256, and a newline. It cannot verify that upstream bytes, licensing, ownership, or adoption claims match the recorded source. A lock is an audit input for future evolution, not an installed runtime dependency.

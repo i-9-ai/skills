@@ -4,7 +4,7 @@ Use one isolated directory per run. The creator owns `run.json`; specialists ret
 
 ## Manifest
 
-The canonical machine contract is implemented by the package's Python helper, documented in [tooling](tooling.md). The schema is deliberately small:
+The canonical machine contract is implemented by the package's Node.js helper, documented in [tooling](tooling.md). The schema is deliberately small:
 
 | Field | Meaning |
 | --- | --- |

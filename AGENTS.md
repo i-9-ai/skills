@@ -33,14 +33,14 @@ For material changes, obtain independent review on the exact commit. Fix pertine
 
 Every new or modified skill must pass the official `skills-ref validate` tool from the Agent Skills specification. Custom or manual checks do not replace this requirement; unavailable official execution leaves readiness blocked. Follow [validation setup](docs/validation.md) for the pinned official source and dependencies.
 
-Run `python3 scripts/validate_repository.py`, `node scripts/validate_skills.mjs` with the official executable on `PATH`, `python3 -m unittest discover -s tests -v`, `node --test tests/test_validate_skills.mjs`, and `git diff --check`. Use Python 3.12 and Node.js 22+ for the full suite. Tests must use disposable fixtures and must not modify a user's home, installed skills, or production state.
+Run `npm run check` and `git diff --check` with Node.js 22+. Repository tooling lives in `src/`, with domain rules, application use cases, and infrastructure adapters; `package.json` is its single dependency and command configuration. Local checks and tests require no Python or dependency installation. The GitHub workflow alone supplies Python for the external official validator, and its result must match the PR head. Tests must use disposable fixtures and must not modify a user's home, installed skills, or production state.
 
 ## Child DOX index
 
 - [.agents/AGENTS.md](.agents/AGENTS.md): canonical agent-facing skill collection.
 - [docs/AGENTS.md](docs/AGENTS.md): architecture, standards, provenance, and compatibility evidence.
 - [plans/AGENTS.md](plans/AGENTS.md): implementation recipe and acceptance mapping.
-- [scripts/AGENTS.md](scripts/AGENTS.md): repository validation.
+- [src/AGENTS.md](src/AGENTS.md): layered Node.js repository validation.
 - [tests/AGENTS.md](tests/AGENTS.md): synthetic regression and workflow tests.
 - [README.md](README.md): catalog, usage, and contributor entrypoint.
 - [SECURITY.md](SECURITY.md): trust boundaries and safe disclosure.
