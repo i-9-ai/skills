@@ -20,7 +20,7 @@ Alternatives considered: a monolithic creator would duplicate specialist procedu
 2. Establish English repository guidance, security rules, catalog, compatibility claims, and authoring standards. Preserve the useful intake, disclosure, authority, evaluation, and rollback principles from existing practice without requiring a private harness.
 3. Write the five packages with narrow triggers, explicit inputs/outputs, local references, meaningful templates/examples, bounded iteration, safe failure behavior, and sequential/delegated handoffs. Keep independent behavioral evaluation in `skill-evaluator`; reject a platform-wide skill when independent tasks have separate acceptance criteria.
 4. Implement dependency-free Node.js helpers for scaffolding, skill validation, and verification of hashed run artifacts in owned stable workspaces. Keep repository tooling in `src/`, separating pure domain rules, application use cases, and filesystem/process infrastructure. Use a single `package.json` for commands and tool pins; implement synthetic Node regression tests and CI with read-only permissions and pinned actions.
-   Include a full `LICENSE` in every package and scaffold, advisory model-profile metadata with evidence status, and optional documented host UI metadata/icons. Capture upstream file/package hashes for future evolution; do not introduce an updater.
+   Include a full `LICENSE` in every package and scaffold. Keep descriptive metadata and body-explained reasoning preferences optional; use verified native host formats without confusing suggestions with model selection or tool authorization. Document OpenAI interface, policy, and MCP fields with checked source provenance. Capture upstream file/package hashes for future evolution; do not introduce an updater.
    Require official `skills-ref validate` for every new or changed skill. The workflow alone supplies Python for this external official tool, whose actual upstream source and dependency hashes are pinned in `package.json`. Custom local Node checks supplement official conformance, and unavailable matching official results block readiness.
 5. Exercise a complete synthetic workflow plus negative, adversarial, and filesystem cases. Record the limits of structural checks and model evaluation. Obtain an independent review on the exact committed diff; resolve pertinent findings before pushing and opening the English PR.
 
@@ -39,7 +39,7 @@ Alternatives considered: a monolithic creator would duplicate specialist procedu
 | Script-language premise | Local Node.js tooling and layered `src/`; official Python tool only in CI | Node regressions, one package.json, actual limits documented |
 | Optional agent integration | Verified host matrix, Codex UI metadata, original icons | Adapter/resource checks and provider-free default scaffold |
 | Reproducible evolution inputs | Upstream commits, file/package hashes, license evidence | Offline digest consistency and consumer validation |
-| License and model guidance | Per-package LICENSE, advisory metadata | Scaffold/metadata regressions; no automatic model selection |
+| License and optional metadata | Per-package LICENSE, authorship/tags/provenance, explained reasoning hints | Metadata-free scaffold and catalog regression; native-field comparison; no automatic model selection |
 | Reviewable delivery | Changelog and English PR | Exact commit checks and independent review |
 
 ## Release and rollback boundaries

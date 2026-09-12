@@ -12,7 +12,7 @@ import {
 } from '../src/domain/collection-policy.mjs';
 import { LIMITS, STAGES } from '../.agents/skills/skill-creator/scripts/skill_tools.mjs';
 
-const MODEL_METADATA = 'metadata:\n  i9-model-profile: balanced\n  i9-model-policy: advisory\n  i9-model-evidence: unbenchmarked\n';
+const EFFORT_METADATA = 'metadata:\n  reasoning-effort: medium\n';
 const sha256 = (content) => createHash('sha256').update(content).digest('hex');
 const writeJson = (path, value) => fs.writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`);
 
@@ -23,7 +23,7 @@ function makeRepository(t) {
   const name = 'example-skill';
   const packagePath = join(root, '.agents', 'skills', name);
   fs.mkdirSync(packagePath, { recursive: true });
-  fs.writeFileSync(join(packagePath, 'SKILL.md'), `---\nname: ${name}\ndescription: Use when a synthetic example is requested.\nlicense: Apache-2.0\n${MODEL_METADATA}---\n\n# Example\n\nProduce one synthetic example.\n`);
+  fs.writeFileSync(join(packagePath, 'SKILL.md'), `---\nname: ${name}\ndescription: Use when a synthetic example is requested.\nlicense: Apache-2.0\n${EFFORT_METADATA}---\n\n# Example\n\nProduce one synthetic example.\n`);
   fs.writeFileSync(join(packagePath, 'LICENSE'), 'Synthetic test-only license text.\n');
   writeJson(join(root, 'catalog.json'), { schema_version: 1, skills: [
     { name, path: `.agents/skills/${name}`, status: 'pilot' },
@@ -85,11 +85,14 @@ test('catalog rejects missing packages and uncataloged immediate directories', (
   assert.throws(() => validateRepository(root), /catalog package is missing/);
 });
 
-test('catalog requires advisory model metadata for every package', (t) => {
+test('catalog accepts packages without effort advice and rejects unsupported optional advice', (t) => {
   const { root, packagePath } = makeRepository(t);
   const skill = join(packagePath, 'SKILL.md');
-  fs.writeFileSync(skill, fs.readFileSync(skill, 'utf8').replace(MODEL_METADATA, ''));
-  assert.throws(() => validateRepository(root), /model/);
+  const original = fs.readFileSync(skill, 'utf8');
+  fs.writeFileSync(skill, original.replace(EFFORT_METADATA, ''));
+  assert.equal(validateRepository(root).packages, 1);
+  fs.writeFileSync(skill, original.replace('reasoning-effort: medium', 'reasoning-effort: automatic'));
+  assert.throws(() => validateRepository(root), /effort/);
 });
 
 test('catalog rejects invalid identities, duplicate names, paths, and lifecycle states', () => {

@@ -144,15 +144,11 @@ export function scalar(input, label) {
   }
   return value;
 }
-export function validateModelMetadata(metadata, { required = false } = {}) {
+export function validateMetadata(metadata) {
   requireCondition(metadata !== null && typeof metadata === 'object' && !Array.isArray(metadata), 'metadata must be a flat string mapping');
   requireCondition(Object.values(metadata).every(item => typeof item === 'string'), 'metadata values must be strings');
-  const keys = ['i9-model-profile', 'i9-model-policy', 'i9-model-evidence'];
-  if (required || keys.some(key => Object.hasOwn(metadata, key))) {
-    requireCondition(keys.every(key => Object.hasOwn(metadata, key)), 'model advice requires profile, policy, and evidence metadata');
-    requireCondition(['balanced', 'deep-reasoning'].includes(metadata['i9-model-profile']), 'unsupported advisory model profile');
-    requireCondition(metadata['i9-model-policy'] === 'advisory', 'model policy must be advisory');
-    nonblank(metadata['i9-model-evidence'], 'model evidence', 220);
+  if (Object.hasOwn(metadata, 'reasoning-effort')) {
+    requireCondition(['low', 'medium', 'high'].includes(metadata['reasoning-effort']), 'unsupported advisory reasoning effort');
   }
 }
 export function parseFrontmatter(text) {
@@ -176,21 +172,23 @@ export function parseFrontmatter(text) {
       while (index < end && (!lines[index].trim() || /^[ \t]/u.test(lines[index]))) {
         const nested = lines[index++];
         if (!nested.trim() || nested.trimStart().startsWith('#')) continue;
-        const item = nested.match(/^  ([A-Za-z][A-Za-z0-9_-]*):[ \t]*(.*)$/u);
+        const item = nested.match(/^  ([A-Za-z][A-Za-z0-9_/-]*):[ \t]*(.*)$/u);
         requireCondition(item !== null, 'metadata must contain two-space-indented string fields');
         requireCondition(!Object.hasOwn(metadata, item[1]), 'duplicate metadata field');
         Object.defineProperty(metadata, item[1], { value: scalar(item[2], item[1]), enumerable: true });
       }
       requireCondition(Object.keys(metadata).length > 0, 'metadata mapping must not be empty');
-      validateModelMetadata(metadata); values.metadata = metadata; continue;
+      validateMetadata(metadata); values.metadata = metadata; continue;
     }
-    if (!['name', 'description', 'license'].includes(key)) continue;
+    if (!['name', 'description', 'license', 'compatibility', 'allowed-tools'].includes(key)) continue;
     if (['|', '|-', '>', '>-'].includes(value)) {
       const fragments = [];
       while (index < end && (!lines[index].trim() || lines[index].startsWith(' '))) fragments.push(lines[index++].trim());
       value = fragments.join(value.startsWith('>') ? ' ' : '\n').trim();
     } else value = scalar(value, key);
     values[key] = value;
+    if (key === 'compatibility') nonblank(value, key, 500);
+    if (key === 'allowed-tools') nonblank(value, key);
   }
   requireCondition(Object.hasOwn(values, 'name') && Object.hasOwn(values, 'description'), 'frontmatter requires name and description');
   return values;

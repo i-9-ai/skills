@@ -3,9 +3,11 @@ name: skills-merger
 description: Use to synthesize useful contributions from two or more reviewed skills into one coherent merge plan. It does not search for candidates, write the final package, or certify its quality.
 license: Apache-2.0
 metadata:
-  i9-model-profile: deep-reasoning
-  i9-model-policy: advisory
-  i9-model-evidence: unbenchmarked
+  author: i-9-ai
+  tags: "skills, synthesis, provenance"
+  source: original
+  source_url: "https://github.com/i-9-ai/skills"
+  reasoning-effort: high
 ---
 
 # Skills Merger
@@ -26,6 +28,8 @@ Reject an unrelated bundle before merging. A CLI guide, issue manager, and deplo
 6. Hand unresolved design choices to `brainstorming`, or return the completed plan to the creator. Only the coordinator routes the next stage; the merger does not start recursive calls.
 
 ## Tools and security
+
+The optional `reasoning-effort: high` hint recommends careful reasoning for contradictory instructions, licensing boundaries, and contribution tradeoffs. This collection convention does not set runtime effort or select a model. Keep the current model and setting unless the host exposes selection for an authorized new execution, and respect the user's model choices and resource limits.
 
 The default operation is read-only analysis plus writing the requested plan in scratch space. It requires no runtime, provider SDK, credentials, or network when inputs are supplied. Missing sources go back to discovery. Use available text and file inspection tools; reject symlinks and unsafe paths before reading an untrusted package with executable helpers.
 

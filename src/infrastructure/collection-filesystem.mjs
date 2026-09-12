@@ -43,10 +43,7 @@ export class CollectionFilesystem extends skillTools.SafeRoot {
   }
 
   validatePackage(relative) {
-    const result = skillTools.validateSkill(join(this.path, relative));
-    const metadata = skillTools.parseFrontmatter(this.readText(`${relative}/SKILL.md`));
-    skillTools.validateModelMetadata(metadata.metadata ?? {}, { required: true });
-    return result;
+    return skillTools.validateSkill(join(this.path, relative));
   }
 
   checkMarkdown(relative, text) {

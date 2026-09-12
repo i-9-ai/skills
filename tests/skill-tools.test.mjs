@@ -10,14 +10,12 @@ import { test } from 'node:test';
 import {
   DEFAULT_ICON_PATH, DEFAULT_LICENSE_PATH, LIMITS, REVISION, SHA256, STAGES,
   SafeRoot, ValidationError, initSkill, parseFrontmatter, strictJson,
-  validSlug, validateModelMetadata, validateRun, validateSkill,
+  validSlug, validateMetadata, validateRun, validateSkill,
 } from '../.agents/skills/skill-creator/scripts/skill_tools.mjs';
 
 const HELPER = fileURLToPath(new URL('../.agents/skills/skill-creator/scripts/skill_tools.mjs', import.meta.url));
-const MODEL_METADATA = `metadata:
-  i9-model-profile: balanced
-  i9-model-policy: advisory
-  i9-model-evidence: unbenchmarked
+const EFFORT_METADATA = `metadata:
+  reasoning-effort: medium
 `;
 const digest = bytes => createHash('sha256').update(bytes).digest('hex');
 const writeJson = (filename, data) => fs.writeFileSync(filename, `${JSON.stringify(data, null, 2)}\n`);
@@ -28,7 +26,7 @@ function fixture(t) {
 }
 function makeSkill(root, name = 'example-skill', metadata = true) {
   const packagePath = path.join(root, name); fs.mkdirSync(packagePath, { recursive: true });
-  fs.writeFileSync(path.join(packagePath, 'SKILL.md'), `---\nname: ${name}\ndescription: Use when a synthetic example is requested.\nlicense: Apache-2.0\n${metadata ? MODEL_METADATA : ''}---\n\n# Example\n\nProduce one synthetic example.\n`);
+  fs.writeFileSync(path.join(packagePath, 'SKILL.md'), `---\nname: ${name}\ndescription: Use when a synthetic example is requested.\nlicense: Apache-2.0\n${metadata ? EFFORT_METADATA : ''}---\n\n# Example\n\nProduce one synthetic example.\n`);
   fs.writeFileSync(path.join(packagePath, 'LICENSE'), 'Synthetic test-only license text.\n');
   return packagePath;
 }
@@ -69,7 +67,8 @@ test('default scaffold is focused, licensed, structurally valid, and provider-fr
   assert.equal(validateSkill(packagePath).name, 'small-skill');
   assert.deepEqual(fs.readFileSync(path.join(packagePath, 'LICENSE')), fs.readFileSync(DEFAULT_LICENSE_PATH));
   const text = fs.readFileSync(path.join(packagePath, 'SKILL.md'), 'utf8');
-  for (const section of ['## Responsibility', '## Boundary', 'i9-model-policy: advisory', 'i9-model-evidence: unbenchmarked', 'official `skills-ref validate`']) assert.ok(text.includes(section));
+  for (const section of ['## Responsibility', '## Boundary', 'official `skills-ref validate`']) assert.ok(text.includes(section));
+  assert.equal(parseFrontmatter(text).metadata, undefined);
   for (const vendor of ['codex', 'claude', 'copilot', 'opencode']) assert.ok(!text.toLowerCase().includes(vendor));
   assert.deepEqual(fs.readdirSync(packagePath).sort(), ['LICENSE', 'SKILL.md']);
 });
@@ -185,22 +184,108 @@ test('frontmatter supports folded text while rejecting malformed required string
   for (const description of ['Use when: this is invalid YAML', "'Unescaped ' quote'", '# comment is not a value']) assert.throws(() => parseFrontmatter(`---\nname: example-skill\ndescription: ${description}\n---\n`));
 });
 
-test('advisory metadata supports both profiles and remains optional for generic packages', t => {
-  for (const profile of ['balanced', 'deep-reasoning']) {
-    const parsed = parseFrontmatter(`---\nname: example-skill\ndescription: Example\n${MODEL_METADATA.replace('balanced', profile)}---\n`);
-    assert.equal(parsed.metadata['i9-model-profile'], profile);
+test('optional reasoning advice supports shared effort levels without model or benchmark bookkeeping', t => {
+  for (const effort of ['low', 'medium', 'high']) {
+    const parsed = parseFrontmatter(`---\nname: example-skill\ndescription: Example\n${EFFORT_METADATA.replace('medium', effort)}---\n`);
+    assert.equal(parsed.metadata['reasoning-effort'], effort);
   }
   assert.equal(validateSkill(makeSkill(fixture(t), 'example-skill', false)).name, 'example-skill');
-  assert.throws(() => validateModelMetadata({}, { required: true }));
+  assert.doesNotThrow(() => validateMetadata({}));
+  assert.doesNotThrow(() => validateMetadata({ author: 'example-org' }));
 });
 
-test('metadata rejects duplicates, invalid shapes, missing advice fields, and enforced models', () => {
+test('metadata rejects duplicates, invalid shapes, and unsupported effort recommendations', () => {
   for (const block of [
-    `${MODEL_METADATA}  i9-model-profile: balanced\n`, MODEL_METADATA.replace('balanced', '[balanced]'),
-    MODEL_METADATA.replace('advisory', 'required'), MODEL_METADATA.replace('balanced', 'vendor-model'),
-    MODEL_METADATA.replace('  i9-model-evidence: unbenchmarked\n', ''), 'metadata: [balanced]\n',
+    `${EFFORT_METADATA}  reasoning-effort: medium\n`, EFFORT_METADATA.replace('medium', '[medium]'),
+    EFFORT_METADATA.replace('medium', 'automatic'), EFFORT_METADATA.replace('medium', 'provider-model'),
+    EFFORT_METADATA.replace('medium', '""'), 'metadata: [medium]\n',
     'metadata:\n  score: 1\n', 'metadata:\n  nested:\n    key: value\n',
   ]) assert.throws(() => parseFrontmatter(`---\nname: example-skill\ndescription: Example\n${block}---\n`));
+});
+
+test('standard compatibility and tool declarations are strings, not executable grants', t => {
+  const packagePath = makeSkill(fixture(t));
+  const filename = path.join(packagePath, 'SKILL.md');
+  const original = fs.readFileSync(filename, 'utf8');
+  const extra = 'compatibility: Requires an existing Git checkout\nallowed-tools: Read Bash(git status *)\n';
+  fs.writeFileSync(filename, original.replace('license: Apache-2.0\n', `license: Apache-2.0\n${extra}`));
+  const before = snapshot(packagePath);
+  assert.equal(validateSkill(packagePath).name, 'example-skill');
+  assert.deepEqual(snapshot(packagePath), before);
+  const parsed = parseFrontmatter(fs.readFileSync(filename, 'utf8'));
+  assert.equal(parsed.compatibility, 'Requires an existing Git checkout');
+  assert.equal(parsed['allowed-tools'], 'Read Bash(git status *)');
+  for (const field of ['compatibility: ""', `compatibility: ${'a'.repeat(501)}`, 'allowed-tools: []', 'allowed-tools: ""']) {
+    assert.throws(() => parseFrontmatter(`---\nname: example-skill\ndescription: Example\n${field}\n---\n`));
+  }
+});
+
+test('flat host metadata supports namespaced keys without interpreting invocation policy', () => {
+  const parsed = parseFrontmatter('---\nname: example-skill\ndescription: Example\nmetadata:\n  opencode/autoinvoke: "false"\n---\n');
+  assert.equal(parsed.metadata['opencode/autoinvoke'], 'false');
+  assert.throws(() => parseFrontmatter('---\nname: example-skill\ndescription: Example\nmetadata:\n  opencode/autoinvoke: false\n---\n'));
+});
+
+test('optional OpenAI invocation policy accepts explicit booleans without changing the default scaffold', t => {
+  const packagePath = initSkill('small-skill', fixture(t), { withOpenai: true });
+  const filename = path.join(packagePath, 'agents/openai.yaml');
+  const original = fs.readFileSync(filename, 'utf8');
+  assert.ok(!original.includes('policy:'));
+  for (const value of ['true', 'false']) {
+    fs.writeFileSync(filename, `${original}policy:\n  allow_implicit_invocation: ${value}\n`);
+    const before = snapshot(packagePath);
+    assert.equal(validateSkill(packagePath).name, 'small-skill');
+    assert.deepEqual(snapshot(packagePath), before);
+  }
+  for (const tail of [
+    'policy:\n', 'policy:\n  allow_implicit_invocation: "false"\n', 'policy:\n  allow_implicit_invocation: yes\n',
+    'policy:\n  allow_implicit_invocation: false\n  allow_implicit_invocation: true\n',
+    'policy:\n  allow_implicit_invocation: false\npolicy:\n  allow_implicit_invocation: true\n',
+    'policy:\n  model: provider-model\n', 'policy:\n  allow_implicit_invocation: false\ninterface:\n',
+  ]) {
+    fs.writeFileSync(filename, original + tail);
+    assert.throws(() => validateSkill(packagePath), ValidationError);
+  }
+});
+
+test('OpenAI brand colors are optional six-digit hexadecimal strings', t => {
+  const packagePath = initSkill('small-skill', fixture(t), { withOpenai: true });
+  const filename = path.join(packagePath, 'agents/openai.yaml');
+  const original = fs.readFileSync(filename, 'utf8');
+  fs.writeFileSync(filename, `${original}  brand_color: "#3B82F6"\n`);
+  assert.equal(validateSkill(packagePath).name, 'small-skill');
+  for (const color of ['red', '#abc', '#12345678', '#12345z', '#123456\n']) {
+    fs.writeFileSync(filename, `${original}  brand_color: ${JSON.stringify(color)}\n`);
+    assert.throws(() => validateSkill(packagePath), ValidationError);
+  }
+});
+
+test('OpenAI MCP declarations validate as inert data with bounded explicit fields', t => {
+  const packagePath = initSkill('small-skill', fixture(t), { withOpenai: true });
+  const filename = path.join(packagePath, 'agents/openai.yaml');
+  const original = fs.readFileSync(filename, 'utf8');
+  const tool = '    - type: "mcp"\n      value: "example-tool"\n      description: "Synthetic dependency"\n      transport: "streamable_http"\n      url: "https://example.org/mcp"\n';
+  const dependencies = `dependencies:\n  tools:\n${tool}`;
+  const policy = 'policy:\n  allow_implicit_invocation: true\n';
+  for (const suffix of [dependencies + policy, policy + dependencies, dependencies + tool.replace('example-tool', 'second-tool')]) {
+    fs.writeFileSync(filename, original + suffix);
+    const before = snapshot(packagePath);
+    assert.equal(validateSkill(packagePath).name, 'small-skill');
+    assert.deepEqual(snapshot(packagePath), before);
+  }
+  for (const suffix of [
+    'dependencies:\n', 'dependencies:\n  tools:\n', dependencies + tool, dependencies + dependencies,
+    dependencies.replace('"mcp"', '"shell"'), dependencies.replace('streamable_http', 'unreviewed-transport'),
+    dependencies.replace('      description: "Synthetic dependency"\n', ''),
+    dependencies.replace('https://example.org/mcp', 'http://example.org/mcp'),
+    dependencies.replace('https://example.org/mcp', 'https://user@example.org/mcp'),
+    dependencies.replace('https://example.org/mcp', 'https://example.org/mcp?token=synthetic'),
+    dependencies + '      url: "https://example.org/duplicate"\n',
+    'dependencies:\n  tools:\n' + Array.from({ length: 17 }, (_, i) => tool.replace('example-tool', `tool-${i}`)).join(''),
+  ]) {
+    fs.writeFileSync(filename, original + suffix);
+    assert.throws(() => validateSkill(packagePath), ValidationError);
+  }
 });
 
 test('slugs, revisions, and digests require the entire string including its end', () => {

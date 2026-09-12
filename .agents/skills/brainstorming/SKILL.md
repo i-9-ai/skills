@@ -3,9 +3,11 @@ name: brainstorming
 description: Use to resolve a skill's responsibility, interface, and design tradeoffs from a brief or merge plan before authoring. It does not discover sources or implement the package.
 license: Apache-2.0
 metadata:
-  i9-model-profile: deep-reasoning
-  i9-model-policy: advisory
-  i9-model-evidence: unbenchmarked
+  author: i-9-ai
+  tags: "skills, design, scoping"
+  source: original
+  source_url: "https://github.com/i-9-ai/skills"
+  reasoning-effort: high
 ---
 
 # Brainstorming for Skill Design
@@ -24,6 +26,8 @@ Produce a focused skill design. Accept a task brief, known user decisions, const
 6. Return the [design brief](assets/design-brief.md), labeling confirmed user choices, supported decisions, assumptions, and blockers. Consult the [decision guide](references/decisions.md) when decomposition or competing safety requirements need closer analysis.
 
 ## Tools and authority
+
+The optional `reasoning-effort: high` hint recommends careful reasoning for competing designs and responsibility boundaries. This collection convention does not set runtime effort or select a model. Keep the current model and setting unless the host exposes selection for an authorized new execution, and respect the user's model choices and resource limits.
 
 Use supplied context and available read/search capabilities; the design process requires no SDK, credentials, server, or subagents. Write the requested design artifact without modifying implementation or installing upstream software. If source evidence is missing, return a discovery request rather than inventing it.
 

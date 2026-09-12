@@ -32,7 +32,7 @@ Example request:
 
 > Use this collection's skill-creator to build an English skill for preparing a GitHub issue from a bug report. Keep it focused on the issue artifact. Discover relevant sources, compare useful contributions, include LICENSE and provenance, and evaluate positive, negative, and unsafe-input cases. Write only to the selected local workspace.
 
-The skills use the portable [Agent Skills format](https://agentskills.io/specification). Their model-profile metadata is advisory: it describes a useful capability level and never requires a provider or switches the runtime. Current recommendations are explicitly unbenchmarked. See [compatibility](docs/compatibility.md) for actual coverage and limitations.
+The skills use the portable [Agent Skills format](https://agentskills.io/specification). Optional metadata describes authorship, tags, provenance, and reasoning preferences. A reasoning hint is explained in the skill body and does not switch models or configure runtime effort. The [runtime reference](.agents/skills/skill-creator/references/runtime-guidance.md) distinguishes native fields from portable guidance; [compatibility](docs/compatibility.md) records actual coverage and limitations.
 
 Packages live in `.agents/skills`, so compatible project agents can use the same skills that this repository maintains. `.github/skills` and `.claude/skills` are relative symlinks to that canonical directory; `CLAUDE.md` points to `AGENTS.md`. Other documented hosts that already discover `.agents/skills` need no duplicate tree. Optional `agents/openai.yaml` and original SVG icons provide Codex UI metadata without changing the core.
 

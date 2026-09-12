@@ -3,9 +3,11 @@ name: skill-creator
 description: Use to author or revise a focused skill package from a goal and design, coordinating discovery, synthesis, and evaluation through companion skills. Use find-skills for search alone.
 license: Apache-2.0
 metadata:
-  i9-model-profile: deep-reasoning
-  i9-model-policy: advisory
-  i9-model-evidence: unbenchmarked
+  author: i-9-ai
+  tags: "skills, authoring, orchestration"
+  source: original
+  source_url: "https://github.com/i-9-ai/skills"
+  reasoning-effort: high
 ---
 
 # Skill Creator
@@ -42,6 +44,8 @@ Read the [handoff protocol](references/handoff-protocol.md) when coordinating mo
 Read [tooling](references/tooling.md) before using the optional Node.js helper. It scaffolds a package and checks structure and recorded artifact integrity in an owned, stable workspace. It does not call a model, merge source text, judge licensing compatibility, or prove behavioral quality. If this helper's runtime is unavailable, follow the manual checks in the authoring guide and record the limitation. Manual checks never substitute for required official validation.
 
 ## Tool policy and security
+
+The optional `reasoning-effort: high` hint recommends careful reasoning for synthesis conflicts, responsibility boundaries, and acceptance decisions. It is a collection convention, not a runtime setting or model selector. Preserve the current model and effort unless the host exposes selection for an authorized new execution; then use a supported setting within the user's choices and budget. See [runtime guidance](references/runtime-guidance.md) for native fields, model fallback, and tool-permission differences, and the [OpenAI interface reference](references/openai-yaml.md) when authoring that optional adapter.
 
 Use available read, edit, search, and test capabilities within the requested scope. The local helper requires Node.js 22+ and no credentials; the text workflow needs no SDK or provider configuration. Official validation may return from a trusted CI workflow for the exact package identity. Do not install dependencies, execute candidate scripts, publish, merge, delete existing packages, modify credentials, or change a consumer without authority for that action.
 

@@ -22,20 +22,24 @@ Repository-owned tooling and the creator helper use Node.js built-ins. Filesyste
 
 Provide optional host metadata and icons when their format and utility are verified. `agents/openai.yaml` is an optional Codex UI surface; other supported hosts may need only `SKILL.md`. Keep adapters consistent with the core, include their assets and license, validate resource paths, and never add a fictional manifest or mandatory vendor integration. Consult the [host matrix](compatibility.md) before adding files.
 
-## Recommended model metadata
+## Optional metadata and runtime guidance
 
-The standard permits a `metadata` mapping with string values; it does not standardize automatic model selection. This collection uses advisory namespaced fields:
+The standard permits a `metadata` mapping with string values. Include known authorship, a small set of useful tags, and clear provenance when they help consumers understand the package. This collection uses the following optional descriptive conventions:
 
 ```yaml
 metadata:
-  i9-model-profile: deep-reasoning
-  i9-model-policy: advisory
-  i9-model-evidence: unbenchmarked
+  author: example-org
+  tags: "skills, evaluation"
+  source: original
+  source_url: "https://example.org/skills"
+  reasoning-effort: high
 ```
 
-`balanced` suggests general task execution and focused retrieval. `deep-reasoning` suggests careful comparison, conflict resolution, or independent assessment. These are collection conventions, not provider model IDs or runtime settings. They never grant permission to switch models, incur additional cost, or reject another capable model. The host or user controls model selection.
+`author` identifies the package's author or responsible organization. `tags` is a comma-separated string, not a YAML array. `source` describes how the package originated, such as `original`, `adapted`, or `imported`; `source_url` links its source repository or original artifact. Discovery methods such as GitHub search belong to candidate research records. Do not attribute our original work to a catalog uploader or pretend that one source URL captures every benchmark contribution. Preserve scoped authorship, licenses, and immutable source identities in references and the upstream lock.
 
-Record a recommended profile and its evidence status in every new skill. Until measured, use `unbenchmarked`. A future optional `i9-recommended-model` may name a concrete model only with dated, task-specific evaluation evidence in a local package reference and an available-model fallback. Treat recommendations as revisable hints; do not claim the current profiles were proven optimal.
+`reasoning-effort` is optional guidance: `low` for routine bounded work, `medium` for ordinary analysis, or `high` for conflicting evidence and substantial multi-step judgments. It is a collection convention, not a standardized runtime control or benchmark claim. Explain its meaning and task-specific reason in the body because some hosts strip metadata. Omit it when the inherited setting is sufficient. Keep model IDs and benchmark bookkeeping out of the default scaffold.
+
+Consult the creator's [runtime reference](../.agents/skills/skill-creator/references/runtime-guidance.md) before choosing native fields. Model lists, effort settings, permissions, and invocation controls belong to different files across hosts. Preserve explicit user selections and limits; use the host's actual catalog and selection interface when available, otherwise inherit the existing model and setting. No metadata field creates selection capability or authorizes delegation. The [OpenAI reference](../.agents/skills/skill-creator/references/openai-yaml.md) covers its optional sidecar and verified source provenance.
 
 ## Provenance and rights
 

@@ -23,7 +23,9 @@ This package's helper and repository-owned validation use Node.js built-ins. The
 
 An optional `agents/openai.yaml` may provide the documented Codex `interface` fields and local `assets/icon.svg` paths. It is host UI data, not the procedural source of truth. Keep prompt and description consistent with `SKILL.md`. Use the helper's opt-in adapter flag when available, or the host's current documented format. For other hosts, verify their primary documentation before adding files; many consume `SKILL.md` directly and need no additional per-skill manifest. Do not invent adapters from product names or duplicate the core into multiple editable copies.
 
-Every generated package includes advisory `metadata` model guidance: `i9-model-profile` (`balanced` or `deep-reasoning`), `i9-model-policy: advisory`, and `i9-model-evidence: unbenchmarked` until there is measured evidence. These collection conventions are hints, not automatic runtime settings. Concrete model suggestions need dated task-specific evidence, a local reference, and an available-model fallback.
+Metadata is optional. Use string-valued `author`, comma-separated `tags`, `source`, and `source_url` when they accurately describe the package. Keep discovery methods and multi-source contributions in provenance records; do not confuse a catalog uploader with the original author. Never invent authorship, populate placeholder source URLs in final packages, or duplicate a catalog's `title` and `slug` as unsupported top-level skill fields.
+
+If a task benefits from an effort recommendation, optional `metadata.reasoning-effort` may be `low`, `medium`, or `high`. Explain its meaning and rationale in the body; it neither chooses a model nor changes runtime effort. Do not require evidence-status metadata. Use the [runtime reference](runtime-guidance.md) for native model/effort fields, ordered model fallback, and tool authorization. Use the [OpenAI interface reference](openai-yaml.md) for verified sidecar fields and limits. Keep defaults provider-free and preserve existing user choices.
 
 ## Provenance and evolution
 

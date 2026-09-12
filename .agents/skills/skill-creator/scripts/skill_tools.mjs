@@ -29,14 +29,64 @@ export function validateOpenaiInterface(root, name) {
   const lines = root.readText('agents/openai.yaml').split(/\r\n|\n|\r/u);
   requireCondition(lines[0] === 'interface:', 'openai.yaml must begin with an interface mapping');
   const values = {};
-  const allowed = new Set(['display_name', 'short_description', 'default_prompt', 'icon_small', 'icon_large']);
+  let section = 'interface';
+  const sections = new Set([section]);
+  const policy = {};
+  const dependencies = [];
+  let toolsSeen = false;
+  let currentTool = null;
+  const dependencyFields = new Set(['type', 'value', 'description', 'transport', 'url']);
+  const allowed = new Set(['display_name', 'short_description', 'default_prompt', 'icon_small', 'icon_large', 'brand_color']);
   for (const line of lines.slice(1)) {
     if (!line.trim() || line.trimStart().startsWith('#')) continue;
+    const header = line.match(/^(interface|policy|dependencies):$/u);
+    if (header) {
+      section = header[1];
+      requireCondition(!sections.has(section), 'duplicate openai.yaml mapping');
+      sections.add(section);
+      continue;
+    }
+    if (section === 'dependencies') {
+      if (line === '  tools:') {
+        requireCondition(!toolsSeen, 'duplicate dependencies tools list');
+        toolsSeen = true;
+        continue;
+      }
+      const entry = line.match(/^    - ([a-z_]+):[ \t]*(.*)$/u);
+      const field = line.match(/^      ([a-z_]+):[ \t]*(.*)$/u);
+      requireCondition(toolsSeen && (entry || field), 'dependencies supports only an indented tools list');
+      if (entry) { currentTool = {}; dependencies.push(currentTool); }
+      requireCondition(currentTool !== null && dependencies.length <= 16, 'dependencies requires at most 16 tool entries');
+      const [, key, value] = entry ?? field;
+      requireCondition(dependencyFields.has(key) && !Object.hasOwn(currentTool, key), 'unknown or duplicate dependency field');
+      currentTool[key] = scalar(value, key);
+      continue;
+    }
     const match = line.match(/^  ([a-z_]+):[ \t]*(.*)$/u);
-    requireCondition(match !== null, 'openai.yaml supports only the documented two-space interface string mapping');
+    requireCondition(match !== null, 'invalid openai.yaml interface or policy mapping');
     const [, key, value] = match;
+    if (section === 'policy') {
+      requireCondition(key === 'allow_implicit_invocation' && !Object.hasOwn(policy, key), 'unknown or duplicate openai.yaml policy field');
+      requireCondition(value === 'true' || value === 'false', 'allow_implicit_invocation must be a literal boolean');
+      policy[key] = value === 'true';
+      continue;
+    }
     requireCondition(allowed.has(key) && !Object.hasOwn(values, key), 'unknown or duplicate openai.yaml interface field');
     values[key] = scalar(value, key);
+  }
+  requireCondition(!sections.has('policy') || Object.hasOwn(policy, 'allow_implicit_invocation'), 'policy requires allow_implicit_invocation');
+  requireCondition(!sections.has('dependencies') || (toolsSeen && dependencies.length > 0), 'dependencies requires a nonempty tools list');
+  const dependencyIds = new Set();
+  for (const tool of dependencies) {
+    requireCondition([...dependencyFields].every(key => Object.hasOwn(tool, key)), 'MCP dependency requires type, value, description, transport, and url');
+    requireCondition(tool.type === 'mcp' && tool.transport === 'streamable_http', 'only reviewed streamable_http MCP dependencies are supported');
+    nonblank(tool.value, 'dependency value', 200); nonblank(tool.description, 'dependency description', 1000);
+    requireCondition(!dependencyIds.has(tool.value), 'duplicate dependency identifier'); dependencyIds.add(tool.value);
+    nonblank(tool.url, 'dependency URL', 2048);
+    let url;
+    try { url = new URL(tool.url); } catch { throw new ValidationError('invalid dependency URL'); }
+    requireCondition(!/\s/u.test(tool.url) && url.protocol === 'https:' && url.hostname && !url.username && !url.password && !url.search && !url.hash,
+      'dependency URL must be HTTPS without credentials, query, or fragment');
   }
   requireCondition(['display_name', 'short_description', 'default_prompt'].every(key => Object.hasOwn(values, key)),
     'openai.yaml requires display_name, short_description, and default_prompt');
@@ -44,6 +94,7 @@ export function validateOpenaiInterface(root, name) {
   requireCondition([...values.short_description].length >= 25 && [...values.short_description].length <= 64,
     'interface short_description must be 25-64 characters');
   nonblank(values.default_prompt, 'interface default_prompt');
+  if (Object.hasOwn(values, 'brand_color')) requireCondition(values.brand_color.length === 7 && /^#[0-9a-fA-F]{6}$/u.test(values.brand_color), 'brand_color must be a six-digit hex color');
   requireCondition(new RegExp(`\\$${name}(?![a-z0-9-])`, 'u').test(values.default_prompt),
     'interface default_prompt must mention the exact $skill-name');
   for (const key of ['icon_small', 'icon_large']) if (Object.hasOwn(values, key)) {
@@ -173,10 +224,6 @@ export function initSkill(name, output, { withOpenai = false } = {}) {
 name: ${name}
 description: Use when a request explicitly needs the single responsibility defined by ${name}; refine this draft trigger before relying on it.
 license: Apache-2.0
-metadata:
-  i9-model-profile: balanced
-  i9-model-policy: advisory
-  i9-model-evidence: unbenchmarked
 ---
 
 # ${title}

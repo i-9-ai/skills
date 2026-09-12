@@ -2,10 +2,6 @@
 name: example-skill
 description: Use to produce one defined output for a recurring task; route adjacent tasks to their own skills.
 license: Apache-2.0
-metadata:
-  i9-model-profile: balanced
-  i9-model-policy: advisory
-  i9-model-evidence: unbenchmarked
 ---
 
 # Example Skill
@@ -19,6 +15,8 @@ Define one primary outcome, its user, positive triggers, and nearby tasks exclud
 ## Inputs and dependencies
 
 Identify required and optional inputs, prerequisites, available capabilities, installation/credential requirements if any, and a fallback when they are absent.
+
+Add optional `metadata` only for known authorship, useful tags, clear provenance, or a task-specific reasoning preference. Use string values and explain any custom field that should affect the procedure in the body; metadata does not grant tools or switch models.
 
 ## Procedure
 

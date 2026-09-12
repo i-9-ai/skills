@@ -1,6 +1,6 @@
 # Validation
 
-Every new or changed skill must pass the official `skills-ref validate` command identified by the [Agent Skills specification](https://agentskills.io/specification#validation). The local helper supplements this with licenses, references, public hygiene, model metadata, adapter checks, and artifact integrity. Neither structural layer replaces behavioral evaluation.
+Every new or changed skill must pass the official `skills-ref validate` command identified by the [Agent Skills specification](https://agentskills.io/specification#validation). The local helper supplements this with licenses, references, public hygiene, optional metadata, adapter checks, and artifact integrity. Neither structural layer replaces behavioral evaluation.
 
 ## Local checks
 

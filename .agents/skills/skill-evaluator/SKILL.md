@@ -3,9 +3,11 @@ name: skill-evaluator
 description: Use to evaluate a skill package against frozen behavioral cases and a baseline, returning evidence and a readiness verdict. It does not author fixes or publish the skill.
 license: Apache-2.0
 metadata:
-  i9-model-profile: deep-reasoning
-  i9-model-policy: advisory
-  i9-model-evidence: unbenchmarked
+  author: i-9-ai
+  tags: "skills, evaluation, testing"
+  source: original
+  source_url: "https://github.com/i-9-ai/skills"
+  reasoning-effort: high
 ---
 
 # Skill Evaluator
@@ -24,6 +26,8 @@ Produce an evidence-based evaluation report for one skill. Accept the exact cand
 6. Return findings with evidence and the affected responsibility or instruction. The creator chooses and implements fixes. Re-evaluate changed behavior and check for regressions within the run budget.
 
 ## Tools and security
+
+The optional `reasoning-effort: high` hint recommends careful reasoning for evidence quality, confounds, and readiness judgments. This collection convention does not set runtime effort or select a model. Keep the current model and setting unless the host exposes selection for an authorized new execution. Preserve frozen candidate/baseline settings in comparisons; a skill hint must not invalidate the evaluation design or the user's resource limits.
 
 Use read-only inspection and approved execution in disposable workspaces. The text procedure needs no dependency or credential. Run executable helpers only after static review; do not install unreviewed dependencies, access real home/production data, expose secrets in logs, or perform external side effects to make a test pass.
 

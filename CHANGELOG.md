@@ -7,7 +7,7 @@ Notable changes are recorded here. Original content is licensed under Apache-2.0
 ### Added
 
 - Five focused, English, agent-agnostic skills for discovery, synthesis, design, authoring, and independent evaluation, with explicit handoffs and bounded iteration.
-- Self-contained package licenses, advisory model profiles, local references, templates, and a synthetic workflow example.
+- Self-contained package licenses, optional authorship/tags/provenance and explained reasoning hints, local references, templates, and a synthetic workflow example.
 - Canonical `.agents/skills` discovery, repository integration aliases, and optional Codex UI metadata with original SVG icons.
 - Node.js utilities and a small layered repository validation architecture in `src/`, with commands and tool pins centralized in `package.json`.
 - Portable authoring guidance, collection catalog, security and compatibility contracts, and reproducible upstream benchmark hashes for future evolution work.
@@ -17,3 +17,6 @@ Notable changes are recorded here. Original content is licensed under Apache-2.0
 ### Changed
 
 - Replaced the initial README with an English catalog, usage guide, and contributor entrypoint.
+- Replaced mandatory model-profile/policy/evidence metadata with optional generic reasoning guidance and a metadata-free default scaffold.
+- Documented native model, effort, invocation, and tool-permission fields across agents; verified the supplied OpenAI YAML reference and its corrected upstream URL.
+- Extended local adapter checks to cover brand colors, optional invocation policy, and bounded remote MCP declarations without executing or granting them.
