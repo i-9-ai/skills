@@ -1,0 +1,6 @@
+interface:
+  display_name: "Skills Merger"
+  short_description: "Synthesize useful contributions into a merge plan"
+  icon_small: "./assets/icon.svg"
+  icon_large: "./assets/icon.svg"
+  default_prompt: "Use $skills-merger to synthesize reviewed skill sources into a focused, traceable merge plan."

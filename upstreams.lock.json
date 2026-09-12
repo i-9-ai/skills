@@ -1,0 +1,253 @@
+{
+  "schema_version": 1,
+  "observed_on": "2026-09-12",
+  "hash_algorithm": "sha256",
+  "sources": [
+    {
+      "id": "vercel-find-skills",
+      "repository": "https://github.com/vercel-labs/skills",
+      "revision": "d667282815248da03a08a18272b5d2eef9caf77c",
+      "package_path": "skills/find-skills",
+      "license": "MIT",
+      "license_path": "LICENSE",
+      "license_sha256": "661142e53c313d2bb5e1b055f5c0a39001450ff1b5e27b89dc4bc7de9a6352ca",
+      "reuse": "pattern",
+      "consumers": [
+        "find-skills"
+      ],
+      "files": [
+        {
+          "path": "SKILL.md",
+          "sha256": "c00eeea0e13e74fe4a9d84ba0a8542205a1b736d65f13134fe1a6647eb14976f"
+        }
+      ],
+      "package_sha256": "08601ff8e75013e2252109215e5c95d1b4943e0d6c2aba0bf9055a150bbe38f2"
+    },
+    {
+      "id": "anthropic-skill-creator",
+      "repository": "https://github.com/anthropics/skills",
+      "revision": "34040c9c568585f6929bedeaad110ad08f079624",
+      "package_path": "skills/skill-creator",
+      "license": "Apache-2.0",
+      "license_path": "skills/skill-creator/LICENSE.txt",
+      "license_sha256": "bc6b3af2f331cbc7fb0da1344efb2cbe5877a31498b4d70dbc7000f3405a1362",
+      "reuse": "pattern",
+      "consumers": [
+        "skill-creator",
+        "skill-evaluator"
+      ],
+      "files": [
+        {
+          "path": "LICENSE.txt",
+          "sha256": "bc6b3af2f331cbc7fb0da1344efb2cbe5877a31498b4d70dbc7000f3405a1362"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "dcd4803e61e913e6fc27294184cd3a71f09f5e924ff20c8a9a20173e7b3c2bcf"
+        },
+        {
+          "path": "agents/analyzer.md",
+          "sha256": "bf68f4cac5a56c673a928c2e6d619586c5b93ea364026ab37547772cb45a663a"
+        },
+        {
+          "path": "agents/comparator.md",
+          "sha256": "fe1fc9787c495d864c5d6eada47396478572325fde1b33a96d78bf4b849b7a3e"
+        },
+        {
+          "path": "agents/grader.md",
+          "sha256": "57134da0c1a4eea33fbd74a1c9c44aa814f07d6bc64de303edb586f941e5d21a"
+        },
+        {
+          "path": "assets/eval_review.html",
+          "sha256": "ce477dcc74dc1c0d1d3352646a79167b5a63634e936b1019160025065974e452"
+        },
+        {
+          "path": "eval-viewer/generate_review.py",
+          "sha256": "fc9d1b9243fe5ab6012ebd579bd76d0035de1b79fd3b969de114defab26478fb"
+        },
+        {
+          "path": "eval-viewer/viewer.html",
+          "sha256": "a53213426ee1100441d701a3a0d49cda7a842f992d2c36463f4d3cc0258575fa"
+        },
+        {
+          "path": "references/schemas.md",
+          "sha256": "8e8876180a8989b406a4d3edddf875b04cdfd5805cc8616686d552b11ce4455f"
+        },
+        {
+          "path": "scripts/__init__.py",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "scripts/aggregate_benchmark.py",
+          "sha256": "123ef128ea5ccc01a4b1ac212ef5567f21e9c13d3d240609780beeb3200c49aa"
+        },
+        {
+          "path": "scripts/generate_report.py",
+          "sha256": "13df7118a3c50c83c4c3250a606d5f2b20b25a3d44cbc392b3d669ec75281453"
+        },
+        {
+          "path": "scripts/improve_description.py",
+          "sha256": "87d864570220b699fac52da309d2d6efdb060647bfebc74f768128e646accf80"
+        },
+        {
+          "path": "scripts/package_skill.py",
+          "sha256": "1a33059b0db1ef73375d46d513e5ea81369d2e8838c970597b0d52ddef8d1c0f"
+        },
+        {
+          "path": "scripts/quick_validate.py",
+          "sha256": "67cf5703402013936c8fb75ad6a1afecd8841d45cc5e606b634eb05825fde365"
+        },
+        {
+          "path": "scripts/run_eval.py",
+          "sha256": "43e3b8f80dbf69c343967ba77e268fae991d9fa3ed68b32a0ff02532cd48657f"
+        },
+        {
+          "path": "scripts/run_loop.py",
+          "sha256": "7bd6f674203168520517eec94c55f493c0d154339b061b4d7c0f0dad187d0f21"
+        },
+        {
+          "path": "scripts/utils.py",
+          "sha256": "3af8ae62c40c73ab712207436a0d9a981e845f25c5a7040229eb189cc8e45bb1"
+        }
+      ],
+      "package_sha256": "b016b0011ee9cee8ba46dfed19ccde8f1d8e0ea6edc60ea90b3962d35e8b013a"
+    },
+    {
+      "id": "superpowers-brainstorming",
+      "repository": "https://github.com/obra/superpowers",
+      "revision": "b36e0829c6d0140e93cfef2ca599b1b07d4a7797",
+      "package_path": "skills/brainstorming",
+      "license": "MIT",
+      "license_path": "LICENSE",
+      "license_sha256": "a37e0e9697144819e1d965176ac4ae5bc3fa02d11e7812036bbcadf6dafe2400",
+      "reuse": "pattern",
+      "consumers": [
+        "brainstorming"
+      ],
+      "files": [
+        {
+          "path": "SKILL.md",
+          "sha256": "74edf03ea6d24ef53db48677b93558d14a979bdf052ca3f57ecdca0c66791608"
+        },
+        {
+          "path": "scripts/frame-template.html",
+          "sha256": "6a8a4e58bd6a44b904e2e3c57de774481d909204597e1498de53f1b2fecc4c4e"
+        },
+        {
+          "path": "scripts/helper.js",
+          "sha256": "43c6d69954a46ec34a2a262bcc62a9a7e83e839c739f199cb72646d397c686e3"
+        },
+        {
+          "path": "scripts/server.cjs",
+          "sha256": "2d2961ea8d11f56c5f4c3a1a68d22709efa5d7601a2246d8c880774e7e9e8412"
+        },
+        {
+          "path": "scripts/start-server.sh",
+          "sha256": "a4e5ae84275bcaacd2f84345afeabe59cf7b00ba080e123da7cc1fb226f12847"
+        },
+        {
+          "path": "scripts/stop-server.sh",
+          "sha256": "0b5ccbbd57f62d3ed88993f7940b5ee0e5c0fc9b21c550c623da4f6292e47daf"
+        },
+        {
+          "path": "spec-document-reviewer-prompt.md",
+          "sha256": "95a0a195de9d984be2fffa95bab16fc8c563bc296a9cfc5e9c29cb3ece0d7457"
+        },
+        {
+          "path": "visual-companion.md",
+          "sha256": "77eb44a4ec3408bb3dafb872288ecd94beb8cf21da4f2bafa54fd08255d7808b"
+        }
+      ],
+      "package_sha256": "e3b133afbc04cae3bd5eaf1c0baf473d23bed08d048d836896a4cf1173910015"
+    },
+    {
+      "id": "superpowers-writing-skills",
+      "repository": "https://github.com/obra/superpowers",
+      "revision": "b36e0829c6d0140e93cfef2ca599b1b07d4a7797",
+      "package_path": "skills/writing-skills",
+      "license": "MIT",
+      "license_path": "LICENSE",
+      "license_sha256": "a37e0e9697144819e1d965176ac4ae5bc3fa02d11e7812036bbcadf6dafe2400",
+      "reuse": "pattern",
+      "consumers": [
+        "skill-creator",
+        "skill-evaluator"
+      ],
+      "files": [
+        {
+          "path": "SKILL.md",
+          "sha256": "d34db5c8aed6a4e0440132bd0613aace70a693ec7819d5637ad77481d8e10d1b"
+        },
+        {
+          "path": "anthropic-best-practices.md",
+          "sha256": "217629b356c09c9bd11017c9788e8fc654ca1b32c92d4a51cd490e16dd65e59a"
+        },
+        {
+          "path": "examples/CLAUDE_MD_TESTING.md",
+          "sha256": "0b379a3415e185d3c434b3ad283d8aa132f3022c2a4f210f168865b5986bcef0"
+        },
+        {
+          "path": "graphviz-conventions.dot",
+          "sha256": "e2890a593c91370e384b42f2f67b1a6232c9e69dddea7891a0c1c46d7b20b694"
+        },
+        {
+          "path": "persuasion-principles.md",
+          "sha256": "a51bc9bf75189ea73a27b3fb504a2fdfdb966fb1f7f1cdf03203230a216ccc03"
+        },
+        {
+          "path": "render-graphs.js",
+          "sha256": "c7f412cc629461c4d10287e668731874c0497707023e3e3f74a5355eb2cee196"
+        },
+        {
+          "path": "testing-skills-with-subagents.md",
+          "sha256": "c711346852c911b24a84aa161e0cff06a4cd7f4e2fa9e9c0a266cead5afcbade"
+        }
+      ],
+      "package_sha256": "0c35440ed1acd2720b141d72803e9d6078234dbea67e7f3cb12745112864dbe6"
+    },
+    {
+      "id": "skillport-skill-evaluator",
+      "repository": "https://github.com/gotalab/skillport",
+      "revision": "51334ae94919fc1c261673ffefdce9176c9094ef",
+      "package_path": ".skills/experimental/skill-evaluator",
+      "license": "MIT",
+      "license_path": "LICENSE",
+      "license_sha256": "637cad3c878c7cc0ac89809d92eaaae2aab21e697cdbe327c8350f27b942928e",
+      "reuse": "reference",
+      "consumers": [
+        "skill-evaluator"
+      ],
+      "files": [
+        {
+          "path": "SKILL.md",
+          "sha256": "4aa0fb87d522325f2bdbeefb94053e80d4f8360a1563ac00a834256714ed0465"
+        },
+        {
+          "path": "evaluations/README.md",
+          "sha256": "edd7ebbd493e461da59a8beaca818f690b27ebe1519b8ec8462853a49c30ed4a"
+        },
+        {
+          "path": "evaluations/basic-skill-evaluation.json",
+          "sha256": "7562cc5d9f8eed2d93bfc4b969cdbb235b9e3cf91a28f59bcc92e5acb3460ffc"
+        },
+        {
+          "path": "evaluations/problematic-skill-evaluation.json",
+          "sha256": "a67a7416657711883f7ea81885b23a880a31d877e928c9035bd3522776fd4224"
+        },
+        {
+          "path": "references/evaluation-criteria.md",
+          "sha256": "f139dffd8d98ea7f94308e5c0db0d16803a28a08d90f8a371e478be8be7f07f8"
+        },
+        {
+          "path": "references/scoring-rubric.md",
+          "sha256": "d96d854a06b39dae479fae773db7efc34c72aed2c4d9671e58be6acd981b802d"
+        },
+        {
+          "path": "scripts/validate_skill.py",
+          "sha256": "394f812cd84dab7e0b611d150e7b8df39cb59929d3c8aa92964291ffa5fe6547"
+        }
+      ],
+      "package_sha256": "af3b2b3d81244f7ee1c1dbea647903be3f80da023ce0b9891975fe877774faaf"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "skills": [
+    {"name": "skill-creator", "path": ".agents/skills/skill-creator", "status": "pilot"},
+    {"name": "find-skills", "path": ".agents/skills/find-skills", "status": "pilot"},
+    {"name": "skills-merger", "path": ".agents/skills/skills-merger", "status": "pilot"},
+    {"name": "brainstorming", "path": ".agents/skills/brainstorming", "status": "pilot"},
+    {"name": "skill-evaluator", "path": ".agents/skills/skill-evaluator", "status": "pilot"}
+  ]
+}

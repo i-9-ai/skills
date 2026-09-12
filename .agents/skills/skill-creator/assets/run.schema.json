@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Skill authoring run, version 1",
+  "description": "Static manifest shape. The Python validator additionally checks order, source sufficiency, confinement, file bounds, and evidence hashes. No validator establishes behavioral quality.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "run_id", "goal", "target_skill", "status", "sources", "stages"],
+  "properties": {
+    "schema_version": {"const": 1, "type": "integer"},
+    "run_id": {"$ref": "#/$defs/slug"},
+    "goal": {"$ref": "#/$defs/summary"},
+    "target_skill": {"$ref": "#/$defs/slug"},
+    "status": {"enum": ["draft", "blocked", "validated"]},
+    "sources": {"type": "array", "maxItems": 128, "items": {"$ref": "#/$defs/source"}},
+    "stages": {"type": "array", "maxItems": 6, "items": {"$ref": "#/$defs/stage"}}
+  },
+  "$defs": {
+    "slug": {
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+    },
+    "summary": {"type": "string", "minLength": 1, "maxLength": 4096, "pattern": "\\S"},
+    "digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "uri", "revision", "license", "reuse"],
+      "properties": {
+        "id": {"$ref": "#/$defs/slug"},
+        "uri": {"type": "string", "maxLength": 2048, "pattern": "^(https://|urn:example:)"},
+        "revision": {"type": "string", "minLength": 1, "maxLength": 256, "pattern": "\\S"},
+        "license": {"type": "string", "minLength": 1, "maxLength": 256, "pattern": "\\S"},
+        "reuse": {"enum": ["pattern", "adapt", "reference", "reject"]}
+      },
+      "allOf": [{
+        "if": {"properties": {"reuse": {"const": "adapt"}}},
+        "then": {"properties": {"revision": {"pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"}}}
+      }]
+    },
+    "stage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "status", "summary", "artifacts"],
+      "properties": {
+        "name": {"enum": ["intake", "discovery", "synthesis", "design", "authoring", "evaluation"]},
+        "status": {"enum": ["passed", "skipped", "blocked"]},
+        "summary": {"$ref": "#/$defs/summary"},
+        "artifacts": {"type": "array", "maxItems": 64, "items": {"$ref": "#/$defs/artifact"}}
+      },
+      "allOf": [{
+        "if": {"properties": {"status": {"const": "passed"}}},
+        "then": {"properties": {"artifacts": {"minItems": 1}}}
+      }]
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1, "maxLength": 1024},
+        "sha256": {"$ref": "#/$defs/digest"}
+      }
+    }
+  }
+}

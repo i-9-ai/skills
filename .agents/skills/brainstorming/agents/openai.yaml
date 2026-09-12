@@ -1,0 +1,6 @@
+interface:
+  display_name: "Skill Brainstorming"
+  short_description: "Resolve a skill's scope and design decisions"
+  icon_small: "./assets/icon.svg"
+  icon_large: "./assets/icon.svg"
+  default_prompt: "Use $brainstorming to define one skill responsibility, compare design tradeoffs, and return a concrete design brief."
