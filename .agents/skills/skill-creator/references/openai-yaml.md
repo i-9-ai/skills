@@ -52,14 +52,3 @@ Quote string values, keep keys unquoted, use a 25–64-character short descripti
 The local helper supports a deliberately bounded YAML subset: `interface` first, then optional `dependencies` and `policy` in either order. It checks known scalar fields, duplicate keys/sections/dependency IDs, booleans, six-digit colors, and existing regular icon files beneath `./assets/`. It supports at most 16 remote MCP entries using `streamable_http`, with HTTPS URLs without credentials, query parameters, or fragments. Other transport or YAML forms need a deliberate validator extension and primary-source verification.
 
 Validation reads files only. It never connects to a URL, installs or invokes a dependency, edits host settings, changes invocation policy, or selects a model. Metadata validity and actual host integration tests are different evidence. See [tooling](tooling.md) for filesystem limits and [runtime guidance](runtime-guidance.md) for provider differences.
-
-## Secondary-source verification
-
-The user-supplied [Metaflow listing](https://metaflow.life/skills/skills-openai-yaml) was reviewed on 2026-09-12. Its advertised preview led to account creation, so that installed artifact was not inspected or installed. Its `title`, `slug`, tags, discovery source, and attribution describe a catalog record; they are not the canonical Agent Skills header. The source URL used `main`, but the accessible repository's default branch was `master`.
-
-The [referenced document at an immutable commit](https://github.com/kursku/skills/blob/346c313fd2ec241a088c68274da26c538422568b/.system/skill-creator/references/openai_yaml.md) matches the OpenAI creator reference available during review. Its containing package includes [Apache-2.0 license text](https://github.com/kursku/skills/blob/346c313fd2ec241a088c68274da26c538422568b/.system/skill-creator/license.txt). This was a two-file reference inspection, not qualification of the entire upstream skill collection.
-
-- Document SHA-256: `ffac39318e408108141d40f820968e59f70434a891694f9bf1d25be8237b150c`.
-- License SHA-256: `cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30`.
-
-This reference restates verified interface facts with an original synthetic example. It does not adopt the listing's marketing-specific framing, establish Metaflow runtime support, or attribute this collection's original skills to the catalog uploader. The official documentation remains the authority for OpenAI behavior.
