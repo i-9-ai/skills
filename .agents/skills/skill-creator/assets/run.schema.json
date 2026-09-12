@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Skill authoring run, version 1",
-  "description": "Static manifest shape. The Python validator additionally checks order, source sufficiency, confinement, file bounds, and evidence hashes. No validator establishes behavioral quality.",
+  "description": "Static manifest shape. The Node.js validator additionally checks order, source sufficiency, safe paths, file bounds, and evidence hashes in an owned, stable workspace. It is not a sandbox against concurrent mutation, and no validator establishes behavioral quality.",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "run_id", "goal", "target_skill", "status", "sources", "stages"],
