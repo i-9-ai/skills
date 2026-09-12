@@ -48,8 +48,10 @@ export function validateOpenaiInterface(root, name) {
     'interface default_prompt must mention the exact $skill-name');
   for (const key of ['icon_small', 'icon_large']) if (Object.hasOwn(values, key)) {
     requireCondition(values[key].startsWith('./assets/'), 'interface icons must be package-relative assets');
-    const relative = localLinkPath('SKILL.md', values[key]);
-    requireCondition(relative !== null && root.info(relative).isFile(), 'interface icon must reference an existing regular package asset');
+    // Host interface values are literal file paths, not Markdown URLs.
+    const relative = values[key].slice(2);
+    relativeParts(relative);
+    requireCondition(root.info(relative).isFile(), 'interface icon must reference an existing regular package asset');
   }
 }
 

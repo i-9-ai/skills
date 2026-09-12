@@ -211,7 +211,7 @@ test('slugs, revisions, and digests require the entire string including its end'
 
 test('optional interface metadata rejects bad prompts, paths, fields, and duplicate keys', t => {
   const packagePath = initSkill('small-skill', fixture(t), { withOpenai: true }); const filename = path.join(packagePath, 'agents/openai.yaml'); const original = fs.readFileSync(filename, 'utf8');
-  for (const content of [original.replace('$small-skill', '$different-skill'), original.replaceAll('./assets/icon.svg', '../outside.svg'), `${original}  model: "provider-model"\n`, `${original}  display_name: "Duplicate"\n`]) {
+  for (const content of [original.replace('$small-skill', '$different-skill'), original.replaceAll('./assets/icon.svg', '../outside.svg'), original.replaceAll('./assets/icon.svg', './assets/../SKILL.md'), `${original}  model: "provider-model"\n`, `${original}  display_name: "Duplicate"\n`]) {
     fs.writeFileSync(filename, content); assert.throws(() => validateSkill(packagePath), ValidationError);
   }
   fs.unlinkSync(filename); assert.equal(validateSkill(packagePath).name, 'small-skill');
