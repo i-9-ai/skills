@@ -1,10 +1,11 @@
 {
   "schema_version": 1,
   "skills": [
-    {"name": "skill-creator", "path": ".agents/skills/skill-creator", "status": "pilot"},
-    {"name": "find-skills", "path": ".agents/skills/find-skills", "status": "pilot"},
-    {"name": "skills-merger", "path": ".agents/skills/skills-merger", "status": "pilot"},
-    {"name": "brainstorming", "path": ".agents/skills/brainstorming", "status": "pilot"},
-    {"name": "skill-evaluator", "path": ".agents/skills/skill-evaluator", "status": "pilot"}
+    {"name": "skill-authoring", "path": ".agents/skills/skill-authoring", "status": "pilot"},
+    {"name": "skills-discovery", "path": ".agents/skills/skills-discovery", "status": "pilot"},
+    {"name": "skills-synthesis", "path": ".agents/skills/skills-synthesis", "status": "pilot"},
+    {"name": "skill-design", "path": ".agents/skills/skill-design", "status": "pilot"},
+    {"name": "skill-evaluator", "path": ".agents/skills/skill-evaluator", "status": "pilot"},
+    {"name": "skill-naming", "path": ".agents/skills/skill-naming", "status": "pilot"}
   ]
 }

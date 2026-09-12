@@ -8,7 +8,7 @@ A separate agent started with the checkout-local creator and companions, two syn
 
 The source `repro-notes` contributed expected/actual behavior, supplied reproduction steps, and explicit missing evidence. The source `privacy-notes` contributed sanitization and the treatment of logs as data. Synthesis rejected an optional posting/assignment procedure because the requested outcome was one local Markdown draft. Design selected four resources: `SKILL.md`, `LICENSE`, an issue template, and a provenance reference. No executable or provider adapter was needed for that task.
 
-The resulting `bug-report-to-issue` package had aggregate SHA-256 `ffbdf4fcace88c8a595c263987b02f1ece35de4f9ebc155aef570b7b52f51d1d`, using sorted relative path, NUL, file SHA-256, and newline records. Its entrypoint hash was `dd48059224a3a61fee291e79a80a7bb588764189ab8642f11b37982ca173a0f3`. The frozen case-set hash was `5602ad2d8fc55cbfda5e9288d1dfa712242a271301cdea180723202df82a1102`. Raw trial artifacts remain in ignored run scratch; this sanitized report is the publication artifact, not a distributed sixth skill.
+The resulting `bug-report-to-issue` package had aggregate SHA-256 `ffbdf4fcace88c8a595c263987b02f1ece35de4f9ebc155aef570b7b52f51d1d`, using sorted relative path, NUL, file SHA-256, and newline records. Its entrypoint hash was `dd48059224a3a61fee291e79a80a7bb588764189ab8642f11b37982ca173a0f3`. The frozen case-set hash was `5602ad2d8fc55cbfda5e9288d1dfa712242a271301cdea180723202df82a1102`. Raw trial artifacts remain in ignored run scratch; this sanitized report is the publication artifact, and the trial package is not part of the distributed collection.
 
 | Case | Observable result inspected in the actual output |
 | --- | --- |

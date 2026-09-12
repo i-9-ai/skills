@@ -17,6 +17,24 @@ git diff --check
 
 Run against an owned checkout that remains stable throughout validation. Unsafe entries and detected changes are rejected; these checks are not a sandbox against concurrent adversarial mutation. Do not run candidate scripts or allow other writers to mutate the selected package while checking it.
 
+## Collection checks and limits
+
+These checks maintain this source repository. They are not installed with a skill, and their commands must not be inferred in a consumer's project.
+
+`npm run validate` discovers catalog packages, checks local links across repository documents, validates committed example runs named `run.json`, and checks `upstreams.lock.json` if present. Its public hygiene scan recognizes a small set of high-confidence credential, private-key, authenticated-URL, and local-user-path patterns without echoing matched values. It is a basic guard; binary content and less recognizable secrets still need review.
+
+Canonical repository packages live in `.agents/skills/`. Collection validation permits only these exact aliases: `CLAUDE.md` to `AGENTS.md`, `.claude/skills` to `../.agents/skills`, and `.github/skills` to `../.agents/skills`. It verifies their targets, does not traverse them during inventory, and counts the canonical packages once. This collection-only exception never permits symlinks inside a package or run.
+
+Root `.work/` and `tmp/` are private scratch and are never read or traversed by collection validation. When Git metadata is available, a bounded read-only index check rejects tracked scratch without returning its names or contents. Git is required for that check; exported trees cannot establish what the publication index contains. Nested directories with those names remain part of the checked publication corpus. Root Git metadata is excluded. Cache-like names do not create additional exemptions; keep local environments and generated scratch under the designated root scratch directories.
+
+Lock verification is offline. It checks source identity, immutable revisions, safe file paths, known consumers, digest formatting, and the aggregate hash described in [source research](upstream-research.md). It cannot verify that upstream bytes, licensing, ownership, or adoption claims match the recorded source. The lock is an audit input for future evolution, not an installed runtime dependency.
+
+## Detached-package checks
+
+The [distribution regressions](../tests/distribution.test.mjs) copy only package directories into disposable layouts outside this checkout. They exercise the creator helper from an unrelated working directory, using read-only installed resources, separate output/run directories, and installer-style directory aliases. They also validate every package's copied resources without this repository's catalog, root instructions, `src/`, or package configuration. No consumer home or actual installation is modified.
+
+This is a reproducible package-relocation check, not an invocation of `npx skills` or proof of model behavior in every host. Official validation remains required separately.
+
 ## Official validation in the workflow
 
 Python is supplied only by the GitHub workflow because the official upstream tool is implemented in Python. CI sets up Python 3.12, creates ignored `.work/validation-env`, and runs `npm run ci:official`. This Node use case checks the collection, installs the pinned external tool in that isolated environment, verifies its version, and invokes `skills-ref validate` for every canonical package. Local contributors do not prepare a Python environment.

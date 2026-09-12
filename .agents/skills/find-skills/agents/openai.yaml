@@ -1,6 +1,0 @@
-interface:
-  display_name: "Find Skills"
-  short_description: "Discover and qualify relevant skill sources"
-  icon_small: "./assets/icon.svg"
-  icon_large: "./assets/icon.svg"
-  default_prompt: "Use $find-skills to discover and qualify relevant skill packages for my task without installing them."

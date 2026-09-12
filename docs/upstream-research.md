@@ -28,13 +28,19 @@ The machine algorithm is `sha256`. Hash each file's exact raw bytes without newl
 
 | Local consumer | Useful idea | Adaptation or rejection | Local evidence/consumer |
 | --- | --- | --- | --- |
-| Find skills | Task/synonym discovery and primary source links | Replace installation-oriented output with a qualification report and explicit rights/security review | [Source review](../.agents/skills/find-skills/references/source-review.md) |
-| Creator | Intent, progressive disclosure, realistic outputs | Keep orchestration separate from specialist procedures and require a self-contained license | [Authoring guide](../.agents/skills/skill-creator/references/authoring.md) |
+| Skills discovery | Task/synonym discovery and primary source links | Replace installation-oriented output with a qualification report and explicit rights/security review | [Source review](../.agents/skills/skills-discovery/references/source-review.md) |
+| Creator | Intent, progressive disclosure, realistic outputs | Keep orchestration separate from specialist procedures and require a self-contained license | [Authoring guide](../.agents/skills/skill-authoring/references/authoring.md) |
 | Evaluator | Baselines, observable grading, comparison, iteration | Use runtime-neutral execution and separate untouched acceptance cases | [Evaluation rubric](../.agents/skills/skill-evaluator/references/evaluation.md) |
-| Brainstorming | Clarify outcomes, compare approaches, reduce scope | Preserve prior authorization; remove mandatory provider dispatch and unrelated global activation | [Decision guide](../.agents/skills/brainstorming/references/decisions.md) |
-| Merger | Combine traceable source contributions | Original synthesis procedure; reject concatenation, duplicate scripts, unrelated responsibilities, and automatic adoption | [Synthesis guide](../.agents/skills/skills-merger/references/synthesis.md) |
+| Skill design | Clarify outcomes, compare approaches, reduce scope | Preserve prior authorization; remove mandatory provider dispatch and unrelated global activation | [Decision guide](../.agents/skills/skill-design/references/decisions.md) |
+| Merger | Combine traceable source contributions | Original synthesis procedure; reject concatenation, duplicate scripts, unrelated responsibilities, and automatic adoption | [Synthesis guide](../.agents/skills/skills-synthesis/references/synthesis.md) |
 
 The package instructions and helpers are independently authored implementations of selected methodological ideas. No upstream code, UI server, complete prompt, or asset is vendored. Apache-2.0 licenses the original work; a future actual copy/adaptation must preserve its source's required license and notices rather than inheriting this statement automatically.
+
+## Naming basis
+
+Searches on 2026-09-12 covered `skill naming`, `skill-naming`, and `naming-conventions` on skills.sh. The [general naming listing](https://skills.sh/jwynia/agent-skills/naming) led to a [pinned entrypoint](https://github.com/jwynia/agent-skills/blob/e02ec7e226a6e4f8419fd3b88a1d8e472d421b32/skills/general/ideation/naming/SKILL.md) oriented toward brands, products, characters, places, and titles. Its entrypoint scope was inspected for discovery; its full resource tree was not qualified and no material was adopted. Other surfaced platform-specific naming results did not establish a reusable skill-identifier specialist.
+
+`skill-naming` is an original, narrower procedure based on the [Agent Skills name constraints](https://agentskills.io/specification#name-field) and the requested domain-affinity/cardinality convention. It returns one naming decision and scoped collision evidence. The five benchmark packages above remain unchanged; discovery-only candidates are not promoted to benchmark locks or production approvals.
 
 ## Findings that affected the design
 

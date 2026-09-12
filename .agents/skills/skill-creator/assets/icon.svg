@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-labelledby="title">
-  <title id="title">Skill Creator</title>
-  <rect x="1" y="1" width="62" height="62" rx="14" fill="#102a43"/>
-  <g fill="none" stroke="#8ce8d0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M23 19H15v26h8m18-26h8v26h-8M26 32h12m-6-6v12"/>
-  </g>
-</svg>

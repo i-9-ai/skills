@@ -2,7 +2,7 @@
 
 ## Responsibility boundaries
 
-The collection is organized around independently useful tasks, not vendors or platforms. The initial five skills own discovery, synthesis, design, authoring, and evaluation respectively. `skill-creator` is the entrypoint for producing a package and only coordinates the other procedures. `skills-merger` produces the synthesis contract; it does not also search the web, author code, or grade its own output.
+The collection is organized around independently useful tasks, not vendors or platforms. The skills own discovery, synthesis, design, authoring, evaluation, and naming. `skill-authoring` is the entrypoint for producing a package and only coordinates the other procedures. `skills-synthesis` produces the synthesis contract; it does not also search the web, author code, or grade its own output. `skill-naming` owns open naming decisions and returns a report without renaming files.
 
 For example, a GitHub collection might separate CLI command selection, issue preparation, pull request delivery, action usage, and workflow authoring when their outcomes and acceptance criteria differ. This illustrates the general responsibility test rather than prescribing domain categories. Keep cohesive steps together when splitting them would create no independently useful capability.
 
@@ -21,13 +21,15 @@ Domain rules do not launch processes or read files. Application use cases coordi
 
 ## Execution contract
 
-The [creator's handoff protocol](../.agents/skills/skill-creator/references/handoff-protocol.md) owns the run format. Specialists can be used alone through their local inputs/outputs; they need no repository root files. The creator wraps their returned artifacts in ordered stages with SHA-256 evidence.
+The [creator's handoff protocol](../.agents/skills/skill-authoring/references/handoff-protocol.md) owns the run format. Specialists can be installed and used alone through their local inputs/outputs; they need no repository root files. The creator locates separately available companions through the host's inventory or trusted explicit paths and wraps their returned artifacts in ordered stages with SHA-256 evidence. Resource paths belong to the installed package; outputs belong to the caller's selected workspace.
 
-Stages are intake → discovery → synthesis → design → authoring → evaluation. The creator may consult brainstorming within intake before discovery when clarification is needed; that preliminary brief does not replace the final design stage. With fewer than two contributing sources, synthesis is skipped with evidence. A passed synthesis must select useful contributions from distinct packages; mirrors and revisions of the same source cannot fill the minimum.
+Stages are intake → discovery → synthesis → design → authoring → evaluation. The creator may consult `skill-design` within intake before discovery when clarification is needed; that preliminary brief does not replace the final design stage. With fewer than two contributing sources, synthesis is skipped with evidence. A passed synthesis must select useful contributions from distinct packages; mirrors and revisions of the same source cannot fill the minimum.
 
 Every stage returns its result, evidence, limitations, and next consumer. The coordinator verifies the output before continuing. Changed inputs invalidate dependent stages. Missing capability, rights, authority, or critical test evidence produces a blocked handoff. Correction loops default to two rounds; the intake can set a different justified budget.
 
 The manifest is an audit artifact, not an executable workflow engine. Its status is an assertion supported by reports; integrity checks cannot certify that prose is true. It grants no tool authority and starts no subprocesses, models, schedulers, or background jobs.
+
+Naming is conditional intake/design work, not a seventh run stage. Names group by domain affinity, with cardinality reflecting the primary unit. A naming report records the selected identifier, alternatives, known collisions, and affected consumers; the authoring coordinator applies an accepted rename.
 
 ## Optional delegation
 

@@ -6,6 +6,10 @@ Every skill has one recurring task, one primary output, a discriminating trigger
 
 Choose boundaries from responsibilities that can be requested, evaluated, and maintained independently. Any domain examples illustrate that test; they do not prescribe categories or require splitting a task whose output and acceptance criteria belong together.
 
+## Names and affinity
+
+Start with the domain, followed by a responsibility or subject. Use `skill` or `skills` according to whether one target or multiple candidates/sources define the work. In another domain, prefer names such as `github-issue` and `github-action` over a generic verb that hides the affinity group. Preserve established vocabulary and check actual installation/catalog collisions before adopting a name. The portable [naming specialist](../.agents/skills/skill-naming/SKILL.md) produces a decision and migration impact list; authoring applies accepted changes. Domain examples do not impose a fixed taxonomy.
+
 ## Portable package
 
 Use the [Agent Skills specification](https://agentskills.io/specification): a directory with YAML frontmatter and Markdown instructions. This collection intentionally uses a stricter authoring profile: simple string metadata, a description of at most 220 characters, a required `license`, a full `LICENSE`, and a body below 500 lines. The repository validator supports the documented subset, not arbitrary YAML.
@@ -13,6 +17,10 @@ Use the [Agent Skills specification](https://agentskills.io/specification): a di
 Write every instruction, template, example, and document in English. Keep the entrypoint concise; move task-specific detail to referenced files loaded only when useful. Bundle only resources with an actual consumer. Generate skill-specific scripts with documented dependencies and safe failure behavior, and test actual outputs in temporary fixtures.
 
 Express tool needs as capabilities. No skill may require a private harness, host path, proprietary invocation syntax, fixed model family, or provider-only configuration in its core. A missing optional tool must have a declared manual or equivalent-capability fallback. A required missing capability blocks the dependent action honestly.
+
+Treat installed resources, the caller's project, and writable output/run directories as distinct locations. Bundle every local dependency and resolve it from the installed package, independently of the working directory. Do not infer this collection's catalog, root instructions, npm commands, lock file, aliases, or CI in an installed consumer. Verify any commands actually needed from the target project. Locate declared companion skills through the host's real inventory or trusted explicit paths; installation of one package does not establish the availability of another.
+
+Exercise portable packages outside the source checkout, with separate outputs and an unrelated working directory. Verify that installed resources remain unchanged, and cover documented installer aliases without weakening the restrictions on untrusted package contents. Keep collection maintenance instructions in repository documentation.
 
 ## Script language and host assets
 
@@ -39,7 +47,7 @@ metadata:
 
 `reasoning-effort` is optional guidance: `low` for routine bounded work, `medium` for ordinary analysis, or `high` for conflicting evidence and substantial multi-step judgments. It is a collection convention, not a standardized runtime control or benchmark claim. Explain its meaning and task-specific reason in the body because some hosts strip metadata. Omit it when the inherited setting is sufficient. Keep model IDs and benchmark bookkeeping out of the default scaffold.
 
-Consult the creator's [runtime reference](../.agents/skills/skill-creator/references/runtime-guidance.md) before choosing native fields. Model lists, effort settings, permissions, and invocation controls belong to different files across hosts. Preserve explicit user selections and limits; use the host's actual catalog and selection interface when available, otherwise inherit the existing model and setting. No metadata field creates selection capability or authorizes delegation. The [OpenAI reference](../.agents/skills/skill-creator/references/openai-yaml.md) covers its optional sidecar and verified source provenance.
+Consult the creator's [runtime reference](../.agents/skills/skill-authoring/references/runtime-guidance.md) before choosing native fields. Model lists, effort settings, permissions, and invocation controls belong to different files across hosts. Preserve explicit user selections and limits; use the host's actual catalog and selection interface when available, otherwise inherit the existing model and setting. No metadata field creates selection capability or authorizes delegation. The [OpenAI reference](../.agents/skills/skill-authoring/references/openai-yaml.md) covers its optional sidecar and verified source provenance.
 
 ## Provenance and rights
 

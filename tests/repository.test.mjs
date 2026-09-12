@@ -10,7 +10,7 @@ import { validateRepository } from '../src/application/validate-repository.mjs';
 import {
   checkPublicHygiene, CollectionValidationError, validateCatalog, validateLock,
 } from '../src/domain/collection-policy.mjs';
-import { LIMITS, STAGES } from '../.agents/skills/skill-creator/scripts/skill_tools.mjs';
+import { LIMITS, STAGES } from '../.agents/skills/skill-authoring/scripts/skill_tools.mjs';
 
 const EFFORT_METADATA = 'metadata:\n  reasoning-effort: medium\n';
 const sha256 = (content) => createHash('sha256').update(content).digest('hex');
@@ -126,7 +126,7 @@ test('wrong targets and additional symlinks are rejected', (t) => {
   const { root } = makeRepository(t);
   fs.writeFileSync(join(root, 'AGENTS.md'), '# Repository instructions\n');
   fs.symlinkSync('README.md', join(root, 'CLAUDE.md'));
-  assert.throws(() => validateRepository(root), /unexpected repository alias target/);
+  assert.throws(() => validateRepository(root), /unexpected alias target/);
   fs.unlinkSync(join(root, 'CLAUDE.md'));
   fs.symlinkSync('README.md', join(root, 'unexpected.md'));
   assert.throws(() => validateRepository(root), /symlink is forbidden/);

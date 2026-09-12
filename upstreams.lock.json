@@ -13,7 +13,7 @@
       "license_sha256": "661142e53c313d2bb5e1b055f5c0a39001450ff1b5e27b89dc4bc7de9a6352ca",
       "reuse": "pattern",
       "consumers": [
-        "find-skills"
+        "skills-discovery"
       ],
       "files": [
         {
@@ -33,7 +33,7 @@
       "license_sha256": "bc6b3af2f331cbc7fb0da1344efb2cbe5877a31498b4d70dbc7000f3405a1362",
       "reuse": "pattern",
       "consumers": [
-        "skill-creator",
+        "skill-authoring",
         "skill-evaluator"
       ],
       "files": [
@@ -122,7 +122,7 @@
       "license_sha256": "a37e0e9697144819e1d965176ac4ae5bc3fa02d11e7812036bbcadf6dafe2400",
       "reuse": "pattern",
       "consumers": [
-        "brainstorming"
+        "skill-design"
       ],
       "files": [
         {
@@ -170,7 +170,7 @@
       "license_sha256": "a37e0e9697144819e1d965176ac4ae5bc3fa02d11e7812036bbcadf6dafe2400",
       "reuse": "pattern",
       "consumers": [
-        "skill-creator",
+        "skill-authoring",
         "skill-evaluator"
       ],
       "files": [

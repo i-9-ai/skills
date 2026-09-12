@@ -17,5 +17,6 @@ Run `npm test` from the repository root. Tests make no network requests and leav
 
 ## Child DOX index
 - [Skill helper tests](skill-tools.test.mjs): isolated scaffold, package, and handoff regressions.
+- [Distribution tests](distribution.test.mjs): detached package resources, read-only installations, directory aliases, and separate caller workspaces.
 - [Repository tests](repository.test.mjs): catalog, source locks, links, aliases, and publication corpus.
 - [Official validation orchestration tests](official-validator.test.mjs): configuration, discovery, failure propagation, installation order, and temporary-file cleanup.

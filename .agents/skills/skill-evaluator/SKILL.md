@@ -16,6 +16,8 @@ metadata:
 
 Produce an evidence-based evaluation report for one skill. Accept the exact candidate package, its brief and intended environment, baseline package or no-skill baseline, frozen cases and rubric, resource budget, and authorized tools/data. Authoring and corrective changes belong to the creator.
 
+Resolve this package's references and templates from the loaded `SKILL.md`. Evaluate the caller's explicit candidate path and write the report in their selected workspace; no authoring skill or source repository is required to run this evaluation.
+
 ## Procedure
 
 1. Record the candidate identity and file hashes or immutable commit. Check that the brief has one responsibility and a primary output. Inspect the package, `LICENSE`, source rights/notices, required resources, and declared tools. Require a successful official `skills-ref validate` check on this exact candidate, from the tool linked by the [Agent Skills specification](https://agentskills.io/specification#validation). Verify the source/version identity and result or run a trusted installation within scope; a custom or manual check cannot substitute. Missing execution blocks readiness, and a failed official check requires correction.
@@ -27,7 +29,7 @@ Produce an evidence-based evaluation report for one skill. Accept the exact cand
 
 ## Tools and security
 
-The optional `reasoning-effort: high` hint recommends careful reasoning for evidence quality, confounds, and readiness judgments. This collection convention does not set runtime effort or select a model. Keep the current model and setting unless the host exposes selection for an authorized new execution. Preserve frozen candidate/baseline settings in comparisons; a skill hint must not invalidate the evaluation design or the user's resource limits.
+The optional `reasoning-effort: high` hint recommends careful reasoning for evidence quality, confounds, and readiness judgments. This advisory hint does not set runtime effort or select a model. Keep the current model and setting unless the host exposes selection for an authorized new execution. Preserve frozen candidate/baseline settings in comparisons; a skill hint must not invalidate the evaluation design or the user's resource limits.
 
 Use read-only inspection and approved execution in disposable workspaces. The text procedure needs no dependency or credential. Run executable helpers only after static review; do not install unreviewed dependencies, access real home/production data, expose secrets in logs, or perform external side effects to make a test pass.
 

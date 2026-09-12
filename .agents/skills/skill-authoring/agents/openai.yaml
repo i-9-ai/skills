@@ -1,0 +1,6 @@
+interface:
+  display_name: "Skill Authoring"
+  short_description: "Author focused skills with verified handoffs"
+  icon_small: "./assets/icon.svg"
+  icon_large: "./assets/icon.svg"
+  default_prompt: "Use $skill-authoring to author a focused, licensed skill package and coordinate discovery, synthesis, design, and evaluation."

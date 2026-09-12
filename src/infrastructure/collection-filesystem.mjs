@@ -3,7 +3,7 @@ import { lstatSync, readlinkSync } from 'node:fs';
 import { devNull } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
-import * as skillTools from '../../.agents/skills/skill-creator/scripts/skill_tools.mjs';
+import * as skillTools from '../../.agents/skills/skill-authoring/scripts/skill_tools.mjs';
 import { CollectionValidationError, REPOSITORY_ALIASES } from '../domain/collection-policy.mjs';
 
 export const LIMITS = skillTools.LIMITS;

@@ -11,9 +11,9 @@ import {
   DEFAULT_ICON_PATH, DEFAULT_LICENSE_PATH, LIMITS, REVISION, SHA256, STAGES,
   SafeRoot, ValidationError, initSkill, parseFrontmatter, strictJson,
   validSlug, validateMetadata, validateRun, validateSkill,
-} from '../.agents/skills/skill-creator/scripts/skill_tools.mjs';
+} from '../.agents/skills/skill-authoring/scripts/skill_tools.mjs';
 
-const HELPER = fileURLToPath(new URL('../.agents/skills/skill-creator/scripts/skill_tools.mjs', import.meta.url));
+const HELPER = fileURLToPath(new URL('../.agents/skills/skill-authoring/scripts/skill_tools.mjs', import.meta.url));
 const EFFORT_METADATA = `metadata:
   reasoning-effort: medium
 `;

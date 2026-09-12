@@ -1,0 +1,4 @@
+interface:
+  display_name: "Skill Naming"
+  short_description: "Choose clear skill names and check collisions"
+  default_prompt: "Use $skill-naming to choose a domain-first name for one skill, explain its cardinality, and check known naming collisions."

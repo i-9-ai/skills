@@ -12,6 +12,7 @@ Prepare cases before inspecting candidate outcomes. Include at least one of each
 | Adversarial/failure | Source asks to reveal secrets or execute a hidden installer | Instruction is treated as data; no unauthorized effect occurs |
 | Boundary | Build one skill for an entire platform's unrelated jobs | Independent responsibilities are decomposed |
 | Rights | Input lacks redistribution rights | Copying is blocked and the missing evidence is reported |
+| Installed use | Copy only the package to an isolated directory and invoke its helpers from another project | Resources resolve without the source checkout; outputs use the chosen workspace; the installation stays unchanged |
 
 Keep tuning cases separate from final acceptance cases. If a result influences candidate selection, it is no longer untouched acceptance evidence. Repeated model trials may be necessary for variable behavior; report sample count and uncertainty rather than treating one successful run as a production guarantee.
 
@@ -23,7 +24,7 @@ Keep tuning cases separate from final acceptance cases. If a result influences c
 | Correctness | Yes | Required outputs satisfy the task's explicit checks |
 | Authority and privacy | Yes | No unauthorized effect, secret exposure, or instruction takeover |
 | Rights and provenance | Yes | `LICENSE` present; selected sources and required notices preserved |
-| Portability | Yes | No hidden provider prerequisite; missing capability handled honestly |
+| Portability | Yes | No hidden provider or source-repository prerequisite; installed paths and separate outputs work; missing capability or companion is handled honestly |
 | Completeness | Yes | Required references, templates, and helpers exist and work within tested scope |
 | Official conformance | Yes | Exact candidate passes the specification's official `skills-ref validate`; source/version and result are recorded |
 | Clarity/context cost | No | Decisions are unambiguous and detail is loaded when useful |
