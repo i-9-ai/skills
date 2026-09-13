@@ -29,6 +29,12 @@ This skill does not infer aliases from directory names, inspect a home directory
 5. Compare every valid alias with the canonical collection. A valid alias must resolve to the declared target and must not create a separately editable copy. Record relative-target evidence when the contract requires a symbolic link.
 6. Return a deterministic report with the scope handle, canonical result, one disposition per declared and observed alias, evidence, limits, and recommended handoffs. State separately that structural agreement does not prove provider discovery, runtime behavior, installation, or global configuration.
 
+## Optional deterministic check
+
+For a declared symbolic-link contract, use `node scripts/verify_aliases.mjs <contract.json>` from this installed package. The JSON contract contains `root`, `canonical_path`, `aliases`, and optional `observed_paths`; when guidance aliases exist it also contains `guidance_path`. Every alias has `kind`, `path`, `shape`, and `target`. Skills aliases must target `canonical_path`; guidance aliases must target `guidance_path`. The checker reads only paths below the caller-supplied root, accepts only relative paths that do not traverse upward, never writes, executes no child process, and emits JSON. It classifies optional observed paths as `not-declared` only when they exist and do not duplicate a declared path.
+
+The helper deliberately supports only `symbolic-link` aliases. An unrecognized shape or a contract whose canonical path or expected target escapes the root is rejected rather than interpreted. Manual inspection remains the portable fallback when Node.js is unavailable.
+
 ## Findings and handoffs
 
 Use these remediation owners when available in the caller's environment:

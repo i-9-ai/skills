@@ -8,6 +8,7 @@ This synthetic example verifies a declared contract only. It does not inspect a 
 | --- | --- |
 | Repository root | `/work/collection` |
 | Canonical collection | `.agents/skills` |
+| Canonical guidance | `AGENTS.md` |
 | Declared aliases | skills: `.claude/skills` → `../.agents/skills`; `.github/skills` → `../.agents/skills`. guidance: `CLAUDE.md` → `AGENTS.md` |
 
 ## Result
