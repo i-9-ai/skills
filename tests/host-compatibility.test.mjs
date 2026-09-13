@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -6,7 +7,7 @@ import test from 'node:test';
 import { verifyAliases } from '../.agents/skills/skills-host-compatibility/scripts/verify_aliases.mjs';
 
 function fixture(t) {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'host-compatibility-test-'));
+  const root = fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), 'host-compatibility-test-')));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   fs.mkdirSync(path.join(root, '.agents', 'skills'), { recursive: true });
   return root;
@@ -76,4 +77,40 @@ test('requires a separate canonical guidance path for guidance aliases', (t) => 
     canonical_path: '.agents/skills',
     aliases: [{ kind: 'guidance', path: 'CLAUDE.md', shape: 'symbolic-link', target: 'AGENTS.md' }],
   }), /guidance_path is required/);
+});
+
+test('rejects intermediate and followed symlink escapes from the supplied repository root', (t) => {
+  const root = fixture(t);
+  const outside = fs.mkdtempSync(path.join(os.tmpdir(), 'host-compatibility-outside-'));
+  t.after(() => fs.rmSync(outside, { recursive: true, force: true }));
+  fs.mkdirSync(path.join(outside, 'skills'));
+  fs.symlinkSync(outside, path.join(root, '.escaped'), 'dir');
+  assert.throws(() => verifyAliases({ root, canonical_path: '.escaped/skills', aliases: [] }), /escapes the root/);
+
+  fs.symlinkSync('.agents/skills', path.join(root, '.claude'), 'dir');
+  fs.symlinkSync(outside, path.join(root, '.claude', 'external'), 'dir');
+  assert.throws(() => verifyAliases({
+    root,
+    canonical_path: '.agents/skills',
+    aliases: [{ kind: 'skills', path: '.claude/external', shape: 'symbolic-link', target: '.' }],
+  }), /escapes the root/);
+  assert.throws(() => verifyAliases({
+    root, canonical_path: '.agents/skills', aliases: [], observed_paths: ['.claude/external'],
+  }), /escapes the root/);
+});
+
+test('runs directly when the helper script path contains a space', (t) => {
+  const root = fixture(t);
+  const helperDirectory = path.join(root, 'helper with space');
+  fs.mkdirSync(helperDirectory);
+  const source = path.join(path.dirname(new URL(import.meta.url).pathname), '..', '.agents', 'skills', 'skills-host-compatibility', 'scripts', 'verify_aliases.mjs');
+  const helper = path.join(helperDirectory, 'verify aliases.mjs');
+  fs.copyFileSync(source, helper);
+  const contract = path.join(root, 'contract.json');
+  fs.writeFileSync(contract, JSON.stringify({ root, canonical_path: '.agents/skills', aliases: [] }));
+  const result = spawnSync(process.execPath, [helper, contract], { encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(JSON.parse(result.stdout), {
+    canonical: { path: '.agents/skills', disposition: 'present' }, guidance: null, aliases: [], observed: [],
+  });
 });
