@@ -81,6 +81,10 @@ export function checkPublicHygiene(relative, text) {
   }
 }
 
+export function checkPublicHygieneBytes(relative, payload) {
+  checkPublicHygiene(relative, Buffer.from(payload).toString('latin1'));
+}
+
 export function validateCatalog(value, files, directories) {
   const catalog = exactFields(value, ['schema_version', 'skills'], 'catalog');
   requireCondition(Array.isArray(catalog.skills), 'catalog must contain a skills array');

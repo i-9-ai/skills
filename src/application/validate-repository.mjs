@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { CollectionFilesystem, LIMITS, rejectTrackedScratch } from '../infrastructure/collection-filesystem.mjs';
 import {
   CollectionValidationError, IGNORED_ROOT_NAMES, REPOSITORY_ALIASES,
-  checkPublicHygiene, validateCatalog, validateCollectionIcon, validateCollectionPng, validateLock,
+  checkPublicHygiene, checkPublicHygieneBytes, validateCatalog, validateCollectionIcon, validateCollectionPng, validateLock,
 } from '../domain/collection-policy.mjs';
 import { checkCatalog } from '../../.agents/skills/skills-catalog/scripts/catalog_tools.mjs';
 
@@ -47,6 +47,7 @@ export function validateRepository(path = DEFAULT_ROOT) {
     const utf8 = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true });
     for (const relative of sorted) {
       const payload = root.readBytes(relative, LIMITS.artifactBytes);
+      checkPublicHygieneBytes(relative, payload);
       let text;
       try { text = utf8.decode(payload); } catch { continue; }
       textFiles += 1;

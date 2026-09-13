@@ -274,6 +274,27 @@ test('public hygiene identifies location and category without echoing sensitive-
   }
 });
 
+test('public hygiene scans binary payloads without requiring UTF-8 decoding', (t) => {
+  const { root } = makeRepository(t);
+  const artifact = join(root, 'artifact.bin');
+  const baseline = validateRepository(root);
+  fs.writeFileSync(artifact, Buffer.from([0xff, 0x00, 0x80]));
+  assert.deepEqual(validateRepository(root), baseline);
+  const token = 'ghp_' + 'A'.repeat(36);
+  fs.writeFileSync(artifact, Buffer.concat([Buffer.from([0xff, 0x00]), Buffer.from(token, 'ascii')]));
+  assert.throws(() => validateRepository(root), (error) => {
+    assert.match(error.message, /artifact\.bin:1: possible GitHub credential/);
+    assert.ok(!error.message.includes(token));
+    return true;
+  });
+});
+
+test('visual guide publication only deploys main and stages new pages before diffing', () => {
+  const workflow = fs.readFileSync(join(process.cwd(), '.github', 'workflows', 'publish-visual-guides.yml'), 'utf8');
+  assert.match(workflow, /with:\n\s+ref: main\n\s+persist-credentials: false/);
+  assert.match(workflow, /git add --all\n\s+if git diff --quiet --staged; then/);
+});
+
 test('source locks validate package digests and known consumers', (t) => {
   const { root } = makeRepository(t);
   const lock = makeLock();
