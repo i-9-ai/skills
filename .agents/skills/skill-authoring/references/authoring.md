@@ -27,7 +27,9 @@ Before accepting a package, copy it alone outside its source checkout. Check its
 
 ## Script language and optional host metadata
 
-Prefer Node.js for new utilities: declare the supported version, use built-in modules when sufficient, avoid unnecessary package dependencies, and provide deterministic tests. Choose Python or another language only for a specific library, interoperability need, correctness property, or security primitive; document that reason and runtime verification. Do not add a Node wrapper around a Python helper solely to conceal the dependency.
+Use JavaScript with Node.js built-ins for small zero-dependency utilities: declare the supported version and provide deterministic tests. Choose TypeScript or another language only for a specific maintenance, library, interoperability, correctness, or security advantage; document that reason, runtime verification, and runnable distribution path. Do not require a consumer to infer a compiler bootstrap or add a Node wrapper solely to conceal another dependency.
+
+When preparation is required, add `metadata.setup` pointing to an existing bundled `scripts/` file and state the prerequisites in `compatibility`. The `SKILL.md` must include `Prerequisites and setup` subsections for explicit setup, idempotence and side effects, and fallback. Setup is never automatic on installation or activation. Keep lengthy setup rationale in `references/setup.md`; do not add a top-level installation guide.
 
 This package's helper uses Node.js built-ins. It operates on owned workspaces that remain stable during validation, rejects unsafe entries and detected changes, and never executes candidate scripts. Its checks are not a sandbox against concurrent adversarial filesystem mutation. See the tooling guide for supported inputs and bounds.
 

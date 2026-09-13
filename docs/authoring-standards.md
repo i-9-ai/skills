@@ -28,7 +28,9 @@ Exercise portable packages outside the source checkout, with separate outputs an
 
 ## Script language and host assets
 
-Prefer Node.js for new skill utilities, with a supported runtime version, built-in modules when sufficient, and deterministic tests. Another language needs a concrete documented reason: a required library, interoperability, correctness, or security advantage. Existing useful code need not be rewritten merely for uniformity. Runtime installation is a separate environment action, not an implicit step in a skill.
+Use JavaScript with a supported Node.js version and built-in modules for small zero-dependency utilities. Choose TypeScript or another runtime only for a concrete maintenance, correctness, interoperability, security, or required-library advantage. TypeScript packages must document a runnable distribution path so consumers do not have to infer a compiler bootstrap. Existing useful code need not be rewritten merely for uniformity.
+
+When a package needs preparation, keep its contract in `SKILL.md`: state prerequisites in `compatibility`, declare the bundled relative `scripts/` entrypoint in flat `metadata.setup`, and include `Prerequisites and setup` with explicit setup, idempotence and side effects, and a fallback. Setup is opt-in and idempotent; skill installation and activation never execute it. Put a lengthy explanation in `references/setup.md`, not a top-level installation guide. Runtime installation remains a separate environment action.
 
 Repository-owned tooling and the creator helper use Node.js built-ins. Filesystem validation requires an owned, stable workspace: it rejects unsafe entries and detected changes before accepting results, but does not claim confinement against concurrent adversarial mutation. Node's [filesystem API](https://nodejs.org/docs/latest-v22.x/api/fs.html) exposes path-based operations, not portable descriptor-relative directory traversal. Do not execute candidate scripts or allow another writer to alter the selected tree during validation.
 
@@ -37,6 +39,8 @@ Provide optional host metadata and icons when their format and utility are verif
 ## Optional metadata and runtime guidance
 
 The standard permits a `metadata` mapping with string values. Include known authorship, a small set of useful tags, and clear provenance when they help consumers understand the package. This collection uses the following optional descriptive conventions:
+
+`metadata.setup` is reserved for an explicit package-relative setup resource under `scripts/`. It is inert metadata: it does not invoke a command, install a runtime, or grant permissions. A package that declares it must follow the setup contract above.
 
 ```yaml
 metadata:

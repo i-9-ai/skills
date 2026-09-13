@@ -120,6 +120,7 @@ export function validateSkill(input) {
     requireCondition(validSlug(metadata.name, 'skill name') === expected, 'frontmatter name must match the package directory');
     nonblank(metadata.description, 'description', 220);
     requireCondition(root.readText('LICENSE').trim().length > 0, 'LICENSE must not be empty');
+    validateSetupContract(root, metadata, text);
     let links = 0;
     for (const [relative, info] of inventory) if (info.isFile() && relative.endsWith('.md')) {
       links += checkMarkdown(root, relative, root.readText(relative));
@@ -128,6 +129,19 @@ export function validateSkill(input) {
       ? validateOpenaiInterface(root, expected) : undefined;
     return { name: expected, entries: inventory.length, local_links: links, openai_interface };
   } finally { root.close(); }
+}
+
+function validateSetupContract(root, frontmatter, text) {
+  const metadata = frontmatter.metadata;
+  if (!metadata || !Object.hasOwn(metadata, 'setup')) return;
+  const setup = metadata.setup;
+  requireCondition(setup.startsWith('scripts/'), 'setup metadata must reference a bundled scripts/ resource');
+  relativeParts(setup);
+  requireCondition(root.info(setup).isFile(), 'setup metadata must reference an existing regular file');
+  requireCondition(Object.hasOwn(frontmatter, 'compatibility'), 'setup metadata requires compatibility prerequisites');
+  for (const heading of ['## Prerequisites and setup', '### Explicit setup', '### Idempotence and side effects', '### Fallback']) {
+    requireCondition(text.includes(heading), `setup metadata requires the ${heading} section`);
+  }
 }
 
 function sourceIdentity(source) {

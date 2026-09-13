@@ -24,3 +24,4 @@ Verify every requirement has an implementation and a check or an explicit limit.
 - [Portable authoring contract](2026-09-13-20-41-52-02-portable-authoring-contract.md): reusable selection, context, handoff, and automation boundaries.
 - [Session skill-index hook](2026-09-13-21-25-00-session-skill-index-hook.md): generated entry context from the canonical catalog.
 - [Structural host compatibility](2026-09-13-22-10-00-skills-host-compatibility.md): repository-local agent discovery alias verification.
+- [Portable runtime and setup contract](2026-09-13-23-21-01-portable-runtime-setup-contract.md): explicit runtime and setup declarations for self-contained skills.

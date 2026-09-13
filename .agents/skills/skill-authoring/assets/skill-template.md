@@ -26,11 +26,27 @@ Identify required and optional inputs, prerequisites, available capabilities, in
 
 Resolve bundled resources from the installed package and choose outputs in the caller's workspace. Declare companion dependencies explicitly. Verify the target project's actual commands and configuration instead of assuming the source collection is present.
 
+## Prerequisites and setup (when applicable)
+
+Remove this section when no setup is needed. Otherwise declare the runtime and prerequisites in `compatibility`, and declare the package-relative setup entrypoint as flat `metadata.setup`. Setup is always explicit: installation or activation never runs it automatically.
+
+### Explicit setup
+
+Provide one idempotent command that the caller may choose to run. State the writable locations and every dependency it may resolve. Keep setup logic in a bundled `scripts/` resource; use `references/setup.md` only when the explanation needs progressive disclosure.
+
+### Idempotence and side effects
+
+State what a second run does, what it may create or modify, and how it verifies readiness. Use JavaScript for small zero-dependency Node utilities. Choose TypeScript only when types give a concrete maintenance, correctness, interoperability, or security advantage, and state the runnable distribution path so the consumer never has to infer a compiler bootstrap.
+
+### Fallback
+
+Provide the manual or equivalent-capability path when the runtime or explicit setup cannot run. A missing required prerequisite blocks only the dependent operation and must be reported honestly.
+
 ## Context sources
 
 Identify the source of truth for each decision. Load product, customer, personal, or environment-specific context from the caller's authorized workspace or declared reference; never embed it in a distributed package. Keep uncertain evidence labeled as a hypothesis.
 
-Add optional `metadata` only for known authorship, useful tags, clear provenance, or a task-specific reasoning preference. Use string values and explain any custom field that should affect the procedure in the body; metadata does not grant tools or switch models.
+Add optional `metadata` only for known authorship, useful tags, clear provenance, a task-specific reasoning preference, or an explicit `setup` entrypoint. Use string values and explain any custom field that should affect the procedure in the body; metadata does not grant tools, switch models, or execute setup.
 
 ## Procedure
 

@@ -127,6 +127,21 @@ test('name mismatch and missing or empty LICENSE fail', t => {
   fs.unlinkSync(path.join(packagePath, 'LICENSE')); assert.throws(() => validateSkill(packagePath));
 });
 
+test('setup metadata requires an explicit portable setup contract', t => {
+  const packagePath = makeSkill(fixture(t), 'example-skill', false);
+  const skill = path.join(packagePath, 'SKILL.md');
+  const original = fs.readFileSync(skill, 'utf8');
+  const setupMetadata = `metadata:\n  setup: scripts/setup.mjs\n`;
+  fs.mkdirSync(path.join(packagePath, 'scripts'));
+  fs.writeFileSync(path.join(packagePath, 'scripts/setup.mjs'), 'console.log("synthetic setup");\n');
+  fs.writeFileSync(skill, original.replace('license: Apache-2.0\n', 'license: Apache-2.0\ncompatibility: Node.js 22+\n' + setupMetadata));
+  assert.throws(() => validateSkill(packagePath), /Prerequisites and setup/u);
+  fs.appendFileSync(skill, '\n## Prerequisites and setup\n\n### Explicit setup\n\nRun `node scripts/setup.mjs`.\n\n### Idempotence and side effects\n\nA second run is safe.\n\n### Fallback\n\nUse the manual procedure.\n');
+  assert.equal(validateSkill(packagePath).name, 'example-skill');
+  fs.writeFileSync(skill, fs.readFileSync(skill, 'utf8').replace('setup: scripts/setup.mjs', 'setup: ../setup.mjs'));
+  assert.throws(() => validateSkill(packagePath), /scripts\/ resource/u);
+});
+
 test('missing, escaping, absolute, and encoded unsafe local links fail', t => {
   const packagePath = makeSkill(fixture(t)); const filename = path.join(packagePath, 'SKILL.md'); const original = fs.readFileSync(filename, 'utf8');
   for (const destination of ['missing.md', '../outside.md', '%2e%2e/outside.md', '/absolute.md', 'C:\\outside.md', '%00.md']) {
