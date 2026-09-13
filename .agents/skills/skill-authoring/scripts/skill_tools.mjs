@@ -162,9 +162,11 @@ export function validateRun(input) {
       requireCondition(['pattern', 'adapt', 'reference', 'reject'].includes(source.reuse), 'invalid source reuse');
       const identity = JSON.stringify([uri, revision]);
       requireCondition(!identities.has(identity), 'duplicate source URI and revision'); identities.add(identity);
+      if (source.reuse === 'adapt' || (source.reuse === 'pattern' && uri.startsWith('https:'))) {
+        requireCondition(REVISION.test(revision), 'reusable public sources require an immutable 40/64-hex revision');
+      }
       if (source.reuse === 'adapt') {
-        requireCondition(REVISION.test(revision), 'adapted sources require an immutable 40/64-hex revision');
-        requireCondition(!['unknown', 'none', 'unlicensed', 'proprietary', 'no-license'].includes(license.toLowerCase()),
+        requireCondition(!['unknown', 'unknown license', 'tbd', 'none', 'unlicensed', 'proprietary', 'no-license'].includes(license.toLowerCase()),
           'adapted sources require a declared reusable license; compatibility needs review');
       }
       if (['pattern', 'adapt'].includes(source.reuse)) contributors.add(uri);

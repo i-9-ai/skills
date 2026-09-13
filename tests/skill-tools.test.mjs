@@ -341,9 +341,12 @@ test('equivalent HTTPS hosts and trailing separators cannot fabricate separate s
   data.sources[0].uri = 'https://example.org/skill'; data.sources[1].uri = 'https://EXAMPLE.org:443/skill/'; rejectRun(manifest, data);
 });
 
-test('adapted sources require immutable revisions and declared licenses', t => {
-  const { manifest, data } = makeRun(fixture(t)); const source = data.sources[0]; source.reuse = 'adapt'; source.revision = 'main'; rejectRun(manifest, data);
-  source.revision = 'a'.repeat(40); source.license = 'unknown'; rejectRun(manifest, data);
+test('reusable public sources require immutable revisions and adapted sources need declared licenses', t => {
+  const { manifest, data } = makeRun(fixture(t)); const source = data.sources[0]; source.uri = 'https://example.org/skill'; source.revision = 'main'; rejectRun(manifest, data);
+  source.revision = 'a'.repeat(40); writeJson(manifest, data); assert.equal(validateRun(manifest).sources, 2);
+  source.reuse = 'adapt'; source.license = 'unknown'; rejectRun(manifest, data);
+  source.license = 'TBD'; rejectRun(manifest, data);
+  source.license = 'unknown license'; rejectRun(manifest, data);
   source.license = 'Apache-2.0'; writeJson(manifest, data); assert.equal(validateRun(manifest).sources, 2);
   source.revision += '\n'; rejectRun(manifest, data);
 });
