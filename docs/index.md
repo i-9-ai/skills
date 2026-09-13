@@ -1,0 +1,24 @@
+# I-9 Skills documentation
+
+I-9 Skills is a public-ready framework for creating, validating, distributing, and evolving focused agent skills.
+
+## Start here
+
+- [Architecture](architecture.md): collection boundaries, specialist handoffs, and lifecycle.
+- [Authoring standards](authoring-standards.md): package design and contribution requirements.
+- [Compatibility](compatibility.md): portable contract and host-specific support.
+- [Validation](validation.md): local checks and the official Agent Skills validator.
+- [Release management](release-management.md): version preparation and Changesets.
+- [Entry-path map](assets/skill-management-entry-paths.html): an interactive view of the three main ways to start.
+- [Visual guides](assets/index.html): a GitHub Pages-ready landing page for interactive maps.
+
+## Deeper references
+
+- [Positioning](positioning.md): public communication and demonstrations.
+- [Planning protocol](planning-protocol.md): durable planning for material work.
+- [Pilot runbook](pilot-runbook.md): a bounded, evidence-first procedure for the first external collection pilot.
+- [Pilot evaluation](pilot-evaluation.md): current pilot evidence and limitations.
+- [Upstream research](upstream-research.md): reviewed sources, adoption decisions, and provenance.
+- [Security policy](https://github.com/i-9-ai/skills/blob/main/SECURITY.md): disclosure boundaries and security reporting.
+
+`docs/` is the canonical public documentation tree. After a change to this directory merges into `main`, GitHub Actions mirrors it to the GitHub Wiki. The Wiki uses this page as `Home`.

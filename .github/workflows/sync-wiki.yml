@@ -1,0 +1,53 @@
+name: Sync GitHub Wiki
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - ".github/workflows/sync-wiki.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Require the Wiki write token
+        env:
+          WIKI_SYNC_TOKEN: ${{ secrets.WIKI_SYNC_TOKEN }}
+        run: |
+          if [ -z "$WIKI_SYNC_TOKEN" ]; then
+            echo "::error::Set the WIKI_SYNC_TOKEN Actions secret before synchronizing the GitHub Wiki."
+            exit 1
+          fi
+      - name: Check out repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Clone and synchronize the Wiki
+        env:
+          WIKI_SYNC_TOKEN: ${{ secrets.WIKI_SYNC_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          git config --global http.https://github.com/.extraheader "AUTHORIZATION: basic $(printf 'x-access-token:%s' "$WIKI_SYNC_TOKEN" | base64 -w 0)"
+          trap 'git config --global --unset-all http.https://github.com/.extraheader || true' EXIT
+          git clone "https://github.com/${REPOSITORY}.wiki.git" .wiki
+          rsync -a --delete --exclude='.git' docs/ .wiki/
+          if [ -f .wiki/index.md ]; then
+            mv .wiki/index.md .wiki/Home.md
+          fi
+          cd .wiki
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet; then
+            echo "Wiki is already synchronized."
+            exit 0
+          fi
+          git add --all
+          git commit -m "docs: synchronize Wiki from main"
+          git push

@@ -1,71 +1,187 @@
 # I-9 Skills
 
-A curated collection of focused, reusable skills. Each skill has one responsibility, is written in English, includes its own `LICENSE`, and describes capabilities without requiring a particular AI agent or provider.
+> Build agent skills that stay focused, portable, secure, and easier to improve over time.
 
-The initial collection builds and improves other skills through explicit handoffs:
+I-9 Skills is a public-ready toolkit for the full life of an agent skill: discover what already works, design one clear responsibility, author a complete package, validate it, publish it deliberately, and evolve it from real evidence. Every package is written in English, includes its own Apache-2.0 `LICENSE`, and works without assuming Codex, Claude, Copilot, OpenCode, or any other specific agent.
+
+**19 focused skills. One responsibility each. One reviewable output each.**
+
+The first release is `0.1.0-rc.1`: ready for independent pilot consumption while its contracts are exercised outside this repository.
+
+## Install
+
+### Easiest: ask your agent
+
+> Install the public I-9 Skills collection for my current agent using the Skills CLI. First list the available packages from `https://github.com/i-9-ai/skills`, then install every package supported by this agent in my global user scope. Do not modify this project. Report the installed packages, the destination scope, and any package or host capability that could not be installed.
+
+### CLI: install for this project
+
+Once this repository is public, run:
+
+```sh
+npx skills add https://github.com/i-9-ai/skills
+```
+
+### CLI: install globally
+
+```sh
+npx skills add i-9-ai/skills --global --skill '*' --yes
+```
+
+The Skills CLI asks for a supported agent target when it cannot determine one. After installation, start a new agent session if its skill picker does not refresh automatically.
+
+## Suggested entry points
+
+> [!IMPORTANT]
+> **Start here: [Skill Routing](.agents/skills/skill-routing/SKILL.md)**
+> Give it the desired outcome, constraints, and whether independent work may run in parallel. It returns the smallest suitable route, a bounded ambiguity shortlist, or `none`.
+
+| Typical need | Recommended entry point | You get… |
+| --- | --- | --- |
+| **Global entry point** | **[`skill-routing`](.agents/skills/skill-routing/SKILL.md)** | *One recommended skill, a short ordered route, an ambiguity shortlist, or `none`* |
+| Find strong existing approaches before building | [`skills-discovery`](.agents/skills/skills-discovery/SKILL.md) | A qualified candidate report |
+| Turn a vague idea into one well-scoped package | [`skill-design`](.agents/skills/skill-design/SKILL.md) | A design brief with boundaries |
+| Create or revise a portable package | [`skill-authoring`](.agents/skills/skill-authoring/SKILL.md) | A complete skill package |
+| Improve an existing collection safely | [`skills-audit`](.agents/skills/skills-audit/SKILL.md) or [`skill-evolution`](.agents/skills/skill-evolution/SKILL.md) | Evidence-linked findings or an evolved candidate |
+| Release or install an approved revision | [`skill-publication`](.agents/skills/skill-publication/SKILL.md) or [`skill-installation`](.agents/skills/skill-installation/SKILL.md) | A publication or installation receipt |
+
+When no package clearly fits, choose no skill. The catalog is a shortlist, never a substitute for reading the selected `SKILL.md`.
+
+## Collection
+
+Consult [`catalog.json`](catalog.json) for the generated machine-readable inventory. Use its descriptions and tags only to shortlist candidates, then read the selected package's `SKILL.md`. The table below is ordered by a typical user journey and centrality, not alphabetically. Choose no skill when none clearly matches.
+
+| Skill | Responsibility | Primary output |
+| --- | --- | --- |
+| **[`skill-routing`](.agents/skills/skill-routing/SKILL.md)** | **Select a skill, short sequence, shortlist, or no skill** | **Routing decision** |
+| [`skills-discovery`](.agents/skills/skills-discovery/SKILL.md) | Find and qualify existing packages for one capability | Candidate report |
+| [`skill-design`](.agents/skills/skill-design/SKILL.md) | Resolve one skill's responsibility and interface | Design brief |
+| [`skill-naming`](.agents/skills/skill-naming/SKILL.md) | Choose a collision-aware domain-first name | Naming decision |
+| [`skills-synthesis`](.agents/skills/skills-synthesis/SKILL.md) | Combine useful contributions from reviewed sources | Synthesis plan |
+| [`skill-authoring`](.agents/skills/skill-authoring/SKILL.md) | Author one complete skill package and coordinate creation handoffs | Skill package |
+| [`skill-icon-design`](.agents/skills/skill-icon-design/SKILL.md) | Design one distinctive, accessible package icon | Validated SVG icon and large PNG rendering |
+| [`skill-evaluator`](.agents/skills/skill-evaluator/SKILL.md) | Evaluate one candidate against frozen behavioral cases | Evaluation report |
+| [`skill-security-review`](.agents/skills/skill-security-review/SKILL.md) | Assess one package's security and disclosure risk | Security decision |
+| [`skill-lifecycle-review`](.agents/skills/skill-lifecycle-review/SKILL.md) | Decide one skill's lifecycle state and next transition | Lifecycle decision |
+| [`skill-publication`](.agents/skills/skill-publication/SKILL.md) | Publish one approved revision through one authorized channel | Publication receipt |
+| [`skill-installation`](.agents/skills/skill-installation/SKILL.md) | Install one approved immutable package | Installation receipt |
+| [`skills-audit`](.agents/skills/skills-audit/SKILL.md) | Audit a bounded collection for integrity and policy drift | Collection audit |
+| [`skill-evidence-collection`](.agents/skills/skill-evidence-collection/SKILL.md) | Organize bounded evidence for a later skill decision | Evidence packet |
+| [`skill-evolution`](.agents/skills/skill-evolution/SKILL.md) | Update one skill from supported new evidence | Evolved candidate and evolution record |
+| [`skill-optimization`](.agents/skills/skill-optimization/SKILL.md) | Improve one skill through measured candidate iterations | Best accepted candidate and optimization record |
+| [`skills-refactoring`](.agents/skills/skills-refactoring/SKILL.md) | Design a focused reorganization of an audited collection | Refactoring plan |
+| [`skill-migration`](.agents/skills/skill-migration/SKILL.md) | Move one skill between collections | Migrated package and migration record |
+| [`skills-catalog`](.agents/skills/skills-catalog/SKILL.md) | Derive and validate a collection inventory | `catalog.json` |
+## From idea to durable skill system
 
 ```mermaid
 flowchart LR
-    C[skill-authoring: author and coordinate] --> F[skills-discovery: qualify sources]
-    F --> M[skills-synthesis: synthesize contributions]
-    M --> B[skill-design: decide the design]
-    B --> C
-    C --> E[skill-evaluator: assess behavior]
-    E --> R[Scoped evaluation report]
-    C -. when naming is unresolved .-> N[skill-naming: decide the name]
+    subgraph Create
+      D[Discover] --> S[Synthesize] --> G[Design] --> A[Author]
+    end
+    subgraph Prove
+      A --> E[Evaluate] --> Q[Secure] --> L[Review lifecycle]
+    end
+    subgraph Deliver
+      L --> P[Publish] --> I[Install]
+    end
+    subgraph Improve
+      U[Audit] --> F[Refactor] --> G
+      X[Evolve] --> O[Optimize] --> E
+      M[Migrate] --> E
+    end
+    S((Start here)) --> R[Skill Routing]
+    C[Catalog] --> R
+    R -. selects .-> A
+    R -. selects .-> I
+    classDef entrypoint fill:#0ea5e9,stroke:#0369a1,color:#fff,stroke-width:3px
+    class S,R entrypoint
+    N[Name] -. decision .-> G
+    V[Icon design] -. asset .-> A
 ```
 
-The arrows represent returned artifacts, not recursive skill invocations. The creator may consult `skill-design` during intake when the responsibility is unclear. Synthesis requires at least two distinct usable sources; otherwise it is explicitly skipped. Evaluation failures return to authoring within a bounded correction budget.
+The arrows represent artifact handoffs. A host may execute the stages sequentially or delegate them; subagents are optional. Specialists never assume a companion is installed, invoke another skill recursively, or acquire authority from a handoff.
 
-| Skill | One responsibility | Primary output |
+[Explore the interactive entry-path map](docs/assets/skill-management-entry-paths.html). Its source specification is [`docs/diagrams/skill-management-entry-paths.json`](docs/diagrams/skill-management-entry-paths.json), while the generated interactive artifact is [`docs/assets/skill-management-entry-paths.html`](docs/assets/skill-management-entry-paths.html).
+
+[![Preview of the interactive skill-management entry-path map](docs/assets/skill-management-entry-paths.preview.png)](docs/assets/skill-management-entry-paths.html)
+
+A typical creation run qualifies sources, synthesizes only distinct useful contributions, designs the boundary, authors the package, evaluates behavior, reviews security, and determines lifecycle readiness. Publication and installation remain explicit external actions. Existing collections enter through audit and refactoring; evidence-backed updates enter through evolution. Measured iterative improvement enters through optimization before evaluation.
+
+## Principles that keep the collection useful
+
+- **Focused by design.** Split mixed responsibilities instead of creating a large, opaque platform skill.
+- **Portable by default.** The package contract is standard Markdown and local resources; host UI metadata is optional.
+- **Evidence before promotion.** A weak signal becomes a hypothesis or experiment, not a new rule.
+- **Public-ready from day one.** No secrets, private paths, customer records, or implicit credentials belong in a package.
+- **Human authority for external effects.** Validation, discovery, and handoffs never authorize publishing, installation, or other external actions.
+
+## How this differs from SkillOpt
+
+[Microsoft SkillOpt](https://github.com/microsoft/SkillOpt) is a research implementation for optimizing a skill document through scored rollouts, reflective bounded edits, and held-out validation. Its method directly informs skill-optimization.
+
+This collection covers the surrounding lifecycle as well: discovery, source qualification, synthesis, responsibility design, authoring, security review, cataloging, routing, installation, migration, publication, and lifecycle decisions. Each remains a separate package with a narrow output.
+
+Skill optimization can use a compatible engine such as SkillOpt when the caller explicitly authorizes its installation and execution. It is never an implicit dependency: packages remain agent- and provider-agnostic, and optimization evidence must still feed the independent evaluator and lifecycle gate.
+
+## Use after installation
+
+### Your first improvement
+
+After installing the collection, paste this prompt into your agent to assess an existing project without changing it:
+
+> Use `skills-audit` to inspect this project's installed skills. Produce a concise, evidence-linked audit that identifies missing package-contract elements, mixed responsibilities, security or public-hygiene risks, and catalog drift. Do not edit files, install packages, or publish anything. Recommend `none` when the collection is already fit for purpose.
+
+### Compatibility at a glance
+
+| Environment | What is supported here | Notes |
 | --- | --- | --- |
-| [skill-authoring](.agents/skills/skill-authoring/SKILL.md) | Author a complete package and coordinate its handoffs | Skill package |
-| [skills-discovery](.agents/skills/skills-discovery/SKILL.md) | Discover and qualify relevant sources | Candidate report |
-| [skills-synthesis](.agents/skills/skills-synthesis/SKILL.md) | Select complementary contributions and resolve overlap | Synthesis plan |
-| [skill-design](.agents/skills/skill-design/SKILL.md) | Decide the skill's boundary and interface | Design brief |
-| [skill-evaluator](.agents/skills/skill-evaluator/SKILL.md) | Assess behavior against frozen cases and a baseline | Evaluation report |
-| [skill-naming](.agents/skills/skill-naming/SKILL.md) | Choose a domain-first name and check known collisions | Naming decision |
+| Agent Skills compatible host | Portable `SKILL.md`, local resources, and scoped licenses | The package contract is the baseline. |
+| Skills CLI | Repository discovery plus project or global installation | Installation is an explicit user action. |
+| Codex | Optional interface metadata and distinct package icons | Defined in each package's `agents/openai.yaml`. |
+| Claude | Collection alias and repository guidance | No Claude-specific package metadata is required. |
+| GitHub Copilot and other hosts | Portable package contract | Confirm host discovery and UI behavior in the consumer environment. |
 
-## Use the collection
+This is a capability matrix, not a claim that every host will render the same interface. The first independent Harness pilot will publish reproducible before-and-after evidence here once it is complete.
 
-Read the selected package's `SKILL.md` and provide your task and inputs. Each specialist can return its own output when installed alone. The creation pipeline uses `skill-authoring`, `skills-discovery`, `skills-synthesis`, `skill-design`, and `skill-evaluator`; add `skill-naming` when a name is unresolved. Use packages from an approved source revision. They may be installed in a project or globally; the source checkout and a common parent directory are not required. The same agent can perform the stages sequentially; subagents are optional. A missing required companion produces a clear handoff instead of a silent substitution with another package of the same name.
+Packages live in `.agents/skills`. The repository exposes relative aliases at `.github/skills` and `.claude/skills`, while `CLAUDE.md` points to `AGENTS.md`. Optional `agents/openai.yaml` files provide Codex interface metadata. Every package has a distinct source-attributed SVG icon and a matching PNG large-icon rendering; collection validation rejects missing, unsafe, or byte-identical SVG icons and missing interface assets.
 
-For installed use, resolve resources from the host-reported skill location and choose a writable output workspace. Follow the bundled [helper guide](.agents/skills/skill-authoring/references/tooling.md) for explicit path examples. The repository commands below maintain this source checkout and are not prerequisites supplied by an installed package.
+Installed skills resolve references, assets, and scripts from their own package directory and write outputs to the caller-selected workspace. They do not depend on this checkout, its `catalog.json`, repository commands, or CI. A missing companion produces a clear handoff; it never authorizes silent installation.
 
-Example request:
+## Source-checkout validation
 
-> Use this collection's skill-authoring to build an English skill for preparing a GitHub issue from a bug report. Keep it focused on the issue artifact. Discover relevant sources, compare useful contributions, include LICENSE and provenance, and evaluate positive, negative, and unsafe-input cases. Write only to the selected local workspace.
-
-The skills use the portable [Agent Skills format](https://agentskills.io/specification). Optional metadata describes authorship, tags, provenance, and reasoning preferences. A reasoning hint is explained in the skill body and does not switch models or configure runtime effort. The [runtime reference](.agents/skills/skill-authoring/references/runtime-guidance.md) distinguishes native fields from portable guidance; [compatibility](docs/compatibility.md) records actual coverage and limitations.
-
-Packages live in `.agents/skills`, so compatible project agents can use the same skills that this repository maintains. `.github/skills` and `.claude/skills` are relative symlinks to that canonical directory; `CLAUDE.md` points to `AGENTS.md`. Other documented hosts that already discover `.agents/skills` need no duplicate tree. Optional `agents/openai.yaml` and original SVG icons provide Codex UI metadata without changing the core.
-
-## Tooling in a source checkout
-
-Local tooling uses Node.js 22+ built-ins, with no dependency installation or API credential. From the repository root:
+Local repository tooling uses Node.js 22+ built-ins:
 
 ```sh
-mkdir -p .work
-node .agents/skills/skill-authoring/scripts/skill_tools.mjs init example-skill --output .work
-node .agents/skills/skill-authoring/scripts/skill_tools.mjs validate-skill .work/example-skill
-node .agents/skills/skill-authoring/scripts/skill_tools.mjs validate-run .agents/skills/skill-authoring/examples/merge-run/run.json
 npm run check
+git diff --check
 ```
 
-The initializer creates a licensed scaffold; an agent still authors and evaluates the skill. The custom checks assess structure and evidence integrity, not model quality or licensing compatibility. [Tooling documentation](.agents/skills/skill-authoring/references/tooling.md) covers supported inputs, bounds, and errors. Manual inspection can continue where the optional helper is unavailable.
+The [validation contract](docs/validation.md) explains the layered checks. Every package must also pass the official `skills-ref validate` tool identified by the [Agent Skills specification](https://agentskills.io/specification#validation). GitHub Actions installs the pinned external Python validator in an isolated environment and validates every canonical package at the exact PR revision.
 
-Every new or modified skill also requires the official **`skills-ref validate`** check. The [GitHub workflow](docs/validation.md) runs the pinned official tool on every canonical skill in every PR. Python is a workflow dependency for that external tool only; contributors use Node.js locally. A missing or failed official check blocks readiness.
+Pending user-visible changes use [Changesets](docs/release-management.md) for version intent and future release notes. The current workflow validates those entries only; it does not publish packages, create tags, or create releases.
 
-Add `--with-openai` when creating a scaffold to include the optional Codex interface and local icon. Repository checks use a small layered architecture in `src/`; the standalone skill helper remains inside its package. [package.json](package.json) centralizes commands and the official tool's pins. There is no repository requirements file or owned Python implementation.
+Catalog maintenance is automated:
 
-## Provenance and maintenance
+```sh
+node .agents/skills/skills-catalog/scripts/catalog_tools.mjs check .
+node .agents/skills/skills-catalog/scripts/catalog_tools.mjs sync .
+```
 
-The [research ledger](docs/upstream-research.md) compares the cited skills.sh candidates and relevant alternatives at immutable revisions. [upstreams.lock.json](upstreams.lock.json) records source package and file SHA-256 values, licenses, and consumers for future upstream comparisons. It is benchmark evidence, not an installation lock or an automated updater. Popularity and a source hash do not certify production quality.
+The sync command derives descriptions and tags from each `SKILL.md`, preserves lifecycle status, writes only `catalog.json`, and becomes a no-op on a second run.
 
-All six skills are `pilot` in [catalog.json](catalog.json). The [pilot report](docs/pilot-evaluation.md) records the initial synthetic creation exercise and its evaluation limits; it does not establish behavioral coverage for later additions. Review, behavioral evaluation, provider testing, consumer migration, releases, and public distribution remain distinct states. This change does not change repository visibility or install skills into consumers.
+## Provenance and security
 
-## Contribute
+[`upstreams.lock.json`](upstreams.lock.json) records immutable benchmark sources and file hashes for future comparison. It is evidence for review, not an installer lock or automatic updater. Popularity, marketplace rankings, and external audit badges do not establish production quality.
 
-Start with [AGENTS.md](AGENTS.md), [authoring standards](docs/authoring-standards.md), and [architecture](docs/architecture.md). Prefer narrowly scoped skills over platform-wide bundles; related skills coordinate through explicit interfaces. Keep executable helpers tested, sources traceable, and examples synthetic. Run the checks above and submit a focused English pull request.
+Read [`SECURITY.md`](SECURITY.md) before reviewing external packages. Never commit credentials, personal or client records, private source snapshots, local paths, or environment inventories. External scripts remain inert during discovery. Reuse requires a compatible scoped license and preserved notices.
 
-Original content is licensed under [Apache-2.0](LICENSE). Every distributed skill includes `LICENSE`; any future copied third-party material must retain its own required rights, notices, and attribution. Read [SECURITY.md](SECURITY.md) before handling external source packages or reporting a vulnerability.
+## Contributing
+
+Read [`AGENTS.md`](AGENTS.md), the [authoring standards](docs/authoring-standards.md), and the [architecture](docs/architecture.md). Keep changes in English, prefer small skills with independently testable outputs, use Node.js built-ins for portable deterministic helpers when practical, update the generated catalog, and include exact-revision validation evidence.
+
+For public-facing messaging and demonstrations, use the [positioning and communication strategy](docs/positioning.md). It explains how to present the framework's modularization and evidence-gated evolution without making unsupported claims.
+
+For material repository changes, use the host's planning mode when available and preserve the [portable planning protocol](docs/planning-protocol.md) in a versioned plan.
+
+Original I-9 content is licensed under [Apache-2.0](LICENSE). Each distributed package includes its own `LICENSE`.
