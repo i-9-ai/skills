@@ -157,6 +157,17 @@ test('collection validates local links in published HTML', (t) => {
   assert.throws(() => validateRepository(root), /docs\/assets\/index\.html:1: invalid local link/);
 });
 
+test('collection validates unquoted local links in published HTML', (t) => {
+  const { root } = makeRepository(t);
+  const assets = join(root, 'docs', 'assets');
+  fs.mkdirSync(assets, { recursive: true });
+  fs.writeFileSync(join(assets, 'index.html'), '<a href=guide.html>Guide</a>\n');
+  fs.writeFileSync(join(assets, 'guide.html'), '<p>Guide</p>\n');
+  assert.equal(validateRepository(root).local_links, 2);
+  fs.unlinkSync(join(assets, 'guide.html'));
+  assert.throws(() => validateRepository(root), /docs\/assets\/index\.html:1: invalid local link/);
+});
+
 test('catalog rejects missing packages and uncataloged immediate directories', (t) => {
   const { root, packagePath } = makeRepository(t);
   const orphan = join(root, '.agents', 'skills', 'orphan');
@@ -177,9 +188,11 @@ test('catalog accepts packages without effort advice and rejects unsupported opt
   assert.throws(() => validateRepository(root), /effort/);
 });
 
-test('catalog parser supports folded skill descriptions', () => {
-  const summary = parseSkillSummary(Buffer.from(`---\nname: example-skill\ndescription: >-\n  Use when a synthetic\n  example is requested.\n---\n`, 'utf8'), 'example-skill');
-  assert.equal(summary.description, 'Use when a synthetic example is requested.');
+test('catalog parser supports folded and literal skill descriptions', () => {
+  for (const indicator of ['>-', '|-']) {
+    const summary = parseSkillSummary(Buffer.from(`---\nname: example-skill\ndescription: ${indicator}\n  Use when a synthetic\n  example is requested.\n---\n`, 'utf8'), 'example-skill');
+    assert.equal(summary.description, 'Use when a synthetic example is requested.');
+  }
 });
 
 test('collection rejects malformed SVG icons', (t) => {
@@ -350,9 +363,13 @@ test('public hygiene scans binary payloads without requiring UTF-8 decoding', (t
 
 test('visual guide publication only deploys main and stages new pages before diffing', () => {
   const workflow = fs.readFileSync(join(process.cwd(), '.github', 'workflows', 'publish-visual-guides.yml'), 'utf8');
+  assert.match(workflow, /concurrency:\n\s+group: publish-visual-guides-\$\{\{ github\.repository \}\}\n\s+cancel-in-progress: false/);
   assert.match(workflow, /with:\n\s+ref: main\n\s+persist-credentials: false/);
   assert.match(workflow, /git add --all\n\s+if git diff --quiet --staged; then/);
   const wikiWorkflow = fs.readFileSync(join(process.cwd(), '.github', 'workflows', 'sync-wiki.yml'), 'utf8');
+  assert.match(wikiWorkflow, /concurrency:\n\s+group: sync-wiki-\$\{\{ github\.repository \}\}\n\s+cancel-in-progress: false/);
+  assert.match(wikiWorkflow, /with:\n\s+ref: main\n\s+persist-credentials: false/);
+  assert.match(wikiWorkflow, /python3 - <<'PY'[\s\S]*https:\/\/github\.com\/\{repository\}\/blob\/main\/\{resolved\}/);
   assert.match(wikiWorkflow, /git add --all\n\s+if git diff --quiet --staged; then/);
 });
 
