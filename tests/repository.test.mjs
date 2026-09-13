@@ -167,6 +167,20 @@ test('collection rejects SVG icons with external CSS imports', (t) => {
   assert.throws(() => validateRepository(root), /active or external SVG content/);
 });
 
+test('collection rejects external SVG paint references while allowing fragments', (t) => {
+  const { root, packagePath } = makeRepository(t);
+  const icon = join(packagePath, 'assets', 'icon.svg');
+  const valid = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+    <title id="title">Example Skill</title><defs><linearGradient id="gradient"/></defs><path fill="url(#gradient)" d="M1 1h62v62H1z"/>
+  </svg>`;
+  fs.writeFileSync(icon, valid);
+  assert.equal(validateRepository(root).packages, 1);
+  for (const reference of ['url(https://example.invalid/paint.svg#gradient)', 'url(paint.svg#gradient)', "url('https://example.invalid/paint.svg#gradient')", 'u\\72l(https://example.invalid/paint.svg#gradient)', 'u&#x72;l(https://example.invalid/paint.svg#gradient)', 'url(https://example.invalid/paint.svg#gradient /* comment */)', 'url(paint.svg#gradient /* comment */)', "url('/*padding*/#gradient')"]) {
+    fs.writeFileSync(icon, valid.replace('url(#gradient)', reference));
+    assert.throws(() => validateRepository(root), /external SVG paint reference/);
+  }
+});
+
 test('collection rejects malformed PNG icons', (t) => {
   const { root, packagePath } = makeRepository(t);
   fs.writeFileSync(join(packagePath, 'assets', 'icon.png'), Buffer.from('not a png'));

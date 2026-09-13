@@ -212,8 +212,47 @@ function validateXmlAttributes(relative, source) {
     const value = source.slice(offset + 1, end);
     requireCondition(/^(?:[^<&]|&(?:amp|apos|gt|lt|quot|#[0-9]+|#x[0-9a-fA-F]+);)*$/.test(value),
       `${relative} is not well-formed XML`);
+    const css = stripCssComments(decodeXmlEntities(value)).replace(/\\([0-9a-fA-F]{1,6}\s?|.)/gu, (_match, escaped) => {
+      const hex = escaped.trim();
+      return /^[0-9a-fA-F]+$/u.test(hex) ? String.fromCodePoint(Number.parseInt(hex, 16)) : escaped;
+    });
+    for (const match of css.matchAll(/url\(\s*(?:(['"])(.*?)\1|([^\s)]+))\s*\)/giu)) {
+      const target = (match[2] ?? match[3]).trim();
+      requireCondition(target.startsWith('#'), `${relative} contains an external SVG paint reference`);
+    }
     offset = end + 1;
   }
+}
+
+function decodeXmlEntities(value) {
+  return value.replace(/&(amp|apos|gt|lt|quot|#(?:[0-9]+|x[0-9a-fA-F]+));/gu, (_match, entity) => {
+    if (entity[0] !== '#') return { amp: '&', apos: "'", gt: '>', lt: '<', quot: '"' }[entity];
+    const value = entity.slice(1);
+    const hexadecimal = value[0].toLowerCase() === 'x';
+    return String.fromCodePoint(Number.parseInt(hexadecimal ? value.slice(1) : value, hexadecimal ? 16 : 10));
+  });
+}
+
+function stripCssComments(value) {
+  let output = '';
+  let quote = '';
+  for (let index = 0; index < value.length; index += 1) {
+    const character = value[index];
+    if (quote) {
+      output += character;
+      if (character === quote) quote = '';
+      continue;
+    }
+    if (character === '"' || character === "'") { quote = character; output += character; continue; }
+    if (character === '/' && value[index + 1] === '*') {
+      const end = value.indexOf('*/', index + 2);
+      if (end === -1) return output;
+      index = end + 1;
+      continue;
+    }
+    output += character;
+  }
+  return output;
 }
 
 const PNG_SIGNATURE = Buffer.from('89504e470d0a1a0a', 'hex');
