@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import test from 'node:test';
 import { renderSessionIndex } from '../src/domain/session-index-policy.mjs';
-import { unavailableSessionIndex } from '../src/application/render-session-index.mjs';
+import { renderRepositorySessionIndex, unavailableSessionIndex } from '../src/application/render-session-index.mjs';
 
 const repository = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -86,6 +86,13 @@ test('CLI session-index fails open when its fixture catalog is malformed', (t) =
   });
   assert.equal(result.status, 0, result.stderr);
   assert.equal(result.stdout, unavailableSessionIndex());
+});
+
+test('session index rejects an oversized catalog before reading it', (t) => {
+  const fixture = mkdtempSync(join(tmpdir(), 'i9-session-index-'));
+  t.after(() => rmSync(fixture, { recursive: true, force: true }));
+  writeFileSync(join(fixture, 'catalog.json'), 'x'.repeat(1_048_577), 'utf8');
+  assert.throws(() => renderRepositorySessionIndex(fixture), /bounded regular file/);
 });
 
 test('Codex adapter invokes the same bounded read-only renderer', () => {
