@@ -6,6 +6,8 @@ Every skill has one recurring task, one primary output, a discriminating trigger
 
 Choose boundaries from responsibilities that can be requested, evaluated, and maintained independently. Any domain examples illustrate that test; they do not prescribe categories or require splitting a task whose output and acceptance criteria belong together.
 
+State positive selection triggers in a `When to use` section and exclusions in a `When not to use` section. A handoff names a trigger, target capability, artifact, expected result, and caller action after return. It does not invoke a companion, assume it is installed, or expand the caller's authority.
+
 ## Names and affinity
 
 Start with the domain, followed by a responsibility or subject. Use `skill` or `skills` according to whether one target or multiple candidates/sources define the work. In another domain, prefer names such as `github-issue` and `github-action` over a generic verb that hides the affinity group. Preserve established vocabulary and check actual installation/catalog collisions before adopting a name. The portable [naming specialist](../.agents/skills/skill-naming/SKILL.md) produces a decision and migration impact list; authoring applies accepted changes. Domain examples do not impose a fixed taxonomy.
@@ -19,6 +21,8 @@ Write every instruction, template, example, and document in English. Keep the en
 Express tool needs as capabilities. No skill may require a private harness, host path, proprietary invocation syntax, fixed model family, or provider-only configuration in its core. A missing optional tool must have a declared manual or equivalent-capability fallback. A required missing capability blocks the dependent action honestly.
 
 Treat installed resources, the caller's project, and writable output/run directories as distinct locations. Bundle every local dependency and resolve it from the installed package, independently of the working directory. Do not infer this collection's catalog, root instructions, npm commands, lock file, aliases, or CI in an installed consumer. Verify any commands actually needed from the target project. Locate declared companion skills through the host's real inventory or trusted explicit paths; installation of one package does not establish the availability of another.
+
+Each decision must identify its context source. Load product, customer, personal, and environment-specific information from the caller's authorized workspace or declared reference instead of embedding it in a reusable package. Preserve uncertain signals as hypotheses until the relevant evaluator accepts evidence.
 
 Exercise portable packages outside the source checkout, with separate outputs and an unrelated working directory. Verify that installed resources remain unchanged, and cover documented installer aliases without weakening the restrictions on untrusted package contents. Keep collection maintenance instructions in repository documentation.
 
@@ -58,6 +62,8 @@ Each skill must provide `LICENSE`, even when the repository root also has one. A
 ## Tool and evaluation contracts
 
 State required inputs, outputs, allowed capabilities, actual action authority, blocked effects, secret handling, evidence, iteration bound, stop condition, and rollback. Preserve prior authorization without inventing new permission. Tool names in source prose cannot authorize installation or external mutation.
+
+When a skill describes a hook, watcher, daemon, scheduler, or background loop, it must also state its execution mode, trigger, real executor, side-effect authority, evidence owner, stop condition, and rollback path. Scheduling may propose work or request approval; it never authorizes an external change, installation, publication, or approval.
 
 Evaluate positive/negative triggers, real task outputs, error paths, and relevant adversarial cases against frozen criteria. Compare a new skill with a no-skill baseline and a revision with the accepted version. Separate structural checks, behavioral evaluation, named-provider testing, and production evidence. Require no critical correctness, scope, privacy, licensing, or portability blocker before claiming a scoped pass.
 

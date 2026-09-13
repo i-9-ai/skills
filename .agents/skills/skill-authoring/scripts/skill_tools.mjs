@@ -237,12 +237,25 @@ Define one observable outcome for this skill before using it. This scaffold is a
 
 List adjacent responsibilities that belong to other skills. Do not silently expand this skill's scope.
 
+## When to use
+
+List observable request patterns that select this skill.
+
+## When not to use
+
+List adjacent requests that require another capability or no skill. State the handoff boundary without duplicating the other procedure.
+
 ## Inputs
 
 Record the requested outcome, constraints, authorized actions, and available evidence.
 Ask only for missing information that prevents safe progress.
 Resolve bundled resources from this installed package and select outputs in the caller's workspace.
 Verify project commands and companion availability before relying on them.
+
+## Context sources
+
+Identify the source of truth for each decision. Load product, customer, personal, or environment-specific context from the caller's authorized workspace or declared reference; never embed it in a distributed package.
+Label uncertain evidence as a hypothesis.
 
 ## Procedure
 
@@ -251,9 +264,19 @@ Verify project commands and companion availability before relying on them.
 3. Produce the smallest useful result within the stated boundary.
 4. Verify the result with observable acceptance criteria and record unresolved limits.
 
+## Handoffs
+
+For each conditional handoff, record the trigger, target capability, artifact to pass, expected result, and caller action after return.
+A handoff does not invoke, install, or grant authority to another skill. If the target is unavailable, return a blocked next action with the completed artifact.
+
+## Automation authority (when applicable)
+
+For a hook, watcher, daemon, scheduler, or background loop, state its execution mode, trigger, real executor, side-effect authority, evidence owner, stop condition, and rollback path.
+Remove this section when this skill does not describe automation. A schedule may propose or request approval; it never creates authority to change, publish, install, or approve work.
+
 ## Outputs
 
-Return the result, supporting evidence, and any required handoff to a separate skill.
+Return the result and supporting evidence.
 
 ## Failure behavior
 

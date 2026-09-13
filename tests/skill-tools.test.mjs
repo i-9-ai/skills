@@ -67,7 +67,7 @@ test('default scaffold is focused, licensed, structurally valid, and provider-fr
   assert.equal(validateSkill(packagePath).name, 'small-skill');
   assert.deepEqual(fs.readFileSync(path.join(packagePath, 'LICENSE')), fs.readFileSync(DEFAULT_LICENSE_PATH));
   const text = fs.readFileSync(path.join(packagePath, 'SKILL.md'), 'utf8');
-  for (const section of ['## Responsibility', '## Boundary', 'official `skills-ref validate`']) assert.ok(text.includes(section));
+  for (const section of ['## Responsibility', '## Boundary', '## When to use', '## When not to use', '## Context sources', '## Handoffs', '## Automation authority (when applicable)', 'official `skills-ref validate`']) assert.ok(text.includes(section));
   assert.equal(parseFrontmatter(text).metadata, undefined);
   for (const vendor of ['codex', 'claude', 'copilot', 'opencode']) assert.ok(!text.toLowerCase().includes(vendor));
   assert.deepEqual(fs.readdirSync(packagePath).sort(), ['LICENSE', 'SKILL.md']);

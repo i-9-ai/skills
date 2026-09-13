@@ -12,11 +12,23 @@ This is an authoring template, not an evaluated skill. Replace its examples with
 
 Define one primary outcome, its user, positive triggers, and nearby tasks excluded from this skill.
 
+## When to use
+
+List the observable request patterns that should select this skill.
+
+## When not to use
+
+List adjacent requests that should select another capability or no skill. State the handoff boundary without duplicating the other procedure.
+
 ## Inputs and dependencies
 
 Identify required and optional inputs, prerequisites, available capabilities, installation/credential requirements if any, and a fallback when they are absent.
 
 Resolve bundled resources from the installed package and choose outputs in the caller's workspace. Declare companion dependencies explicitly. Verify the target project's actual commands and configuration instead of assuming the source collection is present.
+
+## Context sources
+
+Identify the source of truth for each decision. Load product, customer, personal, or environment-specific context from the caller's authorized workspace or declared reference; never embed it in a distributed package. Keep uncertain evidence labeled as a hypothesis.
 
 Add optional `metadata` only for known authorship, useful tags, clear provenance, or a task-specific reasoning preference. Use string values and explain any custom field that should affect the procedure in the body; metadata does not grant tools or switch models.
 
@@ -28,9 +40,17 @@ Write only the instructions that change decisions or prevent likely mistakes. Li
 
 Define permitted actions, blocked actions, authorization boundaries, treatment of untrusted sources and secrets, and the evidence retained. Prior authorization persists; new external effects require scope for that action.
 
+## Automation authority (when applicable)
+
+For a hook, watcher, daemon, scheduler, or background loop, state its execution mode, trigger, real executor, side-effect authority, evidence owner, stop condition, and rollback path. Remove this section when the skill does not describe automation. A schedule may propose or request approval; it never creates authority to change, publish, install, or approve work.
+
+## Handoffs
+
+For every conditional handoff, state the trigger, target capability, artifact passed, expected result, and caller action after return. A handoff recommends or requests a separate capability; it does not invoke that capability, install it, grant authority, or assume it is available. If the target is unavailable, return the completed artifact with a clear blocked next action.
+
 ## Output and acceptance
 
-Define the artifact, readiness criteria, behavioral cases, limitations, next handoff, iteration bound, and stopping condition. Include provenance and license obligations for reused material.
+Define the artifact, readiness criteria, behavioral cases, limitations, iteration bound, and stopping condition. Include provenance and license obligations for reused material.
 
 ## Failure and rollback
 
