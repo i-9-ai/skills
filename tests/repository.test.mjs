@@ -11,6 +11,7 @@ import { validateRepository } from '../src/application/validate-repository.mjs';
 import {
   checkPublicHygiene, CollectionValidationError, validateCatalog, validateLock,
 } from '../src/domain/collection-policy.mjs';
+import { parseSkillSummary } from '../.agents/skills/skills-catalog/scripts/catalog_tools.mjs';
 import { LIMITS, STAGES } from '../.agents/skills/skill-authoring/scripts/skill_tools.mjs';
 
 const EFFORT_METADATA = 'metadata:\n  reasoning-effort: medium\n';
@@ -143,6 +144,11 @@ test('catalog accepts packages without effort advice and rejects unsupported opt
   assert.equal(validateRepository(root).packages, 1);
   fs.writeFileSync(skill, original.replace('reasoning-effort: medium', 'reasoning-effort: automatic'));
   assert.throws(() => validateRepository(root), /effort/);
+});
+
+test('catalog parser supports folded skill descriptions', () => {
+  const summary = parseSkillSummary(Buffer.from(`---\nname: example-skill\ndescription: >-\n  Use when a synthetic\n  example is requested.\n---\n`, 'utf8'), 'example-skill');
+  assert.equal(summary.description, 'Use when a synthetic example is requested.');
 });
 
 test('collection rejects malformed SVG icons', (t) => {

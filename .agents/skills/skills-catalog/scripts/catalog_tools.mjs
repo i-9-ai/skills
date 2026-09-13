@@ -83,14 +83,25 @@ export function parseSkillSummary(bytes, expectedName) {
   requireCondition(end > 1, `${expectedName}/SKILL.md has unterminated frontmatter`);
   let name; let description; let tags = []; let section = '';
   const seen = new Set();
-  for (const line of lines.slice(1, end)) {
+  let index = 1;
+  while (index < end) {
+    const line = lines[index++];
     const top = /^([a-z][a-z0-9_-]*):(?:\s*(.*))?$/u.exec(line);
     if (top) {
       section = top[1];
       requireCondition(!seen.has(section), `${expectedName}/SKILL.md has duplicate frontmatter fields`);
       seen.add(section);
       if (section === 'name') name = parseScalar(top[2] ?? '', 'skill name');
-      if (section === 'description') description = parseScalar(top[2] ?? '', 'skill description');
+      if (section === 'description') {
+        const value = top[2] ?? '';
+        if (['|', '|-', '>', '>-'].includes(value)) {
+          const fragments = [];
+          while (index < end && (!lines[index].trim() || lines[index].startsWith(' '))) {
+            fragments.push(lines[index++].trim());
+          }
+          description = fragments.join(value.startsWith('>') ? ' ' : '\n').trim();
+        } else description = parseScalar(value, 'skill description');
+      }
       continue;
     }
     const metadata = /^  ([a-z][a-z0-9_-]*):\s*(.*)$/u.exec(line);
