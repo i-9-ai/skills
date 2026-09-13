@@ -6,6 +6,7 @@ import fs from 'node:fs';
 import { devNull, tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
+import { deflateSync } from 'node:zlib';
 import { validateRepository } from '../src/application/validate-repository.mjs';
 import {
   checkPublicHygiene, CollectionValidationError, validateCatalog, validateLock,
@@ -16,6 +17,39 @@ const EFFORT_METADATA = 'metadata:\n  reasoning-effort: medium\n';
 const sha256 = (content) => createHash('sha256').update(content).digest('hex');
 const writeJson = (path, value) => fs.writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`);
 
+function pngCrc(bytes) {
+  let value = 0xffffffff;
+  for (const byte of bytes) {
+    value ^= byte;
+    for (let bit = 0; bit < 8; bit += 1) value = (value >>> 1) ^ (value & 1 ? 0xedb88320 : 0);
+  }
+  return (value ^ 0xffffffff) >>> 0;
+}
+
+function pngChunk(type, content) {
+  const name = Buffer.from(type, 'ascii');
+  const chunk = Buffer.alloc(12 + content.length);
+  chunk.writeUInt32BE(content.length, 0);
+  name.copy(chunk, 4);
+  content.copy(chunk, 8);
+  chunk.writeUInt32BE(pngCrc(Buffer.concat([name, content])), 8 + content.length);
+  return chunk;
+}
+
+function transparentPng() {
+  const header = Buffer.alloc(13);
+  header.writeUInt32BE(1, 0);
+  header.writeUInt32BE(1, 4);
+  header[8] = 8;
+  header[9] = 6;
+  return Buffer.concat([
+    Buffer.from('89504e470d0a1a0a', 'hex'),
+    pngChunk('IHDR', header),
+    pngChunk('IDAT', deflateSync(Buffer.from([0, 0, 0, 0, 0]))),
+    pngChunk('IEND', Buffer.alloc(0)),
+  ]);
+}
+
 function makeRepository(t) {
   const temporary = fs.mkdtempSync(join(tmpdir(), 'collection-test-'));
   t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
@@ -23,12 +57,28 @@ function makeRepository(t) {
   const name = 'example-skill';
   const packagePath = join(root, '.agents', 'skills', name);
   fs.mkdirSync(packagePath, { recursive: true });
-  fs.writeFileSync(join(packagePath, 'SKILL.md'), `---\nname: ${name}\ndescription: Use when a synthetic example is requested.\nlicense: Apache-2.0\n${EFFORT_METADATA}---\n\n# Example\n\nProduce one synthetic example.\n`);
+  const description = 'Use when a synthetic example is requested.';
+  fs.writeFileSync(join(packagePath, 'SKILL.md'), `---\nname: ${name}\ndescription: ${description}\nlicense: Apache-2.0\n${EFFORT_METADATA}---\n\n# Example\n\nProduce one synthetic example.\n`);
   fs.writeFileSync(join(packagePath, 'LICENSE'), 'Synthetic test-only license text.\n');
-  writeJson(join(root, 'catalog.json'), { schema_version: 1, skills: [
-    { name, path: `.agents/skills/${name}`, status: 'pilot' },
+  fs.mkdirSync(join(packagePath, 'agents'));
+  fs.mkdirSync(join(packagePath, 'assets'));
+  fs.writeFileSync(join(packagePath, 'agents', 'openai.yaml'), `interface:
+  display_name: "Example Skill"
+  short_description: "Produce one synthetic example"
+  icon_small: "./assets/icon.svg"
+  icon_large: "./assets/icon.png"
+  default_prompt: "Use $${name} to produce one synthetic example."
+`);
+  fs.writeFileSync(join(packagePath, 'assets', 'icon.svg'), `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">Example Skill</title><path d="M1 1h62v62H1z"/>
+</svg>
+`);
+  fs.writeFileSync(join(packagePath, 'assets', 'icon.png'), transparentPng());
+  writeJson(join(root, 'catalog.json'), { schema_version: 2, skills: [
+    { name, path: `.agents/skills/${name}`, status: 'pilot', description, tags: [] },
   ] });
   fs.writeFileSync(join(root, 'README.md'), `# Collection\n\n[Example](.agents/skills/${name}/SKILL.md)\n`);
+  fs.writeFileSync(join(root, 'AGENTS.md'), '# Repository instructions\n\nConsult `catalog.json` for available skills.\n');
   return { root, packagePath, temporary };
 }
 
@@ -71,7 +121,7 @@ test('collection discovers canonical packages and cross-directory Markdown links
   fs.mkdirSync(join(root, 'docs'));
   fs.writeFileSync(join(root, 'docs', 'guide.md'), '[Readme](../README.md)\n');
   assert.deepEqual(validateRepository(root), {
-    packages: 1, text_files: 5, local_links: 2, locked_sources: 0, example_runs: 0,
+    packages: 1, text_files: 8, local_links: 2, locked_sources: 0, example_runs: 0,
   });
 });
 
@@ -95,8 +145,33 @@ test('catalog accepts packages without effort advice and rejects unsupported opt
   assert.throws(() => validateRepository(root), /effort/);
 });
 
+test('collection rejects malformed SVG icons', (t) => {
+  const { root, packagePath } = makeRepository(t);
+  fs.writeFileSync(join(packagePath, 'assets', 'icon.svg'), `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+    <title id="title">Broken</title><path d="M1 1h62v62H1z">
+  </svg>`);
+  assert.throws(() => validateRepository(root), /not well-formed XML/);
+});
+
+test('collection rejects SVG icons with external CSS imports', (t) => {
+  const { root, packagePath } = makeRepository(t);
+  fs.writeFileSync(join(packagePath, 'assets', 'icon.svg'), `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+    <title id="title">Example Skill</title><style>@import url("https://example.org/icon.css");</style><path d="M1 1h62v62H1z"/>
+  </svg>`);
+  assert.throws(() => validateRepository(root), /active or external SVG content/);
+});
+
+test('collection rejects malformed PNG icons', (t) => {
+  const { root, packagePath } = makeRepository(t);
+  fs.writeFileSync(join(packagePath, 'assets', 'icon.png'), Buffer.from('not a png'));
+  assert.throws(() => validateRepository(root), /valid PNG/);
+});
+
 test('catalog rejects invalid identities, duplicate names, paths, and lifecycle states', () => {
-  const value = { schema_version: 1, skills: [{ name: 'example-skill', path: '.agents/skills/example-skill', status: 'pilot' }] };
+  const value = { schema_version: 2, skills: [{
+    name: 'example-skill', path: '.agents/skills/example-skill', status: 'pilot',
+    description: 'Use for a synthetic example.', tags: [],
+  }] };
   const files = new Set(['.agents/skills/example-skill/SKILL.md']);
   const directories = new Set(['.agents/skills/example-skill']);
   for (const [field, invalid] of [['name', 'example-skill\n'], ['name', '9-example'], ['path', 'skills/example-skill'], ['status', 'unknown']]) {
@@ -110,7 +185,7 @@ test('catalog rejects invalid identities, duplicate names, paths, and lifecycle 
 
 test('the three reviewed aliases resolve links without double-counting packages or text', (t) => {
   const { root } = makeRepository(t);
-  fs.writeFileSync(join(root, 'AGENTS.md'), '# Repository instructions\n');
+  fs.writeFileSync(join(root, 'AGENTS.md'), '# Repository instructions\n\nConsult `catalog.json`.\n');
   const beforeAliases = validateRepository(root);
   fs.symlinkSync('AGENTS.md', join(root, 'CLAUDE.md'));
   for (const directory of ['.claude', '.github']) {
@@ -124,7 +199,7 @@ test('the three reviewed aliases resolve links without double-counting packages 
 
 test('wrong targets and additional symlinks are rejected', (t) => {
   const { root } = makeRepository(t);
-  fs.writeFileSync(join(root, 'AGENTS.md'), '# Repository instructions\n');
+  fs.writeFileSync(join(root, 'AGENTS.md'), '# Repository instructions\n\nConsult `catalog.json`.\n');
   fs.symlinkSync('README.md', join(root, 'CLAUDE.md'));
   assert.throws(() => validateRepository(root), /unexpected alias target/);
   fs.unlinkSync(join(root, 'CLAUDE.md'));
@@ -135,7 +210,7 @@ test('wrong targets and additional symlinks are rejected', (t) => {
 test('root scratch is never read, while similarly named package directories are checked', (t) => {
   const { root, packagePath } = makeRepository(t);
   const sentinel = 'ghp_' + 'A'.repeat(36);
-  const scratch = ['.work', 'tmp'].map((directory) => {
+  const scratch = ['.work', 'tmp', 'node_modules'].map((directory) => {
     fs.mkdirSync(join(root, directory));
     const file = join(root, directory, 'private.txt');
     fs.writeFileSync(file, sentinel);

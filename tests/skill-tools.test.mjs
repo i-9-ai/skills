@@ -8,7 +8,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 import {
-  DEFAULT_ICON_PATH, DEFAULT_LICENSE_PATH, LIMITS, REVISION, SHA256, STAGES,
+  DEFAULT_ICON_PATH, DEFAULT_LARGE_ICON_PATH, DEFAULT_LICENSE_PATH, LIMITS, REVISION, SHA256, STAGES,
   SafeRoot, ValidationError, initSkill, parseFrontmatter, strictJson,
   validSlug, validateMetadata, validateRun, validateSkill,
 } from '../.agents/skills/skill-authoring/scripts/skill_tools.mjs';
@@ -73,13 +73,18 @@ test('default scaffold is focused, licensed, structurally valid, and provider-fr
   assert.deepEqual(fs.readdirSync(packagePath).sort(), ['LICENSE', 'SKILL.md']);
 });
 
-test('optional OpenAI scaffold contains only interface data and a copied icon', t => {
+test('optional OpenAI scaffold marks replaceable interface drafts and copies matching icon assets', t => {
   const packagePath = initSkill('small-skill', fixture(t), { withOpenai: true });
   assert.equal(validateSkill(packagePath).name, 'small-skill');
   assert.deepEqual(fs.readFileSync(path.join(packagePath, 'assets/icon.svg')), fs.readFileSync(DEFAULT_ICON_PATH));
+  assert.deepEqual(fs.readFileSync(path.join(packagePath, 'assets/icon.png')), fs.readFileSync(DEFAULT_LARGE_ICON_PATH));
   const metadata = fs.readFileSync(path.join(packagePath, 'agents/openai.yaml'), 'utf8');
-  assert.ok(metadata.includes('$small-skill')); assert.ok(!metadata.includes('dependencies:')); assert.ok(!metadata.includes('model:'));
+  assert.ok(metadata.includes('$small-skill')); assert.ok(metadata.includes('Draft adapter: replace interface text and both icon assets'));
+  assert.ok(metadata.includes('icon_small: "./assets/icon.svg"')); assert.ok(metadata.includes('icon_large: "./assets/icon.png"'));
+  assert.ok(!metadata.includes('dependencies:')); assert.ok(!metadata.includes('model:'));
   fs.unlinkSync(path.join(packagePath, 'assets/icon.svg')); assert.throws(() => validateSkill(packagePath));
+  fs.writeFileSync(path.join(packagePath, 'assets/icon.svg'), fs.readFileSync(DEFAULT_ICON_PATH));
+  fs.unlinkSync(path.join(packagePath, 'assets/icon.png')); assert.throws(() => validateSkill(packagePath));
 });
 
 test('existing directory, file, and symlink are preserved by init', t => {

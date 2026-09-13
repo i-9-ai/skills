@@ -31,7 +31,7 @@ jobs:
           python-version: '3.12'
       - name: Validate every canonical skill with the pinned official tool
         run: |
-          python3 -m venv .work/validation-env
+          python3 -I -m venv .work/validation-env
           npm run ci:official
       - name: Check whitespace
         env:

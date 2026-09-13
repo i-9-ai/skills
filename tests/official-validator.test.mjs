@@ -101,13 +101,15 @@ test('installs in ordered hash-checked phases and removes temporary files', (t) 
   });
   assert.equal(calls.length, 3);
   assert.equal(calls[0].command, join(root, '.work', 'validation-env', 'bin', 'python'));
-  assert.match(calls[0].args[1], /sys.prefix != sys.base_prefix/);
+  assert.equal(calls[0].args[0], '-I');
+  assert.match(calls[0].args[2], /sys.prefix != sys.base_prefix/);
   assert.doesNotMatch(calls[1].content, /skills-ref @/);
   assert.match(calls[2].content, /skills-ref @/);
   assert.ok(calls[1].args.includes('--only-binary=:all:'));
   assert.ok(calls[2].args.includes('--no-build-isolation'));
   assert.ok(calls[2].args.includes('--no-deps'));
   for (const call of calls.slice(1)) {
+    assert.deepEqual(call.args.slice(0, 3), ['-I', '-m', 'pip']);
     assert.ok(call.args.includes('--require-hashes'));
     assert.equal(call.options.shell, false);
     assert.equal(existsSync(call.args.at(-1)), false);

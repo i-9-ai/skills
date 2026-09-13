@@ -41,7 +41,7 @@ No runtime adapter is required. Optional Codex UI metadata and local icons accom
 
 [upstreams.lock.json](../upstreams.lock.json) contains benchmark source identity and digests; [the research ledger](upstream-research.md) connects sources to retained and rejected ideas. The source commit locates a revision; the package digest identifies the captured file set, and per-file digests locate changes. Applicable license bytes are recorded separately when the license lives outside the package.
 
-A future evolution skill can resolve a new upstream revision, capture it under the same rules, compare added/changed/removed files, and map differences to local contributions. It must distinguish improvements, already covered behavior, irrelevant changes, regressions, and license changes, then propose a bounded change with tests and a PR. Hashes do not rank quality. No updater, monitor, or `skills-evolution` runtime is included here.
+The skill-evolution package can resolve a new upstream revision, capture it under the same rules, compare added, changed, and removed files, and map differences to local contributions. It must distinguish improvements, already covered behavior, irrelevant changes, regressions, and license changes, then propose a bounded change with tests and a PR. Measured candidate improvement belongs to skill-optimization, which requires frozen splits, bounded edits, and a held-out gate. Hashes do not rank quality. No updater or monitor silently replaces accepted skills.
 
 ## Collection lifecycle
 

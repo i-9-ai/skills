@@ -136,7 +136,14 @@ export function scalar(input, label) {
     requireCondition(/^'(?:[^']|'')*'$/u.test(value), `invalid quoted scalar in ${label}`);
     value = value.slice(1, -1).replaceAll("''", "'");
   } else {
-    value = value.split(/\s+#/u, 1)[0].trimEnd();
+    let comment = -1;
+    for (let index = 1; index < value.length; index += 1) {
+      if (value[index] === '#' && /\s/u.test(value[index - 1])) {
+        comment = index;
+        break;
+      }
+    }
+    value = (comment === -1 ? value : value.slice(0, comment)).trimEnd();
     requireCondition(value.length > 0 && !/^[\[\{&*!|>#]/u.test(value), `${label} must use a plain or quoted scalar`);
     requireCondition(!/:(?:\s|$)/u.test(value), `${label} contains an unquoted YAML mapping separator`);
     requireCondition(!['true', 'false', 'yes', 'no', 'on', 'off', 'null', '~', '.inf', '.nan'].includes(value.toLowerCase())
@@ -194,6 +201,29 @@ export function parseFrontmatter(text) {
   return values;
 }
 
+function stripInlineCode(line) {
+  let output = '';
+  let cursor = 0;
+  while (cursor < line.length) {
+    if (line[cursor] !== '`') {
+      output += line[cursor];
+      cursor += 1;
+      continue;
+    }
+    let width = 1;
+    while (line[cursor + width] === '`') width += 1;
+    const marker = '`'.repeat(width);
+    const end = line.indexOf(marker, cursor + width);
+    if (end === -1) {
+      output += line.slice(cursor);
+      break;
+    }
+    output += ' '.repeat(end + width - cursor);
+    cursor = end + width;
+  }
+  return output;
+}
+
 /** Ordinary Markdown only: HTML, escaped syntax, generated links, and anchors need review. */
 export function markdownLinks(text) {
   let fence = null;
@@ -205,15 +235,18 @@ export function markdownLinks(text) {
       else if (run[0] === fence[0] && run.length >= fence.length) fence = null;
       return '';
     }
-    return fence ? '' : line.replace(/(`+).*?\1/gu, '');
-  }).join('\n');
+    return fence ? '' : stripInlineCode(line);
+  });
   const patterns = [
-    /!?\[[^\]\n]*\]\(\s*(?:<([^>\n]+)>|([^\s)]+))(?:\s+['"][^\n]*?['"])?\s*\)/gmu,
-    /^\s{0,3}\[[^\]\n]+\]:\s*(?:<([^>\n]+)>|(\S+))/gmu,
+    /!?\[[^\[\]]*\]\(\s*(?:<([^>]+)>|([^\s)]+))(?:\s+['"][^\n]*?['"])?\s*\)/gu,
+    /^\s{0,3}\[[^\[\]]+\]:\s*(?:<([^>]+)>|(\S+))/gu,
   ];
   const links = [];
-  for (const pattern of patterns) for (const match of visible.matchAll(pattern)) {
-    links.push([visible.slice(0, match.index).split('\n').length, match[1] ?? match[2]]);
+  for (const [index, line] of visible.entries()) {
+    for (const pattern of patterns) {
+      pattern.lastIndex = 0;
+      for (const match of line.matchAll(pattern)) links.push([index + 1, match[1] ?? match[2]]);
+    }
   }
   return links;
 }

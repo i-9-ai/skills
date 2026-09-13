@@ -20,7 +20,7 @@ Primary documentation was inspected on 2026-09-12. This table records documented
 
 | Host | Documented core and useful integration | Repository support |
 | --- | --- | --- |
-| Codex | Reads repository `.agents/skills`; optional `agents/openai.yaml` supports interface metadata and icon paths. [Official guide](https://learn.chatgpt.com/docs/build-skills) | Native canonical tree; per-skill interface metadata and original SVG icon |
+| Codex | Reads repository `.agents/skills`; optional `agents/openai.yaml` supports interface metadata and icon paths. [Official guide](https://learn.chatgpt.com/docs/build-skills) | Native canonical tree; per-skill interface metadata, source-attributed SVG small icon, and PNG large icon |
 | Claude Code | Reads `SKILL.md` and local resources under its skill directories; provider-specific frontmatter includes model and invocation controls. [Official guide](https://code.claude.com/docs/en/skills) | `.claude/skills` alias and `CLAUDE.md` alias; no required Claude-specific fields or hooks |
 | GitHub Copilot | Supports skill directories and resources; VS Code adds invocation/frontmatter and extension-level capabilities. [GitHub overview](https://docs.github.com/en/copilot/concepts/agents/about-agent-skills), [VS Code guide](https://code.visualstudio.com/docs/agent-customization/agent-skills) | `.github/skills` alias; no invented per-skill manifest or extension package |
 | Antigravity | Current workspace location is `.agents/skills`; older `.agent/skills` remains a compatibility path. [Official guide](https://antigravity.google/docs/skills) | Native canonical tree; no duplicate legacy alias |
@@ -32,7 +32,7 @@ No documented per-skill `claude.yaml`, `copilot.yaml`, `hermes.yaml`, or similar
 
 The three repository symlinks are exact relative aliases: `CLAUDE.md` → `AGENTS.md`, `.claude/skills` → `../.agents/skills`, and `.github/skills` → `../.agents/skills`. Validation does not traverse or count them as a second package tree. Use the canonical path with the strict package helper. Git preserves these aliases; environments that disable symlink checkout must use the canonical tree through their documented loader and must not treat a link's text as a duplicate skill.
 
-Skills CLI `1.5.26` was exercised locally with `skills add . --list` against the final six-package layout, with telemetry disabled. It found each canonical name once and exited without installing packages or creating an installation lock. This checks discovery, while detached-package tests cover bundled resources and helper execution separately; neither establishes an actual consumer installation. The [pinned discovery source](https://github.com/vercel-labs/skills/blob/d667282815248da03a08a18272b5d2eef9caf77c/src/skills.ts) explicitly lists `.agents/skills`; its recursive discovery is bounded rather than an unrestricted scan of every file.
+Skills CLI `1.5.26` was exercised locally with `skills add . --list` against the canonical collection, with telemetry disabled. It found each canonical name once and exited without installing packages or creating an installation lock. This checks discovery, while detached-package tests cover bundled resources and helper execution separately; neither establishes an actual consumer installation. The [pinned discovery source](https://github.com/vercel-labs/skills/blob/d667282815248da03a08a18272b5d2eef9caf77c/src/skills.ts) explicitly lists `.agents/skills`; its recursive discovery is bounded rather than an unrestricted scan of every file.
 
 ## Evidence levels
 

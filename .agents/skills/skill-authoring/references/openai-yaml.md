@@ -27,7 +27,7 @@ interface:
   display_name: "Example Skill"
   short_description: "Produce a focused and verifiable result"
   icon_small: "./assets/icon.svg"
-  icon_large: "./assets/icon.svg"
+  icon_large: "./assets/icon.png"
   brand_color: "#3B82F6"
   default_prompt: "Use $example-skill to produce the requested result."
 
@@ -43,7 +43,7 @@ policy:
   allow_implicit_invocation: true
 ```
 
-Include only fields that improve the actual skill. The default scaffold adds UI fields and a local icon only when `--with-openai` is requested. It does not add MCP dependencies, a model, a brand color, or an invocation override. Preserve existing dependency and policy settings when editing unrelated UI fields. Use explicit-only invocation only when the user requests that behavior.
+Include only fields that improve the actual skill. The default scaffold adds draft UI fields and placeholder assets only when `--with-openai` is requested. Before accepting the package, replace the display text, prompt, SVG small icon, and PNG large-icon rendering with responsibility-specific values, or remove the adapter entirely. The scaffold does not add MCP dependencies, a model, a brand color, or an invocation override. Preserve existing dependency and policy settings when editing unrelated UI fields. Use explicit-only invocation only when the user requests that behavior.
 
 ## Authoring conventions and validation
 

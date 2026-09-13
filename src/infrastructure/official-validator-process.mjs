@@ -19,13 +19,13 @@ export function installOfficialValidator(root, requirements, execute = spawnSync
       throw new Error('Official validator setup failed; later phases were not run.');
     }
   };
-  run(['-c', 'import sys; sys.exit(0 if sys.prefix != sys.base_prefix and sys.version_info >= (3, 11) else 1)']);
+  run(['-I', '-c', 'import sys; sys.exit(0 if sys.prefix != sys.base_prefix and sys.version_info >= (3, 11) else 1)']);
   const temporary = mkdtempSync(join(tmpdir(), 'i9-validation-install-'));
   try {
     for (const [index, phase] of requirements.phases.entries()) {
       const requirement = join(temporary, `phase-${index}.txt`);
       writeFileSync(requirement, phase.content, { flag: 'wx', mode: 0o600 });
-      run(['-m', 'pip', '--isolated', 'install', '--require-hashes', ...phase.flags, '-r', requirement]);
+      run(['-I', '-m', 'pip', '--isolated', 'install', '--require-hashes', ...phase.flags, '-r', requirement]);
     }
   } finally {
     rmSync(temporary, { recursive: true, force: true });

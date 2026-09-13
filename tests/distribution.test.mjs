@@ -67,6 +67,7 @@ for (const scope of ['project', 'global']) {
     assert.equal(invoke(helper, ['validate-skill', candidate], caller).name, 'detached-skill');
     assert.deepEqual(fs.readFileSync(path.join(candidate, 'LICENSE')), fs.readFileSync(path.join(installation, 'LICENSE')));
     assert.deepEqual(fs.readFileSync(path.join(candidate, 'assets/icon.svg')), fs.readFileSync(path.join(installation, 'assets/icon.svg')));
+    assert.deepEqual(fs.readFileSync(path.join(candidate, 'assets/icon.png')), fs.readFileSync(path.join(installation, 'assets/icon.png')));
 
     const run = path.join(root, 'chosen run');
     fs.cpSync(path.join(installation, 'examples/merge-run'), run, { recursive: true });

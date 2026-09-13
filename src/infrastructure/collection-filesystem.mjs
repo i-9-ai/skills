@@ -63,12 +63,12 @@ export function rejectTrackedScratch(root) {
   const env = { ...process.env, GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: devNull };
   for (const key of ['GIT_DIR', 'GIT_WORK_TREE', 'GIT_COMMON_DIR', 'GIT_INDEX_FILE']) delete env[key];
   const result = spawnSync('git', ['--no-optional-locks', '-c', 'core.fsmonitor=false', '-C', root,
-    'ls-files', '-z', '--', '.work', 'tmp'], {
+    'ls-files', '-z', '--', '.work', 'tmp', 'node_modules'], {
     env, stdio: ['ignore', 'pipe', 'ignore'], timeout: 10_000, maxBuffer: 1, windowsHide: true,
   });
   // Any output is sufficient; never decode, echo, or inspect the scratch filenames.
   if (result.stdout?.length || result.error?.code === 'ENOBUFS') {
-    throw new CollectionValidationError('root .work/ and tmp/ scratch must not be tracked; remove them from the publication index');
+    throw new CollectionValidationError('root .work/, tmp/, and node_modules/ directories must not be tracked; remove them from the publication index');
   }
   if (result.error?.code === 'ETIMEDOUT') {
     throw new CollectionValidationError('timed out inspecting the Git index for tracked scratch');

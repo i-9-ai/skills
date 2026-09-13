@@ -2,3 +2,5 @@ interface:
   display_name: "Skill Naming"
   short_description: "Choose clear skill names and check collisions"
   default_prompt: "Use $skill-naming to choose a domain-first name for one skill, explain its cardinality, and check known naming collisions."
+  icon_small: "./assets/icon.svg"
+  icon_large: "./assets/icon.png"

@@ -1,6 +1,7 @@
 # Local run evidence and source snapshots may contain private input.
 .work/
 tmp/
+node_modules/
 .DS_Store
 .env
 .env.*

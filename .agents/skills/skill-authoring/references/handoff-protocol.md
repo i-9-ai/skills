@@ -33,6 +33,8 @@ A stage record contains `name`, `status` (`passed`, `skipped`, or `blocked`), a 
 | Authoring | `skill-authoring` | Package inventory, exact identity, license/notice decisions, structural checks | `skill-evaluator` |
 | Evaluation | `skill-evaluator` | Frozen cases, candidate/baseline, actual outcomes, critical findings, limitations | `skill-authoring` final handoff |
 
+Conditional specialist reports attach to the authoring artifact rather than adding stages to this six-stage manifest: `skill-icon-design` supplies the collection-required interface assets when applicable; `skill-security-review` reports risk for executable, externally sourced, or public candidates; `skill-lifecycle-review` reports a maturity decision only when the request changes maturity, adoption, deprecation, or release readiness. Record the package revision, trigger, decision, and any blocker in the authoring artifact so evaluation can inspect the complete candidate.
+
 The manifest verifies integrity and order, not the truth of these reports. A recorded `validated` state requires human or agent evaluation of their actual content, including a successful official `skills-ref validate` result for the exact candidate with its tool identity. Missing official execution leaves evaluation and readiness blocked. The manifest checker does not execute the official tool or infer its result from an exit code of the custom helper. A validated run does not authorize an installer, publisher, or release process.
 
 When needed, `skill-naming` returns a naming decision as an additional intake or design artifact. It does not add a stage to this schema, own the manifest, or apply the rename.

@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 import { createHash } from 'node:crypto';
+import { inflateSync } from 'node:zlib';
 
-export const IGNORED_ROOT_NAMES = Object.freeze(['.git', '.work', 'tmp']);
+export const IGNORED_ROOT_NAMES = Object.freeze(['.git', '.work', 'tmp', 'node_modules']);
 export const REPOSITORY_ALIASES = Object.freeze({
   'CLAUDE.md': 'AGENTS.md',
   '.claude/skills': '../.agents/skills',
@@ -81,28 +82,210 @@ export function checkPublicHygiene(relative, text) {
 }
 
 export function validateCatalog(value, files, directories) {
-  requireCondition(isObject(value) && Array.isArray(value.skills), 'catalog must contain a skills array');
-  requireCondition(value.schema_version === 1, 'catalog schema_version must be 1');
+  const catalog = exactFields(value, ['schema_version', 'skills'], 'catalog');
+  requireCondition(Array.isArray(catalog.skills), 'catalog must contain a skills array');
+  requireCondition(catalog.schema_version === 2, 'catalog schema_version must be 2');
   requireCondition(value.skills.length > 0 && value.skills.length <= 256,
     'catalog must contain between 1 and 256 packages');
   const names = new Set();
   const packages = new Set();
   for (const entry of value.skills) {
-    requireCondition(isObject(entry), 'catalog entry must be an object');
+    exactFields(entry, ['name', 'path', 'status', 'description', 'tags'], 'catalog entry');
     const name = slug(entry.name, 'catalog skill name');
     requireCondition(!names.has(name), 'catalog names must be distinct');
     names.add(name);
     const expected = `.agents/skills/${name}`;
     requireCondition(entry.path === expected, 'catalog path must be .agents/skills/<name>');
     requireCondition(['pilot', 'stable', 'deprecated'].includes(entry.status), 'invalid catalog status');
+    nonblank(entry.description, 'catalog description', 220);
+    requireCondition(Array.isArray(entry.tags) && entry.tags.length <= 16, 'catalog tags must be a bounded array');
+    const tags = entry.tags.map((tag) => slug(tag, 'catalog tag'));
+    requireCondition(new Set(tags).size === tags.length
+      && [...tags].sort().every((tag, index) => tag === tags[index]),
+    'catalog tags must be distinct and sorted');
     requireCondition(files.has(`${expected}/SKILL.md`), `catalog package is missing: ${name}`);
     packages.add(expected);
   }
+  requireCondition([...names].sort().every((name, index) => name === value.skills[index].name),
+    'catalog skills must be sorted by name');
   const actual = new Set([...directories].filter((relative) =>
     relative.startsWith('.agents/skills/') && relative.split('/').length === 3));
   requireCondition(packages.size === actual.size && [...packages].every((path) => actual.has(path)),
     'catalog and package directories do not agree');
   return { names, packages };
+}
+
+export function validateCollectionIcon(relative, text, digests) {
+  requireCondition(text.startsWith('<svg ') && text.includes('<title id="title">')
+    && text.includes('viewBox="0 0 64 64"'), `${relative} must be a titled 64x64 SVG`);
+  validateSafeSvg(relative, text);
+  requireCondition(!/<script\b|\bon[a-z]+\s*=|\b(?:href|src)\s*=|data:|@import\b/iu.test(text),
+    `${relative} contains active or external SVG content`);
+  const digest = createHash('sha256').update(text).digest('hex');
+  requireCondition(!digests.has(digest), `${relative} duplicates another skill icon`);
+  digests.add(digest);
+}
+
+function validateSafeSvg(relative, text) {
+  const stack = [];
+  let offset = 0;
+  let rootCount = 0;
+  while (offset < text.length) {
+    if (text.startsWith('<!--', offset)) {
+      const end = text.indexOf('-->', offset + 4);
+      requireCondition(end !== -1 && !text.slice(offset + 4, end).includes('--'), `${relative} is not well-formed XML`);
+      offset = end + 3;
+      continue;
+    }
+    if (text[offset] !== '<') {
+      const end = text.indexOf('<', offset);
+      const content = text.slice(offset, end === -1 ? text.length : end);
+      requireCondition(stack.length > 0 || /^\s*$/.test(content), `${relative} is not well-formed XML`);
+      requireCondition(!/[<&]/.test(content) || /^(?:[^<&]|&(?:amp|apos|gt|lt|quot|#[0-9]+|#x[0-9a-fA-F]+);)*$/.test(content),
+        `${relative} is not well-formed XML`);
+      offset = end === -1 ? text.length : end;
+      continue;
+    }
+    requireCondition(!text.startsWith('<?', offset) && !text.startsWith('<!', offset), `${relative} contains unsupported XML declarations`);
+    const closing = text.startsWith('</', offset);
+    const tagStart = offset + (closing ? 2 : 1);
+    const tagMatch = /^([A-Za-z_][A-Za-z0-9_.:-]*)/.exec(text.slice(tagStart));
+    requireCondition(tagMatch, `${relative} is not well-formed XML`);
+    const name = tagMatch[1];
+    let cursor = tagStart + name.length;
+    let quote = '';
+    while (cursor < text.length) {
+      const character = text[cursor];
+      if (quote) {
+        if (character === quote) quote = '';
+      } else if (character === '"' || character === "'") {
+        quote = character;
+      } else if (character === '>') {
+        break;
+      } else {
+        requireCondition(character !== '<', `${relative} is not well-formed XML`);
+      }
+      cursor += 1;
+    }
+    requireCondition(cursor < text.length && !quote, `${relative} is not well-formed XML`);
+    const source = text.slice(tagStart + name.length, cursor);
+    if (closing) {
+      requireCondition(/^\s*$/.test(source) && stack.pop() === name, `${relative} is not well-formed XML`);
+    } else {
+      const selfClosing = /\/\s*$/.test(source);
+      const attributes = selfClosing ? source.replace(/\/\s*$/, '') : source;
+      validateXmlAttributes(relative, attributes);
+      if (stack.length === 0) {
+        requireCondition(name === 'svg' && rootCount === 0, `${relative} must have one SVG root element`);
+        rootCount += 1;
+      }
+      if (!selfClosing) stack.push(name);
+    }
+    offset = cursor + 1;
+  }
+  requireCondition(stack.length === 0 && rootCount === 1, `${relative} is not well-formed XML`);
+}
+
+function validateXmlAttributes(relative, source) {
+  let offset = 0;
+  const names = new Set();
+  while (offset < source.length) {
+    const whitespace = /^\s+/.exec(source.slice(offset));
+    if (whitespace) offset += whitespace[0].length;
+    if (offset === source.length) break;
+    const name = /^([A-Za-z_][A-Za-z0-9_.:-]*)/.exec(source.slice(offset));
+    requireCondition(name, `${relative} is not well-formed XML`);
+    requireCondition(!names.has(name[1]), `${relative} is not well-formed XML`);
+    names.add(name[1]);
+    offset += name[1].length;
+    const equals = /^\s*=\s*/.exec(source.slice(offset));
+    requireCondition(equals, `${relative} is not well-formed XML`);
+    offset += equals[0].length;
+    const quote = source[offset];
+    requireCondition(quote === '"' || quote === "'", `${relative} is not well-formed XML`);
+    const end = source.indexOf(quote, offset + 1);
+    requireCondition(end !== -1, `${relative} is not well-formed XML`);
+    const value = source.slice(offset + 1, end);
+    requireCondition(/^(?:[^<&]|&(?:amp|apos|gt|lt|quot|#[0-9]+|#x[0-9a-fA-F]+);)*$/.test(value),
+      `${relative} is not well-formed XML`);
+    offset = end + 1;
+  }
+}
+
+const PNG_SIGNATURE = Buffer.from('89504e470d0a1a0a', 'hex');
+const PNG_CRC_TABLE = (() => {
+  const values = new Uint32Array(256);
+  for (let index = 0; index < values.length; index += 1) {
+    let value = index;
+    for (let bit = 0; bit < 8; bit += 1) value = (value >>> 1) ^ (value & 1 ? 0xedb88320 : 0);
+    values[index] = value >>> 0;
+  }
+  return values;
+})();
+
+function pngCrc(bytes) {
+  let value = 0xffffffff;
+  for (const byte of bytes) value = PNG_CRC_TABLE[(value ^ byte) & 0xff] ^ (value >>> 8);
+  return (value ^ 0xffffffff) >>> 0;
+}
+
+export function validateCollectionPng(relative, bytes) {
+  requireCondition(Buffer.isBuffer(bytes) && bytes.length >= 57 && bytes.subarray(0, 8).equals(PNG_SIGNATURE),
+    `${relative} must be a valid PNG`);
+  let offset = 8;
+  let ihdr;
+  let sawIdat = false;
+  let sawIend = false;
+  const idat = [];
+  while (offset < bytes.length) {
+    requireCondition(offset + 12 <= bytes.length, `${relative} must be a valid PNG`);
+    const size = bytes.readUInt32BE(offset);
+    const type = bytes.toString('ascii', offset + 4, offset + 8);
+    const end = offset + 12 + size;
+    requireCondition(size <= LIMIT_PNG_CHUNK && end <= bytes.length && /^[A-Za-z]{4}$/.test(type),
+      `${relative} must be a valid PNG`);
+    const content = bytes.subarray(offset + 8, offset + 8 + size);
+    requireCondition(pngCrc(bytes.subarray(offset + 4, offset + 8 + size)) === bytes.readUInt32BE(offset + 8 + size),
+      `${relative} must be a valid PNG`);
+    if (!ihdr) {
+      requireCondition(type === 'IHDR' && size === 13, `${relative} must be a valid PNG`);
+      const width = content.readUInt32BE(0);
+      const height = content.readUInt32BE(4);
+      const bitDepth = content[8];
+      const colorType = content[9];
+      requireCondition(width > 0 && height > 0 && width <= 4096 && height <= 4096
+        && validPngBitDepth(bitDepth, colorType) && content[10] === 0 && content[11] === 0 && content[12] === 0,
+      `${relative} must be a supported PNG`);
+      ihdr = { width, height, bitDepth, colorType };
+    } else if (type === 'IDAT') {
+      requireCondition(!sawIend, `${relative} must be a valid PNG`);
+      sawIdat = true;
+      idat.push(content);
+    } else if (type === 'IEND') {
+      requireCondition(size === 0 && sawIdat && !sawIend && end === bytes.length, `${relative} must be a valid PNG`);
+      sawIend = true;
+    }
+    offset = end;
+  }
+  requireCondition(ihdr && sawIdat && sawIend, `${relative} must be a valid PNG`);
+  const channels = { 0: 1, 2: 3, 3: 1, 4: 2, 6: 4 }[ihdr.colorType];
+  const rowBytes = Math.ceil((ihdr.width * channels * ihdr.bitDepth) / 8);
+  const expected = ihdr.height * (rowBytes + 1);
+  try {
+    const decoded = inflateSync(Buffer.concat(idat), { maxOutputLength: expected + 1 });
+    requireCondition(decoded.length === expected
+      && Array.from({ length: ihdr.height }, (_, row) => decoded[row * (rowBytes + 1)]).every((filter) => filter <= 4),
+      `${relative} must be a valid PNG`);
+  } catch (error) {
+    if (error instanceof CollectionValidationError) throw error;
+    throw new CollectionValidationError(`${relative} must be a valid PNG`);
+  }
+}
+
+const LIMIT_PNG_CHUNK = 16 * 1024 * 1024;
+
+function validPngBitDepth(bitDepth, colorType) {
+  return ({ 0: [1, 2, 4, 8, 16], 2: [8, 16], 3: [1, 2, 4, 8], 4: [8, 16], 6: [8, 16] }[colorType] ?? []).includes(bitDepth);
 }
 
 export function validateLock(value, names) {

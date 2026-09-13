@@ -32,7 +32,7 @@ The machine algorithm is `sha256`. Hash each file's exact raw bytes without newl
 | Creator | Intent, progressive disclosure, realistic outputs | Keep orchestration separate from specialist procedures and require a self-contained license | [Authoring guide](../.agents/skills/skill-authoring/references/authoring.md) |
 | Evaluator | Baselines, observable grading, comparison, iteration | Use runtime-neutral execution and separate untouched acceptance cases | [Evaluation rubric](../.agents/skills/skill-evaluator/references/evaluation.md) |
 | Skill design | Clarify outcomes, compare approaches, reduce scope | Preserve prior authorization; remove mandatory provider dispatch and unrelated global activation | [Decision guide](../.agents/skills/skill-design/references/decisions.md) |
-| Merger | Combine traceable source contributions | Original synthesis procedure; reject concatenation, duplicate scripts, unrelated responsibilities, and automatic adoption | [Synthesis guide](../.agents/skills/skills-synthesis/references/synthesis.md) |
+| Synthesis | Combine traceable source contributions | Original synthesis procedure; reject concatenation, duplicate scripts, unrelated responsibilities, and automatic adoption | [Synthesis guide](../.agents/skills/skills-synthesis/references/synthesis.md) |
 
 The package instructions and helpers are independently authored implementations of selected methodological ideas. No upstream code, UI server, complete prompt, or asset is vendored. Apache-2.0 licenses the original work; a future actual copy/adaptation must preserve its source's required license and notices rather than inheriting this statement automatically.
 

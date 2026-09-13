@@ -3,8 +3,9 @@ import { fileURLToPath } from 'node:url';
 import { CollectionFilesystem, LIMITS, rejectTrackedScratch } from '../infrastructure/collection-filesystem.mjs';
 import {
   CollectionValidationError, IGNORED_ROOT_NAMES, REPOSITORY_ALIASES,
-  checkPublicHygiene, validateCatalog, validateLock,
+  checkPublicHygiene, validateCatalog, validateCollectionIcon, validateCollectionPng, validateLock,
 } from '../domain/collection-policy.mjs';
+import { checkCatalog } from '../../.agents/skills/skills-catalog/scripts/catalog_tools.mjs';
 
 const DEFAULT_ROOT = fileURLToPath(new URL('../../', import.meta.url));
 
@@ -23,6 +24,23 @@ export function validateRepository(path = DEFAULT_ROOT) {
     const directories = new Set(inventory.filter(([, info]) => info.isDirectory()).map(([path]) => path));
     const { names, packages } = validateCatalog(root.readJson('catalog.json'), files, directories);
     for (const relative of packages) root.validatePackage(relative);
+    checkCatalog(root.path);
+    const iconDigests = new Set();
+    for (const relative of packages) {
+      const metadata = `${relative}/agents/openai.yaml`;
+      const smallIcon = `${relative}/assets/icon.svg`;
+      const largeIcon = `${relative}/assets/icon.png`;
+      if (!files.has(metadata) || !files.has(smallIcon) || !files.has(largeIcon)) {
+        throw new CollectionValidationError(`${relative} must include agents/openai.yaml, assets/icon.svg, and assets/icon.png`);
+      }
+      const openAi = root.readBytes(metadata, LIMITS.textBytes).toString('utf8');
+      if (!openAi.includes('icon_small: "./assets/icon.svg"')
+        || !openAi.includes('icon_large: "./assets/icon.png"')) {
+        throw new CollectionValidationError(`${relative} must declare the required small SVG and large PNG icons`);
+      }
+      validateCollectionIcon(smallIcon, root.readBytes(smallIcon, LIMITS.textBytes).toString('utf8'), iconDigests);
+      validateCollectionPng(largeIcon, root.readBytes(largeIcon, LIMITS.artifactBytes));
+    }
     let localLinks = 0;
     let textFiles = 0;
     const sorted = [...files].sort();

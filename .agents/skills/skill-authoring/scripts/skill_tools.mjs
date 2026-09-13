@@ -22,6 +22,7 @@ export { SafeRoot } from './lib/filesystem.mjs';
 export const PACKAGE_ROOT = fileURLToPath(new URL('../', import.meta.url));
 export const DEFAULT_LICENSE_PATH = path.join(PACKAGE_ROOT, 'LICENSE');
 export const DEFAULT_ICON_PATH = path.join(PACKAGE_ROOT, 'assets', 'icon.svg');
+export const DEFAULT_LARGE_ICON_PATH = path.join(PACKAGE_ROOT, 'assets', 'icon.png');
 const digestBytes = bytes => createHash('sha256').update(bytes).digest('hex');
 const hasContent = bytes => bytes.some(byte => ![9, 10, 11, 12, 13, 32].includes(byte));
 
@@ -271,14 +272,17 @@ Passing structural validation alone does not establish behavior or production re
   const directories = [];
   if (withOpenai) {
     const icon = readResource(DEFAULT_ICON_PATH);
+    const largeIcon = readResource(DEFAULT_LARGE_ICON_PATH);
     requireCondition(hasContent(icon), "the creator's optional icon is empty");
+    requireCondition(hasContent(largeIcon), "the creator's optional large icon is empty");
     const metadata = {
       display_name: title, short_description: 'Produce one focused, verifiable skill outcome',
       default_prompt: `Use $${name} to complete the focused responsibility defined in this skill.`,
-      icon_small: './assets/icon.svg', icon_large: './assets/icon.svg',
+      icon_small: './assets/icon.svg', icon_large: './assets/icon.png',
     };
-    payloads.set('agents/openai.yaml', Buffer.from(`interface:\n${Object.entries(metadata).map(([key, value]) => `  ${key}: ${JSON.stringify(value)}\n`).join('')}`));
-    payloads.set('assets/icon.svg', icon); directories.push('agents', 'assets');
+    const adapterNotice = '  # Draft adapter: replace interface text and both icon assets with responsibility-specific values before acceptance, or remove this adapter.\n';
+    payloads.set('agents/openai.yaml', Buffer.from(`interface:\n${adapterNotice}${Object.entries(metadata).map(([key, value]) => `  ${key}: ${JSON.stringify(value)}\n`).join('')}`));
+    payloads.set('assets/icon.svg', icon); payloads.set('assets/icon.png', largeIcon); directories.push('agents', 'assets');
   }
   const parent = new SafeRoot(output);
   let destination; const createdFiles = []; const createdDirectories = [];
