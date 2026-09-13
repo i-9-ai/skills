@@ -1,0 +1,19 @@
+{
+  "description": "Load a compact, read-only I-9 Skills entry map from the canonical catalog.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$(git rev-parse --show-toplevel)/src/cli.mjs\" session-index",
+            "timeout": 3,
+            "statusMessage": "Loading skill index",
+            "additionalContextLimit": 1200
+          }
+        ]
+      }
+    ]
+  }
+}

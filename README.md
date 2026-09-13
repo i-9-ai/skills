@@ -30,6 +30,18 @@ npx skills add i-9-ai/skills --global --skill '*' --yes
 
 The Skills CLI asks for a supported agent target when it cannot determine one. After installation, start a new agent session if its skill picker does not refresh automatically.
 
+## Optional session index
+
+This source checkout includes a project-local Codex `SessionStart` adapter. When the project is trusted and hooks are enabled by the host, it supplies a compact, read-only map derived from `catalog.json` at session start, resume, clear, and compaction. It does not load package bodies, install packages, or invoke a route.
+
+Hosts without hooks, or projects where the user has not enabled hook trust, use the identical manual fallback:
+
+```sh
+node src/cli.mjs session-index
+```
+
+The map highlights [Skill Routing](.agents/skills/skill-routing/SKILL.md), lists a bounded set of common entry points, and names omitted packages explicitly. After choosing a route, read the selected package's `SKILL.md`.
+
 ## Suggested entry points
 
 > [!IMPORTANT]
