@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">Skills host compatibility</title>
+  <desc id="desc">Three local paths converge on a verified skill collection.</desc>
+  <rect width="64" height="64" rx="13" fill="#083344"/>
+  <path d="M17 19h12v9H17zM36 19h12v9H36zM26 39h12v9H26z" fill="#cffafe"/>
+  <path d="M23 28v6c0 3 3 6 6 6h3m9-12v6c0 3-3 6-6 6h-3" fill="none" stroke="#22d3ee" stroke-linecap="round" stroke-width="4"/>
+  <circle cx="32" cy="40" r="3" fill="#facc15"/>
+</svg>
