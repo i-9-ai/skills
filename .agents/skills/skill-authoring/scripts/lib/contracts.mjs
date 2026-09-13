@@ -279,3 +279,12 @@ export function checkMarkdown(root, relative, text) {
   }
   return count;
 }
+
+export function htmlLinks(text) {
+  const links = [];
+  for (const match of text.matchAll(/\bhref\s*=\s*(['"])(.*?)\1/giu)) {
+    const line = text.slice(0, match.index).split(/\r\n|\n|\r/u).length;
+    links.push([line, match[2]]);
+  }
+  return links;
+}

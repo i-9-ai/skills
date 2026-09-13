@@ -50,6 +50,19 @@ export class CollectionFilesystem extends skillTools.SafeRoot {
     return skillTools.checkMarkdown(this, relative, text);
   }
 
+  checkHtml(relative, text) {
+    let count = 0;
+    for (const [line, target] of skillTools.htmlLinks(text)) {
+      try {
+        const local = skillTools.localLinkPath(relative, target);
+        if (local !== null) { super.info(local); count += 1; }
+      } catch (error) {
+        throw new CollectionValidationError(`${relative}:${line}: invalid local link (${error.message})`);
+      }
+    }
+    return count;
+  }
+
   validateExampleRun(relative) {
     return skillTools.validateRun(join(this.path, relative));
   }

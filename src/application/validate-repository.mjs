@@ -55,6 +55,8 @@ export function validateRepository(path = DEFAULT_ROOT) {
           throw new CollectionValidationError(`Markdown exceeds text limit: ${relative}`);
         }
         localLinks += root.checkMarkdown(relative, text);
+      } else if (relative.endsWith('.html')) {
+        localLinks += root.checkHtml(relative, text);
       }
     }
     const lockedSources = files.has('upstreams.lock.json') ? validateLock(root.readJson('upstreams.lock.json'), names) : 0;

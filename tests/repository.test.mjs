@@ -146,6 +146,17 @@ test('collection discovers canonical packages and cross-directory Markdown links
   });
 });
 
+test('collection validates local links in published HTML', (t) => {
+  const { root } = makeRepository(t);
+  const assets = join(root, 'docs', 'assets');
+  fs.mkdirSync(assets, { recursive: true });
+  fs.writeFileSync(join(assets, 'index.html'), '<a href="guide.html">Guide</a>\n');
+  fs.writeFileSync(join(assets, 'guide.html'), '<p>Guide</p>\n');
+  assert.equal(validateRepository(root).local_links, 2);
+  fs.unlinkSync(join(assets, 'guide.html'));
+  assert.throws(() => validateRepository(root), /docs\/assets\/index\.html:1: invalid local link/);
+});
+
 test('catalog rejects missing packages and uncataloged immediate directories', (t) => {
   const { root, packagePath } = makeRepository(t);
   const orphan = join(root, '.agents', 'skills', 'orphan');
