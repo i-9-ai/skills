@@ -27,3 +27,4 @@ Verify every requirement has an implementation and a check or an explicit limit.
 - [Portable runtime and setup contract](2026-09-13-23-21-01-portable-runtime-setup-contract.md): explicit runtime and setup declarations for self-contained skills.
 - [TypeScript repository tooling assessment](2026-09-13-23-23-25-typescript-tooling-assessment.md): conditional migration recipe for repository-owned CLI tooling.
 - [Aggregate skill index](2026-09-14-23-06-58-aggregate-skill-index.md): local SQLite or JSON projection across explicit collection catalogs.
+- [Skills maintenance scheduling](2026-09-13-20-52-55-skills-maintenance-scheduling.md): portable proposals for recurring, approval-gated skill maintenance.
