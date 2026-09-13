@@ -37,4 +37,3 @@ References to missing companion skills are discovery inputs, not permission to i
 The primary output is one installation receipt bound to the installed bytes. Selecting which skill should satisfy a task belongs to routing; finding candidates belongs to discovery; evaluating behavior and security belongs to their respective review skills.
 
 Pass when the final path is discoverable by the intended host, its bytes match the receipt, official validation succeeds, collisions were handled explicitly, and rollback is actionable. On failure, remove only files created by this run and report the exact unresolved state.
-

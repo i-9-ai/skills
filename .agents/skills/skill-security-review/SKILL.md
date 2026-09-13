@@ -34,4 +34,3 @@ Prefer read-only static inspection, disposable fixtures, and scoped security too
 The primary output is one security decision report. General quality belongs to the evaluator; remediation belongs to authoring or evolution; publication consumes this decision but cannot override it silently.
 
 Pass when coverage is explicit, every identified attack surface has a disposition, findings are reproducible without exposing sensitive data, and the decision is bound to the reviewed bytes and distribution context.
-

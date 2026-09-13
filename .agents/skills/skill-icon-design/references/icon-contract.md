@@ -11,4 +11,3 @@ Use this contract for the final package asset:
 - a package-relative host reference such as `./assets/icon.svg` when host metadata is present.
 
 When a host requires a raster asset, derive it from the reviewed SVG and retain the SVG as the editable source. Record the conversion tool and dimensions beside the generated artifact when provenance is required.
-

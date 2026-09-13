@@ -32,4 +32,3 @@ Use read-only inspection and validation-result verification. A lifecycle recomme
 ## Output and evaluation
 
 The primary output is one lifecycle decision record. Pass when the decision is bound to one revision, applies an explicit policy consistently, distinguishes absence from failure, names the next responsible capability, and can choose no transition when evidence is insufficient.
-

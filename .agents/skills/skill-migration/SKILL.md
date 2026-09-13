@@ -33,4 +33,3 @@ Use source and target read/write tools only within explicitly authorized reposit
 ## Output and evaluation
 
 The primary output is one migrated target package plus its migration record as a single reviewable change set. Pass when provenance and license survive, responsibility remains clear, consumers have an explicit transition path, both collection catalogs can be reconciled, and rollback is possible.
-

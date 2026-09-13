@@ -32,4 +32,3 @@ Use read-only inventory, checksum, validation, and comparison tools. Network che
 ## Output and evaluation
 
 The primary output is one collection audit report. Pass when every in-scope package has a disposition, findings are evidence-backed and actionable, clean areas are distinguished from untested areas, and rerunning against the same bytes yields the same inventory.
-
