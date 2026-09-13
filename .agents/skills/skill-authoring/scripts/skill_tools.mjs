@@ -119,7 +119,10 @@ export function validateSkill(input) {
     const metadata = parseFrontmatter(text);
     requireCondition(validSlug(metadata.name, 'skill name') === expected, 'frontmatter name must match the package directory');
     nonblank(metadata.description, 'description', 220);
-    requireCondition(root.readText('LICENSE').trim().length > 0, 'LICENSE must not be empty');
+    const license = root.readText('LICENSE').trim();
+    requireCondition(license.length >= 10_000 && license.includes('Apache License')
+      && license.includes('Version 2.0') && license.includes('END OF TERMS AND CONDITIONS'),
+    'LICENSE must contain the full Apache-2.0 license text');
     validateSetupContract(root, metadata, text);
     let links = 0;
     for (const [relative, info] of inventory) if (info.isFile() && relative.endsWith('.md')) {
@@ -182,7 +185,7 @@ export function validateRun(input) {
         requireCondition(REVISION.test(revision), 'reusable public sources require an immutable 40/64-hex revision');
       }
       if (source.reuse === 'adapt') {
-        requireCondition(!['unknown', 'unknown license', 'tbd', 'none', 'unlicensed', 'proprietary', 'no-license'].includes(license.toLowerCase()),
+        requireCondition(!['unknown', 'unknown license', 'tbd', 'none', 'unlicensed', 'proprietary', 'no-license'].includes(license.trim().toLowerCase()),
           'adapted sources require a declared reusable license; compatibility needs review');
       }
       if (['pattern', 'adapt'].includes(source.reuse)) contributors.add(uri);

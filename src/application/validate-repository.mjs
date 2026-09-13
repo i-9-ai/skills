@@ -36,7 +36,10 @@ export function validateRepository(path = DEFAULT_ROOT) {
       if (openAi?.icon_small !== './assets/icon.svg' || openAi.icon_large !== './assets/icon.png') {
         throw new CollectionValidationError(`${relative} must declare the required small SVG and large PNG icons`);
       }
-      validateCollectionIcon(smallIcon, root.readBytes(smallIcon, LIMITS.textBytes).toString('utf8'), iconDigests);
+      let svg;
+      try { svg = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(root.readBytes(smallIcon, LIMITS.textBytes)); }
+      catch { throw new CollectionValidationError(`${smallIcon} must be valid UTF-8`); }
+      validateCollectionIcon(smallIcon, svg, iconDigests);
       validateCollectionPng(largeIcon, root.readBytes(largeIcon, LIMITS.artifactBytes));
     }
     let localLinks = 0;

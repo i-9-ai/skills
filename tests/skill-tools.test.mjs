@@ -27,7 +27,7 @@ function fixture(t) {
 function makeSkill(root, name = 'example-skill', metadata = true) {
   const packagePath = path.join(root, name); fs.mkdirSync(packagePath, { recursive: true });
   fs.writeFileSync(path.join(packagePath, 'SKILL.md'), `---\nname: ${name}\ndescription: Use when a synthetic example is requested.\nlicense: Apache-2.0\n${metadata ? EFFORT_METADATA : ''}---\n\n# Example\n\nProduce one synthetic example.\n`);
-  fs.writeFileSync(path.join(packagePath, 'LICENSE'), 'Synthetic test-only license text.\n');
+  fs.copyFileSync(DEFAULT_LICENSE_PATH, path.join(packagePath, 'LICENSE'));
   return packagePath;
 }
 function makeRun(root) {
@@ -124,6 +124,7 @@ test('name mismatch and missing or empty LICENSE fail', t => {
   const packagePath = makeSkill(fixture(t)); const filename = path.join(packagePath, 'SKILL.md'); const original = fs.readFileSync(filename, 'utf8');
   fs.writeFileSync(filename, original.replace('name: example-skill', 'name: different-skill')); assert.throws(() => validateSkill(packagePath));
   fs.writeFileSync(filename, original); fs.writeFileSync(path.join(packagePath, 'LICENSE'), ' \n'); assert.throws(() => validateSkill(packagePath));
+  fs.writeFileSync(path.join(packagePath, 'LICENSE'), 'x\n'); assert.throws(() => validateSkill(packagePath));
   fs.unlinkSync(path.join(packagePath, 'LICENSE')); assert.throws(() => validateSkill(packagePath));
 });
 
@@ -361,6 +362,7 @@ test('reusable public sources require immutable revisions and adapted sources ne
   source.revision = 'a'.repeat(40); writeJson(manifest, data); assert.equal(validateRun(manifest).sources, 2);
   source.reuse = 'adapt'; source.license = 'unknown'; rejectRun(manifest, data);
   source.license = 'TBD'; rejectRun(manifest, data);
+  source.license = ' TBD '; rejectRun(manifest, data);
   source.license = 'unknown license'; rejectRun(manifest, data);
   source.license = 'Apache-2.0'; writeJson(manifest, data); assert.equal(validateRun(manifest).sources, 2);
   source.revision += '\n'; rejectRun(manifest, data);

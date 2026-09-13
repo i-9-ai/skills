@@ -4,7 +4,7 @@
 
 I-9 Skills is a public-ready toolkit for the full life of an agent skill: discover what already works, design one clear responsibility, author a complete package, validate it, publish it deliberately, and evolve it from real evidence. Every package is written in English, includes its own Apache-2.0 `LICENSE`, and works without assuming Codex, Claude, Copilot, OpenCode, or any other specific agent.
 
-**19 focused skills. One responsibility each. One reviewable output each.**
+**20 focused skills. One responsibility each. One reviewable output each.**
 
 The first release is `0.1.0-rc.1`: ready for independent pilot consumption while its contracts are exercised outside this repository.
 
@@ -66,6 +66,7 @@ Consult [`catalog.json`](catalog.json) for the generated machine-readable invent
 | Skill | Responsibility | Primary output |
 | --- | --- | --- |
 | **[`skill-routing`](.agents/skills/skill-routing/SKILL.md)** | **Select a skill, short sequence, shortlist, or no skill** | **Routing decision** |
+| [`skills-host-compatibility`](.agents/skills/skills-host-compatibility/SKILL.md) | Verify repository-local aliases for a canonical collection | Structural compatibility report |
 | [`skills-discovery`](.agents/skills/skills-discovery/SKILL.md) | Find and qualify existing packages for one capability | Candidate report |
 | [`skill-design`](.agents/skills/skill-design/SKILL.md) | Resolve one skill's responsibility and interface | Design brief |
 | [`skill-naming`](.agents/skills/skill-naming/SKILL.md) | Choose a collision-aware domain-first name | Naming decision |

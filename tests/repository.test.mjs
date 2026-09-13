@@ -12,7 +12,7 @@ import {
   checkPublicHygiene, CollectionValidationError, validateCatalog, validateLock,
 } from '../src/domain/collection-policy.mjs';
 import { parseSkillSummary } from '../.agents/skills/skills-catalog/scripts/catalog_tools.mjs';
-import { LIMITS, STAGES } from '../.agents/skills/skill-authoring/scripts/skill_tools.mjs';
+import { DEFAULT_LICENSE_PATH, LIMITS, STAGES } from '../.agents/skills/skill-authoring/scripts/skill_tools.mjs';
 
 const EFFORT_METADATA = 'metadata:\n  reasoning-effort: medium\n';
 const sha256 = (content) => createHash('sha256').update(content).digest('hex');
@@ -75,7 +75,7 @@ function makeRepository(t) {
   fs.mkdirSync(packagePath, { recursive: true });
   const description = 'Use when a synthetic example is requested.';
   fs.writeFileSync(join(packagePath, 'SKILL.md'), `---\nname: ${name}\ndescription: ${description}\nlicense: Apache-2.0\n${EFFORT_METADATA}---\n\n# Example\n\nProduce one synthetic example.\n`);
-  fs.writeFileSync(join(packagePath, 'LICENSE'), 'Synthetic test-only license text.\n');
+  fs.copyFileSync(DEFAULT_LICENSE_PATH, join(packagePath, 'LICENSE'));
   fs.mkdirSync(join(packagePath, 'agents'));
   fs.mkdirSync(join(packagePath, 'assets'));
   fs.writeFileSync(join(packagePath, 'agents', 'openai.yaml'), `interface:
@@ -157,6 +157,18 @@ test('collection validates local links in published HTML', (t) => {
   assert.throws(() => validateRepository(root), /docs\/assets\/index\.html:1: invalid local link/);
 });
 
+test('collection validates local resource sources in published HTML', (t) => {
+  const { root } = makeRepository(t);
+  const assets = join(root, 'docs', 'assets');
+  fs.mkdirSync(assets, { recursive: true });
+  fs.writeFileSync(join(assets, 'index.html'), '<img src="preview.png"><script src="app.js"></script>\n');
+  fs.writeFileSync(join(assets, 'preview.png'), Buffer.from([0]));
+  fs.writeFileSync(join(assets, 'app.js'), 'console.log("fixture");\n');
+  assert.equal(validateRepository(root).local_links, 3);
+  fs.unlinkSync(join(assets, 'preview.png'));
+  assert.throws(() => validateRepository(root), /docs\/assets\/index\.html:1: invalid local link/);
+});
+
 test('collection validates unquoted local links in published HTML', (t) => {
   const { root } = makeRepository(t);
   const assets = join(root, 'docs', 'assets');
@@ -195,12 +207,27 @@ test('catalog parser supports folded and literal skill descriptions', () => {
   }
 });
 
+test('README advertises every cataloged skill', () => {
+  const readme = fs.readFileSync(join(process.cwd(), 'README.md'), 'utf8');
+  const catalog = JSON.parse(fs.readFileSync(join(process.cwd(), 'catalog.json'), 'utf8'));
+  assert.match(readme, new RegExp(`\\*\\*${catalog.skills.length} focused skills\\.`));
+  for (const skill of catalog.skills) assert.ok(readme.includes('[`' + skill.name + '`]'));
+});
+
 test('collection rejects malformed SVG icons', (t) => {
   const { root, packagePath } = makeRepository(t);
   fs.writeFileSync(join(packagePath, 'assets', 'icon.svg'), `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
     <title id="title">Broken</title><path d="M1 1h62v62H1z">
   </svg>`);
   assert.throws(() => validateRepository(root), /not well-formed XML/);
+});
+
+test('collection rejects SVG icons with malformed UTF-8', (t) => {
+  const { root, packagePath } = makeRepository(t);
+  const icon = join(packagePath, 'assets', 'icon.svg');
+  const valid = fs.readFileSync(icon);
+  fs.writeFileSync(icon, Buffer.concat([valid.subarray(0, -7), Buffer.from([0xff]), valid.subarray(-7)]));
+  assert.throws(() => validateRepository(root), /must be valid UTF-8/);
 });
 
 test('collection rejects SVG icons with external CSS imports', (t) => {
@@ -244,6 +271,14 @@ test('collection rejects PNG icons with duplicate IHDR chunks', (t) => {
   const valid = transparentPng();
   const ihdr = valid.subarray(8, 33);
   fs.writeFileSync(join(packagePath, 'assets', 'icon.png'), Buffer.concat([valid.subarray(0, 33), ihdr, valid.subarray(33)]));
+  assert.throws(() => validateRepository(root), /valid PNG/);
+});
+
+test('collection rejects PNG icons with unknown critical chunks', (t) => {
+  const { root, packagePath } = makeRepository(t);
+  const valid = transparentPng();
+  const malformed = Buffer.concat([valid.subarray(0, 33), pngChunk('ABCD', Buffer.alloc(0)), valid.subarray(33)]);
+  fs.writeFileSync(join(packagePath, 'assets', 'icon.png'), malformed);
   assert.throws(() => validateRepository(root), /valid PNG/);
 });
 
@@ -410,7 +445,7 @@ test('source locks validate package digests and known consumers', (t) => {
   for (const [key, value] of [['package_sha256', 'c'.repeat(64)], ['revision', 'main'],
     ['consumers', ['missing-skill']], ['consumers', ['example-skill', 'example-skill']],
     ['files', [{ path: '../SKILL.md', sha256: 'a'.repeat(64) }]],
-    ['revision', 'a'.repeat(40) + '\n'], ['license', 'TBD'], ['license_sha256', 'b'.repeat(64) + '\n'],
+    ['revision', 'a'.repeat(40) + '\n'], ['license', 'TBD'], ['license', ' TBD '], ['license_sha256', 'b'.repeat(64) + '\n'],
     ['files', [{ path: 'SKILL.md', sha256: 'a'.repeat(64) + '\n' }]]]) {
     const invalid = structuredClone(lock);
     invalid.sources[0][key] = value;

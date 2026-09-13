@@ -284,7 +284,7 @@ export function htmlLinks(text) {
   const links = [];
   for (const tag of text.matchAll(/<[A-Za-z][A-Za-z0-9:-]*(?:\s+[^<>]*?)?>/gu)) {
     const source = tag[0];
-    for (const attribute of source.matchAll(/\shref\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/giu)) {
+    for (const attribute of source.matchAll(/\s(?:href|src)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/giu)) {
       const line = text.slice(0, tag.index + attribute.index).split(/\r\n|\n|\r/u).length;
       links.push([line, attribute[1] ?? attribute[2] ?? attribute[3]]);
     }

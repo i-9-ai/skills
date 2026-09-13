@@ -319,6 +319,8 @@ export function validateCollectionPng(relative, bytes) {
     } else if (type === 'IEND') {
       requireCondition(size === 0 && sawIdat && !sawIend && end === bytes.length, `${relative} must be a valid PNG`);
       sawIend = true;
+    } else if (type.charCodeAt(0) < 97) {
+      requireCondition(false, `${relative} must be a valid PNG`);
     }
     offset = end;
   }
@@ -372,7 +374,7 @@ export function validateLock(value, names) {
     relativePath(source.package_path);
     relativePath(source.license_path);
     const license = nonblank(source.license, 'locked source license', 256);
-    requireCondition(!['unknown', 'unknown license', 'tbd', 'none', 'unlicensed', 'proprietary', 'no-license', 'n/a', 'na'].includes(license.toLowerCase()),
+    requireCondition(!['unknown', 'unknown license', 'tbd', 'none', 'unlicensed', 'proprietary', 'no-license', 'n/a', 'na'].includes(license.trim().toLowerCase()),
       'locked source license must not be a placeholder');
     requireCondition(['pattern', 'adapt', 'reference', 'reject'].includes(source.reuse), 'invalid locked source reuse');
     for (const key of ['license_sha256', 'package_sha256']) {
