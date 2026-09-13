@@ -95,6 +95,11 @@ function makeRepository(t) {
   ] });
   fs.writeFileSync(join(root, 'README.md'), `# Collection\n\n[Example](.agents/skills/${name}/SKILL.md)\n`);
   fs.writeFileSync(join(root, 'AGENTS.md'), '# Repository instructions\n\nConsult `catalog.json` for available skills.\n');
+  fs.symlinkSync('AGENTS.md', join(root, 'CLAUDE.md'));
+  for (const directory of ['.claude', '.github']) {
+    fs.mkdirSync(join(root, directory));
+    fs.symlinkSync('../.agents/skills', join(root, directory, 'skills'), 'dir');
+  }
   return { root, packagePath, temporary };
 }
 
@@ -229,21 +234,20 @@ test('catalog rejects invalid identities, duplicate names, paths, and lifecycle 
 
 test('the three reviewed aliases resolve links without double-counting packages or text', (t) => {
   const { root } = makeRepository(t);
-  fs.writeFileSync(join(root, 'AGENTS.md'), '# Repository instructions\n\nConsult `catalog.json`.\n');
   const beforeAliases = validateRepository(root);
-  fs.symlinkSync('AGENTS.md', join(root, 'CLAUDE.md'));
-  for (const directory of ['.claude', '.github']) {
-    fs.mkdirSync(join(root, directory));
-    fs.symlinkSync('../.agents/skills', join(root, directory, 'skills'), 'dir');
-  }
-  assert.deepEqual(validateRepository(root), beforeAliases);
   fs.appendFileSync(join(root, 'README.md'), '[Guidance](CLAUDE.md)\n[Claude alias](.claude/skills/example-skill/SKILL.md)\n[GitHub alias](.github/skills/example-skill/SKILL.md)\n');
   assert.equal(validateRepository(root).local_links, beforeAliases.local_links + 3);
 });
 
+test('declared discovery aliases are required', (t) => {
+  const { root } = makeRepository(t);
+  fs.unlinkSync(join(root, 'CLAUDE.md'));
+  assert.throws(() => validateRepository(root));
+});
+
 test('wrong targets and additional symlinks are rejected', (t) => {
   const { root } = makeRepository(t);
-  fs.writeFileSync(join(root, 'AGENTS.md'), '# Repository instructions\n\nConsult `catalog.json`.\n');
+  fs.unlinkSync(join(root, 'CLAUDE.md'));
   fs.symlinkSync('README.md', join(root, 'CLAUDE.md'));
   assert.throws(() => validateRepository(root), /unexpected alias target/);
   fs.unlinkSync(join(root, 'CLAUDE.md'));

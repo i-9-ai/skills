@@ -17,9 +17,7 @@ export function validateRepository(path = DEFAULT_ROOT) {
       ignoredRootNames: IGNORED_ROOT_NAMES,
       allowedSymlinks: REPOSITORY_ALIASES,
     });
-    for (const [relative, info] of inventory) {
-      if (info.isSymbolicLink()) root.checkAlias(relative, REPOSITORY_ALIASES[relative]);
-    }
+    for (const [relative, target] of Object.entries(REPOSITORY_ALIASES)) root.checkAlias(relative, target);
     const files = new Set(inventory.filter(([, info]) => info.isFile()).map(([path]) => path));
     const directories = new Set(inventory.filter(([, info]) => info.isDirectory()).map(([path]) => path));
     const { names, packages } = validateCatalog(root.readJson('catalog.json'), files, directories);
