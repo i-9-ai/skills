@@ -42,3 +42,7 @@ The workflow has `contents: read` only. It validates configuration and entry par
 - The initial `.changeset/` entry and status output.
 - The read-only workflow definition.
 - Validation output at the candidate revision.
+
+## Execution status
+
+Implemented in this PR: the pinned development dependency, lockfile, configuration, one broad pending entry, read-only validation workflow, and contributor documentation. `npm run changeset:status` reports the expected patch impact. Version preparation, tags, releases, and publication remain intentionally unexecuted.

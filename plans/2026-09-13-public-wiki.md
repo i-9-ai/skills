@@ -31,3 +31,7 @@ The workflow writes to the Wiki only when the maintainer supplies `WIKI_SYNC_TOK
 ## Rollback
 
 Disable the workflow or remove its secret to stop synchronization. Revert documentation or the workflow in Git; restore the previous Wiki revision from its own Git history if needed.
+
+## Execution status
+
+Implemented in this PR: the `docs/` source boundary, moved agent-only reference, direct mirror workflow, `Home.md` mapping, and secret boundary. The first actual synchronization remains pending until this change merges to `main` and a maintainer supplies `WIKI_SYNC_TOKEN`.

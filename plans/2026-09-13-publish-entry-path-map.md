@@ -33,3 +33,7 @@ The workflow may write only the generated Pages branch after a merge to `main`. 
 ## Rollback
 
 Disable the workflow or switch GitHub Pages away from `gh-pages` to stop publication. Revert the workflow or source artifact in `main`; Git history preserves prior Pages revisions.
+
+## Execution status
+
+Implemented in this PR: the editable diagram specification, generated interactive map, static README preview, landing page, and `main`-only `gh-pages` workflow. The first public deployment remains pending until this change merges and a maintainer enables GitHub Pages for `gh-pages`.
