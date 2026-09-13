@@ -51,6 +51,21 @@ function transparentPng() {
   ]);
 }
 
+function indexedPng({ palette = true } = {}) {
+  const header = Buffer.alloc(13);
+  header.writeUInt32BE(1, 0);
+  header.writeUInt32BE(1, 4);
+  header[8] = 8;
+  header[9] = 3;
+  const chunks = [
+    Buffer.from('89504e470d0a1a0a', 'hex'),
+    pngChunk('IHDR', header),
+  ];
+  if (palette) chunks.push(pngChunk('PLTE', Buffer.from([0, 0, 0])));
+  chunks.push(pngChunk('IDAT', deflateSync(Buffer.from([0, 0]))), pngChunk('IEND', Buffer.alloc(0)));
+  return Buffer.concat(chunks);
+}
+
 function makeRepository(t) {
   const temporary = fs.mkdtempSync(join(tmpdir(), 'collection-test-'));
   t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
@@ -184,6 +199,15 @@ test('collection rejects external SVG paint references while allowing fragments'
 test('collection rejects malformed PNG icons', (t) => {
   const { root, packagePath } = makeRepository(t);
   fs.writeFileSync(join(packagePath, 'assets', 'icon.png'), Buffer.from('not a png'));
+  assert.throws(() => validateRepository(root), /valid PNG/);
+});
+
+test('collection rejects indexed PNG icons without a palette', (t) => {
+  const { root, packagePath } = makeRepository(t);
+  const icon = join(packagePath, 'assets', 'icon.png');
+  fs.writeFileSync(icon, indexedPng());
+  assert.equal(validateRepository(root).packages, 1);
+  fs.writeFileSync(icon, indexedPng({ palette: false }));
   assert.throws(() => validateRepository(root), /valid PNG/);
 });
 

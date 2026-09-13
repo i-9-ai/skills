@@ -277,6 +277,7 @@ export function validateCollectionPng(relative, bytes) {
     `${relative} must be a valid PNG`);
   let offset = 8;
   let ihdr;
+  let sawPalette = false;
   let sawIdat = false;
   let sawIend = false;
   const idat = [];
@@ -300,8 +301,12 @@ export function validateCollectionPng(relative, bytes) {
         && validPngBitDepth(bitDepth, colorType) && content[10] === 0 && content[11] === 0 && content[12] === 0,
       `${relative} must be a supported PNG`);
       ihdr = { width, height, bitDepth, colorType };
+    } else if (type === 'PLTE') {
+      requireCondition(!sawPalette && !sawIdat && size >= 3 && size % 3 === 0, `${relative} must be a valid PNG`);
+      sawPalette = true;
     } else if (type === 'IDAT') {
       requireCondition(!sawIend, `${relative} must be a valid PNG`);
+      requireCondition(ihdr.colorType !== 3 || sawPalette, `${relative} must be a valid PNG`);
       sawIdat = true;
       idat.push(content);
     } else if (type === 'IEND') {
