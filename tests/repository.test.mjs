@@ -208,7 +208,15 @@ test('collection rejects SVG icons with external CSS imports', (t) => {
   fs.writeFileSync(join(packagePath, 'assets', 'icon.svg'), `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
     <title id="title">Example Skill</title><style>@import url("https://example.org/icon.css");</style><path d="M1 1h62v62H1z"/>
   </svg>`);
-  assert.throws(() => validateRepository(root), /active or external SVG content/);
+  assert.throws(() => validateRepository(root), /(?:active or external SVG content|external SVG paint reference)/);
+});
+
+test('collection rejects external SVG paint URLs in style blocks', (t) => {
+  const { root, packagePath } = makeRepository(t);
+  fs.writeFileSync(join(packagePath, 'assets', 'icon.svg'), `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+    <title id="title">Example Skill</title><style>.shape { fill: url(https://example.org/paint.svg#gradient); }</style><path class="shape" d="M1 1h62v62H1z"/>
+  </svg>`);
+  assert.throws(() => validateRepository(root), /external SVG paint reference/);
 });
 
 test('collection rejects external SVG paint references while allowing fragments', (t) => {
@@ -231,6 +239,14 @@ test('collection rejects malformed PNG icons', (t) => {
   assert.throws(() => validateRepository(root), /valid PNG/);
 });
 
+test('collection rejects PNG icons with duplicate IHDR chunks', (t) => {
+  const { root, packagePath } = makeRepository(t);
+  const valid = transparentPng();
+  const ihdr = valid.subarray(8, 33);
+  fs.writeFileSync(join(packagePath, 'assets', 'icon.png'), Buffer.concat([valid.subarray(0, 33), ihdr, valid.subarray(33)]));
+  assert.throws(() => validateRepository(root), /valid PNG/);
+});
+
 test('collection rejects indexed PNG icons without a palette', (t) => {
   const { root, packagePath } = makeRepository(t);
   const icon = join(packagePath, 'assets', 'icon.png');
@@ -238,6 +254,17 @@ test('collection rejects indexed PNG icons without a palette', (t) => {
   assert.equal(validateRepository(root).packages, 1);
   fs.writeFileSync(icon, indexedPng({ palette: false }));
   assert.throws(() => validateRepository(root), /valid PNG/);
+});
+
+test('collection validates parsed OpenAI icon paths instead of YAML comments', (t) => {
+  const { root, packagePath } = makeRepository(t);
+  const metadata = join(packagePath, 'agents', 'openai.yaml');
+  fs.copyFileSync(join(packagePath, 'assets', 'icon.svg'), join(packagePath, 'assets', 'alternate.svg'));
+  fs.writeFileSync(metadata, fs.readFileSync(metadata, 'utf8').replace(
+    '  icon_small: "./assets/icon.svg"',
+    '# icon_small: "./assets/icon.svg"\n  icon_small: "./assets/alternate.svg"',
+  ));
+  assert.throws(() => validateRepository(root), /required small SVG and large PNG icons/);
 });
 
 test('catalog rejects invalid identities, duplicate names, paths, and lifecycle states', () => {
@@ -382,7 +409,7 @@ test('source locks validate package digests and known consumers', (t) => {
   for (const [key, value] of [['package_sha256', 'c'.repeat(64)], ['revision', 'main'],
     ['consumers', ['missing-skill']], ['consumers', ['example-skill', 'example-skill']],
     ['files', [{ path: '../SKILL.md', sha256: 'a'.repeat(64) }]],
-    ['revision', 'a'.repeat(40) + '\n'], ['license_sha256', 'b'.repeat(64) + '\n'],
+    ['revision', 'a'.repeat(40) + '\n'], ['license', 'TBD'], ['license_sha256', 'b'.repeat(64) + '\n'],
     ['files', [{ path: 'SKILL.md', sha256: 'a'.repeat(64) + '\n' }]]]) {
     const invalid = structuredClone(lock);
     invalid.sources[0][key] = value;

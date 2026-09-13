@@ -147,6 +147,7 @@ function validateSafeSvg(relative, text) {
       requireCondition(stack.length > 0 || /^\s*$/.test(content), `${relative} is not well-formed XML`);
       requireCondition(!/[<&]/.test(content) || /^(?:[^<&]|&(?:amp|apos|gt|lt|quot|#[0-9]+|#x[0-9a-fA-F]+);)*$/.test(content),
         `${relative} is not well-formed XML`);
+      if (stack.at(-1) === 'style') validateSvgPaintReferences(relative, content);
       offset = end === -1 ? text.length : end;
       continue;
     }
@@ -212,15 +213,19 @@ function validateXmlAttributes(relative, source) {
     const value = source.slice(offset + 1, end);
     requireCondition(/^(?:[^<&]|&(?:amp|apos|gt|lt|quot|#[0-9]+|#x[0-9a-fA-F]+);)*$/.test(value),
       `${relative} is not well-formed XML`);
-    const css = stripCssComments(decodeXmlEntities(value)).replace(/\\([0-9a-fA-F]{1,6}\s?|.)/gu, (_match, escaped) => {
-      const hex = escaped.trim();
-      return /^[0-9a-fA-F]+$/u.test(hex) ? String.fromCodePoint(Number.parseInt(hex, 16)) : escaped;
-    });
-    for (const match of css.matchAll(/url\(\s*(?:(['"])(.*?)\1|([^\s)]+))\s*\)/giu)) {
-      const target = (match[2] ?? match[3]).trim();
-      requireCondition(target.startsWith('#'), `${relative} contains an external SVG paint reference`);
-    }
+    validateSvgPaintReferences(relative, value);
     offset = end + 1;
+  }
+}
+
+function validateSvgPaintReferences(relative, value) {
+  const css = stripCssComments(decodeXmlEntities(value)).replace(/\\([0-9a-fA-F]{1,6}\s?|.)/gu, (_match, escaped) => {
+    const hex = escaped.trim();
+    return /^[0-9a-fA-F]+$/u.test(hex) ? String.fromCodePoint(Number.parseInt(hex, 16)) : escaped;
+  });
+  for (const match of css.matchAll(/url\(\s*(?:(['"])(.*?)\1|([^\s)]+))\s*\)/giu)) {
+    const target = (match[2] ?? match[3]).trim();
+    requireCondition(target.startsWith('#'), `${relative} contains an external SVG paint reference`);
   }
 }
 
@@ -301,6 +306,8 @@ export function validateCollectionPng(relative, bytes) {
         && validPngBitDepth(bitDepth, colorType) && content[10] === 0 && content[11] === 0 && content[12] === 0,
       `${relative} must be a supported PNG`);
       ihdr = { width, height, bitDepth, colorType };
+    } else if (type === 'IHDR') {
+      requireCondition(false, `${relative} must be a valid PNG`);
     } else if (type === 'PLTE') {
       requireCondition(!sawPalette && !sawIdat && size >= 3 && size % 3 === 0, `${relative} must be a valid PNG`);
       sawPalette = true;
@@ -364,7 +371,9 @@ export function validateLock(value, names) {
       'locked source revision must be an immutable 40/64-hex commit');
     relativePath(source.package_path);
     relativePath(source.license_path);
-    nonblank(source.license, 'locked source license', 256);
+    const license = nonblank(source.license, 'locked source license', 256);
+    requireCondition(!['unknown', 'unknown license', 'tbd', 'none', 'unlicensed', 'proprietary', 'no-license', 'n/a', 'na'].includes(license.toLowerCase()),
+      'locked source license must not be a placeholder');
     requireCondition(['pattern', 'adapt', 'reference', 'reject'].includes(source.reuse), 'invalid locked source reuse');
     for (const key of ['license_sha256', 'package_sha256']) {
       requireCondition(typeof source[key] === 'string' && source[key].length === 64 && SHA256.test(source[key]),

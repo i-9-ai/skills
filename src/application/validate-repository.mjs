@@ -21,7 +21,8 @@ export function validateRepository(path = DEFAULT_ROOT) {
     const files = new Set(inventory.filter(([, info]) => info.isFile()).map(([path]) => path));
     const directories = new Set(inventory.filter(([, info]) => info.isDirectory()).map(([path]) => path));
     const { names, packages } = validateCatalog(root.readJson('catalog.json'), files, directories);
-    for (const relative of packages) root.validatePackage(relative);
+    const packageInterfaces = new Map();
+    for (const relative of packages) packageInterfaces.set(relative, root.validatePackage(relative).openai_interface);
     checkCatalog(root.path);
     const iconDigests = new Set();
     for (const relative of packages) {
@@ -31,9 +32,8 @@ export function validateRepository(path = DEFAULT_ROOT) {
       if (!files.has(metadata) || !files.has(smallIcon) || !files.has(largeIcon)) {
         throw new CollectionValidationError(`${relative} must include agents/openai.yaml, assets/icon.svg, and assets/icon.png`);
       }
-      const openAi = root.readBytes(metadata, LIMITS.textBytes).toString('utf8');
-      if (!openAi.includes('icon_small: "./assets/icon.svg"')
-        || !openAi.includes('icon_large: "./assets/icon.png"')) {
+      const openAi = packageInterfaces.get(relative);
+      if (openAi?.icon_small !== './assets/icon.svg' || openAi.icon_large !== './assets/icon.png') {
         throw new CollectionValidationError(`${relative} must declare the required small SVG and large PNG icons`);
       }
       validateCollectionIcon(smallIcon, root.readBytes(smallIcon, LIMITS.textBytes).toString('utf8'), iconDigests);

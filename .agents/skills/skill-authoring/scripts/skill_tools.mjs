@@ -105,6 +105,7 @@ export function validateOpenaiInterface(root, name) {
     relativeParts(relative);
     requireCondition(root.info(relative).isFile(), 'interface icon must reference an existing regular package asset');
   }
+  return values;
 }
 
 export function validateSkill(input) {
@@ -123,8 +124,9 @@ export function validateSkill(input) {
     for (const [relative, info] of inventory) if (info.isFile() && relative.endsWith('.md')) {
       links += checkMarkdown(root, relative, root.readText(relative));
     }
-    if (inventory.some(([relative]) => relative === 'agents/openai.yaml')) validateOpenaiInterface(root, expected);
-    return { name: expected, entries: inventory.length, local_links: links };
+    const openai_interface = inventory.some(([relative]) => relative === 'agents/openai.yaml')
+      ? validateOpenaiInterface(root, expected) : undefined;
+    return { name: expected, entries: inventory.length, local_links: links, openai_interface };
   } finally { root.close(); }
 }
 
