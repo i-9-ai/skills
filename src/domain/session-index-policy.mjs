@@ -12,9 +12,37 @@ const ENTRYPOINTS = Object.freeze([
 ]);
 
 const MAX_DESCRIPTION = 120;
+const MAX_CATALOG_SKILLS = 256;
+const MAX_NAME = 64;
+const MAX_CATALOG_DESCRIPTION = 220;
+const MAX_TAGS = 16;
+const CONTROL_CHARACTERS = /[\x00-\x08\x0b-\x1f\x7f]/u;
 
 function requireCatalog(condition, message) {
   if (!condition) throw new TypeError(`session index catalog ${message}`);
+}
+
+function exactFields(value, expected, label) {
+  requireCatalog(value !== null && typeof value === 'object' && !Array.isArray(value), `${label} must be an object`);
+  const keys = Object.keys(value);
+  requireCatalog(keys.length === expected.length && expected.every((key) => Object.hasOwn(value, key)),
+    `${label} has missing or unexpected fields`);
+  return value;
+}
+
+function nonblank(value, label, limit) {
+  requireCatalog(typeof value === 'string' && value.trim().length > 0 && value.length <= limit * 2,
+    `${label} must be a nonblank string of at most ${limit} characters`);
+  requireCatalog(value.isWellFormed() && !CONTROL_CHARACTERS.test(value), `${label} contains invalid Unicode or control characters`);
+  requireCatalog([...value].length <= limit, `${label} must be a nonblank string of at most ${limit} characters`);
+  return value;
+}
+
+function slug(value, label) {
+  requireCatalog(typeof value === 'string' && value.length <= MAX_NAME && value.trim() === value
+    && /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/u.test(value),
+  `${label} must be a lowercase hyphenated slug of at most ${MAX_NAME} characters`);
+  return value;
 }
 
 function shorten(value) {
@@ -25,16 +53,22 @@ function shorten(value) {
 }
 
 function validateSkill(entry) {
-  requireCatalog(entry !== null && typeof entry === 'object' && !Array.isArray(entry), 'contains an invalid skill entry');
-  requireCatalog(typeof entry.name === 'string' && /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/u.test(entry.name), 'contains an invalid skill name');
-  requireCatalog(typeof entry.description === 'string' && entry.description.trim().length > 0, `has no description for ${entry.name}`);
-  requireCatalog(['pilot', 'stable', 'deprecated'].includes(entry.status), `has an invalid status for ${entry.name}`);
+  exactFields(entry, ['name', 'path', 'status', 'description', 'tags'], 'catalog entry');
+  const name = slug(entry.name, 'catalog skill name');
+  requireCatalog(entry.path === `.agents/skills/${name}`, 'path must be .agents/skills/<name>');
+  requireCatalog(['pilot', 'stable', 'deprecated'].includes(entry.status), `has an invalid status for ${name}`);
+  nonblank(entry.description, 'catalog description', MAX_CATALOG_DESCRIPTION);
+  requireCatalog(Array.isArray(entry.tags) && entry.tags.length <= MAX_TAGS, 'tags must be a bounded array');
+  const tags = entry.tags.map((tag) => slug(tag, 'catalog tag'));
+  requireCatalog(new Set(tags).size === tags.length && [...tags].sort().every((tag, index) => tag === tags[index]),
+    'tags must be distinct and sorted');
 }
 
 export function renderSessionIndex(catalog, { maxEntries = ENTRYPOINTS.length } = {}) {
-  requireCatalog(catalog !== null && typeof catalog === 'object' && !Array.isArray(catalog), 'must be an object');
+  exactFields(catalog, ['schema_version', 'skills'], 'catalog');
   requireCatalog(catalog.schema_version === 2, 'has an unsupported schema version');
-  requireCatalog(Array.isArray(catalog.skills) && catalog.skills.length > 0, 'must contain at least one skill');
+  requireCatalog(Array.isArray(catalog.skills) && catalog.skills.length > 0 && catalog.skills.length <= MAX_CATALOG_SKILLS,
+    `must contain between 1 and ${MAX_CATALOG_SKILLS} packages`);
   requireCatalog(Number.isInteger(maxEntries) && maxEntries > 0 && maxEntries <= ENTRYPOINTS.length, 'requires a valid entry limit');
 
   const byName = new Map();
@@ -43,6 +77,8 @@ export function renderSessionIndex(catalog, { maxEntries = ENTRYPOINTS.length } 
     requireCatalog(!byName.has(skill.name), `contains duplicate skill ${skill.name}`);
     byName.set(skill.name, skill);
   }
+  requireCatalog([...byName.keys()].sort().every((name, index) => name === catalog.skills[index].name),
+    'skills must be sorted by name');
 
   const selected = ENTRYPOINTS
     .map((name) => byName.get(name))

@@ -36,7 +36,7 @@ The host owns hook trust. The repository owns the renderer and adapter. A user o
 
 ## Validation
 
-Run the renderer and synthetic tests, npm run check, git diff check, and inspect the hook configuration in a trusted Codex project.
+Run the renderer and synthetic tests, npm run check, git diff --check, and inspect the hook configuration in a trusted Codex project.
 
 ## Rollback
 
