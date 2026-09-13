@@ -5,11 +5,16 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const KINDS = new Set(['skills', 'guidance']);
+const MAX_CONTRACT_BYTES = 1024 * 1024;
+const MAX_ALIASES = 256;
+const MAX_PATH = 1024;
 
 function fail(message) { throw new Error(message); }
 
 function relativePath(value, label) {
-  if (typeof value !== 'string' || !value || path.isAbsolute(value)) fail(`${label} must be a relative path`);
+  if (typeof value !== 'string' || !value || value.length > MAX_PATH || path.isAbsolute(value)) {
+    fail(`${label} must be a relative path of at most ${MAX_PATH} characters`);
+  }
   const normalized = path.posix.normalize(value);
   if (normalized === '.' || normalized === '..' || normalized.startsWith('../') || normalized !== value) {
     fail(`${label} must stay below the root without normalization`);
@@ -33,11 +38,18 @@ function existingInside(root, filename, label) {
 }
 
 function parentInside(root, filename, label) {
-  let candidate = path.dirname(filename);
+  const requested = path.dirname(filename);
+  let candidate = requested;
   while (true) {
-    try { return existingInside(root, candidate, label); }
+    try {
+      const existing = existingInside(root, candidate, label);
+      return below(root, path.join(existing, path.relative(candidate, requested)), label);
+    }
     catch (error) {
       if (error.code !== 'ENOENT') throw error;
+      // Only absent components can be reconstructed. A dangling parent link
+      // cannot establish where its descendants would be inspected.
+      if (entry(candidate)) throw error;
       const parent = path.dirname(candidate);
       if (parent === candidate) throw error;
       candidate = parent;
@@ -56,10 +68,28 @@ function resolved(root, filename, target, label) {
   return existingInside(root, candidate, label);
 }
 
+function inspectLinkTarget(root, filename, target, label) {
+  const parent = parentInside(root, filename, `${label} parent`);
+  below(root, path.resolve(parent, target), label);
+  try { return existingInside(root, filename, label); }
+  catch (error) {
+    if (error.code === 'ENOENT' || error.code === 'ELOOP') return null;
+    throw error;
+  }
+}
+
 function validateContract(input) {
   if (!input || typeof input !== 'object' || Array.isArray(input)) fail('contract must be an object');
-  if (typeof input.root !== 'string' || !path.isAbsolute(input.root)) fail('root must be an absolute path');
-  if (!Array.isArray(input.aliases)) fail('aliases must be an array');
+  if (typeof input.root !== 'string' || input.root.length > 4096 || !path.isAbsolute(input.root)) {
+    fail('root must be an absolute path of at most 4096 characters');
+  }
+  if (!Array.isArray(input.aliases) || input.aliases.length > MAX_ALIASES) {
+    fail(`aliases must be an array of at most ${MAX_ALIASES} entries`);
+  }
+  const observedPaths = input.observed_paths ?? [];
+  if (!Array.isArray(observedPaths) || observedPaths.length > MAX_ALIASES) {
+    fail(`observed_paths must be an array of at most ${MAX_ALIASES} entries`);
+  }
   const root = fs.realpathSync.native(input.root);
   const canonicalCandidate = below(root, path.join(root, relativePath(input.canonical_path, 'canonical_path')), 'canonical_path');
   const canonical = entryInside(root, canonicalCandidate, 'canonical_path');
@@ -79,8 +109,9 @@ function validateContract(input) {
     if (!KINDS.has(alias.kind)) fail(`alias ${index} has an unsupported kind`);
     if (alias.shape !== 'symbolic-link') fail(`alias ${index} has an unsupported shape`);
     const aliasPath = relativePath(alias.path, `alias ${index} path`);
-    const target = typeof alias.target === 'string' && alias.target && !path.isAbsolute(alias.target)
-      ? alias.target : fail(`alias ${index} target must be a relative path`);
+    const target = typeof alias.target === 'string' && alias.target && alias.target.length <= MAX_PATH
+      && !path.isAbsolute(alias.target)
+      ? alias.target : fail(`alias ${index} target must be a relative path of at most ${MAX_PATH} characters`);
     const filename = below(root, path.join(root, aliasPath), `alias ${index} path`);
     parentInside(root, filename, `alias ${index} path`);
     const expected = resolved(root, filename, target, `alias ${index} target`);
@@ -90,7 +121,7 @@ function validateContract(input) {
   });
   const names = new Set(aliases.map(alias => alias.path));
   if (names.size !== aliases.length) fail('alias paths must be distinct');
-  const observed = (input.observed_paths ?? []).map((value, index) => relativePath(value, `observed_paths ${index}`));
+  const observed = observedPaths.map((value, index) => relativePath(value, `observed_paths ${index}`));
   return { root, canonicalPath, guidancePath, aliases, observed, names };
 }
 
@@ -104,14 +135,10 @@ function inspectAlias(root, canonicalPath, guidancePath, alias) {
     return { ...alias, disposition: 'unsupported-shape' };
   }
   const actualTarget = fs.readlinkSync(alias.filename);
-  try {
-    existingInside(root, alias.filename, `alias ${alias.path}`);
-  } catch (error) {
-    if (error.code === 'ENOENT') return { ...alias, disposition: 'broken', actual_target: actualTarget };
-    throw error;
-  }
+  const actualPath = inspectLinkTarget(root, alias.filename, actualTarget, `alias ${alias.path}`);
+  if (actualPath === null) return { ...alias, disposition: 'broken', actual_target: actualTarget };
   const canonicalTarget = alias.kind === 'skills' ? canonicalPath : guidancePath;
-  if (actualTarget !== alias.target || existingInside(root, alias.filename, `alias ${alias.path}`) !== canonicalTarget) {
+  if (actualTarget !== alias.target || actualPath !== canonicalTarget) {
     return { ...alias, disposition: 'wrong-target', actual_target: actualTarget };
   }
   return { ...alias, disposition: 'present', actual_target: actualTarget };
@@ -124,7 +151,8 @@ export function verifyAliases(input) {
     const filename = below(root, path.join(root, item), 'observed path');
     const info = entryInside(root, filename, 'observed path');
     if (!info) return [];
-    existingInside(root, filename, 'observed path');
+    if (info.isSymbolicLink()) inspectLinkTarget(root, filename, fs.readlinkSync(filename), 'observed path');
+    else existingInside(root, filename, 'observed path');
     return [{ path: item, disposition: 'not-declared' }];
   });
   return {
@@ -135,8 +163,38 @@ export function verifyAliases(input) {
   };
 }
 
+function readContract(filename) {
+  const before = fs.lstatSync(filename);
+  if (!before.isFile() || before.nlink !== 1) fail('contract must be a regular file without symbolic or hard links');
+  if (before.size > MAX_CONTRACT_BYTES) fail(`contract exceeds ${MAX_CONTRACT_BYTES} bytes`);
+  const sameFile = (left, right) => left.dev === right.dev && left.ino === right.ino && left.mode === right.mode
+    && left.nlink === right.nlink && left.size === right.size && left.mtimeMs === right.mtimeMs && left.ctimeMs === right.ctimeMs;
+  let descriptor;
+  try {
+    // The caller owns a stable contract file. Flags add protection where the
+    // platform supports them; identity checks do not make this a sandbox.
+    descriptor = fs.openSync(filename, fs.constants.O_RDONLY
+      | (fs.constants.O_NOFOLLOW ?? 0) | (fs.constants.O_NONBLOCK ?? 0));
+    if (!sameFile(before, fs.fstatSync(descriptor))) fail('contract changed before reading');
+    const bytes = Buffer.alloc(MAX_CONTRACT_BYTES + 1);
+    let length = 0;
+    while (length < bytes.length) {
+      const count = fs.readSync(descriptor, bytes, length, bytes.length - length, null);
+      if (!count) break;
+      length += count;
+    }
+    if (length > MAX_CONTRACT_BYTES) fail(`contract exceeds ${MAX_CONTRACT_BYTES} bytes`);
+    if (!sameFile(before, fs.fstatSync(descriptor)) || !sameFile(before, fs.lstatSync(filename))) {
+      fail('contract changed during reading');
+    }
+    try { return JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes.subarray(0, length))); }
+    catch { fail('contract must contain valid UTF-8 JSON'); }
+  } finally { if (descriptor !== undefined) fs.closeSync(descriptor); }
+}
+
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
+  if (Number(process.versions.node.split('.')[0]) < 22) fail('Node.js 22+ is required');
   if (process.argv.length !== 3) fail('usage: verify_aliases.mjs <contract.json>');
-  const contract = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
+  const contract = readContract(process.argv[2]);
   process.stdout.write(`${JSON.stringify(verifyAliases(contract), null, 2)}\n`);
 }

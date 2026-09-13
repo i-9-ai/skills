@@ -3,8 +3,11 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { verifyAliases } from '../.agents/skills/skills-host-compatibility/scripts/verify_aliases.mjs';
+
+const helperSource = fileURLToPath(new URL('../.agents/skills/skills-host-compatibility/scripts/verify_aliases.mjs', import.meta.url));
 
 function fixture(t) {
   const root = fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), 'host-compatibility-test-')));
@@ -70,6 +73,38 @@ test('rejects alias contracts that escape the supplied repository root', (t) => 
   }), /escapes the root|does not resolve to canonical_path/);
 });
 
+test('reports missing aliases when their parent directories do not exist', (t) => {
+  const root = fixture(t);
+  fs.mkdirSync(path.join(root, 'hosts'));
+  fs.symlinkSync('hosts', path.join(root, 'host-alias'), 'dir');
+  const report = verifyAliases({
+    root,
+    canonical_path: '.agents/skills',
+    aliases: [
+      { kind: 'skills', path: '.claude/skills', shape: 'symbolic-link', target: '../.agents/skills' },
+      { kind: 'skills', path: 'host-alias/missing/skills', shape: 'symbolic-link', target: '../../.agents/skills' },
+    ],
+  });
+  assert.deepEqual(report.aliases.map(alias => alias.disposition), ['missing', 'missing']);
+});
+
+test('reports dangling and looping links without aborting observed alias inspection', (t) => {
+  const root = fixture(t);
+  fs.symlinkSync('missing', path.join(root, 'dangling'));
+  fs.symlinkSync('loop', path.join(root, 'loop'));
+  const report = verifyAliases({
+    root,
+    canonical_path: '.agents/skills',
+    aliases: [{ kind: 'skills', path: 'loop', shape: 'symbolic-link', target: '.agents/skills' }],
+    observed_paths: ['dangling', 'loop', 'absent'],
+  });
+  assert.equal(report.aliases[0].disposition, 'broken');
+  assert.deepEqual(report.observed, [{ path: 'dangling', disposition: 'not-declared' }]);
+  assert.deepEqual(verifyAliases({
+    root, canonical_path: '.agents/skills', aliases: [], observed_paths: ['loop'],
+  }).observed, [{ path: 'loop', disposition: 'not-declared' }]);
+});
+
 test('requires a separate canonical guidance path for guidance aliases', (t) => {
   const root = fixture(t);
   assert.throws(() => verifyAliases({
@@ -77,6 +112,15 @@ test('requires a separate canonical guidance path for guidance aliases', (t) => 
     canonical_path: '.agents/skills',
     aliases: [{ kind: 'guidance', path: 'CLAUDE.md', shape: 'symbolic-link', target: 'AGENTS.md' }],
   }), /guidance_path is required/);
+});
+
+test('rejects oversized inspection contracts before processing their entries', (t) => {
+  const root = fixture(t);
+  const contract = { root, canonical_path: '.agents/skills', aliases: [] };
+  assert.throws(() => verifyAliases({ ...contract, aliases: Array(257).fill(null) }), /at most 256 entries/);
+  assert.throws(() => verifyAliases({ ...contract, observed_paths: Array(257).fill('missing') }), /at most 256 entries/);
+  assert.throws(() => verifyAliases({ ...contract, observed_paths: 'missing' }), /must be an array/);
+  assert.throws(() => verifyAliases({ ...contract, observed_paths: ['x'.repeat(1025)] }), /at most 1024 characters/);
 });
 
 test('rejects intermediate and followed symlink escapes from the supplied repository root', (t) => {
@@ -97,15 +141,22 @@ test('rejects intermediate and followed symlink escapes from the supplied reposi
   assert.throws(() => verifyAliases({
     root, canonical_path: '.agents/skills', aliases: [], observed_paths: ['.claude/external'],
   }), /escapes the root/);
+  fs.symlinkSync(path.join(outside, 'missing'), path.join(root, 'external-dangling'));
+  assert.throws(() => verifyAliases({
+    root, canonical_path: '.agents/skills', aliases: [], observed_paths: ['external-dangling'],
+  }), /escapes the root/);
+  assert.throws(() => verifyAliases({
+    root, canonical_path: '.agents/skills',
+    aliases: [{ kind: 'skills', path: 'external-dangling', shape: 'symbolic-link', target: '.agents/skills' }],
+  }), /escapes the root/);
 });
 
 test('runs directly when the helper script path contains a space', (t) => {
   const root = fixture(t);
   const helperDirectory = path.join(root, 'helper with space');
   fs.mkdirSync(helperDirectory);
-  const source = path.join(path.dirname(new URL(import.meta.url).pathname), '..', '.agents', 'skills', 'skills-host-compatibility', 'scripts', 'verify_aliases.mjs');
   const helper = path.join(helperDirectory, 'verify aliases.mjs');
-  fs.copyFileSync(source, helper);
+  fs.copyFileSync(helperSource, helper);
   const contract = path.join(root, 'contract.json');
   fs.writeFileSync(contract, JSON.stringify({ root, canonical_path: '.agents/skills', aliases: [] }));
   const result = spawnSync(process.execPath, [helper, contract], { encoding: 'utf8' });
@@ -113,4 +164,35 @@ test('runs directly when the helper script path contains a space', (t) => {
   assert.deepEqual(JSON.parse(result.stdout), {
     canonical: { path: '.agents/skills', disposition: 'present' }, guidance: null, aliases: [], observed: [],
   });
+});
+
+test('CLI rejects unsafe and oversized contract files without exposing malformed bytes', (t) => {
+  const root = fixture(t);
+  const contract = path.join(root, 'contract.json');
+  const linked = path.join(root, 'linked.json');
+  fs.writeFileSync(contract, '');
+  fs.truncateSync(contract, 1024 * 1024 + 1);
+  let result = spawnSync(process.execPath, [helperSource, contract], { encoding: 'utf8', timeout: 5000 });
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /contract exceeds 1048576 bytes/);
+
+  fs.writeFileSync(contract, JSON.stringify({ root, canonical_path: '.agents/skills', aliases: [] }));
+  fs.symlinkSync('contract.json', linked);
+  result = spawnSync(process.execPath, [helperSource, linked], { encoding: 'utf8', timeout: 5000 });
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /contract must be a regular file/);
+
+  fs.unlinkSync(linked);
+  fs.linkSync(contract, linked);
+  result = spawnSync(process.execPath, [helperSource, contract], { encoding: 'utf8', timeout: 5000 });
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /contract must be a regular file/);
+  fs.unlinkSync(linked);
+
+  const sentinel = ['private', 'contract', 'sentinel'].join('-');
+  fs.writeFileSync(contract, sentinel);
+  result = spawnSync(process.execPath, [helperSource, contract], { encoding: 'utf8', timeout: 5000 });
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /contract must contain valid UTF-8 JSON/);
+  assert.ok(!result.stderr.includes(sentinel));
 });
