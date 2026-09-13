@@ -44,10 +44,10 @@ jobs:
           cd .wiki
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet; then
+          git add --all
+          if git diff --quiet --staged; then
             echo "Wiki is already synchronized."
             exit 0
           fi
-          git add --all
           git commit -m "docs: synchronize Wiki from main"
           git push

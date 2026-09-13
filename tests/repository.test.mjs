@@ -293,6 +293,8 @@ test('visual guide publication only deploys main and stages new pages before dif
   const workflow = fs.readFileSync(join(process.cwd(), '.github', 'workflows', 'publish-visual-guides.yml'), 'utf8');
   assert.match(workflow, /with:\n\s+ref: main\n\s+persist-credentials: false/);
   assert.match(workflow, /git add --all\n\s+if git diff --quiet --staged; then/);
+  const wikiWorkflow = fs.readFileSync(join(process.cwd(), '.github', 'workflows', 'sync-wiki.yml'), 'utf8');
+  assert.match(wikiWorkflow, /git add --all\n\s+if git diff --quiet --staged; then/);
 });
 
 test('source locks validate package digests and known consumers', (t) => {
