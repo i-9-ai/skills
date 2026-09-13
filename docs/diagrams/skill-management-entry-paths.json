@@ -1,0 +1,305 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "I-9 Skills: choose your entry path",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "create",
+        "label": "Create a skill",
+        "focus": [
+          "new_request",
+          "discovery",
+          "design",
+          "authoring",
+          "quality_gate",
+          "ready"
+        ],
+        "note": "Start with a capability gap and finish with a validated, portable package."
+      },
+      {
+        "id": "improve",
+        "label": "Improve a skill",
+        "focus": [
+          "existing_skill",
+          "evidence",
+          "evolution",
+          "quality_gate",
+          "ready"
+        ],
+        "note": "Turn observations into a bounded, reviewable improvement."
+      },
+      {
+        "id": "operate",
+        "label": "Operate a collection",
+        "focus": [
+          "collection_need",
+          "catalog",
+          "routing",
+          "ready"
+        ],
+        "note": "Find the right skill or conclude that no skill should run."
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "create",
+      "label": "Create a skill"
+    },
+    {
+      "id": "improve",
+      "label": "Improve a skill"
+    },
+    {
+      "id": "operate",
+      "label": "Operate a collection"
+    },
+    {
+      "id": "assure",
+      "label": "Quality and delivery"
+    }
+  ],
+  "phases": [
+    {
+      "id": "intent",
+      "label": "Choose the need",
+      "fromCol": 0,
+      "toCol": 0,
+      "variant": "emphasis"
+    },
+    {
+      "id": "route",
+      "label": "Route the work",
+      "fromCol": 1,
+      "toCol": 2
+    },
+    {
+      "id": "assure",
+      "label": "Prove the result",
+      "fromCol": 3,
+      "toCol": 4,
+      "variant": "dashed"
+    }
+  ],
+  "mainPath": [
+    "new_request",
+    "discovery",
+    "design",
+    "authoring",
+    "quality_gate",
+    "ready"
+  ],
+  "nodes": [
+    {
+      "id": "new_request",
+      "lane": "create",
+      "col": 0,
+      "type": "external",
+      "label": "Create a skill",
+      "sublabel": "a missing capability",
+      "tag": "entry point",
+      "width": 136
+    },
+    {
+      "id": "discovery",
+      "lane": "create",
+      "col": 1,
+      "type": "backend",
+      "label": "Skills discovery",
+      "sublabel": "locate proven candidates",
+      "width": 136
+    },
+    {
+      "id": "design",
+      "lane": "create",
+      "col": 2,
+      "type": "backend",
+      "label": "Design and synthesis",
+      "sublabel": "one responsibility",
+      "width": 136
+    },
+    {
+      "id": "authoring",
+      "lane": "create",
+      "col": 3,
+      "type": "backend",
+      "label": "Skill authoring",
+      "sublabel": "build the package",
+      "width": 136
+    },
+    {
+      "id": "existing_skill",
+      "lane": "improve",
+      "col": 0,
+      "type": "external",
+      "label": "Improve a skill",
+      "sublabel": "an existing package",
+      "tag": "entry point",
+      "width": 136
+    },
+    {
+      "id": "evidence",
+      "lane": "improve",
+      "col": 1,
+      "type": "database",
+      "label": "Evidence collection",
+      "sublabel": "preserve observations",
+      "width": 136
+    },
+    {
+      "id": "evolution",
+      "lane": "improve",
+      "col": 2,
+      "type": "backend",
+      "label": "Skill evolution",
+      "sublabel": "apply bounded change",
+      "width": 136
+    },
+    {
+      "id": "collection_need",
+      "lane": "operate",
+      "col": 0,
+      "type": "external",
+      "label": "Operate a collection",
+      "sublabel": "find or coordinate work",
+      "tag": "entry point",
+      "width": 136
+    },
+    {
+      "id": "catalog",
+      "lane": "operate",
+      "col": 1,
+      "type": "database",
+      "label": "Skills catalog",
+      "sublabel": "inventory the collection",
+      "width": 136
+    },
+    {
+      "id": "routing",
+      "lane": "operate",
+      "col": 2,
+      "type": "backend",
+      "label": "Skill routing",
+      "sublabel": "select a path or none",
+      "width": 136
+    },
+    {
+      "id": "quality_gate",
+      "lane": "assure",
+      "col": 4,
+      "type": "security",
+      "label": "Quality gate",
+      "sublabel": "validate before delivery",
+      "tag": "required gate",
+      "width": 150
+    },
+    {
+      "id": "ready",
+      "lane": "assure",
+      "col": 5,
+      "type": "cloud",
+      "label": "Ready to use",
+      "sublabel": "install, publish, or review",
+      "width": 144
+    }
+  ],
+  "edges": [
+    {
+      "id": "new-discovery",
+      "from": "new_request",
+      "to": "discovery",
+      "label": "research",
+      "variant": "emphasis"
+    },
+    {
+      "id": "discovery-design",
+      "from": "discovery",
+      "to": "design",
+      "label": "candidates",
+      "variant": "default"
+    },
+    {
+      "id": "design-author",
+      "from": "design",
+      "to": "authoring",
+      "label": "focused design",
+      "variant": "emphasis"
+    },
+    {
+      "id": "author-quality",
+      "from": "authoring",
+      "to": "quality_gate",
+      "label": "package",
+      "variant": "default"
+    },
+    {
+      "id": "existing-evidence",
+      "from": "existing_skill",
+      "to": "evidence",
+      "label": "observations",
+      "variant": "dashed"
+    },
+    {
+      "id": "evidence-evolution",
+      "from": "evidence",
+      "to": "evolution",
+      "label": "evidence packet",
+      "variant": "default"
+    },
+    {
+      "id": "evolution-quality",
+      "from": "evolution",
+      "to": "quality_gate",
+      "label": "proposed change",
+      "variant": "emphasis"
+    },
+    {
+      "id": "collection-catalog",
+      "from": "collection_need",
+      "to": "catalog",
+      "label": "inspect",
+      "variant": "dashed"
+    },
+    {
+      "id": "catalog-routing",
+      "from": "catalog",
+      "to": "routing",
+      "label": "shortlist",
+      "variant": "default"
+    },
+    {
+      "id": "routing-ready",
+      "from": "routing",
+      "to": "ready",
+      "label": "best match or none",
+      "variant": "emphasis"
+    },
+    {
+      "id": "quality-ready",
+      "from": "quality_gate",
+      "to": "ready",
+      "label": "validated",
+      "variant": "emphasis"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Start with the outcome",
+      "items": [
+        "Choose the entry path that matches the work you actually have.",
+        "A route may return no skill when none clearly applies."
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Keep responsibilities focused",
+      "items": [
+        "Discovery, evidence, authoring, routing, and validation remain separate.",
+        "Every changed package is evaluated before it becomes ready to use."
+      ]
+    }
+  ]
+}
