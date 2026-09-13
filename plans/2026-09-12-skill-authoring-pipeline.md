@@ -47,22 +47,3 @@ Alternatives considered: a monolithic creator would duplicate specialist procedu
 ## Release and rollback boundaries
 
 The repository is written as public-ready from its first release. The owner selected Apache-2.0 for original content; third-party rights remain explicit regardless. No consumer is modified, no marketplace is published, and no upstream package is installed into a user's skill directory. Before merge, changes can be revised in this PR; after an authorized merge, prepare a revert PR or return consumers to their previous verified pin. Do not silently overwrite an evolved package when upstream changes.
-
-## Executed amendments
-
-This plan is the foundation migration record. Its original six-skill scope was implemented, then extended through the following versioned amendments rather than silently rewriting the initial decision.
-
-| Amendment | Resulting change | Status |
-| --- | --- | --- |
-| Lifecycle expansion | Added the focused catalog, routing, evidence, security, installation, publication, migration, audit, refactoring, evolution, optimization, icon, and lifecycle-review capabilities, bringing the collection to 19 packages. | Implemented in this PR. |
-| Portable authoring contract | Added explicit selection triggers, exclusions, context sources, handoffs, and conditional automation authority to the template and scaffold. | Implemented in this PR. |
-| Lifecycle policy | Added portable `pilot`, `stable`, and `deprecated` decisions that follow the target project's existing evidence and approval system, or return an approval record when none exists. | Implemented in this PR. |
-| [Changesets adoption](2026-09-13-adopt-changesets.md) | Added pending release-note and version-intent management without automated publication. | Implemented in this PR. |
-| [Public Wiki mirror](2026-09-13-public-wiki.md) | Added a `main`-only mirror from `docs/` to the GitHub Wiki. | Implemented; first synchronization requires merge and `WIKI_SYNC_TOKEN`. |
-| [Interactive visual guide](2026-09-13-publish-entry-path-map.md) | Added a generated entry-path map, README preview, and `gh-pages` publication workflow. | Implemented; first publication requires merge and GitHub Pages configuration. |
-
-## Final implementation state
-
-An agent reproducing this PR should execute the original sequence first, then apply the amendments in the table in order. The repository changes are complete when the collection contains 19 packages, the generated catalog agrees with them, the full local check passes, the official validation is configured in CI, the one pending Changeset covers the release candidate, and the public documentation points to the documented installation and pilot paths.
-
-The following are deliberately not implementation-complete until their external prerequisites exist: official CI evidence for the exact merged revision, Wiki synchronization after `main` has `WIKI_SYNC_TOKEN`, GitHub Pages publication after `main` has the `gh-pages` workflow and Pages is enabled, a consumer pilot, release preparation, public visibility, and distribution. They are gates after this migration, not omissions from it.
