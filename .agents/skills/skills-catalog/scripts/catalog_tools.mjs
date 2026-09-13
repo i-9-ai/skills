@@ -99,7 +99,9 @@ export function parseSkillSummary(bytes, expectedName) {
           while (index < end && (!lines[index].trim() || lines[index].startsWith(' '))) {
             fragments.push(lines[index++].trim());
           }
-          description = fragments.join(value.startsWith('>') ? ' ' : '\n').trim();
+          // Catalog descriptions are one-line summaries. Literal blocks preserve newlines
+          // for a YAML consumer, but the generated catalog must remain control-character-free.
+          description = fragments.join(' ').trim();
         } else description = parseScalar(value, 'skill description');
       }
       continue;

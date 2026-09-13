@@ -282,9 +282,12 @@ export function checkMarkdown(root, relative, text) {
 
 export function htmlLinks(text) {
   const links = [];
-  for (const match of text.matchAll(/\bhref\s*=\s*(['"])(.*?)\1/giu)) {
-    const line = text.slice(0, match.index).split(/\r\n|\n|\r/u).length;
-    links.push([line, match[2]]);
+  for (const tag of text.matchAll(/<[A-Za-z][A-Za-z0-9:-]*(?:\s+[^<>]*?)?>/gu)) {
+    const source = tag[0];
+    for (const attribute of source.matchAll(/\shref\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/giu)) {
+      const line = text.slice(0, tag.index + attribute.index).split(/\r\n|\n|\r/u).length;
+      links.push([line, attribute[1] ?? attribute[2] ?? attribute[3]]);
+    }
   }
   return links;
 }
