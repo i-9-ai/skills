@@ -10,6 +10,7 @@ Introduce I-9 Skills, a collection of 19 focused, agent-agnostic packages for bu
 
 - **Creation and quality:** discovery, synthesis, design, naming, authoring, evidence collection, independent evaluation, security review, and lifecycle decisions.
 - **Collection operations:** catalog synchronization, routing, installation, publication, migration, audits, refactoring plans, evidence-backed evolution, and measured optimization.
+- **Portable maturity decisions:** a lifecycle policy that uses each project's existing evidence and approval system, or returns a portable approval record when none exists.
 - **Complete package interfaces:** portable `SKILL.md` contracts, local references and templates, optional host metadata, plus distinct SVG and PNG interface assets.
 - **Public-readiness controls:** secret and personal-data hygiene, source provenance locks, scoped licenses, deterministic catalog checks, and safe handling of external instructions and scripts.
 - **Cross-host use:** the portable package contract is the baseline; Codex receives optional UI metadata while other hosts can use the same Markdown and local resources.

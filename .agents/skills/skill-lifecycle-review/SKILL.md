@@ -14,16 +14,17 @@ metadata:
 
 ## Responsibility and inputs
 
-Determine one skill's current lifecycle state and the next justified transition. Accept the package identity, current state, evaluation and security evidence, installation or usage feedback, open findings, provenance, and the collection's lifecycle policy.
+Determine one skill's current lifecycle state and the next justified transition. Accept the package identity, current state, evaluation and security evidence, installation or usage feedback, open findings, provenance, and the collection's [portable lifecycle policy](references/lifecycle-policy.md).
 
 ## Procedure
 
 1. Verify that all evidence refers to the same package revision. Separate missing evidence from failing evidence.
 2. Assess the current state against the collection's explicit criteria, such as draft, pilot, stable, deprecated, or retired. Do not invent states that the policy does not define.
-3. Check whether required structural, official, behavioral, security, compatibility, provenance, and consumer evidence is present and current.
-4. Identify the single next transition supported by evidence: remain, promote, deprecate, retire, or return for remediation. A transition may be blocked.
-5. Record the decision, supporting and counterevidence, expired evidence, unresolved risks, required owner, and the next review trigger.
-6. Return the review without modifying package bytes, catalog status, installation state, or publication state.
+3. Identify the target project's existing evidence and approval system. Use its authorized process when available; otherwise prepare the portable approval record defined by the lifecycle policy. Do not require a named host or infer approval from an absent system.
+4. Check whether required structural, official, behavioral, security, compatibility, provenance, and consumer evidence is present and current.
+5. Identify the single next transition supported by evidence: remain, promote, deprecate, retire, or return for remediation. A transition may be blocked.
+6. Record the decision, supporting and counterevidence, expired evidence, unresolved risks, required owner, and the next review trigger.
+7. Return the review without modifying package bytes, catalog status, installation state, or publication state.
 
 ## Tools and authority
 

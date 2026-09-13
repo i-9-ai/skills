@@ -9,6 +9,7 @@ I-9 Skills is a public-ready framework for creating, validating, distributing, a
 - [Compatibility](compatibility.md): portable contract and host-specific support.
 - [Validation](validation.md): local checks and the official Agent Skills validator.
 - [Release management](release-management.md): version preparation and Changesets.
+- [Lifecycle policy](lifecycle-policy.md): portable maturity evidence and promotion decisions.
 - [Entry-path map](assets/skill-management-entry-paths.html): an interactive view of the three main ways to start.
 - [Visual guides](assets/index.html): a GitHub Pages-ready landing page for interactive maps.
 

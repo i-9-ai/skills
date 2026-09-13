@@ -49,4 +49,4 @@ The canonical project path is `.agents/skills`. The Skills CLI explicitly search
 
 The catalog is the package inventory and maturity record. The Git revision identifies the collection version; do not embed a self-referential HEAD hash in the catalog. A future consumer should pin an approved immutable revision and verify the selected package bytes in its own installation workflow. Releases, consumer migrations, and visibility changes require their own authorized delivery evidence.
 
-Initial packages are pilots. Promotion requires repeated useful behavioral outcomes, no critical blockers, maintainer review, and recorded environments. Upstream benchmarking and local structural validation are prerequisites, not proof of production operation.
+Initial packages are pilots. Follow the [lifecycle policy](lifecycle-policy.md) to evaluate promotion through the target project's existing evidence and approval system, or a portable approval record when none exists. Upstream benchmarking and local structural validation are prerequisites, not proof of production operation.
