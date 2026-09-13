@@ -41,6 +41,10 @@ jobs:
         run: |
           git config --global http.https://github.com/.extraheader "AUTHORIZATION: basic $(printf 'x-access-token:%s' "$WIKI_SYNC_TOKEN" | base64 -w 0)"
           trap 'git config --global --unset-all http.https://github.com/.extraheader || true' EXIT
+          if ! git ls-remote --exit-code --heads "https://github.com/${REPOSITORY}.wiki.git" >/dev/null 2>&1; then
+            echo "::error::Initialize the GitHub Wiki with its first page before synchronizing it."
+            exit 1
+          fi
           git clone "https://github.com/${REPOSITORY}.wiki.git" .wiki
           rsync -a --delete --exclude='.git' docs/ .wiki/
           python3 - <<'PY'

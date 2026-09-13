@@ -396,6 +396,7 @@ test('visual guide publication only deploys main and stages new pages before dif
   const wikiWorkflow = fs.readFileSync(join(process.cwd(), '.github', 'workflows', 'sync-wiki.yml'), 'utf8');
   assert.match(wikiWorkflow, /concurrency:\n\s+group: sync-wiki-\$\{\{ github\.repository \}\}\n\s+cancel-in-progress: false/);
   assert.match(wikiWorkflow, /with:\n\s+ref: main\n\s+persist-credentials: false/);
+  assert.match(wikiWorkflow, /git ls-remote --exit-code --heads "https:\/\/github\.com\/\$\{REPOSITORY\}\.wiki\.git"/);
   assert.match(wikiWorkflow, /python3 - <<'PY'[\s\S]*https:\/\/github\.com\/\{repository\}\/blob\/main\/\{resolved\}/);
   assert.match(wikiWorkflow, /git add --all\n\s+if git diff --quiet --staged; then/);
 });
