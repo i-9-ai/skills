@@ -80,6 +80,8 @@ function inspectLinkTarget(root, filename, target, label) {
 
 function validateContract(input) {
   if (!input || typeof input !== 'object' || Array.isArray(input)) fail('contract must be an object');
+  const fields = new Set(['root', 'canonical_path', 'guidance_path', 'aliases', 'observed_paths']);
+  if (!Object.keys(input).every(key => fields.has(key))) fail('contract has unknown fields');
   if (typeof input.root !== 'string' || input.root.length > 4096 || !path.isAbsolute(input.root)) {
     fail('root must be an absolute path of at most 4096 characters');
   }

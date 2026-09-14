@@ -3,6 +3,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { strictJson } from '../../skill-authoring/scripts/lib/contracts.mjs';
 
 const NAME = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/;
 const STATUS = new Set(['pilot', 'stable', 'deprecated']);
@@ -41,11 +42,24 @@ function regularBytes(filename, label, limit, { required = true } = {}) {
   requireCondition(before.isFile() && !before.isSymbolicLink() && before.nlink === 1n,
     `${label} must be one regular, non-linked file`);
   requireCondition(before.size <= BigInt(limit), `${label} exceeds ${limit} bytes`);
-  const bytes = fs.readFileSync(filename);
-  const after = fs.lstatSync(filename, { bigint: true });
-  requireCondition(after.dev === before.dev && after.ino === before.ino && after.size === before.size
-    && after.mtimeNs === before.mtimeNs, `${label} changed while being read`);
-  return bytes;
+  let descriptor;
+  try {
+    descriptor = fs.openSync(filename, fs.constants.O_RDONLY | fs.constants.O_NOFOLLOW);
+    const opened = fs.fstatSync(descriptor, { bigint: true });
+    requireCondition(opened.isFile() && opened.nlink === 1n && opened.dev === before.dev && opened.ino === before.ino
+      && opened.size === before.size && opened.mtimeNs === before.mtimeNs, `${label} changed before reading`);
+    const bytes = Buffer.alloc(limit + 1); let length = 0;
+    while (length < bytes.length) {
+      const read = fs.readSync(descriptor, bytes, length, bytes.length - length, length);
+      if (read === 0) break;
+      length += read;
+    }
+    requireCondition(length <= limit, `${label} exceeds ${limit} bytes`);
+    const after = fs.lstatSync(filename, { bigint: true });
+    requireCondition(after.dev === before.dev && after.ino === before.ino && after.size === before.size
+      && after.mtimeNs === before.mtimeNs, `${label} changed while being read`);
+    return bytes.subarray(0, length);
+  } finally { if (descriptor !== undefined) fs.closeSync(descriptor); }
 }
 
 function parseScalar(source, label) {
@@ -176,7 +190,7 @@ function readCatalog(root, { required = true, allowVersion1 = false } = {}) {
   if (bytes === null) return { filename, bytes: null, value: null, mode: null };
   const mode = fs.lstatSync(filename).mode & 0o777;
   let value;
-  try { value = JSON.parse(bytes.toString('utf8')); } catch { throw new CatalogError('catalog.json must be valid UTF-8 JSON'); }
+  try { value = strictJson(bytes); } catch { throw new CatalogError('catalog.json must be valid UTF-8 JSON'); }
   validateCatalogData(value, { allowVersion1 });
   return { filename, bytes, value, mode };
 }
@@ -266,10 +280,11 @@ export function syncCatalog(input) {
   if (current.bytes?.equals(next)) return { schema_version: 2, packages: desired.skills.length,
     changed: false, ...changes };
   const temporary = path.join(root, `.catalog.json.tmp-${process.pid}-${Date.now()}`);
-  let descriptor;
+  let descriptor; let created = false;
   try {
     descriptor = fs.openSync(temporary, fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_EXCL
       | fs.constants.O_NOFOLLOW, 0o600);
+    created = true;
     fs.writeFileSync(descriptor, next); fs.fchmodSync(descriptor, current.mode ?? 0o644); fs.fsyncSync(descriptor); fs.closeSync(descriptor); descriptor = undefined;
     const observed = regularBytes(current.filename, 'catalog.json', MAX_CATALOG_BYTES, { required: false });
     requireCondition((observed === null && current.bytes === null)
@@ -281,7 +296,7 @@ export function syncCatalog(input) {
     fs.renameSync(temporary, current.filename);
   } finally {
     if (descriptor !== undefined) fs.closeSync(descriptor);
-    try { fs.unlinkSync(temporary); } catch (error) { if (error.code !== 'ENOENT') throw error; }
+    if (created) try { fs.unlinkSync(temporary); } catch (error) { if (error.code !== 'ENOENT') throw error; }
   }
   return { schema_version: 2, packages: desired.skills.length, changed: true, ...changes };
 }

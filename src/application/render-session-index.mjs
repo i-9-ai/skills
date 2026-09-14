@@ -16,7 +16,7 @@ function readCatalog(root) {
   try {
     descriptor = openSync(filename, 'r');
     const opened = fstatSync(descriptor);
-    if (!opened.isFile() || opened.nlink !== 1 || opened.dev !== before.dev || opened.ino !== before.ino || opened.size !== before.size) {
+    if (!opened.isFile() || opened.nlink !== 1 || opened.dev !== before.dev || opened.ino !== before.ino || opened.size !== before.size || opened.mtimeMs !== before.mtimeMs || opened.ctimeMs !== before.ctimeMs) {
       throw new Error('catalog changed before reading');
     }
     const bytes = Buffer.alloc(MAX_CATALOG_BYTES + 1);
@@ -28,7 +28,7 @@ function readCatalog(root) {
     }
     if (length > MAX_CATALOG_BYTES) throw new Error('catalog exceeds the read limit');
     const after = lstatSync(filename);
-    if (after.nlink !== 1 || after.dev !== before.dev || after.ino !== before.ino || after.size !== before.size) {
+    if (after.nlink !== 1 || after.dev !== before.dev || after.ino !== before.ino || after.size !== before.size || after.mtimeMs !== before.mtimeMs || after.ctimeMs !== before.ctimeMs) {
       throw new Error('catalog changed during reading');
     }
     return strictJson(bytes.subarray(0, length));

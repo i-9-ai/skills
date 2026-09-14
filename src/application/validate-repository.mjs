@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import { fileURLToPath } from 'node:url';
+import { createHash } from 'node:crypto';
 import { CollectionFilesystem, LIMITS, rejectTrackedScratch } from '../infrastructure/collection-filesystem.mjs';
 import {
   CollectionValidationError, IGNORED_ROOT_NAMES, REPOSITORY_ALIASES,
@@ -25,6 +26,7 @@ export function validateRepository(path = DEFAULT_ROOT) {
     for (const relative of packages) packageInterfaces.set(relative, root.validatePackage(relative).openai_interface);
     checkCatalog(root.path);
     const iconDigests = new Set();
+    const pngDigests = new Set();
     for (const relative of packages) {
       const metadata = `${relative}/agents/openai.yaml`;
       const smallIcon = `${relative}/assets/icon.svg`;
@@ -40,7 +42,11 @@ export function validateRepository(path = DEFAULT_ROOT) {
       try { svg = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(root.readBytes(smallIcon, LIMITS.textBytes)); }
       catch { throw new CollectionValidationError(`${smallIcon} must be valid UTF-8`); }
       validateCollectionIcon(smallIcon, svg, iconDigests);
-      validateCollectionPng(largeIcon, root.readBytes(largeIcon, LIMITS.artifactBytes));
+      const largePng = root.readBytes(largeIcon, LIMITS.artifactBytes);
+      const pngDigest = createHash('sha256').update(largePng).digest('hex');
+      if (pngDigests.has(pngDigest)) throw new CollectionValidationError(`${largeIcon} duplicates another skill icon`);
+      pngDigests.add(pngDigest);
+      validateCollectionPng(largeIcon, largePng);
     }
     let localLinks = 0;
     let textFiles = 0;

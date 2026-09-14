@@ -133,6 +133,7 @@ export function validateCollectionIcon(relative, text, digests) {
 }
 
 function validateSafeSvg(relative, text) {
+  requireCondition(!/[\x00-\x08\x0b\x0c\x0e-\x1f]/u.test(text), `${relative} is not well-formed XML`);
   const stack = [];
   let offset = 0;
   let rootCount = 0;
@@ -164,7 +165,7 @@ function validateSafeSvg(relative, text) {
     requireCondition(tagMatch, `${relative} is not well-formed XML`);
     const name = tagMatch[1];
     const localName = name.split(':').at(-1).toLowerCase();
-    requireCondition(!['script', 'foreignobject', 'iframe', 'object', 'embed'].includes(localName),
+    requireCondition(!['script', 'foreignobject', 'iframe', 'object', 'embed', 'animate', 'animatemotion', 'animatetransform', 'set'].includes(localName),
       `${relative} contains active or external SVG content`);
     let cursor = tagStart + name.length;
     let quote = '';
@@ -439,7 +440,7 @@ function validPngBitDepth(bitDepth, colorType) {
 
 function publicRepositoryHostname(hostname) {
   const host = hostname.replace(/^\[|\]$/gu, '').toLowerCase();
-  if (host === 'localhost' || host.endsWith('.localhost') || host === 'local') return false;
+  if (host === 'localhost' || host.endsWith('.localhost') || host === 'local' || host.endsWith('.local')) return false;
   const parts = host.split('.');
   if (parts.length === 4 && parts.every(part => /^(?:0|[1-9][0-9]{0,2})$/u.test(part) && Number(part) <= 255)) {
     const [first, second] = parts.map(Number);
@@ -452,7 +453,7 @@ function publicRepositoryHostname(hostname) {
   }
   if (host.includes(':')) return host !== '::' && host !== '::1' && !host.startsWith('::ffff:')
     && !/^f[cd][0-9a-f:]*$/u.test(host) && !/^fe[89ab][0-9a-f:]*$/u.test(host);
-  return true;
+  return host.includes('.');
 }
 
 export function validateLock(value, names) {
