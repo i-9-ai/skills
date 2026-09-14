@@ -57,6 +57,41 @@ jobs:
           wiki_root = Path('.wiki')
           link = re.compile(r'(?P<prefix>\]\()(?P<target>\.\./[^)\s]+)')
 
+          def rewrite_markdown(body, replace):
+              output = []
+              fence = None
+              for line in body.splitlines(keepends=True):
+                  marker = re.match(r'\s{0,3}(`{3,}|~{3,})', line)
+                  if marker:
+                      run = marker.group(1)
+                      if fence is None:
+                          fence = run
+                      elif run[0] == fence[0] and len(run) >= len(fence):
+                          fence = None
+                      output.append(line)
+                      continue
+                  if fence is not None:
+                      output.append(line)
+                      continue
+                  cursor = 0
+                  while cursor < len(line):
+                      tick = line.find('`', cursor)
+                      if tick == -1:
+                          output.append(link.sub(replace, line[cursor:]))
+                          break
+                      output.append(link.sub(replace, line[cursor:tick]))
+                      width = 1
+                      while tick + width < len(line) and line[tick + width] == '`':
+                          width += 1
+                      marker = '`' * width
+                      end = line.find(marker, tick + width)
+                      if end == -1:
+                          output.append(line[tick:])
+                          break
+                      output.append(line[tick:end + width])
+                      cursor = end + width
+              return ''.join(output)
+
           for page in wiki_root.rglob('*.md'):
               source = Path('docs') / page.relative_to(wiki_root)
               body = page.read_text(encoding='utf-8')
@@ -72,7 +107,7 @@ jobs:
                       url += f'#{fragment}'
                   return f'{match.group("prefix")}{url}'
 
-              page.write_text(link.sub(replace, body), encoding='utf-8')
+              page.write_text(rewrite_markdown(body, replace), encoding='utf-8')
           PY
           if [ -f .wiki/index.md ] && { [ -e .wiki/Home.md ] || [ -L .wiki/Home.md ]; }; then
             echo "Wiki Home collision: docs contains both index.md and Home.md."

@@ -95,6 +95,11 @@ test('session index rejects an oversized catalog before reading it', (t) => {
   assert.throws(() => renderRepositorySessionIndex(fixture), /bounded regular file/);
 });
 
+test('session index bounds its opened catalog read before decoding', () => {
+  const source = readFileSync(resolve(repository, 'src/application/render-session-index.mjs'), 'utf8');
+  assert.match(source, /Buffer\.alloc\(MAX_CATALOG_BYTES \+ 1\)[\s\S]*readSync\(descriptor, bytes[\s\S]*catalog exceeds the read limit/);
+});
+
 test('session index rejects a catalog hard link before reading external bytes', (t) => {
   const fixture = mkdtempSync(join(tmpdir(), 'i9-session-index-')); const outside = join(tmpdir(), `catalog-outside-${Date.now()}.json`);
   t.after(() => { rmSync(fixture, { recursive: true, force: true }); rmSync(outside, { force: true }); });

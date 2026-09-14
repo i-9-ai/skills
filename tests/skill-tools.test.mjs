@@ -303,6 +303,7 @@ test('OpenAI MCP declarations validate as inert data with bounded explicit field
     dependencies.replace('https://example.org/mcp', 'http://example.org/mcp'),
     dependencies.replace('https://example.org/mcp', 'https://127.0.0.1/mcp'),
     dependencies.replace('https://example.org/mcp', 'https://[::1]/mcp'),
+    dependencies.replace('https://example.org/mcp', 'https://service.local/mcp'),
     dependencies.replace('https://example.org/mcp', 'https://user@example.org/mcp'),
     dependencies.replace('https://example.org/mcp', 'https://example.org/mcp?token=synthetic'),
     dependencies + '      url: "https://example.org/duplicate"\n',

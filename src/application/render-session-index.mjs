@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-import { closeSync, fstatSync, lstatSync, openSync, readFileSync } from 'node:fs';
+import { closeSync, fstatSync, lstatSync, openSync, readSync } from 'node:fs';
 import { join } from 'node:path';
 import { renderSessionIndex } from '../domain/session-index-policy.mjs';
 
@@ -18,7 +18,15 @@ function readCatalog(root) {
     if (!opened.isFile() || opened.nlink !== 1 || opened.dev !== before.dev || opened.ino !== before.ino || opened.size !== before.size) {
       throw new Error('catalog changed before reading');
     }
-    const text = readFileSync(descriptor, 'utf8');
+    const bytes = Buffer.alloc(MAX_CATALOG_BYTES + 1);
+    let length = 0;
+    while (length < bytes.length) {
+      const read = readSync(descriptor, bytes, length, bytes.length - length, length);
+      if (read === 0) break;
+      length += read;
+    }
+    if (length > MAX_CATALOG_BYTES) throw new Error('catalog exceeds the read limit');
+    const text = bytes.subarray(0, length).toString('utf8');
     const after = lstatSync(filename);
     if (after.nlink !== 1 || after.dev !== before.dev || after.ino !== before.ino || after.size !== before.size) {
       throw new Error('catalog changed during reading');

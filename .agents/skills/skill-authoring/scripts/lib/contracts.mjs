@@ -247,8 +247,8 @@ export function markdownLinks(text) {
 
 function inlineMarkdownLinks(line) {
   const links = [];
-  for (const match of line.matchAll(/!?\[[^\[\]]*\]\(\s*/gu)) {
-    let cursor = match.index + match[0].length;
+  for (const start of inlineMarkdownLinkStarts(line)) {
+    let cursor = start;
     let target = '';
     if (line[cursor] === '<') {
       const end = line.indexOf('>', cursor + 1);
@@ -280,6 +280,27 @@ function inlineMarkdownLinks(line) {
     if (line[cursor] === ')') links.push(target);
   }
   return links;
+}
+
+function inlineMarkdownLinkStarts(line) {
+  const starts = [];
+  for (let index = 0; index < line.length; index += 1) {
+    const opening = line[index] === '!' && line[index + 1] === '[' ? index + 1
+      : line[index] === '[' && line[index - 1] !== '!' ? index : -1;
+    if (opening === -1 || (opening > 0 && line[opening - 1] === '\\')) continue;
+    let cursor = opening + 1;
+    let depth = 1;
+    for (; cursor < line.length && depth > 0; cursor += 1) {
+      if (line[cursor] === '\\') { cursor += 1; continue; }
+      if (line[cursor] === '[') depth += 1;
+      else if (line[cursor] === ']') depth -= 1;
+    }
+    if (depth !== 0 || line[cursor] !== '(') continue;
+    cursor += 1;
+    while (/\s/u.test(line[cursor] ?? '')) cursor += 1;
+    starts.push(cursor);
+  }
+  return starts;
 }
 export function localLinkPath(document, target) {
   requireCondition(typeof target === 'string' && !target.includes('\\'), 'Markdown links must not contain backslashes');

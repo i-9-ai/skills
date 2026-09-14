@@ -21,3 +21,7 @@ test('HTML link discovery keeps scanning through quoted greater-than signs', () 
 test('Markdown link discovery preserves balanced destination parentheses', () => {
   assert.deepEqual(markdownLinks('[Guide](guide(v2).md)'), [[1, 'guide(v2).md']]);
 });
+
+test('Markdown link discovery preserves balanced nested labels', () => {
+  assert.deepEqual(markdownLinks('[a [b]](missing.md)'), [[1, 'missing.md']]);
+});

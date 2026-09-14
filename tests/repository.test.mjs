@@ -237,6 +237,16 @@ test('collection rejects namespaced SVG scripts and empty accessible titles', (t
   assert.throws(() => validateRepository(root), /titled 64x64 SVG/);
 });
 
+test('collection rejects unbound SVG namespace prefixes', (t) => {
+  const { root, packagePath } = makeRepository(t);
+  const icon = join(packagePath, 'assets', 'icon.svg');
+  const valid = fs.readFileSync(icon, 'utf8');
+  fs.writeFileSync(icon, valid.replace('<path', '<x:g/> <path'));
+  assert.throws(() => validateRepository(root), /not well-formed XML/);
+  fs.writeFileSync(icon, valid.replace('<path', '<x:g xmlns:x="urn:example"/> <path'));
+  assert.equal(validateRepository(root).packages, 1);
+});
+
 test('collection rejects SVG icons with malformed UTF-8', (t) => {
   const { root, packagePath } = makeRepository(t);
   const icon = join(packagePath, 'assets', 'icon.svg');
@@ -361,6 +371,14 @@ test('collection rejects IDAT chunks separated by ancillary PNG data', (t) => {
   const valid = transparentPng(); const size = valid.readUInt32BE(33); const content = valid.subarray(41, 41 + size);
   const split = Buffer.concat([valid.subarray(0, 33), pngChunk('IDAT', content.subarray(0, 1)), pngChunk('tEXt', Buffer.from('key\0value')), pngChunk('IDAT', content.subarray(1)), valid.subarray(45 + size)]);
   fs.writeFileSync(icon, split);
+  assert.throws(() => validateRepository(root), /valid PNG/);
+});
+
+test('collection rejects transparency chunks for alpha PNGs', (t) => {
+  const { root, packagePath } = makeRepository(t);
+  const valid = transparentPng();
+  const malformed = Buffer.concat([valid.subarray(0, 33), pngChunk('tRNS', Buffer.alloc(0)), valid.subarray(33)]);
+  fs.writeFileSync(join(packagePath, 'assets', 'icon.png'), malformed);
   assert.throws(() => validateRepository(root), /valid PNG/);
 });
 
@@ -506,6 +524,7 @@ test('visual guide publication only deploys main and stages new pages before dif
   assert.match(wikiWorkflow, /with:\n\s+ref: main\n\s+persist-credentials: false/);
   assert.match(wikiWorkflow, /git ls-remote --exit-code --heads "https:\/\/github\.com\/\$\{REPOSITORY\}\.wiki\.git"/);
   assert.match(wikiWorkflow, /python3 - <<'PY'[\s\S]*https:\/\/github\.com\/\{repository\}\/blob\/main\/\{resolved\}/);
+  assert.match(wikiWorkflow, /def rewrite_markdown\(body, replace\):[\s\S]*fence is not None[\s\S]*line\.find\('`', cursor\)/);
   assert.match(wikiWorkflow, /Wiki Home collision:[\s\S]*exit 1/);
   assert.match(wikiWorkflow, /git add --all\n\s+if git diff --quiet --staged; then/);
 });

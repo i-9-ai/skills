@@ -152,8 +152,8 @@ function validateSafeSvg(relative, text) {
       requireCondition(stack.length > 0 || /^\s*$/.test(content), `${relative} is not well-formed XML`);
       requireCondition(!/[<&]/.test(content) || /^(?:[^<&]|&(?:amp|apos|gt|lt|quot|#[0-9]+|#x[0-9a-fA-F]+);)*$/.test(content),
         `${relative} is not well-formed XML`);
-      if (stack.at(-1) === 'style') validateSvgPaintReferences(relative, content);
-      if (stack.length === 2 && stack[0] === 'svg' && stack[1] === 'title') titleText += decodeXmlEntities(relative, content);
+      if (stack.at(-1)?.name === 'style') validateSvgPaintReferences(relative, content);
+      if (stack.length === 2 && stack[0].name === 'svg' && stack[1].name === 'title') titleText += decodeXmlEntities(relative, content);
       offset = end === -1 ? text.length : end;
       continue;
     }
@@ -184,23 +184,40 @@ function validateSafeSvg(relative, text) {
     requireCondition(cursor < text.length && !quote, `${relative} is not well-formed XML`);
     const source = text.slice(tagStart + name.length, cursor);
     if (closing) {
-      requireCondition(/^\s*$/.test(source) && stack.pop() === name, `${relative} is not well-formed XML`);
+      const parent = stack.at(-1);
+      requireCondition(/^\s*$/.test(source) && parent?.name === name, `${relative} is not well-formed XML`);
+      assertXmlNameBound(relative, name, parent.namespaces);
+      stack.pop();
     } else {
       const selfClosing = /\/\s*$/.test(source);
       const attributes = selfClosing ? source.replace(/\/\s*$/, '') : source;
       const parsedAttributes = validateXmlAttributes(relative, attributes);
+      const namespaces = new Map(stack.at(-1)?.namespaces ?? [['xml', 'http://www.w3.org/XML/1998/namespace']]);
+      for (const [attribute, value] of parsedAttributes) {
+        if (attribute === 'xmlns') namespaces.set('', value);
+        else if (attribute.startsWith('xmlns:')) namespaces.set(attribute.slice('xmlns:'.length), value);
+      }
+      assertXmlNameBound(relative, name, namespaces);
+      for (const attribute of parsedAttributes.keys()) {
+        if (attribute !== 'xmlns' && !attribute.startsWith('xmlns:')) assertXmlNameBound(relative, attribute, namespaces);
+      }
       if (stack.length === 0) {
         requireCondition(name === 'svg' && rootCount === 0, `${relative} must have one SVG root element`);
         rootCount += 1;
         rootAttributes = parsedAttributes;
       }
-      if (!selfClosing && stack.length === 1 && stack[0] === 'svg' && name === 'title' && parsedAttributes.get('id') === 'title') titleCount += 1;
-      if (!selfClosing) stack.push(name);
+      if (!selfClosing && stack.length === 1 && stack[0].name === 'svg' && name === 'title' && parsedAttributes.get('id') === 'title') titleCount += 1;
+      if (!selfClosing) stack.push({ name, namespaces });
     }
     offset = cursor + 1;
   }
   requireCondition(stack.length === 0 && rootCount === 1, `${relative} is not well-formed XML`);
   return { rootAttributes, titleCount, titleText };
+}
+
+function assertXmlNameBound(relative, name, namespaces) {
+  const separator = name.indexOf(':');
+  if (separator !== -1) requireCondition(namespaces.has(name.slice(0, separator)), `${relative} is not well-formed XML`);
 }
 
 function validateXmlAttributes(relative, source) {
@@ -303,6 +320,7 @@ export function validateCollectionPng(relative, bytes) {
   let offset = 8;
   let ihdr;
   let sawPalette = false;
+  let sawTransparency = false;
   let paletteEntries = 0;
   let sawIdat = false;
   let closedIdatSequence = false;
@@ -336,6 +354,11 @@ export function validateCollectionPng(relative, bytes) {
       requireCondition(paletteEntries <= 256 && (ihdr.colorType !== 3 || paletteEntries <= 2 ** ihdr.bitDepth),
         `${relative} must be a valid PNG`);
       sawPalette = true;
+    } else if (type === 'tRNS') {
+      requireCondition(!sawTransparency && !sawIdat && [0, 2, 3].includes(ihdr.colorType), `${relative} must be a valid PNG`);
+      requireCondition((ihdr.colorType === 0 && size === 2) || (ihdr.colorType === 2 && size === 6)
+        || (ihdr.colorType === 3 && sawPalette && size > 0 && size <= paletteEntries), `${relative} must be a valid PNG`);
+      sawTransparency = true;
     } else if (type === 'IDAT') {
       requireCondition(!sawIend && !closedIdatSequence, `${relative} must be a valid PNG`);
       requireCondition(ihdr.colorType !== 3 || sawPalette, `${relative} must be a valid PNG`);

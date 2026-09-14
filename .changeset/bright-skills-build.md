@@ -21,7 +21,7 @@ Introduce I-9 Skills, a collection of 19 focused, agent-agnostic packages for bu
 - `npm run ci:official` runs the official Agent Skills validation profile.
 - `node .agents/skills/skills-catalog/scripts/catalog_tools.mjs check .` detects catalog drift.
 - `node .agents/skills/skills-catalog/scripts/catalog_tools.mjs sync .` regenerates only `catalog.json` while preserving lifecycle state.
-- `npx skills@1.5.26 add https://github.com/i-9-ai/skills/tree/94107e0a4b3f8712f2e62fd48d7c27b62fee4441 --global --skill '*' --yes` installs the reviewed collection revision into a user-level Skills scope after publication.
+- `npx skills@1.5.26 add https://github.com/i-9-ai/skills/tree/ec321be85d854f55e6290e737df13101485d5f19 --global --skill '*' --yes` installs the reviewed collection revision into a user-level Skills scope after publication.
 
 ### Release-management foundation
 

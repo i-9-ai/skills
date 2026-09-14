@@ -181,7 +181,7 @@ function markdownHeadings(text) {
 
 function publicSourceHostname(hostname) {
   const host = hostname.replace(/^\[|\]$/gu, '').toLowerCase();
-  if (host === 'localhost' || host.endsWith('.localhost') || host === 'local') return false;
+  if (host === 'localhost' || host.endsWith('.localhost') || host === 'local' || host.endsWith('.local')) return false;
   const parts = host.split('.');
   if (parts.length === 4 && parts.every(part => /^(?:0|[1-9][0-9]{0,2})$/u.test(part) && Number(part) <= 255)) {
     const [first, second] = parts.map(Number);
