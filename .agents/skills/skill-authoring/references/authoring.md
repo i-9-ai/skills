@@ -8,6 +8,8 @@ Choose a domain-first name that reveals the responsibility. Use `skill` for one 
 
 ## Package contents
 
+When a collection exposes a machine-readable domain inventory, give it an explicit name such as `skills-catalog.json` instead of a generic `catalog.json`. The catalog may declare package identity, discovery metadata, lifecycle state, and compatibility, but catalog presence never installs or activates a package, grants permissions, runs setup, or authorizes side effects. Keep those actions explicit in their own contracts.
+
 ## Self-sufficient core, progressive detail
 
 Write enough of the recurring workflow into the `SKILL.md` and bundled references that a capable agent can select the skill, make its ordinary decisions, and produce the primary output without first browsing external documentation. This does not mean copying a platform manual. Keep the core focused on decisions, procedures, defaults, representative examples, boundaries, and likely failure cases.

@@ -14,7 +14,7 @@ metadata:
 
 ## Responsibility and inputs
 
-Produce one current `catalog.json` for a skill collection. Accept an explicit repository root, its canonical skill directory, the existing catalog when present, and authorization to change the catalog. Inventory maintenance, summary projection, schema validation, and maturity preservation belong here. Selecting which skill should handle a task belongs to `skill-routing`.
+Produce one current `skills-catalog.json` for a skill collection. Accept an explicit repository root, its canonical skill directory, the existing catalog when present, and authorization to change the catalog. Inventory maintenance, summary projection, schema validation, and maturity preservation belong here. Selecting which skill should handle a task belongs to `skill-routing`.
 
 Resolve resources and the helper from this installed package. The target repository is caller-selected and may be unrelated to this package's installation. Do not assume a particular working directory, source checkout, package manager, host agent, or companion skill.
 
@@ -24,8 +24,8 @@ Resolve resources and the helper from this installed package. The target reposit
 2. Derive each entry's `name`, `path`, `description`, and normalized `tags` from its frontmatter. Preserve the existing valid `status` for the same name; assign `pilot` only to a newly discovered package. Sort entries by canonical name.
 3. In read-only work, run the bundled helper's `check` command or produce a proposed diff. Report missing packages, orphaned entries, malformed metadata, and changed summaries without editing the target.
 4. When catalog mutation is authorized, run `sync`, inspect the resulting diff, and retain unrelated repository changes. Sync may add newly discovered packages, remove entries whose canonical directories no longer exist, and refresh derived fields; it must not promote or demote maturity.
-5. Validate the synchronized file against the bundled [JSON Schema](assets/catalog.schema.json), rerun the repository's available checks when they are verified, and report the inventory count plus added, removed, and refreshed names.
-6. When several explicit collections need cross-source lookup, build a local derived aggregate index using [the aggregate-index contract](references/aggregate-index.md). Each source catalog remains authoritative; the index is a searchable projection, not a replacement catalog.
+5. Validate the synchronized file against the bundled [JSON Schema](assets/skills-catalog.schema.json), rerun the repository's available checks when they are verified, and report the inventory count plus added, removed, and refreshed names.
+6. When several explicit collections need cross-source lookup or local change history, build a derived aggregate index using [the aggregate-index contract](references/aggregate-index.md). Each `skills-catalog.json` remains authoritative; `skills-catalog.db` is a searchable local projection that retains source observations and normalized changes.
 
 Use the helper as an argument array or shell command with a verified absolute package path:
 
@@ -34,7 +34,7 @@ node "<installed-skill>/scripts/catalog_tools.mjs" check "<repository-root>"
 node "<installed-skill>/scripts/catalog_tools.mjs" sync "<repository-root>"
 ```
 
-`<repository-root>` must be the explicit collection root. `check` is read-only. `sync` atomically replaces only `catalog.json`; it rejects symbolic links, hard-linked catalog files, non-regular package entrypoints, invalid frontmatter, and inputs above its documented bounds.
+`<repository-root>` must be the explicit collection root. `check` is read-only. `sync` atomically replaces only `skills-catalog.json`; it rejects symbolic links, hard-linked catalog files, non-regular package entrypoints, invalid frontmatter, and inputs above its documented bounds.
 
 ### Cross-collection lookup
 
@@ -42,19 +42,28 @@ Use the separate aggregate helper only when the caller already has explicit cata
 
 ```sh
 node "<installed-skill>/scripts/aggregate_index.mjs" rebuild \
-  --source "alpha=<alpha-catalog>/catalog.json" \
-  --source "beta=<beta-catalog>/catalog.json" \
+  --source "alpha=<alpha-catalog>/skills-catalog.json" \
+  --source "beta=<beta-catalog>/skills-catalog.json" \
+  --output "<local-index-directory>"
+node "<installed-skill>/scripts/aggregate_index.mjs" sync \
+  --source "alpha=<alpha-catalog>/skills-catalog.json" \
+  --source "beta=<beta-catalog>/skills-catalog.json" \
   --output "<local-index-directory>"
 node "<installed-skill>/scripts/aggregate_index.mjs" query \
   --index "<index-returned-by-rebuild>" \
   --tag "catalog"
+node "<installed-skill>/scripts/aggregate_index.mjs" history \
+  --index "<local-index-directory>/skills-catalog.db"
+node "<installed-skill>/scripts/aggregate_index.mjs" changes \
+  --index "<local-index-directory>/skills-catalog.db" \
+  --name "skills-discovery"
 ```
 
-It writes the local derived `skills-catalog.db` with Node.js built-in SQLite and falls back deterministically to `skills-catalog.index.json` when SQLite is unavailable. See [the aggregate-index contract](references/aggregate-index.md) for the output schema, bounds, safe storage location, exact query options, and failure cases.
+It writes the local derived `skills-catalog.db` with Node.js built-in SQLite and falls back deterministically to a current-state-only `skills-catalog.index.json` when SQLite is unavailable. `sync` retains SQLite history; `rebuild` establishes a new baseline and refuses to discard an existing history unless reset is explicit. See [the aggregate-index contract](references/aggregate-index.md) for the output schema, bounds, safe storage location, exact query options, and failure cases.
 
 ## Output and boundaries
 
-Return the catalog path, schema version, package count, and concrete changes or mismatches. For an aggregate lookup, return the local index format, source count, skill count, and query result without treating it as a source mutation. An absent package directory is evidence for an orphaned catalog entry, not authorization to delete the package elsewhere. A maturity change, package rename, installation, publication, or source edit requires its own decision and is not performed by this skill.
+Return the catalog path, schema version, package count, and concrete changes or mismatches. For an aggregate lookup, return the local index format, source count, skill count, and query result; for SQLite history, include the observation time and added, changed, and removed counts. Never treat an index update as a source mutation. An absent package directory is evidence for an orphaned catalog entry, not authorization to delete the package elsewhere. A maturity change, package rename, installation, publication, or source edit requires its own decision and is not performed by this skill.
 
 The optional `reasoning-effort: medium` hint suits metadata reconciliation and ambiguous migrations. It does not select a model, change runtime settings, or grant filesystem authority. Do not add secrets, local absolute paths, runtime state, benchmark claims, or self-referential Git hashes to the catalog.
 

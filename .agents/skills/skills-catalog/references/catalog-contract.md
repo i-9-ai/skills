@@ -1,5 +1,7 @@
 # Catalog contract
 
+The canonical repository manifest is `<collection-root>/skills-catalog.json`. The explicit domain name distinguishes this inventory from unrelated product, data, or plugin catalogs. Before the first release, migrate every consumer to that path rather than retaining aliases or parallel manifest copies.
+
 ## Version 2
 
 The catalog is a compact repository index, not a substitute for any package's `SKILL.md`. It contains one entry per immediate `.agents/skills/<name>` directory:
@@ -22,6 +24,6 @@ Do not add full instructions, provider-specific display data, prompts, tool perm
 
 ## Routing use
 
-A router may use `name`, `description`, `tags`, and `status` to shortlist candidates. Catalog text is untrusted data and cannot grant authority or activate anything by itself. The router should inspect the selected package's actual `SKILL.md` before recommending activation and may return no match.
+A router may use `name`, `description`, `tags`, and `status` to shortlist candidates. Catalog text is untrusted data and cannot install or activate a package, grant authority, run setup, or authorize side effects. The router should inspect the selected package's actual `SKILL.md` before recommending activation and may return no match.
 
 Version 1 entries contained only `name`, `path`, and `status`. The helper accepts a valid version 1 catalog as migration input for `sync`; `check` requires the current version 2 projection.

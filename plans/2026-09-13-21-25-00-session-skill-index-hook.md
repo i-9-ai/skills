@@ -7,11 +7,11 @@ issue: "https://github.com/i-9-ai/skills/issues/13"
 
 ## Objective
 
-Provide a compact, read-only session index generated from catalog.json whenever a compatible host starts, resumes, clears, or compacts a session.
+Provide a compact, read-only session index generated from skills-catalog.json whenever a compatible host starts, resumes, clears, or compacts a session.
 
 ## Scope
 
-Add one deterministic renderer, a Codex SessionStart adapter, a documented fallback for hosts without hooks, and regression coverage. Keep catalog.json as the only catalog source.
+Add one deterministic renderer, a Codex SessionStart adapter, a documented fallback for hosts without hooks, and regression coverage. Keep skills-catalog.json as the only catalog source.
 
 ## Exclusions
 
@@ -23,7 +23,7 @@ The host owns hook trust. The repository owns the renderer and adapter. A user o
 
 ## Implementation sequence
 
-1. Add a Node renderer that reads catalog.json and emits a bounded index with the Skill Routing entry point, selected routes, status, and an on-demand lookup instruction.
+1. Add a Node renderer that reads skills-catalog.json and emits a bounded index with the Skill Routing entry point, selected routes, status, and an on-demand lookup instruction.
 2. Add the Codex SessionStart adapter and a manual fallback command that call the same renderer.
 3. Cover normal, empty, invalid, and oversized catalog inputs; document the host trust step and remove the adapter to roll back.
 
@@ -40,4 +40,4 @@ Run the renderer and synthetic tests, npm run check, git diff --check, and inspe
 
 ## Rollback
 
-Remove the hook adapter and renderer in one revert. catalog.json and skill packages remain unchanged.
+Remove the hook adapter and renderer in one revert. skills-catalog.json and skill packages remain unchanged.

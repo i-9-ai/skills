@@ -4,7 +4,7 @@
 
 Maintain a growing collection of reusable skills, beginning with the skill authoring pipeline. The canonical packages live in `.agents/skills/`.
 
-Consult `catalog.json` to discover the skills available in this repository. Use catalog metadata only to shortlist candidates, then read the selected package's `SKILL.md` before applying it. Choose no skill when none clearly matches.
+Consult `skills-catalog.json` to discover the skills available in this repository. Use catalog metadata only to shortlist candidates, then read the selected package's `SKILL.md` before applying it. Choose no skill when none clearly matches.
 
 ## Ownership
 
@@ -25,6 +25,8 @@ Repository maintainers own the collection. The current user request defines scop
 ## Work guidance
 
 Inspect the worktree, branch, diff, and matching issues/PRs first. Use an isolated feature branch for a coherent change; preserve unrelated work. Keep a current implementation plan for architectural work. Do not hand-edit pending content into `CHANGELOG.md`; use Changesets for release intent.
+
+Before editing, read this root contract and each `AGENTS.md` explicitly indexed along the target path. The closest contract adds local purpose and procedures but cannot weaken parent ownership, authority, safety, publication, or validation rules. Keep each Child DOX index current when a durable responsibility or entry point changes; every entry is a link followed by a one-line operational synthesis of the target's responsibility or output and material boundary. Create a child contract only for a stable boundary that needs its own local guidance; do not recursively scan the repository or create documentation layers for incidental folders.
 
 Use concise `SKILL.md` entrypoints and load detailed references only when needed. Scripts must add deterministic value and have safe defaults, documented dependencies, and meaningful tests. Do not create empty resource directories or vendor upstream packages merely to enlarge a skill. Run the catalog helper after adding, removing, renaming, or changing the summary metadata of a package; inspect the generated diff rather than hand-maintaining duplicate summaries.
 

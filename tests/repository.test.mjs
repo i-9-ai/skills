@@ -90,11 +90,11 @@ function makeRepository(t) {
 </svg>
 `);
   fs.writeFileSync(join(packagePath, 'assets', 'icon.png'), transparentPng());
-  writeJson(join(root, 'catalog.json'), { schema_version: 2, skills: [
+  writeJson(join(root, 'skills-catalog.json'), { schema_version: 2, skills: [
     { name, path: `.agents/skills/${name}`, status: 'pilot', description, tags: [] },
   ] });
   fs.writeFileSync(join(root, 'README.md'), `# Collection\n\n[Example](.agents/skills/${name}/SKILL.md)\n`);
-  fs.writeFileSync(join(root, 'AGENTS.md'), '# Repository instructions\n\nConsult `catalog.json` for available skills.\n');
+  fs.writeFileSync(join(root, 'AGENTS.md'), '# Repository instructions\n\nConsult `skills-catalog.json` for available skills.\n');
   fs.symlinkSync('AGENTS.md', join(root, 'CLAUDE.md'));
   for (const directory of ['.claude', '.github']) {
     fs.mkdirSync(join(root, directory));
@@ -213,7 +213,7 @@ test('catalog parser rejects malformed single-quoted scalars', () => {
 
 test('README advertises every cataloged skill', () => {
   const readme = fs.readFileSync(join(process.cwd(), 'README.md'), 'utf8');
-  const catalog = JSON.parse(fs.readFileSync(join(process.cwd(), 'catalog.json'), 'utf8'));
+  const catalog = JSON.parse(fs.readFileSync(join(process.cwd(), 'skills-catalog.json'), 'utf8'));
   assert.match(readme, new RegExp(`\\*\\*${catalog.skills.length} focused skills\\.`));
   for (const skill of catalog.skills) assert.ok(readme.includes('[`' + skill.name + '`]'));
 });
@@ -543,15 +543,23 @@ test('visual guide publication only deploys main and stages new pages before dif
 
 test('catalog helper requires affirmative discovery guidance', (t) => {
   const { root } = makeRepository(t);
-  fs.writeFileSync(join(root, 'AGENTS.md'), 'Do not consult catalog.json for skill discovery.\n');
+  fs.writeFileSync(join(root, 'AGENTS.md'), 'Do not consult skills-catalog.json for skill discovery.\n');
   const result = spawnSync(process.execPath, [join(process.cwd(), '.agents', 'skills', 'skills-catalog', 'scripts', 'catalog_tools.mjs'), 'check', root], { encoding: 'utf8' });
   assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /must direct agents to catalog\.json for skill discovery/);
+  assert.match(result.stderr, /must direct agents to skills-catalog\.json for skill discovery/);
+});
+
+test('catalog helper rejects a parallel legacy manifest name', (t) => {
+  const { root } = makeRepository(t);
+  fs.writeFileSync(join(root, 'catalog.json'), '{}\n');
+  const result = spawnSync(process.execPath, [join(process.cwd(), '.agents', 'skills', 'skills-catalog', 'scripts', 'catalog_tools.mjs'), 'check', root], { encoding: 'utf8' });
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /legacy catalog\.json must be removed/);
 });
 
 test('catalog synchronization preserves readable permissions', (t) => {
   const { root, packagePath } = makeRepository(t);
-  const catalog = join(root, 'catalog.json');
+  const catalog = join(root, 'skills-catalog.json');
   fs.chmodSync(catalog, 0o644);
   const skill = join(packagePath, 'SKILL.md');
   fs.writeFileSync(skill, fs.readFileSync(skill, 'utf8').replace('synthetic example', 'portable example'));

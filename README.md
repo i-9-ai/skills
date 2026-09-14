@@ -34,7 +34,7 @@ The Skills CLI asks for a supported agent target when it cannot determine one. A
 
 ## Optional session index
 
-This source checkout includes a project-local Codex `SessionStart` adapter. When the project is trusted and hooks are enabled by the host, it supplies a compact, read-only map derived from `catalog.json` at session start, resume, clear, and compaction. It does not load package bodies, install packages, or invoke a route.
+This source checkout includes a project-local Codex `SessionStart` adapter. When the project is trusted and hooks are enabled by the host, it supplies a compact, read-only map derived from `skills-catalog.json` at session start, resume, clear, and compaction. It does not load package bodies, install packages, or invoke a route.
 
 Hosts without hooks, or projects where the user has not enabled hook trust, use the identical manual fallback:
 
@@ -63,7 +63,7 @@ When no package clearly fits, choose no skill. The catalog is a shortlist, never
 
 ## Collection
 
-Consult [`catalog.json`](catalog.json) for the generated machine-readable inventory. Use its descriptions and tags only to shortlist candidates, then read the selected package's `SKILL.md`. The table below is ordered by a typical user journey and centrality, not alphabetically. Choose no skill when none clearly matches.
+Consult [`skills-catalog.json`](skills-catalog.json) for the generated machine-readable inventory. Use its descriptions and tags only to shortlist candidates, then read the selected package's `SKILL.md`. The table below is ordered by a typical user journey and centrality, not alphabetically. Choose no skill when none clearly matches.
 
 | Skill | Responsibility | Primary output |
 | --- | --- | --- |
@@ -87,7 +87,7 @@ Consult [`catalog.json`](catalog.json) for the generated machine-readable invent
 | [`skill-optimization`](.agents/skills/skill-optimization/SKILL.md) | Improve one skill through measured candidate iterations | Best accepted candidate and optimization record |
 | [`skills-refactoring`](.agents/skills/skills-refactoring/SKILL.md) | Design a focused reorganization of an audited collection | Refactoring plan |
 | [`skill-migration`](.agents/skills/skill-migration/SKILL.md) | Move one skill between collections | Migrated package and migration record |
-| [`skills-catalog`](.agents/skills/skills-catalog/SKILL.md) | Derive and validate a collection inventory | `catalog.json` |
+| [`skills-catalog`](.agents/skills/skills-catalog/SKILL.md) | Derive and validate a collection inventory | `skills-catalog.json` |
 ## From idea to durable skill system
 
 ```mermaid
@@ -166,7 +166,7 @@ This is a capability matrix, not a claim that every host will render the same in
 
 Packages live in `.agents/skills`. The repository exposes relative aliases at `.github/skills` and `.claude/skills`, while `CLAUDE.md` points to `AGENTS.md`. Optional `agents/openai.yaml` files provide Codex interface metadata. Every package has a distinct source-attributed SVG icon and a matching PNG large-icon rendering; collection validation rejects missing, unsafe, or byte-identical SVG icons and missing interface assets.
 
-Installed skills resolve references, assets, and scripts from their own package directory and write outputs to the caller-selected workspace. They do not depend on this checkout, its `catalog.json`, repository commands, or CI. A missing companion produces a clear handoff; it never authorizes silent installation.
+Installed skills resolve references, assets, and scripts from their own package directory and write outputs to the caller-selected workspace. They do not depend on this checkout, its `skills-catalog.json`, repository commands, or CI. A missing companion produces a clear handoff; it never authorizes silent installation.
 
 ## Source-checkout validation
 
@@ -188,11 +188,11 @@ node .agents/skills/skills-catalog/scripts/catalog_tools.mjs check .
 node .agents/skills/skills-catalog/scripts/catalog_tools.mjs sync .
 ```
 
-The sync command derives descriptions and tags from each `SKILL.md`, preserves lifecycle status, writes only `catalog.json`, and becomes a no-op on a second run.
+The sync command derives descriptions and tags from each `SKILL.md`, preserves lifecycle status, writes only `skills-catalog.json`, and becomes a no-op on a second run.
 
 ### Cross-collection lookup
 
-Each repository keeps its own `catalog.json` as its canonical, versioned inventory. When a local workstation needs to compare explicitly selected collections, the `skills-catalog` package can derive `skills-catalog.db` outside every source repository. It uses Node.js built-in SQLite when available and `skills-catalog.index.json` as a deterministic fallback otherwise; it never alters the source catalogs. See the [aggregate-index contract](.agents/skills/skills-catalog/references/aggregate-index.md) for commands, bounds, and storage rules.
+Each repository keeps its own `skills-catalog.json` as its canonical, versioned inventory. When a local workstation needs to compare explicitly selected collections, the `skills-catalog` package can derive `skills-catalog.db` outside every source repository. SQLite `sync` retains source observations and normalized added, changed, and removed skill history; `history` and `changes` inspect it. The deterministic `skills-catalog.index.json` fallback provides current lookup only. Neither index alters a source catalog, installs or activates a skill, grants permissions, or runs setup. See the [aggregate-index contract](.agents/skills/skills-catalog/references/aggregate-index.md) for commands, bounds, retention, and storage rules.
 
 ## Provenance and security
 

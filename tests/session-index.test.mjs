@@ -79,7 +79,7 @@ test('CLI session-index fails open when its fixture catalog is malformed', (t) =
   t.after(() => rmSync(fixture, { recursive: true, force: true }));
   cpSync(resolve(repository, 'src'), join(fixture, 'src'), { recursive: true });
   cpSync(resolve(repository, '.agents'), join(fixture, '.agents'), { recursive: true });
-  writeFileSync(join(fixture, 'catalog.json'), '{not-json', 'utf8');
+  writeFileSync(join(fixture, 'skills-catalog.json'), '{not-json', 'utf8');
 
   const result = spawnSync(process.execPath, ['src/cli.mjs', 'session-index'], {
     cwd: fixture, encoding: 'utf8', timeout: 10_000,
@@ -93,7 +93,7 @@ test('CLI session-index fails open when its catalog repeats a JSON field', (t) =
   t.after(() => rmSync(fixture, { recursive: true, force: true }));
   cpSync(resolve(repository, 'src'), join(fixture, 'src'), { recursive: true });
   cpSync(resolve(repository, '.agents'), join(fixture, '.agents'), { recursive: true });
-  writeFileSync(join(fixture, 'catalog.json'), '{"schema_version":2,"schema_version":2,"skills":[]}', 'utf8');
+  writeFileSync(join(fixture, 'skills-catalog.json'), '{"schema_version":2,"schema_version":2,"skills":[]}', 'utf8');
 
   const result = spawnSync(process.execPath, ['src/cli.mjs', 'session-index'], {
     cwd: fixture, encoding: 'utf8', timeout: 10_000,
@@ -107,7 +107,7 @@ test('CLI session-index fails open when its catalog is not valid UTF-8', (t) => 
   t.after(() => rmSync(fixture, { recursive: true, force: true }));
   cpSync(resolve(repository, 'src'), join(fixture, 'src'), { recursive: true });
   cpSync(resolve(repository, '.agents'), join(fixture, '.agents'), { recursive: true });
-  writeFileSync(join(fixture, 'catalog.json'), Buffer.from([0x7b, 0xff, 0x7d]));
+  writeFileSync(join(fixture, 'skills-catalog.json'), Buffer.from([0x7b, 0xff, 0x7d]));
 
   const result = spawnSync(process.execPath, ['src/cli.mjs', 'session-index'], {
     cwd: fixture, encoding: 'utf8', timeout: 10_000,
@@ -119,7 +119,7 @@ test('CLI session-index fails open when its catalog is not valid UTF-8', (t) => 
 test('session index rejects an oversized catalog before reading it', (t) => {
   const fixture = mkdtempSync(join(tmpdir(), 'i9-session-index-'));
   t.after(() => rmSync(fixture, { recursive: true, force: true }));
-  writeFileSync(join(fixture, 'catalog.json'), 'x'.repeat(1_048_577), 'utf8');
+  writeFileSync(join(fixture, 'skills-catalog.json'), 'x'.repeat(1_048_577), 'utf8');
   assert.throws(() => renderRepositorySessionIndex(fixture), /bounded regular file/);
 });
 
@@ -131,7 +131,7 @@ test('session index bounds its opened catalog read before decoding', () => {
 test('session index rejects a catalog hard link before reading external bytes', (t) => {
   const fixture = mkdtempSync(join(tmpdir(), 'i9-session-index-')); const outside = join(tmpdir(), `catalog-outside-${Date.now()}.json`);
   t.after(() => { rmSync(fixture, { recursive: true, force: true }); rmSync(outside, { force: true }); });
-  writeFileSync(outside, JSON.stringify(catalog([skill('skill-routing')]))); linkSync(outside, join(fixture, 'catalog.json'));
+  writeFileSync(outside, JSON.stringify(catalog([skill('skill-routing')]))); linkSync(outside, join(fixture, 'skills-catalog.json'));
   assert.throws(() => renderRepositorySessionIndex(fixture), /bounded regular file/);
 });
 
@@ -142,5 +142,5 @@ test('Codex adapter invokes the same bounded read-only renderer', () => {
   assert.equal(entry.matcher, 'startup|resume|clear|compact');
   assert.match(command.command, /src\/cli\.mjs" session-index$/);
   assert.equal(command.additionalContextLimit, 1200);
-  assert.match(unavailableSessionIndex(), /catalog\.json/);
+  assert.match(unavailableSessionIndex(), /skills-catalog\.json/);
 });

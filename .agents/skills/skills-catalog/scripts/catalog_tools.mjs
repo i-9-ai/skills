@@ -185,12 +185,19 @@ export function validateCatalogData(value, { allowVersion1 = false } = {}) {
 }
 
 function readCatalog(root, { required = true, allowVersion1 = false } = {}) {
-  const filename = path.join(root, 'catalog.json');
-  const bytes = regularBytes(filename, 'catalog.json', MAX_CATALOG_BYTES, { required });
+  try {
+    fs.lstatSync(path.join(root, 'catalog.json'));
+    throw new CatalogError('legacy catalog.json must be removed; skills-catalog.json is the only canonical manifest');
+  } catch (error) {
+    if (error instanceof CatalogError) throw error;
+    if (error.code !== 'ENOENT') throw new CatalogError('legacy catalog.json is unreadable and must be removed');
+  }
+  const filename = path.join(root, 'skills-catalog.json');
+  const bytes = regularBytes(filename, 'skills-catalog.json', MAX_CATALOG_BYTES, { required });
   if (bytes === null) return { filename, bytes: null, value: null, mode: null };
   const mode = fs.lstatSync(filename).mode & 0o777;
   let value;
-  try { value = strictJson(bytes); } catch { throw new CatalogError('catalog.json must be valid UTF-8 JSON'); }
+  try { value = strictJson(bytes); } catch { throw new CatalogError('skills-catalog.json must be valid UTF-8 JSON'); }
   validateCatalogData(value, { allowVersion1 });
   return { filename, bytes, value, mode };
 }
@@ -233,8 +240,8 @@ function checkAgentsReference(root) {
   let text;
   try { text = new TextDecoder('utf-8', { fatal: true }).decode(bytes); }
   catch { throw new CatalogError('AGENTS.md must be UTF-8'); }
-  requireCondition(/(?:^|\n)\s*(?:Consult|Use)\s+`?catalog\.json`?\s+(?:to\s+(?:discover|find)(?:\s+(?:the\s+)?skills?)?|for\s+(?:(?:skill\s+)?discovery|available\s+skills?))\b/iu.test(text),
-    'AGENTS.md must direct agents to catalog.json for skill discovery');
+  requireCondition(/(?:^|\n)\s*(?:Consult|Use)\s+`?skills-catalog\.json`?\s+(?:to\s+(?:discover|find)(?:\s+(?:the\s+)?skills?)?|for\s+(?:(?:skill\s+)?discovery|available\s+skills?))\b/iu.test(text),
+    'AGENTS.md must direct agents to skills-catalog.json for skill discovery');
 }
 
 function desiredCatalog(root, current) {
@@ -265,7 +272,7 @@ export function checkCatalog(input) {
   const current = readCatalog(root);
   const desired = desiredCatalog(root, current.value);
   const expected = canonicalBytes(desired);
-  requireCondition(current.bytes.equals(expected), 'catalog.json is stale; run sync and inspect the diff');
+  requireCondition(current.bytes.equals(expected), 'skills-catalog.json is stale; run sync and inspect the diff');
   return { schema_version: 2, packages: desired.skills.length, changed: false,
     added: [], removed: [], refreshed: [] };
 }
@@ -279,20 +286,20 @@ export function syncCatalog(input) {
   const changes = difference(current.value, desired);
   if (current.bytes?.equals(next)) return { schema_version: 2, packages: desired.skills.length,
     changed: false, ...changes };
-  const temporary = path.join(root, `.catalog.json.tmp-${process.pid}-${Date.now()}`);
+  const temporary = path.join(root, `.skills-catalog.json.tmp-${process.pid}-${Date.now()}`);
   let descriptor; let created = false;
   try {
     descriptor = fs.openSync(temporary, fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_EXCL
       | fs.constants.O_NOFOLLOW, 0o600);
     created = true;
     fs.writeFileSync(descriptor, next); fs.fchmodSync(descriptor, current.mode ?? 0o644); fs.fsyncSync(descriptor); fs.closeSync(descriptor); descriptor = undefined;
-    const observed = regularBytes(current.filename, 'catalog.json', MAX_CATALOG_BYTES, { required: false });
+    const observed = regularBytes(current.filename, 'skills-catalog.json', MAX_CATALOG_BYTES, { required: false });
     requireCondition((observed === null && current.bytes === null)
       || (observed !== null && current.bytes !== null && observed.equals(current.bytes)),
-    'catalog.json changed before replacement');
+    'skills-catalog.json changed before replacement');
     requireCondition((observed === null && current.mode === null)
       || (observed !== null && (fs.lstatSync(current.filename).mode & 0o777) === current.mode),
-    'catalog.json permissions changed before replacement');
+    'skills-catalog.json permissions changed before replacement');
     fs.renameSync(temporary, current.filename);
   } finally {
     if (descriptor !== undefined) fs.closeSync(descriptor);

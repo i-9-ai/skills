@@ -7,7 +7,7 @@ import { renderSessionIndex } from '../domain/session-index-policy.mjs';
 const MAX_CATALOG_BYTES = 1_048_576;
 
 function readCatalog(root) {
-  const filename = join(root, 'catalog.json');
+  const filename = join(root, 'skills-catalog.json');
   const before = lstatSync(filename);
   if (!before.isFile() || before.isSymbolicLink() || before.nlink !== 1 || before.size > MAX_CATALOG_BYTES) {
     throw new Error('catalog is not a bounded regular file');
@@ -40,5 +40,5 @@ export function renderRepositorySessionIndex(root) {
 }
 
 export function unavailableSessionIndex() {
-  return 'Skill index unavailable. Consult `catalog.json` to shortlist packages, then read the selected `SKILL.md`.\n';
+  return 'Skill index unavailable. Consult `skills-catalog.json` to shortlist packages, then read the selected `SKILL.md`.\n';
 }

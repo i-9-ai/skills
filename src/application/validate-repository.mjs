@@ -21,7 +21,7 @@ export function validateRepository(path = DEFAULT_ROOT) {
     for (const [relative, target] of Object.entries(REPOSITORY_ALIASES)) root.checkAlias(relative, target);
     const files = new Set(inventory.filter(([, info]) => info.isFile()).map(([path]) => path));
     const directories = new Set(inventory.filter(([, info]) => info.isDirectory()).map(([path]) => path));
-    const { names, packages } = validateCatalog(root.readJson('catalog.json'), files, directories);
+    const { names, packages } = validateCatalog(root.readJson('skills-catalog.json'), files, directories);
     const packageInterfaces = new Map();
     for (const relative of packages) packageInterfaces.set(relative, root.validatePackage(relative).openai_interface);
     checkCatalog(root.path);

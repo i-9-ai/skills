@@ -103,6 +103,6 @@ export function renderSessionIndex(catalog, { maxEntries = ENTRYPOINTS.length } 
     const singular = omitted === 1;
     lines.push(`- ${omitted} additional catalogued package${singular ? '' : 's'} ${singular ? 'is' : 'are'} not shown in this compact index.`);
   }
-  lines.push('', `Catalog: ${catalog.skills.length} packages (${statusSummary}).`, 'For another task, consult `catalog.json` to shortlist and then read the selected package\'s `SKILL.md`.');
+  lines.push('', `Catalog: ${catalog.skills.length} packages (${statusSummary}).`, 'For another task, consult `skills-catalog.json` to shortlist and then read the selected package\'s `SKILL.md`.');
   return `${lines.join('\n')}\n`;
 }
