@@ -58,6 +58,8 @@ Add optional `metadata` only for known authorship, useful tags, clear provenance
 
 Write the ordinary workflow so a capable agent can complete it without external lookup: include the decisions, defaults, procedure, and representative examples that change outcomes or prevent likely mistakes. Keep rare, version-sensitive, or exhaustive detail in bundled references. Link a bundled resource only when this procedure requires loading it; use an inline code path when only naming or citing a file. Link authoritative external documentation only for verification or uncommon cases; a link must not be the sole explanation of a routine step.
 
+For a code-facing skill, include or link a bundled complete generic implementation reference. It must show the file layout, relevant code, inputs or options, configuration or state location, invocation, and tests or verification for the ordinary path. Do not leave the reader to assemble routine steps from external documentation.
+
 ## Tool policy
 
 Define permitted actions, blocked actions, authorization boundaries, treatment of untrusted sources and secrets, and the evidence retained. Prior authorization persists; new external effects require scope for that action.
