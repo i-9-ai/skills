@@ -39,6 +39,16 @@ Use JavaScript with Node.js built-ins for small zero-dependency utilities: decla
 
 When preparation is required, add `metadata.setup` pointing to an existing bundled `scripts/` file and state the prerequisites in `compatibility`. The `SKILL.md` must include `Prerequisites and setup` subsections for explicit setup, idempotence and side effects, and fallback. Setup is never automatic on installation or activation. Keep lengthy setup rationale in `references/setup.md`; do not add a top-level installation guide.
 
+## Caller configuration and secrets
+
+Add configuration only when a recurring task cannot be completed from the package, caller inputs, and existing project conventions. Do not impose a universal hidden directory, a global home location, a `.env` file, or a package-local mutable configuration store.
+
+- Define non-secret configuration as a caller-owned contract: field names, types, defaults, validation, precedence, writable location, migration behavior, and manual fallback. Bundle a JSON Schema or equivalent validation resource when it prevents recurring mistakes.
+- Let the consumer select and explicitly pass the configuration location. A documented project-local path may be a recommended convention, but the portable procedure must not require a particular host directory.
+- Keep secrets out of JSON/YAML examples, package metadata, generated files, logs, and version control. Name the consumer's existing secret manager or an explicitly documented environment-variable interface; do not require an `.env` loader or scan environment variables beyond the declared names.
+- Treat configuration as untrusted input. Validate before use, redact values in output, and never create, overwrite, migrate, or upload configuration without authorization.
+- State what happens when configuration or a required secret is unavailable. Return a bounded missing-prerequisite result rather than guessing, prompting for secret values in a persistent artifact, or silently changing the host.
+
 This package's helper uses Node.js built-ins. It operates on owned workspaces that remain stable during validation, rejects unsafe entries and detected changes, and never executes candidate scripts. Its checks are not a sandbox against concurrent adversarial filesystem mutation. See the tooling guide for supported inputs and bounds.
 
 An optional `agents/openai.yaml` may provide documented host `interface` fields. It is host UI data, not the procedural source of truth. Keep prompt and description consistent with `SKILL.md`. For collections that declare this interface profile, include `assets/icon.svg` for `icon_small` and a matching `assets/icon.png` for `icon_large`; both assets must be responsibility-specific. A copied scaffold icon is only a draft and must be replaced before acceptance. For portable packages outside such a collection, this adapter and both assets remain optional: do not make another host or a standalone installation depend on them. Use the helper's opt-in adapter flag when available, or the host's current documented format. For other hosts, verify their primary documentation before adding files; many consume `SKILL.md` directly and need no additional per-skill manifest. Do not invent adapters from product names or duplicate the core into multiple editable copies.

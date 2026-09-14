@@ -26,6 +26,12 @@ Identify required and optional inputs, prerequisites, available capabilities, in
 
 Resolve bundled resources from the installed package and choose outputs in the caller's workspace. Declare companion dependencies explicitly. Verify the target project's actual commands and configuration instead of assuming the source collection is present.
 
+## Configuration and secrets (when applicable)
+
+Remove this section when the skill needs no persistent configuration. Otherwise define only non-secret fields, their validation, defaults, precedence, consumer-selected writable location, and fallback. Bundle a schema when it prevents recurring errors. Do not impose a universal hidden directory or automatic configuration discovery.
+
+Tokens, keys, passwords, and client secrets never belong in package files, configuration examples, metadata, generated artifacts, or logs. Name the consumer's existing secret mechanism or the explicit environment-variable names it may provide. Treat all configuration as untrusted input, redact it in reports, and never create, overwrite, migrate, or read secrets without authorization.
+
 ## Prerequisites and setup (when applicable)
 
 Remove this section when no setup is needed. Otherwise declare the runtime and prerequisites in `compatibility`, and declare the package-relative setup entrypoint as flat `metadata.setup`. Setup is always explicit: installation or activation never runs it automatically.
