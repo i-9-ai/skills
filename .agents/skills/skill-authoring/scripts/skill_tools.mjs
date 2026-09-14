@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Original Node.js 22+ structural tooling using only built-ins.
+ * Original Node.js 24+ structural tooling using only built-ins.
  * The selected workspace must be trusted and stable during each command.
  * Checks do not establish semantic quality, licensing rights, or agent behavior,
  * and do not replace official skills-ref conformance evidence for the candidate.
@@ -445,13 +445,13 @@ const USAGE = `Usage:
   node skill_tools.mjs validate-skill PATH
   node skill_tools.mjs validate-run MANIFEST
 
-Requires Node.js 22+ and a trusted workspace kept stable for the command.
+Requires Node.js 24+ and a trusted workspace kept stable for the command.
 Structural checks supplement official conformance and behavioral evaluation.
 `;
 export function main(args = process.argv.slice(2)) {
   let parsed;
   try {
-    requireCondition(Number(process.versions.node.split('.')[0]) >= 22, 'Node.js 22 or newer is required');
+    requireCondition(Number(process.versions.node.split('.')[0]) >= 24, 'Node.js 24 or newer is required');
     parsed = parseArgs({ args, options: { output: { type: 'string' }, 'with-openai': { type: 'boolean' }, help: { type: 'boolean', short: 'h' } }, allowPositionals: true });
     if (parsed.values.help) { process.stdout.write(USAGE); return 0; }
     const [command] = parsed.positionals;

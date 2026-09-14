@@ -7,7 +7,7 @@ Maintain local collection checks and the official validation integration through
 Maintainers own these rules. The user's request defines authorized changes.
 
 ## Local contracts
-Use Node.js 22+ built-ins. Keep pure rules in `domain/`, use-case ordering in `application/`, and filesystem/process access in `infrastructure/`. The CLI presents outcomes and exit codes. Do not add an interface or layer without a real dependency boundary.
+Use Node.js 24+ built-ins. Keep pure rules in `domain/`, use-case ordering in `application/`, and filesystem/process access in `infrastructure/`. The CLI presents outcomes and exit codes. Do not add an interface or layer without a real dependency boundary.
 
 Keep commands and dependency pins in root `package.json`. Local checks require no Python, package installation, network, or credentials. Only the CI adapter invokes the external official Python tool inside the workflow's isolated environment. Never execute candidate scripts while validating metadata.
 

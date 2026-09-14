@@ -4,7 +4,7 @@ Every new or changed skill must pass the official `skills-ref validate` command 
 
 ## Local checks
 
-Use Node.js 22+. Repository checks, the standalone creator helper, and all regression tests use built-in modules. No npm dependency installation, Python, network access, or credential is needed locally. Commands and the external CI tool's pins are centralized in [package.json](../package.json).
+Use Node.js 24+. Repository checks, the standalone creator helper, and all regression tests use built-in modules. No npm dependency installation, Python, network access, or credential is needed locally. Commands and the external CI tool's pins are centralized in [package.json](../package.json).
 
 From the repository root:
 

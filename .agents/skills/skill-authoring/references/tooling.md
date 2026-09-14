@@ -1,6 +1,6 @@
 # Deterministic tooling
 
-The bundled `scripts/skill_tools.mjs` uses Node.js 22+ built-ins. Locate it relative to the loaded `SKILL.md`; it needs no checkout of the source repository, package manager, network, provider API, Python, or agent runtime.
+The bundled `scripts/skill_tools.mjs` uses Node.js 24+ built-ins. Locate it relative to the loaded `SKILL.md`; it needs no checkout of the source repository, package manager, network, provider API, Python, or agent runtime.
 
 Use an owned workspace that remains stable throughout the run. The filesystem checks reject unsafe entries and detected changes, but do not provide race-proof confinement against a concurrent adversary. Required no-follow primitives must be available; unsupported environments fail explicitly. An agent can perform manual inspection and record the same artifacts, but must not claim unexecuted checks passed. Platform coverage is limited to recorded test environments.
 

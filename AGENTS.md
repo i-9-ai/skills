@@ -40,7 +40,7 @@ For material changes, obtain independent review on the exact commit. Fix pertine
 
 Every new or modified skill must pass the official `skills-ref validate` tool from the Agent Skills specification. Custom or manual checks do not replace this requirement; unavailable official execution leaves readiness blocked. Follow [validation setup](docs/validation.md) for the pinned official source and dependencies.
 
-Run `npm run check` and `git diff --check` with Node.js 22+. Repository tooling lives in `src/`, with domain rules, application use cases, and infrastructure adapters; `package.json` is its single dependency and command configuration. Local checks and tests require no Python or dependency installation. The GitHub workflow alone supplies Python for the external official validator, and its result must match the PR head. Tests must use disposable fixtures and must not modify a user's home, installed skills, or production state.
+Run `npm run check` and `git diff --check` with Node.js 24+. Repository tooling lives in `src/`, with domain rules, application use cases, and infrastructure adapters; `package.json` is its single dependency and command configuration. Local checks and tests require no Python or dependency installation. The GitHub workflow alone supplies Python for the external official validator, and its result must match the PR head. Tests must use disposable fixtures and must not modify a user's home, installed skills, or production state.
 
 ## Child DOX index
 

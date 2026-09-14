@@ -135,7 +135,7 @@ test('setup metadata requires an explicit portable setup contract', t => {
   const setupMetadata = `metadata:\n  setup: scripts/setup.mjs\n`;
   fs.mkdirSync(path.join(packagePath, 'scripts'));
   fs.writeFileSync(path.join(packagePath, 'scripts/setup.mjs'), 'console.log("synthetic setup");\n');
-  fs.writeFileSync(skill, original.replace('license: Apache-2.0\n', 'license: Apache-2.0\ncompatibility: Node.js 22+\n' + setupMetadata));
+  fs.writeFileSync(skill, original.replace('license: Apache-2.0\n', 'license: Apache-2.0\ncompatibility: Node.js 24+\n' + setupMetadata));
   assert.throws(() => validateSkill(packagePath), /Prerequisites and setup/u);
   fs.appendFileSync(skill, '\n```md\n## Prerequisites and setup\n### Explicit setup\n### Idempotence and side effects\n### Fallback\n```\n');
   assert.throws(() => validateSkill(packagePath), /Prerequisites and setup/u);

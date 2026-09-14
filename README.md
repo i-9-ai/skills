@@ -170,7 +170,7 @@ Installed skills resolve references, assets, and scripts from their own package 
 
 ## Source-checkout validation
 
-Local repository tooling uses Node.js 22+ built-ins:
+Local repository tooling uses Node.js 24+ built-ins:
 
 ```sh
 npm run check

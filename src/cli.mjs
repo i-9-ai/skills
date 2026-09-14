@@ -8,7 +8,7 @@ import { renderRepositorySessionIndex, unavailableSessionIndex } from './applica
 
 const repository = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 try {
-  if (Number(process.versions.node.split('.')[0]) < 22) throw new Error('Node.js 22+ is required.');
+  if (Number(process.versions.node.split('.')[0]) < 24) throw new Error('Node.js 24+ is required.');
   if (process.argv.length !== 3) throw new Error('Usage: node src/cli.mjs validate|ci-official|session-index');
   switch (process.argv[2]) {
     case 'validate':

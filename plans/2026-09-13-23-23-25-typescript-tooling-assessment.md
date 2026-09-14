@@ -2,6 +2,10 @@
 
 Status: assessment and conditional migration recipe; no migration implemented.
 
+> Runtime-baseline note (2026-09-14): this assessment records the former
+> Node.js 22 baseline. The active repository runtime contract is Node.js 24 or
+> newer under [the Node.js 24 runtime baseline plan](2026-09-14-22-17-42-node-24-runtime-baseline.md).
+
 ## Objective and scope
 
 Improve the repository validation CLI's maintainability, typed boundaries, and independently testable use cases. This assessment covers repository-owned `src/`, related tests, root command configuration, documentation, and their CI consumers. Distributed `.agents/skills/*/scripts/` remain self-contained JavaScript packages and are outside migration scope.
@@ -26,14 +30,14 @@ Proceed first with typed boundary design and injected use cases. TypeScript is a
 | Option | Value | Cost and decision |
 | --- | --- | --- |
 | Existing JavaScript and Node built-ins | Maintains zero-install local validation; existing layers and tests remain usable | Add injection seams now; JSDoc can document boundaries, but checked JSDoc still needs a compiler for static guarantees |
-| TypeScript with native Node execution and built-in command handling | Explicit contracts without a runtime loader or build output | Preferred TypeScript candidate; raise the runtime floor to at least Node 22.18 and restrict syntax to erasable types; static checking needs an explicitly installed compiler |
+| TypeScript with native Node execution and built-in command handling | Explicit contracts without a runtime loader or build output | Candidate only if a later migration raises the runtime floor to at least Node 24.12 and restricts syntax to erasable types; static checking still needs an explicitly installed compiler |
 | TypeScript compiled with `tsc` | Supports an emitted JavaScript runtime | Adds build sequencing, generated-output handling, and stale-output risk; unnecessary for this private repository CLI unless older Node support is required |
 | TypeScript with `tsx` | Convenient TypeScript execution | Adds a runtime loader/install dependency; no demonstrated requirement here |
 | Commander | Centralizes command declaration, help, parsing, and errors | Useful when options/subcommands grow; adds an installed runtime dependency and may change diagnostics/exit behavior; defer for the present three positional commands |
 | Node `util.parseArgs` | Built-in option parser if options are added | Does not provide an entire command framework; sufficient candidate before adding dependencies |
 | Vitest or another external runner | Additional runner tooling | Existing `node:test` and `node:assert/strict` satisfy the requested isolation; do not add a runner without a missing capability |
 
-Node 22.18 enables type stripping by default. Stripping performs no type checking, ignores `tsconfig.json` behavior, and does not support syntax requiring code generation in its basic mode. Explicit extensions and type imports matter. A TypeScript migration therefore cannot retain the entire current `>=22` runtime promise without a loader/build or a higher minimum. [Node 22 TypeScript documentation](https://nodejs.org/download/release/v22.21.0/docs/api/typescript.html).
+Node.js 24.12 makes type stripping stable. Stripping performs no type checking, ignores `tsconfig.json` behavior, and does not support syntax requiring code generation in its basic mode. Explicit extensions and type imports matter. The active `>=24` baseline alone is therefore not enough to promise stable native TypeScript support: a TypeScript migration must raise the floor to `>=24.12`, add a loader/build, or retain JavaScript. [Node 24 TypeScript documentation](https://nodejs.org/docs/latest-v24.x/api/typescript.html).
 
 Commander supports TypeScript and configurable output/exit handling; its current documentation requires Node 22.12+. Pin and verify the actual selected release before adoption rather than depending on its moving default branch. [Commander documentation](https://github.com/tj/commander.js/blob/master/Readme.md).
 

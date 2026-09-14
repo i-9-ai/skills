@@ -2,7 +2,7 @@
 name: skills-snapshot
 description: Create, verify, list, restore, and explicitly prune deterministic snapshots of a caller-selected skill collection or package. Use before risky skill maintenance; do not use to install or refactor skills.
 license: Apache-2.0
-compatibility: Node.js 22 or newer; local filesystem access; atomic replacement requires snapshot staging and target on the same filesystem.
+compatibility: Node.js 24 or newer; local filesystem access; atomic replacement requires snapshot staging and target on the same filesystem.
 metadata:
   author: Mentor dos Nerds
   tags: "skills, snapshot, backup, restore"

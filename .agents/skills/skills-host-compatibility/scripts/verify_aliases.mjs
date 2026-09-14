@@ -195,7 +195,7 @@ function readContract(filename) {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
-  if (Number(process.versions.node.split('.')[0]) < 22) fail('Node.js 22+ is required');
+  if (Number(process.versions.node.split('.')[0]) < 24) fail('Node.js 24+ is required');
   if (process.argv.length !== 3) fail('usage: verify_aliases.mjs <contract.json>');
   const contract = readContract(process.argv[2]);
   process.stdout.write(`${JSON.stringify(verifyAliases(contract), null, 2)}\n`);
