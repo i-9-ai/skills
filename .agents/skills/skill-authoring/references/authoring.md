@@ -8,7 +8,13 @@ Choose a domain-first name that reveals the responsibility. Use `skill` for one 
 
 ## Package contents
 
-- `SKILL.md`: required YAML `name` matching the directory, a discriminating `description` under 220 characters, and concise English instructions. Describe both what the skill does and when it applies. Keep the body under 500 lines and normally much shorter.
+## Self-sufficient core, progressive detail
+
+Write enough of the recurring workflow into the `SKILL.md` and bundled references that a capable agent can select the skill, make its ordinary decisions, and produce the primary output without first browsing external documentation. This does not mean copying a platform manual. Keep the core focused on decisions, procedures, defaults, representative examples, boundaries, and likely failure cases.
+
+Use bundled `references/` for rare branches, version-sensitive interfaces, exhaustive option tables, and deeper examples. Keep authoritative external links with those references when they help confirm a changing API, diagnose an unusual case, or extend beyond the package's scope. A link must never be the only explanation of a routine step. Remove a reference that does not change a decision, prevent a likely mistake, or support a documented uncommon case.
+
+- `SKILL.md`: required YAML `name` matching the directory, a discriminating `description` under 220 characters, and concise English instructions. Describe both what the skill does and when it applies. Include the self-sufficient ordinary workflow; keep the body under 500 lines and normally much shorter.
 - `LICENSE`: required full license text for the original work; include third-party licenses and notices at their required scopes. Do not treat the root repository license as a substitute when a skill is distributed alone.
 - `references/`: decision-changing detail, schemas, and documented provenance loaded only for relevant cases. Link the resources from the entrypoint or another reachable reference.
 - `scripts/`: deterministic helpers only when they remove repeated, fragile work. Describe inputs, dependencies, outputs, side effects, failure codes, and safe invocation. Test them on disposable fixtures.
