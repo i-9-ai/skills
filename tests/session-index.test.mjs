@@ -88,6 +88,34 @@ test('CLI session-index fails open when its fixture catalog is malformed', (t) =
   assert.equal(result.stdout, unavailableSessionIndex());
 });
 
+test('CLI session-index fails open when its catalog repeats a JSON field', (t) => {
+  const fixture = mkdtempSync(join(tmpdir(), 'i9-session-index-'));
+  t.after(() => rmSync(fixture, { recursive: true, force: true }));
+  cpSync(resolve(repository, 'src'), join(fixture, 'src'), { recursive: true });
+  cpSync(resolve(repository, '.agents'), join(fixture, '.agents'), { recursive: true });
+  writeFileSync(join(fixture, 'catalog.json'), '{"schema_version":2,"schema_version":2,"skills":[]}', 'utf8');
+
+  const result = spawnSync(process.execPath, ['src/cli.mjs', 'session-index'], {
+    cwd: fixture, encoding: 'utf8', timeout: 10_000,
+  });
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stdout, unavailableSessionIndex());
+});
+
+test('CLI session-index fails open when its catalog is not valid UTF-8', (t) => {
+  const fixture = mkdtempSync(join(tmpdir(), 'i9-session-index-'));
+  t.after(() => rmSync(fixture, { recursive: true, force: true }));
+  cpSync(resolve(repository, 'src'), join(fixture, 'src'), { recursive: true });
+  cpSync(resolve(repository, '.agents'), join(fixture, '.agents'), { recursive: true });
+  writeFileSync(join(fixture, 'catalog.json'), Buffer.from([0x7b, 0xff, 0x7d]));
+
+  const result = spawnSync(process.execPath, ['src/cli.mjs', 'session-index'], {
+    cwd: fixture, encoding: 'utf8', timeout: 10_000,
+  });
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stdout, unavailableSessionIndex());
+});
+
 test('session index rejects an oversized catalog before reading it', (t) => {
   const fixture = mkdtempSync(join(tmpdir(), 'i9-session-index-'));
   t.after(() => rmSync(fixture, { recursive: true, force: true }));

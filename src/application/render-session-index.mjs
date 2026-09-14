@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { closeSync, fstatSync, lstatSync, openSync, readSync } from 'node:fs';
 import { join } from 'node:path';
+import { strictJson } from '../../.agents/skills/skill-authoring/scripts/lib/contracts.mjs';
 import { renderSessionIndex } from '../domain/session-index-policy.mjs';
 
 const MAX_CATALOG_BYTES = 1_048_576;
@@ -26,12 +27,11 @@ function readCatalog(root) {
       length += read;
     }
     if (length > MAX_CATALOG_BYTES) throw new Error('catalog exceeds the read limit');
-    const text = bytes.subarray(0, length).toString('utf8');
     const after = lstatSync(filename);
     if (after.nlink !== 1 || after.dev !== before.dev || after.ino !== before.ino || after.size !== before.size) {
       throw new Error('catalog changed during reading');
     }
-    return JSON.parse(text);
+    return strictJson(bytes.subarray(0, length));
   } finally { if (descriptor !== undefined) closeSync(descriptor); }
 }
 

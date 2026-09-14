@@ -21,7 +21,7 @@ Publish one approved skill package through one authorized distribution channel a
 1. Resolve the exact candidate bytes and distribution target. Reject working-tree ambiguity, floating source references, or mismatched evidence.
 2. Verify required official, behavioral, security, compatibility, lifecycle, license, provenance, and public-content gates for that same revision.
 3. Build or stage the channel-specific publication payload without importing scratch files, private examples, credentials, local paths, or unrelated packages.
-4. For a non-Git destination, read [the distribution adapter reference](references/distribution-adapters.md). Use only a documented adapter that preserves the package bytes, license, and provenance; otherwise publish through the portable Git channel.
+4. For a non-Git destination, read [the distribution adapter reference](references/distribution-adapters.md). Use only a documented adapter that preserves the package bytes, license, and provenance; otherwise stop with an unsupported-channel result. Do not substitute the portable Git channel without explicit authorization for that destination.
 5. Present the concrete payload and destination when an external publication approval is still required. Do not treat prior validation as publication authority.
 6. Publish only through the authorized channel using its documented mechanism. Avoid mutable replacement when the channel supports immutable versions.
 7. Read back the public artifact or channel record, compare its identity with the candidate, and record any indexing delay separately.

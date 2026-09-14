@@ -404,6 +404,14 @@ test('skill validation accepts complete declared non-Apache license text', t => 
   assert.throws(() => validateSkill(packagePath), ValidationError);
 });
 
+test('skill validation rejects padded MIT fragments without the substantive license clauses', t => {
+  const packagePath = makeSkill(fixture(t));
+  const skill = path.join(packagePath, 'SKILL.md');
+  fs.writeFileSync(skill, fs.readFileSync(skill, 'utf8').replace('license: Apache-2.0', 'license: MIT'));
+  fs.writeFileSync(path.join(packagePath, 'LICENSE'), 'MIT License permission is hereby granted the software is provided '.repeat(12));
+  assert.throws(() => validateSkill(packagePath), ValidationError);
+});
+
 test('out-of-order stages, skipped evaluation, and incomplete validation fail', t => {
   const { manifest, data } = makeRun(fixture(t)); const original = structuredClone(data);
   [data.stages[0], data.stages[1]] = [data.stages[1], data.stages[0]]; rejectRun(manifest, data);

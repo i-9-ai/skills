@@ -58,7 +58,7 @@ function parseScalar(source, label) {
     return parsed;
   }
   if (value.startsWith("'")) {
-    requireCondition(value.endsWith("'") && value.length >= 2, `${label} has invalid quoting`);
+    requireCondition(/^'(?:[^']|'')*'$/u.test(value), `${label} has invalid quoting`);
     return value.slice(1, -1).replaceAll("''", "'");
   }
   let comment = -1;

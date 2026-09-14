@@ -156,7 +156,11 @@ function hasRecognizableLicenseText(declared, license) {
   if (normalized === 'apache-2.0') return /apache license/u.test(value)
     && /version 2\.0/u.test(value) && /end of terms and conditions/u.test(value);
   if (normalized === 'mit') return /mit license/u.test(value)
-    && /permission is hereby granted/u.test(value) && /the software is provided/u.test(value);
+    && /permission is hereby granted, free of charge, to any person obtaining a copy/u.test(value)
+    && /to deal in the software without restriction/u.test(value)
+    && /the above copyright notice and this permission notice shall be included/u.test(value)
+    && /the software is provided "as is", without warranty of any kind/u.test(value)
+    && /in no event shall the authors or copyright holders be liable/u.test(value);
   return /(?:license|licence|copyright)/u.test(value)
     && /(?:permission|redistribution|rights granted|licensed under)/u.test(value);
 }

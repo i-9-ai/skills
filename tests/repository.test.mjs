@@ -207,6 +207,10 @@ test('catalog parser supports folded and literal skill descriptions', () => {
   }
 });
 
+test('catalog parser rejects malformed single-quoted scalars', () => {
+  assert.throws(() => parseSkillSummary(Buffer.from("---\nname: example-skill\ndescription: 'Bob's invalid YAML description'\n---\n", 'utf8'), 'example-skill'));
+});
+
 test('README advertises every cataloged skill', () => {
   const readme = fs.readFileSync(join(process.cwd(), 'README.md'), 'utf8');
   const catalog = JSON.parse(fs.readFileSync(join(process.cwd(), 'catalog.json'), 'utf8'));
@@ -245,6 +249,14 @@ test('collection rejects unbound SVG namespace prefixes', (t) => {
   assert.throws(() => validateRepository(root), /not well-formed XML/);
   fs.writeFileSync(icon, valid.replace('<path', '<x:g xmlns:x="urn:example"/> <path'));
   assert.equal(validateRepository(root).packages, 1);
+});
+
+test('collection rejects SVG names with multiple namespace separators', (t) => {
+  const { root, packagePath } = makeRepository(t);
+  const icon = join(packagePath, 'assets', 'icon.svg');
+  const valid = fs.readFileSync(icon, 'utf8');
+  fs.writeFileSync(icon, valid.replace('<path', '<x:g:y xmlns:x="urn:example"/> <path'));
+  assert.throws(() => validateRepository(root), /not well-formed XML/);
 });
 
 test('collection rejects SVG icons with malformed UTF-8', (t) => {

@@ -217,6 +217,7 @@ function validateSafeSvg(relative, text) {
 
 function assertXmlNameBound(relative, name, namespaces) {
   const separator = name.indexOf(':');
+  requireCondition(separator === -1 || separator === name.lastIndexOf(':'), `${relative} is not well-formed XML`);
   if (separator !== -1) requireCondition(namespaces.has(name.slice(0, separator)), `${relative} is not well-formed XML`);
 }
 

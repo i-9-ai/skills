@@ -4,7 +4,7 @@
 
 ## First public-ready release
 
-Introduce I-9 Skills, a collection of 19 focused, agent-agnostic packages for building and improving reusable agent skills. Each package owns one responsibility, one primary output, a scoped Apache-2.0 license, and an explicit handoff boundary.
+Introduce I-9 Skills, a collection of 20 focused, agent-agnostic packages for building and improving reusable agent skills. Each package owns one responsibility, one primary output, a scoped Apache-2.0 license, and an explicit handoff boundary.
 
 ### What the collection provides
 
