@@ -137,6 +137,8 @@ test('setup metadata requires an explicit portable setup contract', t => {
   fs.writeFileSync(path.join(packagePath, 'scripts/setup.mjs'), 'console.log("synthetic setup");\n');
   fs.writeFileSync(skill, original.replace('license: Apache-2.0\n', 'license: Apache-2.0\ncompatibility: Node.js 22+\n' + setupMetadata));
   assert.throws(() => validateSkill(packagePath), /Prerequisites and setup/u);
+  fs.appendFileSync(skill, '\n```md\n## Prerequisites and setup\n### Explicit setup\n### Idempotence and side effects\n### Fallback\n```\n');
+  assert.throws(() => validateSkill(packagePath), /Prerequisites and setup/u);
   fs.appendFileSync(skill, '\n## Prerequisites and setup\n\n### Explicit setup\n\nRun `node scripts/setup.mjs`.\n\n### Idempotence and side effects\n\nA second run is safe.\n\n### Fallback\n\nUse the manual procedure.\n');
   assert.equal(validateSkill(packagePath).name, 'example-skill');
   fs.writeFileSync(skill, fs.readFileSync(skill, 'utf8').replace('setup: scripts/setup.mjs', 'setup: ../setup.mjs'));
@@ -395,6 +397,8 @@ test('skill validation accepts complete declared non-Apache license text', t => 
   fs.writeFileSync(path.join(packagePath, 'SKILL.md'), fs.readFileSync(path.join(packagePath, 'SKILL.md'), 'utf8').replace('license: Apache-2.0', 'license: MIT'));
   fs.writeFileSync(path.join(packagePath, 'LICENSE'), `MIT License\n\nCopyright (c) 2026 I-9 AI\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n`);
   assert.equal(validateSkill(packagePath).name, 'example-skill');
+  fs.writeFileSync(path.join(packagePath, 'LICENSE'), 'x'.repeat(500));
+  assert.throws(() => validateSkill(packagePath), ValidationError);
 });
 
 test('out-of-order stages, skipped evaluation, and incomplete validation fail', t => {

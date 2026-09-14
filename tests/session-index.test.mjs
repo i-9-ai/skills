@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, linkSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
@@ -92,6 +92,13 @@ test('session index rejects an oversized catalog before reading it', (t) => {
   const fixture = mkdtempSync(join(tmpdir(), 'i9-session-index-'));
   t.after(() => rmSync(fixture, { recursive: true, force: true }));
   writeFileSync(join(fixture, 'catalog.json'), 'x'.repeat(1_048_577), 'utf8');
+  assert.throws(() => renderRepositorySessionIndex(fixture), /bounded regular file/);
+});
+
+test('session index rejects a catalog hard link before reading external bytes', (t) => {
+  const fixture = mkdtempSync(join(tmpdir(), 'i9-session-index-')); const outside = join(tmpdir(), `catalog-outside-${Date.now()}.json`);
+  t.after(() => { rmSync(fixture, { recursive: true, force: true }); rmSync(outside, { force: true }); });
+  writeFileSync(outside, JSON.stringify(catalog([skill('skill-routing')]))); linkSync(outside, join(fixture, 'catalog.json'));
   assert.throws(() => renderRepositorySessionIndex(fixture), /bounded regular file/);
 });
 

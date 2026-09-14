@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-import { lstatSync, readFileSync } from 'node:fs';
+import { closeSync, fstatSync, lstatSync, openSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { renderSessionIndex } from '../domain/session-index-policy.mjs';
 
@@ -7,11 +7,24 @@ const MAX_CATALOG_BYTES = 1_048_576;
 
 function readCatalog(root) {
   const filename = join(root, 'catalog.json');
-  const info = lstatSync(filename);
-  if (!info.isFile() || info.isSymbolicLink() || info.size > MAX_CATALOG_BYTES) {
+  const before = lstatSync(filename);
+  if (!before.isFile() || before.isSymbolicLink() || before.nlink !== 1 || before.size > MAX_CATALOG_BYTES) {
     throw new Error('catalog is not a bounded regular file');
   }
-  return JSON.parse(readFileSync(filename, 'utf8'));
+  let descriptor;
+  try {
+    descriptor = openSync(filename, 'r');
+    const opened = fstatSync(descriptor);
+    if (!opened.isFile() || opened.nlink !== 1 || opened.dev !== before.dev || opened.ino !== before.ino || opened.size !== before.size) {
+      throw new Error('catalog changed before reading');
+    }
+    const text = readFileSync(descriptor, 'utf8');
+    const after = lstatSync(filename);
+    if (after.nlink !== 1 || after.dev !== before.dev || after.ino !== before.ino || after.size !== before.size) {
+      throw new Error('catalog changed during reading');
+    }
+    return JSON.parse(text);
+  } finally { if (descriptor !== undefined) closeSync(descriptor); }
 }
 
 export function renderRepositorySessionIndex(root) {

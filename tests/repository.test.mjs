@@ -261,6 +261,12 @@ test('collection rejects external SVG paint URLs in style blocks', (t) => {
   assert.throws(() => validateRepository(root), /external SVG paint reference/);
 });
 
+test('collection rejects CSS imports after escape normalization', (t) => {
+  const { root, packagePath } = makeRepository(t);
+  fs.writeFileSync(join(packagePath, 'assets', 'icon.svg'), `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title"><title id="title">Example Skill</title><style>@\\69mport "https://example.invalid/icon.css";</style><path d="M1 1h62v62H1z"/></svg>`);
+  assert.throws(() => validateRepository(root), /active or external SVG content/);
+});
+
 test('collection rejects external SVG paint references while allowing fragments', (t) => {
   const { root, packagePath } = makeRepository(t);
   const icon = join(packagePath, 'assets', 'icon.svg');
@@ -311,6 +317,15 @@ test('collection rejects indexed PNG palettes that exceed the bit depth or PNG m
   fs.writeFileSync(icon, indexedPng({ bitDepth: 1, paletteEntries: 3 }));
   assert.throws(() => validateRepository(root), /valid PNG/);
   fs.writeFileSync(icon, indexedPng({ paletteEntries: 257 }));
+  assert.throws(() => validateRepository(root), /valid PNG/);
+});
+
+test('collection rejects palettes for grayscale PNG color types', (t) => {
+  const { root, packagePath } = makeRepository(t); const icon = join(packagePath, 'assets', 'icon.png');
+  const header = Buffer.alloc(13); header.writeUInt32BE(1, 0); header.writeUInt32BE(1, 4); header[8] = 8;
+  const valid = Buffer.concat([Buffer.from('89504e470d0a1a0a', 'hex'), pngChunk('IHDR', header), pngChunk('IDAT', deflateSync(Buffer.from([0, 0]))), pngChunk('IEND', Buffer.alloc(0))]);
+  const palette = pngChunk('PLTE', Buffer.from([0, 0, 0]));
+  fs.writeFileSync(icon, Buffer.concat([valid.subarray(0, 33), palette, valid.subarray(33)]));
   assert.throws(() => validateRepository(root), /valid PNG/);
 });
 
@@ -430,7 +445,7 @@ test('inherited Git index overrides cannot hide tracked root scratch', (t) => {
 
 test('public hygiene identifies location and category without echoing sensitive-looking bytes', () => {
   for (const content of ['ghp_' + 'A'.repeat(36), '-----BEGIN ' + 'PRIVATE KEY-----',
-    '/' + 'Users' + '/example/data', 'https://' + 'user:pass' + '@example.org']) {
+    '/' + 'Users' + '/example/data', '/' + 'root' + '/.config/tool', '/' + 'workspace' + '/private-project', 'https://' + 'user:pass' + '@example.org']) {
     assert.throws(() => checkPublicHygiene('example.txt', `Heading\n${content}`), (error) => {
       assert.match(error.message, /example\.txt:2: possible/);
       assert.ok(!error.message.includes(content));

@@ -17,7 +17,7 @@ const PUBLIC_PATTERNS = [
   ['GitHub credential', /\bgh[pousr]_[A-Za-z0-9]{36,255}\b|\bgithub_pat_[A-Za-z0-9_]{22,255}\b/],
   ['API credential', /\bsk-(?:proj-)?[A-Za-z0-9_-]{40,}\b/],
   ['authenticated URL', /https?:\/\/[^\s/:]+:[^\s/@]+@/],
-  ['private local path', /\/(?:Users|home)\/[A-Za-z0-9_.-]+(?:\/|\b)|[A-Za-z]:\\(?:Users)\\/],
+  ['private local path', /\/(?:Users|home|root|workspace)\/[A-Za-z0-9_.-]+(?:\/|\b)|[A-Za-z]:\\(?:Users)\\/],
 ];
 
 export class CollectionValidationError extends Error {
@@ -237,6 +237,7 @@ function validateSvgPaintReferences(relative, value) {
     const hex = escaped.trim();
     return /^[0-9a-fA-F]+$/u.test(hex) ? String.fromCodePoint(Number.parseInt(hex, 16)) : escaped;
   });
+  requireCondition(!/@import\b/iu.test(css), `${relative} contains active or external SVG content`);
   for (const match of css.matchAll(/url\(\s*(?:(['"])(.*?)\1|([^\s)]+))\s*\)/giu)) {
     const target = (match[2] ?? match[3]).trim();
     requireCondition(target.startsWith('#'), `${relative} contains an external SVG paint reference`);
@@ -325,7 +326,7 @@ export function validateCollectionPng(relative, bytes) {
     } else if (type === 'IHDR') {
       requireCondition(false, `${relative} must be a valid PNG`);
     } else if (type === 'PLTE') {
-      requireCondition(!sawPalette && !sawIdat && size >= 3 && size % 3 === 0, `${relative} must be a valid PNG`);
+      requireCondition([2, 3, 6].includes(ihdr.colorType) && !sawPalette && !sawIdat && size >= 3 && size % 3 === 0, `${relative} must be a valid PNG`);
       paletteEntries = size / 3;
       requireCondition(paletteEntries <= 256 && (ihdr.colorType !== 3 || paletteEntries <= 2 ** ihdr.bitDepth),
         `${relative} must be a valid PNG`);

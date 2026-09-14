@@ -92,6 +92,7 @@ export function validateOpenaiInterface(root, name) {
   requireCondition(['display_name', 'short_description', 'default_prompt'].every(key => Object.hasOwn(values, key)),
     'openai.yaml requires display_name, short_description, and default_prompt');
   nonblank(values.display_name, 'interface display_name', 64);
+  nonblank(values.short_description, 'interface short_description', 64);
   requireCondition([...values.short_description].length >= 25 && [...values.short_description].length <= 64,
     'interface short_description must be 25-64 characters');
   nonblank(values.default_prompt, 'interface default_prompt');
@@ -121,7 +122,7 @@ export function validateSkill(input) {
     nonblank(metadata.description, 'description', 220);
     nonblank(metadata.license, 'license', 256);
     const license = root.readText('LICENSE').trim();
-    requireCondition(license.length >= 500,
+    requireCondition(license.length >= 500 && hasRecognizableLicenseText(metadata.license, license),
       'LICENSE must contain the full text for the declared package license');
     validateSetupContract(root, metadata, text);
     let links = 0;
@@ -142,9 +143,39 @@ function validateSetupContract(root, frontmatter, text) {
   relativeParts(setup);
   requireCondition(root.info(setup).isFile(), 'setup metadata must reference an existing regular file');
   requireCondition(Object.hasOwn(frontmatter, 'compatibility'), 'setup metadata requires compatibility prerequisites');
+  const headings = markdownHeadings(text);
   for (const heading of ['## Prerequisites and setup', '### Explicit setup', '### Idempotence and side effects', '### Fallback']) {
-    requireCondition(text.includes(heading), `setup metadata requires the ${heading} section`);
+    requireCondition(headings.has(heading), `setup metadata requires the ${heading} section`);
   }
+}
+
+function hasRecognizableLicenseText(declared, license) {
+  const value = license.toLowerCase();
+  const normalized = declared.trim().toLowerCase();
+  if (normalized === 'apache-2.0') return /apache license/u.test(value)
+    && /version 2\.0/u.test(value) && /end of terms and conditions/u.test(value);
+  if (normalized === 'mit') return /mit license/u.test(value)
+    && /permission is hereby granted/u.test(value) && /the software is provided/u.test(value);
+  return /(?:license|licence|copyright)/u.test(value)
+    && /(?:permission|redistribution|rights granted|licensed under)/u.test(value);
+}
+
+function markdownHeadings(text) {
+  const headings = new Set();
+  let fence = null;
+  for (const line of text.split(/\r\n|\n|\r/u)) {
+    const marker = line.match(/^\s{0,3}(`{3,}|~{3,})/u);
+    if (marker) {
+      const run = marker[1];
+      if (fence === null) fence = run;
+      else if (run[0] === fence[0] && run.length >= fence.length) fence = null;
+      continue;
+    }
+    if (fence !== null) continue;
+    const heading = line.match(/^\s{0,3}(#{1,6})[ \t]+(.+?)[ \t]*#*[ \t]*$/u);
+    if (heading) headings.add(`${heading[1]} ${heading[2].trim()}`);
+  }
+  return headings;
 }
 
 function publicSourceHostname(hostname) {
