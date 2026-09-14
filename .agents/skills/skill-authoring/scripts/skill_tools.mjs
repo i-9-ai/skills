@@ -119,10 +119,10 @@ export function validateSkill(input) {
     const metadata = parseFrontmatter(text);
     requireCondition(validSlug(metadata.name, 'skill name') === expected, 'frontmatter name must match the package directory');
     nonblank(metadata.description, 'description', 220);
+    nonblank(metadata.license, 'license', 256);
     const license = root.readText('LICENSE').trim();
-    requireCondition(license.length >= 10_000 && license.includes('Apache License')
-      && license.includes('Version 2.0') && license.includes('END OF TERMS AND CONDITIONS'),
-    'LICENSE must contain the full Apache-2.0 license text');
+    requireCondition(license.length >= 500,
+      'LICENSE must contain the full text for the declared package license');
     validateSetupContract(root, metadata, text);
     let links = 0;
     for (const [relative, info] of inventory) if (info.isFile() && relative.endsWith('.md')) {
@@ -147,12 +147,32 @@ function validateSetupContract(root, frontmatter, text) {
   }
 }
 
+function publicSourceHostname(hostname) {
+  const host = hostname.replace(/^\[|\]$/gu, '').toLowerCase();
+  if (host === 'localhost' || host.endsWith('.localhost') || host === 'local') return false;
+  const parts = host.split('.');
+  if (parts.length === 4 && parts.every(part => /^(?:0|[1-9][0-9]{0,2})$/u.test(part) && Number(part) <= 255)) {
+    const [first, second] = parts.map(Number);
+    return first !== 0 && first !== 10 && first !== 127 && first < 224
+      && !(first === 100 && second >= 64 && second <= 127)
+      && !(first === 169 && second === 254)
+      && !(first === 172 && second >= 16 && second <= 31)
+      && !(first === 192 && second === 168)
+      && !(first === 198 && (second === 18 || second === 19));
+  }
+  if (host.includes(':')) return host !== '::' && host !== '::1'
+    && !/^f[cd][0-9a-f:]*$/u.test(host) && !/^fe[89ab][0-9a-f:]*$/u.test(host)
+    && !/^::ffff:(?:127|10|192\.168|169\.254|172\.(?:1[6-9]|2[0-9]|3[0-1]))\./u.test(host);
+  return true;
+}
+
 function sourceIdentity(source) {
   const uri = nonblank(source.uri, 'source uri', 2048);
   requireCondition(!/\s/u.test(uri), 'source URI must not contain unencoded whitespace');
   let parsed;
   try { parsed = new URL(uri); } catch { throw new ValidationError('invalid source uri'); }
-  const publicHttps = parsed.protocol === 'https:' && parsed.hostname && !parsed.username && !parsed.password && !parsed.search && !parsed.hash;
+  const publicHttps = parsed.protocol === 'https:' && parsed.hostname && publicSourceHostname(parsed.hostname)
+    && !parsed.username && !parsed.password && !parsed.search && !parsed.hash;
   const synthetic = parsed.protocol === 'urn:' && parsed.pathname.startsWith('example:') && !parsed.search && !parsed.hash;
   requireCondition(publicHttps || synthetic, 'source uri must be public HTTPS without credentials/query/fragment or a synthetic urn:example');
   parsed.search = ''; parsed.hash = '';
@@ -185,7 +205,7 @@ export function validateRun(input) {
         requireCondition(REVISION.test(revision), 'reusable public sources require an immutable 40/64-hex revision');
       }
       if (source.reuse === 'adapt') {
-        requireCondition(!['unknown', 'unknown license', 'tbd', 'none', 'unlicensed', 'proprietary', 'no-license'].includes(license.trim().toLowerCase()),
+        requireCondition(!['unknown', 'unknown license', 'tbd', 'none', 'unlicensed', 'proprietary', 'no-license', 'n/a', 'na'].includes(license.trim().toLowerCase()),
           'adapted sources require a declared reusable license; compatibility needs review');
       }
       if (['pattern', 'adapt'].includes(source.reuse)) contributors.add(uri);

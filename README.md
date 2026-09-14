@@ -25,8 +25,11 @@ npx skills add https://github.com/i-9-ai/skills
 ### CLI: install globally
 
 ```sh
-npx skills add i-9-ai/skills --global --skill '*' --yes
+npx skills@1.5.26 add https://github.com/i-9-ai/skills/tree/94107e0a4b3f8712f2e62fd48d7c27b62fee4441 --global --skill '*' --yes
 ```
+
+This command pins both the installer and the collection revision. Review a newer
+revision before replacing either pin.
 
 The Skills CLI asks for a supported agent target when it cannot determine one. After installation, start a new agent session if its skill picker does not refresh automatically.
 

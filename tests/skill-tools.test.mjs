@@ -363,9 +363,27 @@ test('reusable public sources require immutable revisions and adapted sources ne
   source.reuse = 'adapt'; source.license = 'unknown'; rejectRun(manifest, data);
   source.license = 'TBD'; rejectRun(manifest, data);
   source.license = ' TBD '; rejectRun(manifest, data);
+  source.license = 'N/A'; rejectRun(manifest, data);
+  source.license = 'NA'; rejectRun(manifest, data);
   source.license = 'unknown license'; rejectRun(manifest, data);
   source.license = 'Apache-2.0'; writeJson(manifest, data); assert.equal(validateRun(manifest).sources, 2);
   source.revision += '\n'; rejectRun(manifest, data);
+});
+
+test('adapted sources cannot claim local or private HTTPS origins', t => {
+  const { manifest, data } = makeRun(fixture(t)); const source = data.sources[0];
+  source.reuse = 'adapt'; source.revision = 'a'.repeat(40);
+  for (const uri of ['https://localhost/private', 'https://127.0.0.1/private', 'https://10.1.2.3/private', 'https://172.16.1.2/private', 'https://192.168.1.2/private', 'https://[::1]/private', 'https://[fd00::1]/private']) {
+    source.uri = uri; rejectRun(manifest, data);
+  }
+  source.uri = 'https://example.org/public'; writeJson(manifest, data); assert.equal(validateRun(manifest).sources, 2);
+});
+
+test('skill validation accepts complete declared non-Apache license text', t => {
+  const packagePath = makeSkill(fixture(t));
+  fs.writeFileSync(path.join(packagePath, 'SKILL.md'), fs.readFileSync(path.join(packagePath, 'SKILL.md'), 'utf8').replace('license: Apache-2.0', 'license: MIT'));
+  fs.writeFileSync(path.join(packagePath, 'LICENSE'), `MIT License\n\nCopyright (c) 2026 I-9 AI\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n`);
+  assert.equal(validateSkill(packagePath).name, 'example-skill');
 });
 
 test('out-of-order stages, skipped evaluation, and incomplete validation fail', t => {

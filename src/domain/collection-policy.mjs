@@ -120,9 +120,10 @@ export function validateCatalog(value, files, directories) {
 }
 
 export function validateCollectionIcon(relative, text, digests) {
-  requireCondition(text.startsWith('<svg ') && text.includes('<title id="title">')
-    && text.includes('viewBox="0 0 64 64"'), `${relative} must be a titled 64x64 SVG`);
-  validateSafeSvg(relative, text);
+  requireCondition(text.startsWith('<svg '), `${relative} must be a titled 64x64 SVG`);
+  const structure = validateSafeSvg(relative, text);
+  requireCondition(structure.rootAttributes.get('viewBox') === '0 0 64 64' && structure.titleCount === 1,
+    `${relative} must be a titled 64x64 SVG`);
   requireCondition(!/<script\b|\bon[a-z]+\s*=|\b(?:href|src)\s*=|data:|@import\b/iu.test(text),
     `${relative} contains active or external SVG content`);
   const digest = createHash('sha256').update(text).digest('hex');
@@ -134,6 +135,8 @@ function validateSafeSvg(relative, text) {
   const stack = [];
   let offset = 0;
   let rootCount = 0;
+  let rootAttributes;
+  let titleCount = 0;
   while (offset < text.length) {
     if (text.startsWith('<!--', offset)) {
       const end = text.indexOf('-->', offset + 4);
@@ -179,21 +182,25 @@ function validateSafeSvg(relative, text) {
     } else {
       const selfClosing = /\/\s*$/.test(source);
       const attributes = selfClosing ? source.replace(/\/\s*$/, '') : source;
-      validateXmlAttributes(relative, attributes);
+      const parsedAttributes = validateXmlAttributes(relative, attributes);
       if (stack.length === 0) {
         requireCondition(name === 'svg' && rootCount === 0, `${relative} must have one SVG root element`);
         rootCount += 1;
+        rootAttributes = parsedAttributes;
       }
+      if (!selfClosing && stack.length === 1 && stack[0] === 'svg' && name === 'title' && parsedAttributes.get('id') === 'title') titleCount += 1;
       if (!selfClosing) stack.push(name);
     }
     offset = cursor + 1;
   }
   requireCondition(stack.length === 0 && rootCount === 1, `${relative} is not well-formed XML`);
+  return { rootAttributes, titleCount };
 }
 
 function validateXmlAttributes(relative, source) {
   let offset = 0;
   const names = new Set();
+  const values = new Map();
   while (offset < source.length) {
     const whitespace = /^\s+/.exec(source.slice(offset));
     if (whitespace) offset += whitespace[0].length;
@@ -214,8 +221,10 @@ function validateXmlAttributes(relative, source) {
     requireCondition(/^(?:[^<&]|&(?:amp|apos|gt|lt|quot|#[0-9]+|#x[0-9a-fA-F]+);)*$/.test(value),
       `${relative} is not well-formed XML`);
     validateSvgPaintReferences(relative, value);
+    values.set(name[1], value);
     offset = end + 1;
   }
+  return values;
 }
 
 function validateSvgPaintReferences(relative, value) {
@@ -283,6 +292,7 @@ export function validateCollectionPng(relative, bytes) {
   let offset = 8;
   let ihdr;
   let sawPalette = false;
+  let paletteEntries = 0;
   let sawIdat = false;
   let sawIend = false;
   const idat = [];
@@ -310,6 +320,9 @@ export function validateCollectionPng(relative, bytes) {
       requireCondition(false, `${relative} must be a valid PNG`);
     } else if (type === 'PLTE') {
       requireCondition(!sawPalette && !sawIdat && size >= 3 && size % 3 === 0, `${relative} must be a valid PNG`);
+      paletteEntries = size / 3;
+      requireCondition(paletteEntries <= 256 && (ihdr.colorType !== 3 || paletteEntries <= 2 ** ihdr.bitDepth),
+        `${relative} must be a valid PNG`);
       sawPalette = true;
     } else if (type === 'IDAT') {
       requireCondition(!sawIend, `${relative} must be a valid PNG`);

@@ -51,17 +51,17 @@ function transparentPng() {
   ]);
 }
 
-function indexedPng({ palette = true } = {}) {
+function indexedPng({ palette = true, bitDepth = 8, paletteEntries = 1 } = {}) {
   const header = Buffer.alloc(13);
   header.writeUInt32BE(1, 0);
   header.writeUInt32BE(1, 4);
-  header[8] = 8;
+  header[8] = bitDepth;
   header[9] = 3;
   const chunks = [
     Buffer.from('89504e470d0a1a0a', 'hex'),
     pngChunk('IHDR', header),
   ];
-  if (palette) chunks.push(pngChunk('PLTE', Buffer.from([0, 0, 0])));
+  if (palette) chunks.push(pngChunk('PLTE', Buffer.alloc(paletteEntries * 3)));
   chunks.push(pngChunk('IDAT', deflateSync(Buffer.from([0, 0]))), pngChunk('IEND', Buffer.alloc(0)));
   return Buffer.concat(chunks);
 }
@@ -222,6 +222,12 @@ test('collection rejects malformed SVG icons', (t) => {
   assert.throws(() => validateRepository(root), /not well-formed XML/);
 });
 
+test('collection validates SVG title and viewBox from the parsed structure', (t) => {
+  const { root, packagePath } = makeRepository(t);
+  fs.writeFileSync(join(packagePath, 'assets', 'icon.svg'), `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><!-- <title id="title">Comment</title> viewBox="0 0 64 64" --><path d="M1 1h30v30H1z"/></svg>`);
+  assert.throws(() => validateRepository(root), /titled 64x64 SVG/);
+});
+
 test('collection rejects SVG icons with malformed UTF-8', (t) => {
   const { root, packagePath } = makeRepository(t);
   const icon = join(packagePath, 'assets', 'icon.svg');
@@ -288,6 +294,14 @@ test('collection rejects indexed PNG icons without a palette', (t) => {
   fs.writeFileSync(icon, indexedPng());
   assert.equal(validateRepository(root).packages, 1);
   fs.writeFileSync(icon, indexedPng({ palette: false }));
+  assert.throws(() => validateRepository(root), /valid PNG/);
+});
+
+test('collection rejects indexed PNG palettes that exceed the bit depth or PNG maximum', (t) => {
+  const { root, packagePath } = makeRepository(t); const icon = join(packagePath, 'assets', 'icon.png');
+  fs.writeFileSync(icon, indexedPng({ bitDepth: 1, paletteEntries: 3 }));
+  assert.throws(() => validateRepository(root), /valid PNG/);
+  fs.writeFileSync(icon, indexedPng({ paletteEntries: 257 }));
   assert.throws(() => validateRepository(root), /valid PNG/);
 });
 
