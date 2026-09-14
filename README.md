@@ -2,7 +2,7 @@
 
 > Build agent skills that stay focused, portable, secure, and easier to improve over time.
 
-I-9 Skills is a public-ready toolkit for the full life of an agent skill: discover what already works, design one clear responsibility, author a complete package, validate it, publish it deliberately, and evolve it from real evidence. Every package is written in English, includes its own Apache-2.0 `LICENSE`, and works without assuming Codex, Claude, Copilot, OpenCode, or any other specific agent.
+I-9 Skills is a toolkit for the full life of an agent skill: discover what already works, design one clear responsibility, author a complete package, validate it, publish it deliberately, and evolve it from real evidence. Every package is written in English, includes its own Apache-2.0 `LICENSE`, and works without assuming Codex, Claude, Copilot, OpenCode, or any other specific agent.
 
 **20 focused skills. One responsibility each. One reviewable output each.**
 
@@ -12,24 +12,23 @@ The first release is `0.1.0-rc.1`: ready for independent pilot consumption while
 
 ### Easiest: ask your agent
 
-> Install the public I-9 Skills collection for my current agent using the Skills CLI. First list the available packages from `https://github.com/i-9-ai/skills`, then install every package supported by this agent in my global user scope. Do not modify this project. Report the installed packages, the destination scope, and any package or host capability that could not be installed.
+> Install the I-9 Skills collection for my current agent using the Skills CLI. First list the available packages from `https://github.com/i-9-ai/skills`, then install every package supported by this agent in my global user scope. Do not modify this project. Report the installed packages, the destination scope, and any package or host capability that could not be installed.
 
 ### CLI: install for this project
 
-Once this repository is public, run:
-
 ```sh
-npx skills add https://github.com/i-9-ai/skills
+npx skills@1.5.26 add https://github.com/i-9-ai/skills --skill '*' --yes
 ```
 
 ### CLI: install globally
 
 ```sh
-npx skills@1.5.26 add https://github.com/i-9-ai/skills/tree/ec321be85d854f55e6290e737df13101485d5f19 --global --skill '*' --yes
+npx skills@1.5.26 add https://github.com/i-9-ai/skills --global --skill '*' --yes
 ```
 
-This command pins both the installer and the collection revision. Review a newer
-revision before replacing either pin.
+These commands pin the installer and use the repository's default branch. For a
+repeatable production installation, replace the repository URL with a reviewed
+immutable revision.
 
 The Skills CLI asks for a supported agent target when it cannot determine one. After installation, start a new agent session if its skill picker does not refresh automatically.
 
