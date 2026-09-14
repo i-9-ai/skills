@@ -160,7 +160,7 @@ function publicSourceHostname(hostname) {
       && !(first === 192 && second === 168)
       && !(first === 198 && (second === 18 || second === 19));
   }
-  if (host.includes(':')) return host !== '::' && host !== '::1'
+  if (host.includes(':')) return host !== '::' && host !== '::1' && !host.startsWith('::ffff:')
     && !/^f[cd][0-9a-f:]*$/u.test(host) && !/^fe[89ab][0-9a-f:]*$/u.test(host)
     && !/^::ffff:(?:127|10|192\.168|169\.254|172\.(?:1[6-9]|2[0-9]|3[0-1]))\./u.test(host);
   return true;

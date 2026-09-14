@@ -373,7 +373,7 @@ test('reusable public sources require immutable revisions and adapted sources ne
 test('adapted sources cannot claim local or private HTTPS origins', t => {
   const { manifest, data } = makeRun(fixture(t)); const source = data.sources[0];
   source.reuse = 'adapt'; source.revision = 'a'.repeat(40);
-  for (const uri of ['https://localhost/private', 'https://127.0.0.1/private', 'https://10.1.2.3/private', 'https://172.16.1.2/private', 'https://192.168.1.2/private', 'https://[::1]/private', 'https://[fd00::1]/private']) {
+  for (const uri of ['https://localhost/private', 'https://127.0.0.1/private', 'https://10.1.2.3/private', 'https://172.16.1.2/private', 'https://192.168.1.2/private', 'https://[::1]/private', 'https://[::ffff:7f00:1]/private', 'https://[fd00::1]/private']) {
     source.uri = uri; rejectRun(manifest, data);
   }
   source.uri = 'https://example.org/public'; writeJson(manifest, data); assert.equal(validateRun(manifest).sources, 2);
