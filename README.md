@@ -190,6 +190,10 @@ node .agents/skills/skills-catalog/scripts/catalog_tools.mjs sync .
 
 The sync command derives descriptions and tags from each `SKILL.md`, preserves lifecycle status, writes only `catalog.json`, and becomes a no-op on a second run.
 
+### Cross-collection lookup
+
+Each repository keeps its own `catalog.json` as its canonical, versioned inventory. When a local workstation needs to compare explicitly selected collections, the `skills-catalog` package can derive a separate aggregate index outside every source repository. It uses Node.js built-in SQLite when available and a deterministic JSON fallback otherwise; it never alters the source catalogs. See the [aggregate-index contract](.agents/skills/skills-catalog/references/aggregate-index.md) for commands, bounds, and storage rules.
+
 ## Provenance and security
 
 [`upstreams.lock.json`](upstreams.lock.json) records immutable benchmark sources and file hashes for future comparison. It is evidence for review, not an installer lock or automatic updater. Popularity, marketplace rankings, and external audit badges do not establish production quality.
