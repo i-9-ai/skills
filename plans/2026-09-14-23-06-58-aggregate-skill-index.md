@@ -26,7 +26,7 @@ This change may read only explicitly supplied source catalogs and write an index
 
 1. Validate explicit source identifiers and read bounded regular `catalog.json` files.
 2. Validate each catalog against the existing catalog contract and derive a deterministic aggregate record set and SHA-256 catalog digest.
-3. Write the derived index atomically to SQLite when `node:sqlite` is available, otherwise write the equivalent JSON representation.
+3. Write the derived index atomically as `skills-catalog.db` when `node:sqlite` is available, otherwise write `skills-catalog.index.json` as the equivalent JSON representation. Both stay outside source repositories and remain distinct from canonical `catalog.json` files.
 4. Read only generated index files for list and exact-name or tag query operations.
 5. Add isolated fixtures for valid, malformed, oversized, unsafe, duplicate, fallback, and lookup behavior.
 6. Document invocation, output schema, storage boundary, and fallback behavior.

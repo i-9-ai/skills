@@ -50,7 +50,7 @@ node "<installed-skill>/scripts/aggregate_index.mjs" query \
   --tag "catalog"
 ```
 
-It prefers Node.js built-in SQLite and falls back deterministically to JSON when SQLite is unavailable. See [the aggregate-index contract](references/aggregate-index.md) for the output schema, bounds, safe storage location, exact query options, and failure cases.
+It writes the local derived `skills-catalog.db` with Node.js built-in SQLite and falls back deterministically to `skills-catalog.index.json` when SQLite is unavailable. See [the aggregate-index contract](references/aggregate-index.md) for the output schema, bounds, safe storage location, exact query options, and failure cases.
 
 ## Output and boundaries
 

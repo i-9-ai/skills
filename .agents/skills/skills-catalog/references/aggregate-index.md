@@ -12,7 +12,7 @@ The generated records retain only the source ID, a logical `source-id/catalog.js
 
 ## Storage and formats
 
-The caller selects a local output directory outside every source catalog directory. The helper prefers `skills-aggregate-index.sqlite` when the running Node.js provides built-in `node:sqlite`; otherwise it writes `skills-aggregate-index.json`. Both representations contain the same sorted sources and skills. SQLite supports a compact local query store. JSON is the deterministic, dependency-free fallback and can be moved or inspected as plain text.
+The caller selects a local output directory outside every source catalog directory. The helper writes `skills-catalog.db` when the running Node.js provides built-in `node:sqlite`; otherwise it writes `skills-catalog.index.json`. Both representations contain the same sorted sources and skills. `skills-catalog.db` is derived state and must not be confused with a source collection's canonical `catalog.json`. SQLite supports a compact local query store. JSON is the deterministic, dependency-free fallback and can be moved or inspected as plain text.
 
 The output directory is local derived state, not a source collection. It must not be committed into a collection repository. Deleting an index is safe: rebuild it from the explicit source catalogs.
 
@@ -29,12 +29,12 @@ node "<installed-skill>/scripts/aggregate_index.mjs" sync \
   --output "<local-index-directory>"
 
 node "<installed-skill>/scripts/aggregate_index.mjs" list \
-  --index "<local-index-directory>/skills-aggregate-index.sqlite"
+  --index "<local-index-directory>/skills-catalog.db"
 node "<installed-skill>/scripts/aggregate_index.mjs" query \
-  --index "<local-index-directory>/skills-aggregate-index.sqlite" \
+  --index "<local-index-directory>/skills-catalog.db" \
   --name "skills-discovery"
 node "<installed-skill>/scripts/aggregate_index.mjs" query \
-  --index "<local-index-directory>/skills-aggregate-index.sqlite" \
+  --index "<local-index-directory>/skills-catalog.db" \
   --tag "catalog"
 ```
 

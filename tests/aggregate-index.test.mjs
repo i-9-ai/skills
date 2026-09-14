@@ -54,7 +54,7 @@ test("aggregate index uses SQLite when Node provides node:sqlite", async t => {
   const root = fixture(t);
   const alpha = writeCatalog(path.join(root, "alpha"), catalog([skill("alpha-skill", ["alpha"])]));
   const result = await rebuildAggregateIndex({ sources: [source("alpha", alpha)], output: path.join(root, "out"), format: "sqlite" });
-  assert.equal(result.format, "sqlite"); assert.match(path.basename(result.index), /\.sqlite$/);
+  assert.equal(result.format, "sqlite"); assert.equal(path.basename(result.index), "skills-catalog.db");
   assert.deepEqual((await queryAggregateIndex(result.index, { name: "alpha-skill" })).map(item => item.source_id), ["alpha"]);
 });
 

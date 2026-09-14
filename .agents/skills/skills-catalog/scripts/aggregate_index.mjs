@@ -12,8 +12,8 @@ const MAX_SOURCE_BYTES = 1024 * 1024;
 const MAX_TOTAL_SKILLS = 16_384;
 const MAX_INDEX_BYTES = 16 * 1024 * 1024;
 const FORMAT_VERSION = 1;
-const JSON_FILE = "skills-aggregate-index.json";
-const SQLITE_FILE = "skills-aggregate-index.sqlite";
+const JSON_FILE = "skills-catalog.index.json";
+const SQLITE_FILE = "skills-catalog.db";
 
 export class AggregateIndexError extends Error {
   constructor(message) { super(message); this.name = "AggregateIndexError"; }

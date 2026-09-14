@@ -192,7 +192,7 @@ The sync command derives descriptions and tags from each `SKILL.md`, preserves l
 
 ### Cross-collection lookup
 
-Each repository keeps its own `catalog.json` as its canonical, versioned inventory. When a local workstation needs to compare explicitly selected collections, the `skills-catalog` package can derive a separate aggregate index outside every source repository. It uses Node.js built-in SQLite when available and a deterministic JSON fallback otherwise; it never alters the source catalogs. See the [aggregate-index contract](.agents/skills/skills-catalog/references/aggregate-index.md) for commands, bounds, and storage rules.
+Each repository keeps its own `catalog.json` as its canonical, versioned inventory. When a local workstation needs to compare explicitly selected collections, the `skills-catalog` package can derive `skills-catalog.db` outside every source repository. It uses Node.js built-in SQLite when available and `skills-catalog.index.json` as a deterministic fallback otherwise; it never alters the source catalogs. See the [aggregate-index contract](.agents/skills/skills-catalog/references/aggregate-index.md) for commands, bounds, and storage rules.
 
 ## Provenance and security
 
