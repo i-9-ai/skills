@@ -211,6 +211,18 @@
       ]
     },
     {
+      "name": "skills-snapshot",
+      "path": ".agents/skills/skills-snapshot",
+      "status": "pilot",
+      "description": "Create, verify, list, restore, and explicitly prune deterministic snapshots of a caller-selected skill collection or package. Use before risky skill maintenance; do not use to install or refactor skills.",
+      "tags": [
+        "backup",
+        "restore",
+        "skills",
+        "snapshot"
+      ]
+    },
+    {
       "name": "skills-synthesis",
       "path": ".agents/skills/skills-synthesis",
       "status": "pilot",

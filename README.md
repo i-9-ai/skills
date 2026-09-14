@@ -4,7 +4,7 @@
 
 I-9 Skills is a toolkit for the full life of an agent skill: discover what already works, design one clear responsibility, author a complete package, validate it, publish it deliberately, and evolve it from real evidence. Every package is written in English, includes its own Apache-2.0 `LICENSE`, and works without assuming Codex, Claude, Copilot, OpenCode, or any other specific agent.
 
-**20 focused skills. One responsibility each. One reviewable output each.**
+**21 focused skills. One responsibility each. One reviewable output each.**
 
 The first release is `0.1.0-rc.1`: ready for independent pilot consumption while its contracts are exercised outside this repository.
 
@@ -80,6 +80,7 @@ Consult [`catalog.json`](catalog.json) for the generated machine-readable invent
 | [`skill-lifecycle-review`](.agents/skills/skill-lifecycle-review/SKILL.md) | Decide one skill's lifecycle state and next transition | Lifecycle decision |
 | [`skill-publication`](.agents/skills/skill-publication/SKILL.md) | Publish one approved revision through one authorized channel | Publication receipt |
 | [`skill-installation`](.agents/skills/skill-installation/SKILL.md) | Install one approved immutable package | Installation receipt |
+| [`skills-snapshot`](.agents/skills/skills-snapshot/SKILL.md) | Create, verify, restore, and retain a selected local skill snapshot | Restorable snapshot |
 | [`skills-audit`](.agents/skills/skills-audit/SKILL.md) | Audit a bounded collection for integrity and policy drift | Collection audit |
 | [`skill-evidence-collection`](.agents/skills/skill-evidence-collection/SKILL.md) | Organize bounded evidence for a later skill decision | Evidence packet |
 | [`skill-evolution`](.agents/skills/skill-evolution/SKILL.md) | Update one skill from supported new evidence | Evolved candidate and evolution record |
