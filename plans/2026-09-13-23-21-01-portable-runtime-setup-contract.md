@@ -1,5 +1,9 @@
 # Portable runtime and setup contract
 
+## Inaugural baseline consolidation
+
+Consolidated into the initial skill-authoring pipeline before the first release. Retained as decision provenance only; this is not a separately delivered migration.
+
 ## Objective
 
 Let a skill declare when it needs a runtime or explicit preparation without making JavaScript, TypeScript, a package manager, or automatic installation mandatory for every package.

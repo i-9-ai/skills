@@ -1,5 +1,9 @@
 # Expand the skill lifecycle collection
 
+## Inaugural baseline consolidation
+
+Consolidated into the initial skill-authoring pipeline before the first release. Retained as decision provenance only; this is not a separately delivered migration.
+
 ## Objective
 
 Extend the original authoring pipeline into a complete, modular skill-management lifecycle without creating a broad, opaque skills-manager package.

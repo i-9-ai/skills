@@ -1,5 +1,9 @@
 # Strengthen the portable authoring contract
 
+## Inaugural baseline consolidation
+
+Consolidated into the initial skill-authoring pipeline before the first release. Retained as decision provenance only; this is not a separately delivered migration.
+
 ## Objective
 
 Make every newly authored skill explicit about its selection boundary, context sources, handoffs, and automation authority without imposing a host-specific runtime.
