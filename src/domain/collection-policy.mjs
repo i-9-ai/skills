@@ -122,7 +122,8 @@ export function validateCatalog(value, files, directories) {
 export function validateCollectionIcon(relative, text, digests) {
   requireCondition(text.startsWith('<svg '), `${relative} must be a titled 64x64 SVG`);
   const structure = validateSafeSvg(relative, text);
-  requireCondition(structure.rootAttributes.get('viewBox') === '0 0 64 64' && structure.titleCount === 1,
+  requireCondition(structure.rootAttributes.get('viewBox') === '0 0 64 64' && structure.titleCount === 1
+    && structure.titleText.trim(),
     `${relative} must be a titled 64x64 SVG`);
   requireCondition(!/<script\b|\bon[a-z]+\s*=|\b(?:href|src)\s*=|data:|@import\b/iu.test(text),
     `${relative} contains active or external SVG content`);
@@ -137,6 +138,7 @@ function validateSafeSvg(relative, text) {
   let rootCount = 0;
   let rootAttributes;
   let titleCount = 0;
+  let titleText = '';
   while (offset < text.length) {
     if (text.startsWith('<!--', offset)) {
       const end = text.indexOf('-->', offset + 4);
@@ -151,6 +153,7 @@ function validateSafeSvg(relative, text) {
       requireCondition(!/[<&]/.test(content) || /^(?:[^<&]|&(?:amp|apos|gt|lt|quot|#[0-9]+|#x[0-9a-fA-F]+);)*$/.test(content),
         `${relative} is not well-formed XML`);
       if (stack.at(-1) === 'style') validateSvgPaintReferences(relative, content);
+      if (stack.length === 2 && stack[0] === 'svg' && stack[1] === 'title') titleText += decodeXmlEntities(content);
       offset = end === -1 ? text.length : end;
       continue;
     }
@@ -160,6 +163,8 @@ function validateSafeSvg(relative, text) {
     const tagMatch = /^([A-Za-z_][A-Za-z0-9_.:-]*)/.exec(text.slice(tagStart));
     requireCondition(tagMatch, `${relative} is not well-formed XML`);
     const name = tagMatch[1];
+    const localName = name.split(':').at(-1).toLowerCase();
+    requireCondition(localName !== 'script', `${relative} contains active or external SVG content`);
     let cursor = tagStart + name.length;
     let quote = '';
     while (cursor < text.length) {
@@ -194,7 +199,7 @@ function validateSafeSvg(relative, text) {
     offset = cursor + 1;
   }
   requireCondition(stack.length === 0 && rootCount === 1, `${relative} is not well-formed XML`);
-  return { rootAttributes, titleCount };
+  return { rootAttributes, titleCount, titleText };
 }
 
 function validateXmlAttributes(relative, source) {
@@ -294,6 +299,7 @@ export function validateCollectionPng(relative, bytes) {
   let sawPalette = false;
   let paletteEntries = 0;
   let sawIdat = false;
+  let closedIdatSequence = false;
   let sawIend = false;
   const idat = [];
   while (offset < bytes.length) {
@@ -325,7 +331,7 @@ export function validateCollectionPng(relative, bytes) {
         `${relative} must be a valid PNG`);
       sawPalette = true;
     } else if (type === 'IDAT') {
-      requireCondition(!sawIend, `${relative} must be a valid PNG`);
+      requireCondition(!sawIend && !closedIdatSequence, `${relative} must be a valid PNG`);
       requireCondition(ihdr.colorType !== 3 || sawPalette, `${relative} must be a valid PNG`);
       sawIdat = true;
       idat.push(content);
@@ -335,6 +341,7 @@ export function validateCollectionPng(relative, bytes) {
     } else if (type.charCodeAt(0) < 97) {
       requireCondition(false, `${relative} must be a valid PNG`);
     }
+    if (sawIdat && type !== 'IDAT') closedIdatSequence = true;
     offset = end;
   }
   requireCondition(ihdr && sawIdat && sawIend, `${relative} must be a valid PNG`);
@@ -358,6 +365,24 @@ function validPngBitDepth(bitDepth, colorType) {
   return ({ 0: [1, 2, 4, 8, 16], 2: [8, 16], 3: [1, 2, 4, 8], 4: [8, 16], 6: [8, 16] }[colorType] ?? []).includes(bitDepth);
 }
 
+function publicRepositoryHostname(hostname) {
+  const host = hostname.replace(/^\[|\]$/gu, '').toLowerCase();
+  if (host === 'localhost' || host.endsWith('.localhost') || host === 'local') return false;
+  const parts = host.split('.');
+  if (parts.length === 4 && parts.every(part => /^(?:0|[1-9][0-9]{0,2})$/u.test(part) && Number(part) <= 255)) {
+    const [first, second] = parts.map(Number);
+    return first !== 0 && first !== 10 && first !== 127 && first < 224
+      && !(first === 100 && second >= 64 && second <= 127)
+      && !(first === 169 && second === 254)
+      && !(first === 172 && second >= 16 && second <= 31)
+      && !(first === 192 && second === 168)
+      && !(first === 198 && (second === 18 || second === 19));
+  }
+  if (host.includes(':')) return host !== '::' && host !== '::1' && !host.startsWith('::ffff:')
+    && !/^f[cd][0-9a-f:]*$/u.test(host) && !/^fe[89ab][0-9a-f:]*$/u.test(host);
+  return true;
+}
+
 export function validateLock(value, names) {
   const data = exactFields(value, ['schema_version', 'observed_on', 'hash_algorithm', 'sources'], 'upstream lock');
   requireCondition(data.schema_version === 1, 'upstream lock schema_version must be 1');
@@ -378,7 +403,7 @@ export function validateLock(value, names) {
     nonblank(source.repository, 'locked repository', 2048);
     let repository;
     try { repository = new URL(source.repository); } catch { /* Rejected by the condition below. */ }
-    requireCondition(repository?.protocol === 'https:' && repository.hostname && !repository.username
+    requireCondition(repository?.protocol === 'https:' && repository.hostname && publicRepositoryHostname(repository.hostname) && !repository.username
       && !repository.password && !repository.search && !repository.hash,
     'locked repository must be a public HTTPS URL');
     requireCondition(typeof source.revision === 'string' && [40, 64].includes(source.revision.length)

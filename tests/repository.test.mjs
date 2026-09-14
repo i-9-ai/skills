@@ -228,6 +228,15 @@ test('collection validates SVG title and viewBox from the parsed structure', (t)
   assert.throws(() => validateRepository(root), /titled 64x64 SVG/);
 });
 
+test('collection rejects namespaced SVG scripts and empty accessible titles', (t) => {
+  const { root, packagePath } = makeRepository(t); const icon = join(packagePath, 'assets', 'icon.svg');
+  const valid = fs.readFileSync(icon, 'utf8');
+  fs.writeFileSync(icon, valid.replace('<path', '<s:script xmlns:s="http://www.w3.org/2000/svg"/> <path'));
+  assert.throws(() => validateRepository(root), /active or external SVG content/);
+  fs.writeFileSync(icon, valid.replace('>Example Skill</title>', '>   </title>'));
+  assert.throws(() => validateRepository(root), /titled 64x64 SVG/);
+});
+
 test('collection rejects SVG icons with malformed UTF-8', (t) => {
   const { root, packagePath } = makeRepository(t);
   const icon = join(packagePath, 'assets', 'icon.svg');
@@ -302,6 +311,14 @@ test('collection rejects indexed PNG palettes that exceed the bit depth or PNG m
   fs.writeFileSync(icon, indexedPng({ bitDepth: 1, paletteEntries: 3 }));
   assert.throws(() => validateRepository(root), /valid PNG/);
   fs.writeFileSync(icon, indexedPng({ paletteEntries: 257 }));
+  assert.throws(() => validateRepository(root), /valid PNG/);
+});
+
+test('collection rejects IDAT chunks separated by ancillary PNG data', (t) => {
+  const { root, packagePath } = makeRepository(t); const icon = join(packagePath, 'assets', 'icon.png');
+  const valid = transparentPng(); const size = valid.readUInt32BE(33); const content = valid.subarray(41, 41 + size);
+  const split = Buffer.concat([valid.subarray(0, 33), pngChunk('IDAT', content.subarray(0, 1)), pngChunk('tEXt', Buffer.from('key\0value')), pngChunk('IDAT', content.subarray(1)), valid.subarray(45 + size)]);
+  fs.writeFileSync(icon, split);
   assert.throws(() => validateRepository(root), /valid PNG/);
 });
 
@@ -463,6 +480,10 @@ test('source locks validate package digests and known consumers', (t) => {
     ['files', [{ path: 'SKILL.md', sha256: 'a'.repeat(64) + '\n' }]]]) {
     const invalid = structuredClone(lock);
     invalid.sources[0][key] = value;
+    assert.throws(() => validateLock(invalid, new Set(['example-skill'])), CollectionValidationError);
+  }
+  for (const repository of ['https://localhost/private', 'https://127.0.0.1/private', 'https://10.1.2.3/private', 'https://[fd00::1]/private']) {
+    const invalid = structuredClone(lock); invalid.sources[0].repository = repository;
     assert.throws(() => validateLock(invalid, new Set(['example-skill'])), CollectionValidationError);
   }
 });

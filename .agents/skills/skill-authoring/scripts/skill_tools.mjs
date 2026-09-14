@@ -201,9 +201,8 @@ export function validateRun(input) {
       requireCondition(['pattern', 'adapt', 'reference', 'reject'].includes(source.reuse), 'invalid source reuse');
       const identity = JSON.stringify([uri, revision]);
       requireCondition(!identities.has(identity), 'duplicate source URI and revision'); identities.add(identity);
-      if (source.reuse === 'adapt' || (source.reuse === 'pattern' && uri.startsWith('https:'))) {
-        requireCondition(REVISION.test(revision), 'reusable public sources require an immutable 40/64-hex revision');
-      }
+      if (uri.startsWith('https:')) requireCondition(REVISION.test(revision),
+        'external public sources require an immutable 40/64-hex revision');
       if (source.reuse === 'adapt') {
         requireCondition(!['unknown', 'unknown license', 'tbd', 'none', 'unlicensed', 'proprietary', 'no-license', 'n/a', 'na'].includes(license.trim().toLowerCase()),
           'adapted sources require a declared reusable license; compatibility needs review');

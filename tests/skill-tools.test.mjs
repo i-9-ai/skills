@@ -370,6 +370,17 @@ test('reusable public sources require immutable revisions and adapted sources ne
   source.revision += '\n'; rejectRun(manifest, data);
 });
 
+test('external reference and rejected sources require immutable revisions', t => {
+  const { manifest, data } = makeRun(fixture(t)); const source = data.sources[0];
+  data.stages[2].status = 'skipped'; data.stages[2].artifacts = [];
+  source.uri = 'https://example.org/skill'; source.revision = 'main';
+  for (const reuse of ['reference', 'reject']) {
+    source.reuse = reuse; rejectRun(manifest, data);
+    source.revision = 'a'.repeat(40); writeJson(manifest, data); assert.equal(validateRun(manifest).sources, 2);
+    source.revision = 'main';
+  }
+});
+
 test('adapted sources cannot claim local or private HTTPS origins', t => {
   const { manifest, data } = makeRun(fixture(t)); const source = data.sources[0];
   source.reuse = 'adapt'; source.revision = 'a'.repeat(40);
