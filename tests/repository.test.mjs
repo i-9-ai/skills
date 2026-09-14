@@ -11,7 +11,7 @@ import { validateRepository } from '../src/application/validate-repository.mjs';
 import {
   checkPublicHygiene, CollectionValidationError, validateCatalog, validateLock,
 } from '../src/domain/collection-policy.mjs';
-import { parseSkillSummary } from '../.agents/skills/skills-catalog/scripts/catalog_tools.mjs';
+import { parseSkillSummary, syncCatalog } from '../.agents/skills/skills-catalog/scripts/catalog_tools.mjs';
 import { DEFAULT_LICENSE_PATH, LIMITS, STAGES } from '../.agents/skills/skill-authoring/scripts/skill_tools.mjs';
 
 const EFFORT_METADATA = 'metadata:\n  reasoning-effort: medium\n';
@@ -51,7 +51,7 @@ function transparentPng() {
   ]);
 }
 
-function indexedPng({ palette = true, bitDepth = 8, paletteEntries = 1 } = {}) {
+function indexedPng({ palette = true, bitDepth = 8, paletteEntries = 1, pixel = 0 } = {}) {
   const header = Buffer.alloc(13);
   header.writeUInt32BE(1, 0);
   header.writeUInt32BE(1, 4);
@@ -62,7 +62,7 @@ function indexedPng({ palette = true, bitDepth = 8, paletteEntries = 1 } = {}) {
     pngChunk('IHDR', header),
   ];
   if (palette) chunks.push(pngChunk('PLTE', Buffer.alloc(paletteEntries * 3)));
-  chunks.push(pngChunk('IDAT', deflateSync(Buffer.from([0, 0]))), pngChunk('IEND', Buffer.alloc(0)));
+  chunks.push(pngChunk('IDAT', deflateSync(Buffer.from([0, pixel]))), pngChunk('IEND', Buffer.alloc(0)));
   return Buffer.concat(chunks);
 }
 
@@ -253,6 +253,14 @@ test('collection rejects SVG icons with external CSS imports', (t) => {
   assert.throws(() => validateRepository(root), /(?:active or external SVG content|external SVG paint reference)/);
 });
 
+test('collection rejects SVG icons with embedded foreign content', (t) => {
+  const { root, packagePath } = makeRepository(t);
+  fs.writeFileSync(join(packagePath, 'assets', 'icon.svg'), `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+    <title id="title">Example Skill</title><foreignObject><div>foreign</div></foreignObject><path d="M1 1h62v62H1z"/>
+  </svg>`);
+  assert.throws(() => validateRepository(root), /active or external SVG content/);
+});
+
 test('collection rejects SVG icons with invalid numeric XML character references', (t) => {
   const { root, packagePath } = makeRepository(t);
   const icon = join(packagePath, 'assets', 'icon.svg');
@@ -320,6 +328,15 @@ test('collection rejects indexed PNG icons without a palette', (t) => {
   assert.equal(validateRepository(root).packages, 1);
   fs.writeFileSync(icon, indexedPng({ palette: false }));
   assert.throws(() => validateRepository(root), /valid PNG/);
+});
+
+test('collection rejects indexed PNG pixels outside the palette', (t) => {
+  const { root, packagePath } = makeRepository(t);
+  const icon = join(packagePath, 'assets', 'icon.png');
+  fs.writeFileSync(icon, indexedPng({ paletteEntries: 1, pixel: 1 }));
+  assert.throws(() => validateRepository(root), /valid PNG/);
+  fs.writeFileSync(icon, indexedPng({ bitDepth: 1, paletteEntries: 1, pixel: 0x7f }));
+  assert.equal(validateRepository(root).packages, 1);
 });
 
 test('collection rejects indexed PNG palettes that exceed the bit depth or PNG maximum', (t) => {
@@ -499,6 +516,19 @@ test('catalog helper requires affirmative discovery guidance', (t) => {
   const result = spawnSync(process.execPath, [join(process.cwd(), '.agents', 'skills', 'skills-catalog', 'scripts', 'catalog_tools.mjs'), 'check', root], { encoding: 'utf8' });
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /must direct agents to catalog\.json for skill discovery/);
+});
+
+test('catalog synchronization preserves readable permissions', (t) => {
+  const { root, packagePath } = makeRepository(t);
+  const catalog = join(root, 'catalog.json');
+  fs.chmodSync(catalog, 0o644);
+  const skill = join(packagePath, 'SKILL.md');
+  fs.writeFileSync(skill, fs.readFileSync(skill, 'utf8').replace('synthetic example', 'portable example'));
+  assert.equal(syncCatalog(root).changed, true);
+  assert.equal(fs.statSync(catalog).mode & 0o777, 0o644);
+  fs.unlinkSync(catalog);
+  assert.equal(syncCatalog(root).changed, true);
+  assert.equal(fs.statSync(catalog).mode & 0o777, 0o644);
 });
 
 test('source locks validate package digests and known consumers', (t) => {

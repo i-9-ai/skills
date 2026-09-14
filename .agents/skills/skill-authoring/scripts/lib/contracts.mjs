@@ -237,16 +237,47 @@ export function markdownLinks(text) {
     }
     return fence ? '' : stripInlineCode(line);
   });
-  const patterns = [
-    /!?\[[^\[\]]*\]\(\s*(?:<([^>]+)>|([^\s)]+))(?:\s+['"][^\n]*?['"])?\s*\)/gu,
-    /^\s{0,3}\[[^\[\]]+\]:\s*(?:<([^>]+)>|(\S+))/gu,
-  ];
   const links = [];
   for (const [index, line] of visible.entries()) {
-    for (const pattern of patterns) {
-      pattern.lastIndex = 0;
-      for (const match of line.matchAll(pattern)) links.push([index + 1, match[1] ?? match[2]]);
+    for (const target of inlineMarkdownLinks(line)) links.push([index + 1, target]);
+    for (const match of line.matchAll(/^\s{0,3}\[[^\[\]]+\]:\s*(?:<([^>]+)>|(\S+))/gu)) links.push([index + 1, match[1] ?? match[2]]);
+  }
+  return links;
+}
+
+function inlineMarkdownLinks(line) {
+  const links = [];
+  for (const match of line.matchAll(/!?\[[^\[\]]*\]\(\s*/gu)) {
+    let cursor = match.index + match[0].length;
+    let target = '';
+    if (line[cursor] === '<') {
+      const end = line.indexOf('>', cursor + 1);
+      if (end === -1) continue;
+      target = line.slice(cursor + 1, end);
+      cursor = end + 1;
+    } else {
+      const start = cursor;
+      let depth = 0;
+      for (; cursor < line.length; cursor += 1) {
+        if (line[cursor] === '(') depth += 1;
+        else if (line[cursor] === ')') {
+          if (depth === 0) break;
+          depth -= 1;
+        } else if (/\s/u.test(line[cursor]) && depth === 0) break;
+      }
+      if (depth !== 0) continue;
+      target = line.slice(start, cursor);
     }
+    if (!target) continue;
+    while (/\s/u.test(line[cursor] ?? '')) cursor += 1;
+    if (line[cursor] === '"' || line[cursor] === "'") {
+      const quote = line[cursor++];
+      const end = line.indexOf(quote, cursor);
+      if (end === -1) continue;
+      cursor = end + 1;
+      while (/\s/u.test(line[cursor] ?? '')) cursor += 1;
+    }
+    if (line[cursor] === ')') links.push(target);
   }
   return links;
 }

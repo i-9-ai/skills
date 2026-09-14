@@ -173,11 +173,12 @@ export function validateCatalogData(value, { allowVersion1 = false } = {}) {
 function readCatalog(root, { required = true, allowVersion1 = false } = {}) {
   const filename = path.join(root, 'catalog.json');
   const bytes = regularBytes(filename, 'catalog.json', MAX_CATALOG_BYTES, { required });
-  if (bytes === null) return { filename, bytes: null, value: null };
+  if (bytes === null) return { filename, bytes: null, value: null, mode: null };
+  const mode = fs.lstatSync(filename).mode & 0o777;
   let value;
   try { value = JSON.parse(bytes.toString('utf8')); } catch { throw new CatalogError('catalog.json must be valid UTF-8 JSON'); }
   validateCatalogData(value, { allowVersion1 });
-  return { filename, bytes, value };
+  return { filename, bytes, value, mode };
 }
 
 function discover(root) {
@@ -269,11 +270,14 @@ export function syncCatalog(input) {
   try {
     descriptor = fs.openSync(temporary, fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_EXCL
       | fs.constants.O_NOFOLLOW, 0o600);
-    fs.writeFileSync(descriptor, next); fs.fsyncSync(descriptor); fs.closeSync(descriptor); descriptor = undefined;
+    fs.writeFileSync(descriptor, next); fs.fchmodSync(descriptor, current.mode ?? 0o644); fs.fsyncSync(descriptor); fs.closeSync(descriptor); descriptor = undefined;
     const observed = regularBytes(current.filename, 'catalog.json', MAX_CATALOG_BYTES, { required: false });
     requireCondition((observed === null && current.bytes === null)
       || (observed !== null && current.bytes !== null && observed.equals(current.bytes)),
     'catalog.json changed before replacement');
+    requireCondition((observed === null && current.mode === null)
+      || (observed !== null && (fs.lstatSync(current.filename).mode & 0o777) === current.mode),
+    'catalog.json permissions changed before replacement');
     fs.renameSync(temporary, current.filename);
   } finally {
     if (descriptor !== undefined) fs.closeSync(descriptor);

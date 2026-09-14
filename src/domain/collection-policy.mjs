@@ -164,7 +164,8 @@ function validateSafeSvg(relative, text) {
     requireCondition(tagMatch, `${relative} is not well-formed XML`);
     const name = tagMatch[1];
     const localName = name.split(':').at(-1).toLowerCase();
-    requireCondition(localName !== 'script', `${relative} contains active or external SVG content`);
+    requireCondition(!['script', 'foreignobject', 'iframe', 'object', 'embed'].includes(localName),
+      `${relative} contains active or external SVG content`);
     let cursor = tagStart + name.length;
     let quote = '';
     while (cursor < text.length) {
@@ -355,13 +356,55 @@ export function validateCollectionPng(relative, bytes) {
   const expected = ihdr.height * (rowBytes + 1);
   try {
     const decoded = inflateSync(Buffer.concat(idat), { maxOutputLength: expected + 1 });
-    requireCondition(decoded.length === expected
-      && Array.from({ length: ihdr.height }, (_, row) => decoded[row * (rowBytes + 1)]).every((filter) => filter <= 4),
-      `${relative} must be a valid PNG`);
+    requireCondition(decoded.length === expected, `${relative} must be a valid PNG`);
+    const rows = unfilterPngRows(decoded, ihdr, rowBytes, relative);
+    if (ihdr.colorType === 3) {
+      const mask = (1 << ihdr.bitDepth) - 1;
+      for (const row of rows) for (let pixel = 0; pixel < ihdr.width; pixel += 1) {
+        const bitOffset = pixel * ihdr.bitDepth;
+        const index = row[Math.floor(bitOffset / 8)];
+        const shift = 8 - ihdr.bitDepth - (bitOffset % 8);
+        requireCondition(((index >> shift) & mask) < paletteEntries, `${relative} must be a valid PNG`);
+      }
+    }
   } catch (error) {
     if (error instanceof CollectionValidationError) throw error;
     throw new CollectionValidationError(`${relative} must be a valid PNG`);
   }
+}
+
+function unfilterPngRows(decoded, ihdr, rowBytes, relative) {
+  const channels = { 0: 1, 2: 3, 3: 1, 4: 2, 6: 4 }[ihdr.colorType];
+  const bytesPerPixel = Math.max(1, Math.ceil((channels * ihdr.bitDepth) / 8));
+  const rows = [];
+  let previous = Buffer.alloc(rowBytes);
+  for (let row = 0; row < ihdr.height; row += 1) {
+    const offset = row * (rowBytes + 1);
+    const filter = decoded[offset];
+    requireCondition(filter <= 4, `${relative} must be a valid PNG`);
+    const source = decoded.subarray(offset + 1, offset + rowBytes + 1);
+    const output = Buffer.alloc(rowBytes);
+    for (let index = 0; index < rowBytes; index += 1) {
+      const left = index >= bytesPerPixel ? output[index - bytesPerPixel] : 0;
+      const above = previous[index];
+      const upperLeft = index >= bytesPerPixel ? previous[index - bytesPerPixel] : 0;
+      const predictor = filter === 0 ? 0 : filter === 1 ? left : filter === 2 ? above
+        : filter === 3 ? Math.floor((left + above) / 2) : paeth(left, above, upperLeft);
+      output[index] = (source[index] + predictor) & 0xff;
+    }
+    rows.push(output);
+    previous = output;
+  }
+  return rows;
+}
+
+function paeth(left, above, upperLeft) {
+  const estimate = left + above - upperLeft;
+  const leftDistance = Math.abs(estimate - left);
+  const aboveDistance = Math.abs(estimate - above);
+  const upperLeftDistance = Math.abs(estimate - upperLeft);
+  return leftDistance <= aboveDistance && leftDistance <= upperLeftDistance ? left
+    : aboveDistance <= upperLeftDistance ? above : upperLeft;
 }
 
 const LIMIT_PNG_CHUNK = 16 * 1024 * 1024;

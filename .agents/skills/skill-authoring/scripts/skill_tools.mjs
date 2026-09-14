@@ -86,7 +86,8 @@ export function validateOpenaiInterface(root, name) {
     nonblank(tool.url, 'dependency URL', 2048);
     let url;
     try { url = new URL(tool.url); } catch { throw new ValidationError('invalid dependency URL'); }
-    requireCondition(!/\s/u.test(tool.url) && url.protocol === 'https:' && url.hostname && !url.username && !url.password && !url.search && !url.hash,
+    requireCondition(!/\s/u.test(tool.url) && url.protocol === 'https:' && url.hostname && publicSourceHostname(url.hostname)
+      && !url.username && !url.password && !url.search && !url.hash,
       'dependency URL must be HTTPS without credentials, query, or fragment');
   }
   requireCondition(['display_name', 'short_description', 'default_prompt'].every(key => Object.hasOwn(values, key)),

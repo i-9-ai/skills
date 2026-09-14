@@ -7,15 +7,15 @@ This reference adapts the method described by [Microsoft SkillOpt](https://githu
 | Control | Purpose |
 | --- | --- |
 | Frozen baseline | Makes improvement and rollback comparable. |
-| Tuning and held-out splits | Prevents candidate selection from consuming the acceptance evidence. |
+| Tuning, selection-validation, and final-acceptance splits | Keeps the final acceptance evidence untouched by candidate selection. |
 | Bounded edit budget | Limits instruction drift and keeps each candidate reviewable. |
 | Scored rollouts | Grounds diagnosis in observed task outcomes. |
-| Validation gate | Promotes only candidates that meet the stated threshold. |
+| Final acceptance gate | Promotes only the selected candidate when it meets the stated threshold. |
 | Rejected-change record | Preserves negative evidence and prevents repetitive regressions. |
 | Best accepted revision | Separates experimentation from the artifact offered to lifecycle review. |
 
 ## Portable adaptation
 
-An execution host may use a local script, a compatible research tool, an agent harness, or a manual exercise with clearly labeled limits. The optimization contract remains the same: do not expose the held-out set during tuning, do not accept an edit without the gate, and do not treat a higher tuning score as proof of general improvement.
+An execution host may use a local script, a compatible research tool, an agent harness, or a manual exercise with clearly labeled limits. The optimization contract remains the same: do not expose selection-validation cases during tuning, do not use final-acceptance cases during iterative selection, do not accept an edit without the final gate, and do not treat a higher tuning score as proof of general improvement.
 
 SkillOpt is licensed under MIT. Its source and model adapters are not included in this package. A user who elects to install it must follow its own installation, credential, data-handling, and licensing requirements.
