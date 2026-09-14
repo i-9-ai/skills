@@ -50,7 +50,7 @@ Add optional `metadata` only for known authorship, useful tags, clear provenance
 
 ## Procedure
 
-Write the ordinary workflow so a capable agent can complete it without external lookup: include the decisions, defaults, procedure, and representative examples that change outcomes or prevent likely mistakes. Keep rare, version-sensitive, or exhaustive detail in bundled references. Link authoritative external documentation only for verification or uncommon cases; a link must not be the sole explanation of a routine step.
+Write the ordinary workflow so a capable agent can complete it without external lookup: include the decisions, defaults, procedure, and representative examples that change outcomes or prevent likely mistakes. Keep rare, version-sensitive, or exhaustive detail in bundled references. Link a bundled resource only when this procedure requires loading it; use an inline code path when only naming or citing a file. Link authoritative external documentation only for verification or uncommon cases; a link must not be the sole explanation of a routine step.
 
 ## Tool policy
 
