@@ -253,6 +253,16 @@ test('collection rejects SVG icons with external CSS imports', (t) => {
   assert.throws(() => validateRepository(root), /(?:active or external SVG content|external SVG paint reference)/);
 });
 
+test('collection rejects SVG icons with invalid numeric XML character references', (t) => {
+  const { root, packagePath } = makeRepository(t);
+  const icon = join(packagePath, 'assets', 'icon.svg');
+  const valid = fs.readFileSync(icon, 'utf8');
+  for (const reference of ['&#0;', '&#xD800;']) {
+    fs.writeFileSync(icon, valid.replace('Example Skill', reference));
+    assert.throws(() => validateRepository(root), /not well-formed XML/);
+  }
+});
+
 test('collection rejects external SVG paint URLs in style blocks', (t) => {
   const { root, packagePath } = makeRepository(t);
   fs.writeFileSync(join(packagePath, 'assets', 'icon.svg'), `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
@@ -479,7 +489,16 @@ test('visual guide publication only deploys main and stages new pages before dif
   assert.match(wikiWorkflow, /with:\n\s+ref: main\n\s+persist-credentials: false/);
   assert.match(wikiWorkflow, /git ls-remote --exit-code --heads "https:\/\/github\.com\/\$\{REPOSITORY\}\.wiki\.git"/);
   assert.match(wikiWorkflow, /python3 - <<'PY'[\s\S]*https:\/\/github\.com\/\{repository\}\/blob\/main\/\{resolved\}/);
+  assert.match(wikiWorkflow, /Wiki Home collision:[\s\S]*exit 1/);
   assert.match(wikiWorkflow, /git add --all\n\s+if git diff --quiet --staged; then/);
+});
+
+test('catalog helper requires affirmative discovery guidance', (t) => {
+  const { root } = makeRepository(t);
+  fs.writeFileSync(join(root, 'AGENTS.md'), 'Do not consult catalog.json for skill discovery.\n');
+  const result = spawnSync(process.execPath, [join(process.cwd(), '.agents', 'skills', 'skills-catalog', 'scripts', 'catalog_tools.mjs'), 'check', root], { encoding: 'utf8' });
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /must direct agents to catalog\.json for skill discovery/);
 });
 
 test('source locks validate package digests and known consumers', (t) => {

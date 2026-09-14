@@ -153,7 +153,7 @@ function validateSafeSvg(relative, text) {
       requireCondition(!/[<&]/.test(content) || /^(?:[^<&]|&(?:amp|apos|gt|lt|quot|#[0-9]+|#x[0-9a-fA-F]+);)*$/.test(content),
         `${relative} is not well-formed XML`);
       if (stack.at(-1) === 'style') validateSvgPaintReferences(relative, content);
-      if (stack.length === 2 && stack[0] === 'svg' && stack[1] === 'title') titleText += decodeXmlEntities(content);
+      if (stack.length === 2 && stack[0] === 'svg' && stack[1] === 'title') titleText += decodeXmlEntities(relative, content);
       offset = end === -1 ? text.length : end;
       continue;
     }
@@ -233,7 +233,7 @@ function validateXmlAttributes(relative, source) {
 }
 
 function validateSvgPaintReferences(relative, value) {
-  const css = stripCssComments(decodeXmlEntities(value)).replace(/\\([0-9a-fA-F]{1,6}\s?|.)/gu, (_match, escaped) => {
+  const css = stripCssComments(decodeXmlEntities(relative, value)).replace(/\\([0-9a-fA-F]{1,6}\s?|.)/gu, (_match, escaped) => {
     const hex = escaped.trim();
     return /^[0-9a-fA-F]+$/u.test(hex) ? String.fromCodePoint(Number.parseInt(hex, 16)) : escaped;
   });
@@ -244,12 +244,16 @@ function validateSvgPaintReferences(relative, value) {
   }
 }
 
-function decodeXmlEntities(value) {
+function decodeXmlEntities(relative, value) {
   return value.replace(/&(amp|apos|gt|lt|quot|#(?:[0-9]+|x[0-9a-fA-F]+));/gu, (_match, entity) => {
     if (entity[0] !== '#') return { amp: '&', apos: "'", gt: '>', lt: '<', quot: '"' }[entity];
     const value = entity.slice(1);
     const hexadecimal = value[0].toLowerCase() === 'x';
-    return String.fromCodePoint(Number.parseInt(hexadecimal ? value.slice(1) : value, hexadecimal ? 16 : 10));
+    const codePoint = Number.parseInt(hexadecimal ? value.slice(1) : value, hexadecimal ? 16 : 10);
+    requireCondition(codePoint === 0x9 || codePoint === 0xa || codePoint === 0xd
+      || (codePoint >= 0x20 && codePoint <= 0xd7ff) || (codePoint >= 0xe000 && codePoint <= 0xfffd)
+      || (codePoint >= 0x10000 && codePoint <= 0x10ffff), `${relative} is not well-formed XML`);
+    return String.fromCodePoint(codePoint);
   });
 }
 

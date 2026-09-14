@@ -282,12 +282,33 @@ export function checkMarkdown(root, relative, text) {
 
 export function htmlLinks(text) {
   const links = [];
-  for (const tag of text.matchAll(/<[A-Za-z][A-Za-z0-9:-]*(?:\s+[^<>]*?)?>/gu)) {
-    const source = tag[0];
+  for (const tag of htmlTags(text)) {
+    const source = tag.source;
     for (const attribute of source.matchAll(/\s(?:href|src)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/giu)) {
       const line = text.slice(0, tag.index + attribute.index).split(/\r\n|\n|\r/u).length;
       links.push([line, attribute[1] ?? attribute[2] ?? attribute[3]]);
     }
   }
   return links;
+}
+
+function htmlTags(text) {
+  const tags = [];
+  for (let index = 0; index < text.length; index += 1) {
+    if (text[index] !== '<' || !/[A-Za-z]/u.test(text[index + 1] ?? '')) continue;
+    let cursor = index + 2;
+    while (/[A-Za-z0-9:-]/u.test(text[cursor] ?? '')) cursor += 1;
+    let quote = '';
+    for (; cursor < text.length; cursor += 1) {
+      const character = text[cursor];
+      if (quote) {
+        if (character === quote) quote = '';
+      } else if (character === '"' || character === "'") quote = character;
+      else if (character === '>') {
+        tags.push({ index, source: text.slice(index, cursor + 1) });
+        break;
+      } else if (character === '<') break;
+    }
+  }
+  return tags;
 }

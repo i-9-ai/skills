@@ -13,3 +13,7 @@ test('HTML link discovery accepts quoted and unquoted href attributes only insid
 
   assert.deepEqual(links, [[1, 'quoted.html'], [2, 'single.html'], [3, 'plain.html']]);
 });
+
+test('HTML link discovery keeps scanning through quoted greater-than signs', () => {
+  assert.deepEqual(htmlLinks('<a title="1 > 0" href="missing.html">Missing</a>'), [[1, 'missing.html']]);
+});

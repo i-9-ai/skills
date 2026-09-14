@@ -25,7 +25,7 @@ npx skills add https://github.com/i-9-ai/skills
 ### CLI: install globally
 
 ```sh
-npx skills@1.5.26 add https://github.com/i-9-ai/skills/tree/94107e0a4b3f8712f2e62fd48d7c27b62fee4441 --global --skill '*' --yes
+npx skills@1.5.26 add https://github.com/i-9-ai/skills/tree/ec321be85d854f55e6290e737df13101485d5f19 --global --skill '*' --yes
 ```
 
 This command pins both the installer and the collection revision. Review a newer

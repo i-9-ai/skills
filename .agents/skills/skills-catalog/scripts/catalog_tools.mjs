@@ -218,7 +218,7 @@ function checkAgentsReference(root) {
   let text;
   try { text = new TextDecoder('utf-8', { fatal: true }).decode(bytes); }
   catch { throw new CatalogError('AGENTS.md must be UTF-8'); }
-  requireCondition(text.includes('catalog.json'),
+  requireCondition(/(?:^|\n)\s*(?:Consult|Use)\s+`?catalog\.json`?\s+(?:to\s+(?:discover|find)(?:\s+(?:the\s+)?skills?)?|for\s+(?:(?:skill\s+)?discovery|available\s+skills?))\b/iu.test(text),
     'AGENTS.md must direct agents to catalog.json for skill discovery');
 }
 
