@@ -92,31 +92,35 @@ Consult [`catalog.json`](catalog.json) for the generated machine-readable invent
 
 ```mermaid
 flowchart LR
-    subgraph Create
-      D[Discover] --> S[Synthesize] --> G[Design] --> A[Author]
+    T((Task)) --> SI[Session index] --> R[Skill Routing]
+    R --> RT[Smallest valid route<br/>or none]
+
+    subgraph Build
+      GAP((Capability gap)) --> D[Discover] --> S[Synthesize] --> G[Design] --> A[Author]
+      C((Canonical catalog)) --> HC[Host compatibility]
     end
-    subgraph Prove
-      A --> E[Evaluate] --> Q[Secure] --> L[Review lifecycle]
+
+    subgraph Evolve
+      US((Usage signal)) --> EC[Evidence collection] --> EV[Skill evolution]
     end
-    subgraph Deliver
-      L --> P[Publish] --> I[Install]
+
+    subgraph Quality
+      A --> E[Evaluate] --> Q[Security review] --> L[Lifecycle review]
+      EV --> E
+      HC --> E
+      RT -. delivery change .-> E
     end
-    subgraph Improve
-      U[Audit] --> F[Refactor] --> G
-      X[Evolve] --> O[Optimize] --> E
-      M[Migrate] --> E
-    end
-    S((Start here)) --> R[Skill Routing]
-    C[Catalog] --> R
-    R -. selects .-> A
-    R -. selects .-> I
+
+    L --> P[Publish] --> I[Install]
+    U[Audit] --> F[Refactor] --> G
+    M[Migrate] --> E
     classDef entrypoint fill:#0ea5e9,stroke:#0369a1,color:#fff,stroke-width:3px
-    class S,R entrypoint
+    class T,R,C,GAP,US entrypoint
     N[Name] -. decision .-> G
     V[Icon design] -. asset .-> A
 ```
 
-The arrows represent artifact handoffs. A host may execute the stages sequentially or delegate them; subagents are optional. Specialists never assume a companion is installed, invoke another skill recursively, or acquire authority from a handoff.
+The arrows represent artifact handoffs. Start a user task at **Skill Routing**; start collection maintenance at the **Canonical catalog**. The session index is a compact read-only catalog view, not another source of truth. A host may execute stages sequentially or delegate them; subagents are optional. Specialists never assume a companion is installed, invoke another skill recursively, or acquire authority from a handoff.
 
 [Explore the interactive entry-path map](docs/assets/skill-management-entry-paths.html). Its source specification is [`docs/diagrams/skill-management-entry-paths.json`](docs/diagrams/skill-management-entry-paths.json), while the generated interactive artifact is [`docs/assets/skill-management-entry-paths.html`](docs/assets/skill-management-entry-paths.html).
 
