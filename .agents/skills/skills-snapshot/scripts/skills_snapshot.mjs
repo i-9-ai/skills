@@ -5,16 +5,19 @@ import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
 
-const TOOL_VERSION = '1.0.0';
+import { digest, storeFor, persistTree, verifyTree, materializeTree, readObject, putObject } from './snapshot_objects.mjs';
+
+const TOOL_VERSION = '1.1.0';
 
 class UsageError extends Error {}
 
 function usage() {
   return `Usage:
-  skills_snapshot.mjs create --source PATH --store PATH --scope collection|package --name NAME [--package RELPATH] [--projection LABEL=PATH ...]
+  skills_snapshot.mjs create --source PATH --store PATH --scope collection|package --name NAME [--package RELPATH] [--projection LABEL=PATH ...] [--capture-link-target RELPATH ...]
   skills_snapshot.mjs verify --snapshot PATH
   skills_snapshot.mjs list --store PATH [--json]
   skills_snapshot.mjs restore --snapshot PATH --target COLLECTION --scope collection|package [--package RELPATH] [--replace]
+  skills_snapshot.mjs restore-preimage --snapshot PATH --link RELPATH --target PATH [--replace]
   skills_snapshot.mjs prune --store PATH --keep COUNT [--apply]
 
 All paths and mutation scopes are caller-selected. Installation runs nothing.`;
@@ -23,7 +26,7 @@ All paths and mutation scopes are caller-selected. Installation runs nothing.`;
 function parseArgs(argv) {
   const command = argv[0];
   if (!command || command === '--help' || command === '-h') return { command: 'help', options: {} };
-  const options = { projection: [] };
+  const options = { projection: [], 'capture-link-target': [] };
   for (let index = 1; index < argv.length; index += 1) {
     const token = argv[index];
     if (!token.startsWith('--')) throw new UsageError(`Unexpected argument: ${token}`);
@@ -35,7 +38,7 @@ function parseArgs(argv) {
     const value = argv[index + 1];
     if (value === undefined || value.startsWith('--')) throw new UsageError(`Missing value for --${key}`);
     index += 1;
-    if (key === 'projection') options.projection.push(value);
+    if (key === 'projection' || key === 'capture-link-target') options[key].push(value);
     else if (Object.hasOwn(options, key)) throw new UsageError(`Repeated option: --${key}`);
     else options[key] = value;
   }
@@ -52,7 +55,7 @@ function requireOption(options, key) {
 function rejectUnknown(options, allowed) {
   const allowedSet = new Set(allowed);
   for (const key of Object.keys(options)) {
-    if (key === 'projection' && options.projection.length === 0) continue;
+    if (['projection', 'capture-link-target'].includes(key) && options[key].length === 0) continue;
     if (!allowedSet.has(key)) throw new UsageError(`Unsupported option: --${key}`);
   }
 }
@@ -289,7 +292,7 @@ function loadManifest(snapshot) {
   try { value = JSON.parse(fs.readFileSync(file, 'utf8')); } catch (error) {
     throw new UsageError(`Cannot read snapshot manifest: ${error.message}`);
   }
-  if (value?.schema_version !== 1 || !['collection', 'package'].includes(value?.selection?.scope)) {
+  if (![1, 2].includes(value?.schema_version) || !['collection', 'package'].includes(value?.selection?.scope)) {
     throw new UsageError('Unsupported or malformed snapshot manifest');
   }
   if (!Array.isArray(value?.content?.entries) || typeof value?.content?.tree_hash !== 'string') {
@@ -301,6 +304,22 @@ function loadManifest(snapshot) {
 function verifySnapshot(snapshotPath) {
   const snapshot = normalizeExistingDirectory(snapshotPath, 'Snapshot');
   const manifest = loadManifest(snapshot);
+  if (manifest.schema_version === 2) {
+    let valid = true;
+    try {
+      if (manifest.storage?.layout !== 'shared-sha256-v1' || !Array.isArray(manifest.preimages)) throw new Error('Malformed object storage contract');
+      verifyTree(storeFor(snapshot), manifest.content);
+      const selected = new Set();
+      for (const preimage of manifest.preimages ?? []) {
+        if (selected.has(preimage.link_path) || !manifest.content.entries.some(entry => entry.type === 'symlink' && entry.path === preimage.link_path) || !['file', 'directory'].includes(preimage.root_type) || !/^[0-9a-f]{64}$/.test(preimage.target_path_sha256)) throw new Error('Malformed link preimage');
+        selected.add(preimage.link_path);
+        verifyTree(storeFor(snapshot), preimage.content);
+        if (preimage.root_type === 'file' && (preimage.content.entries.length !== 1 || preimage.content.entries[0].path !== 'value' || preimage.content.entries[0].type !== 'file')) throw new Error('Malformed file preimage');
+      }
+    } catch { valid = false; }
+    const linksMatch = JSON.stringify(manifest.content.entries.filter(entry => entry.type === 'symlink')) === JSON.stringify(manifest.links?.source ?? []);
+    return { ok: valid && linksMatch, snapshot, scope: manifest.selection.scope, package: manifest.selection.package ?? null, tree_hash: manifest.content.tree_hash, checks: { content_entries: valid, tree_hash: valid, source_link_inventory: linksMatch }, manifest };
+  }
   const content = normalizeExistingDirectory(path.join(snapshot, 'content'), 'Snapshot content');
   const entries = scanContent(content);
   const treeHash = sha256Bytes(Buffer.from(JSON.stringify(entries)));
@@ -320,7 +339,7 @@ function verifySnapshot(snapshotPath) {
 }
 
 function createSnapshot(options) {
-  rejectUnknown(options, ['source', 'store', 'scope', 'name', 'package', 'projection']);
+  rejectUnknown(options, ['source', 'store', 'scope', 'name', 'package', 'projection', 'capture-link-target']);
   const source = normalizeExistingDirectory(requireOption(options, 'source'), 'Source');
   let store = normalizePath(requireOption(options, 'store'));
   const scope = requireOption(options, 'scope');
@@ -341,14 +360,59 @@ function createSnapshot(options) {
   const staging = path.join(store, `.${name}.staging-${process.pid}-${crypto.randomBytes(6).toString('hex')}`);
   fs.mkdirSync(staging, { mode: 0o700 });
   try {
-    const content = path.join(staging, 'content');
-    fs.mkdirSync(content, { mode: 0o700 });
-    if (packageName) copyNode(selectedSource, path.join(content, ...packageName.split('/')));
-    else for (const entry of sortedNames(source)) copyNode(path.join(source, entry), path.join(content, entry));
-    const entries = scanContent(content);
-    assertNoSensitiveMaterial(content, entries);
-    const projections = inspectProjections(options.projection, source);
-    const manifest = buildManifest(scope, packageName, entries, projections);
+    let entries = scanContent(selectedSource);
+    if (packageName) {
+      entries = entries.map(entry => ({ ...entry, path: `${packageName}/${entry.path}` }));
+      let cursor = '';
+      for (const part of packageName.split('/')) {
+        cursor = cursor ? `${cursor}/${part}` : part;
+        entries.push({ path: cursor, type: 'directory', mode: modeOf(fs.lstatSync(path.join(source, cursor))) });
+      }
+      entries.sort((a, b) => Buffer.from(a.path).compare(Buffer.from(b.path)));
+    }
+    assertNoSensitiveMaterial(source, entries);
+    const manifest = buildManifest(scope, packageName, entries, inspectProjections(options.projection, source));
+    manifest.schema_version = 2;
+    manifest.content.root_mode = modeOf(fs.lstatSync(source));
+    manifest.storage = { layout: 'shared-sha256-v1' };
+    manifest.preimages = [];
+    const captures = [];
+    for (const selected of options['capture-link-target']) {
+      const linkPath = safeRelative(selected, 'link');
+      if (manifest.preimages.some(item => item.link_path === linkPath)) throw new UsageError('Repeated link target selection');
+      const link = entries.find(entry => entry.path === linkPath && entry.type === 'symlink');
+      if (!link) throw new UsageError('Selected link is not present in snapshot scope');
+      const parentPath = path.posix.dirname(linkPath);
+      if (parentPath !== '.') assertNoSymlinkComponents(source, parentPath, 'Selected link parent');
+      const target = fs.realpathSync(path.join(source, ...linkPath.split('/')));
+      if (pathsOverlap(target, store)) throw new UsageError('Captured link target must not overlap the store');
+      const stat = fs.lstatSync(target);
+      if (!stat.isDirectory() && !stat.isFile()) throw new UsageError('Captured target must be a real file or directory');
+      const rootType = stat.isDirectory() ? 'directory' : 'file';
+      if (rootType === 'directory') assertNoSensitiveMaterial(path.dirname(target), [{ path: path.basename(target), type: 'directory' }]);
+      const targetEntries = rootType === 'directory' ? scanContent(target) : [{ path: path.basename(target), type: 'file', mode: modeOf(stat), size: stat.size, sha256: sha256File(target) }];
+      assertNoSensitiveMaterial(rootType === 'directory' ? target : path.dirname(target), targetEntries);
+      const contentEntries = rootType === 'directory' ? targetEntries : targetEntries.map(entry => ({ ...entry, path: 'value' }));
+      const contentTree = { root_mode: modeOf(stat), entries: contentEntries, tree_hash: digest(Buffer.from(JSON.stringify(contentEntries))) };
+      manifest.preimages.push({ link_path: linkPath, target_path_sha256: digest(Buffer.from(target)), root_type: rootType, content: contentTree });
+      captures.push({ target, rootType, contentTree });
+    }
+    manifest.preimages.sort((a, b) => Buffer.from(a.link_path).compare(Buffer.from(b.link_path)));
+    let newObjects = persistTree(store, manifest.content, source);
+    for (const capture of captures) {
+      if (capture.rootType === 'directory') newObjects += persistTree(store, capture.contentTree, capture.target);
+      else {
+        const bytes = fs.readFileSync(capture.target);
+        if (/-----BEGIN (?:[A-Z0-9 ]+ )?PRIVATE KEY-----/.test(bytes.toString('utf8'))) throw new Error('Private-key material is not allowed in a snapshot');
+        if (digest(bytes) !== capture.contentTree.entries[0].sha256) throw new Error('Link target changed during capture');
+        newObjects += Number(putObject(store, bytes));
+      }
+    }
+    // Reject unstable source metadata/paths after byte publication. Orphan objects remain safe.
+    const rescanned = scanContent(selectedSource);
+    const expected = packageName ? entries.filter(entry => entry.path.startsWith(`${packageName}/`)).map(entry => ({ ...entry, path: entry.path.slice(packageName.length + 1) })) : entries;
+    if (JSON.stringify(rescanned) !== JSON.stringify(expected)) throw new Error('Source changed during capture');
+    for (const capture of captures) if (capture.rootType === 'directory' && JSON.stringify(scanContent(capture.target)) !== JSON.stringify(capture.contentTree.entries)) throw new Error('Link target changed during capture');
     writeJson(path.join(staging, 'manifest.json'), manifest);
     writeJson(path.join(staging, 'receipt.json'), {
       schema_version: 1,
@@ -361,7 +425,7 @@ function createSnapshot(options) {
     const verification = verifySnapshot(staging);
     if (!verification.ok) throw new Error('Staged snapshot failed self-verification');
     fs.renameSync(staging, destination);
-    return { ok: true, action: 'created', snapshot: destination, scope, package: packageName, tree_hash: manifest.content.tree_hash, entries: entries.length };
+    return { ok: true, action: 'created', snapshot: destination, scope, package: packageName, tree_hash: manifest.content.tree_hash, entries: entries.length, new_objects: newObjects, captured_preimages: manifest.preimages.length };
   } catch (error) {
     fs.rmSync(staging, { recursive: true, force: true });
     throw error;
@@ -387,6 +451,7 @@ function listSnapshots(options) {
 }
 
 function uniqueRollbackPath(root, label) {
+  if (nodeExists(root) && (fs.lstatSync(root).isSymbolicLink() || !fs.lstatSync(root).isDirectory())) throw new UsageError('Rollback root must be a real directory');
   fs.mkdirSync(root, { recursive: true, mode: 0o700 });
   const stamp = new Date().toISOString().replaceAll(':', '').replaceAll('.', '-');
   return path.join(root, `${label}-${stamp}-${crypto.randomBytes(4).toString('hex')}`);
@@ -408,6 +473,7 @@ function restoreSnapshot(options) {
   if (scope === 'package' && manifest.selection.scope === 'package' && manifest.selection.package !== packageName) {
     throw new UsageError(`Package snapshot contains ${manifest.selection.package}, not ${packageName}`);
   }
+  if (manifest.schema_version === 2) return restoreObjects(options, verification, packageName);
   if (packageName) assertNoSymlinkComponents(path.join(snapshot, 'content'), packageName, 'Snapshot package');
   const snapshotSource = packageName ? path.join(snapshot, 'content', ...packageName.split('/')) : path.join(snapshot, 'content');
   if (!fs.existsSync(snapshotSource) || !fs.lstatSync(snapshotSource).isDirectory()) throw new UsageError(`Snapshot does not contain package: ${packageName}`);
@@ -455,6 +521,81 @@ function restoreSnapshot(options) {
     fs.rmSync(staging, { recursive: true, force: true });
     throw error;
   }
+}
+
+function nodeExists(file) {
+  try { fs.lstatSync(file); return true; } catch (error) { if (error.code === 'ENOENT') return false; throw error; }
+}
+
+function publishRestore(destination, snapshot, options, populate, stagingParent = path.dirname(destination)) {
+  const store = storeFor(snapshot);
+  if (pathsOverlap(store, prospectiveRealPath(destination))) throw new UsageError('Object store and restore destination must not overlap');
+  // Refuse destination aliases including dangling links; the caller selects a real target.
+  if (nodeExists(destination) && fs.lstatSync(destination).isSymbolicLink()) throw new UsageError('Restore destination must not be a symbolic link');
+  const parent = path.dirname(destination);
+  // Resolve OS aliases such as /var -> /private/var; selected package parents are checked separately.
+  const canonicalParent = prospectiveRealPath(parent);
+  if (pathsOverlap(store, canonicalParent) && pathsOverlap(store, destination)) throw new UsageError('Restore parent overlaps object store');
+  if (nodeExists(destination) && !options.replace) throw new UsageError('Restore destination exists; pass --replace to retain it as a rollback');
+  fs.mkdirSync(parent, { recursive: true, mode: 0o700 });
+  const staging = path.join(stagingParent, `.skills-snapshot-stage-${process.pid}-${crypto.randomBytes(8).toString('hex')}`);
+  let rollback = null;
+  try {
+    const identity = populate(staging);
+    if (nodeExists(destination)) {
+      rollback = uniqueRollbackPath(path.join(stagingParent, '.skills-snapshot-rollbacks'), path.basename(destination));
+      fs.renameSync(destination, rollback);
+    }
+    try { fs.renameSync(staging, destination); }
+    catch (error) { if (rollback && !nodeExists(destination)) fs.renameSync(rollback, destination); throw error; }
+    return { ok: true, action: 'restored', snapshot, target: destination, rollback, restored_content_tree_hash: identity };
+  } catch (error) { fs.rmSync(staging, { recursive: true, force: true }); throw error; }
+}
+
+function restoreObjects(options, verification, packageName) {
+  const { snapshot, manifest } = verification;
+  const target = normalizePath(requireOption(options, 'target'));
+  let tree = manifest.content;
+  if (packageName) {
+    if (!nodeExists(target) || !fs.lstatSync(target).isDirectory() || fs.lstatSync(target).isSymbolicLink()) throw new UsageError('Package restore target collection must already exist as a real directory');
+    const packageParent = path.posix.dirname(packageName);
+    if (packageParent !== '.') assertNoSymlinkComponents(target, packageParent, 'Restore package parent');
+    const rootEntry = tree.entries.find(entry => entry.path === packageName);
+    if (rootEntry?.type !== 'directory') throw new UsageError('Snapshot does not contain a real package directory');
+    const entries = tree.entries.filter(entry => entry.path.startsWith(`${packageName}/`)).map(entry => ({ ...entry, path: entry.path.slice(packageName.length + 1) }));
+    tree = { root_mode: rootEntry.mode, entries, tree_hash: digest(Buffer.from(JSON.stringify(entries))) };
+  }
+  const destination = packageName ? path.join(target, ...packageName.split('/')) : target;
+  const result = publishRestore(destination, snapshot, options, staging => {
+    materializeTree(storeFor(snapshot), tree, staging);
+    const actual = scanContent(staging);
+    if (JSON.stringify(actual) !== JSON.stringify(tree.entries) || modeOf(fs.lstatSync(staging)) !== tree.root_mode) throw new Error('Materialized restore failed verification');
+    return digest(Buffer.from(JSON.stringify(actual)));
+  }, path.dirname(target));
+  return { ...result, scope: options.scope, package: packageName, source_snapshot_tree_hash: manifest.content.tree_hash, external_targets_restored: false };
+}
+
+function restorePreimage(options) {
+  rejectUnknown(options, ['snapshot', 'link', 'target', 'replace']);
+  const verification = verifySnapshot(requireOption(options, 'snapshot'));
+  if (!verification.ok) throw new UsageError('Snapshot verification failed; restore was not started');
+  const linkPath = safeRelative(requireOption(options, 'link'), 'link');
+  const preimage = verification.manifest.preimages?.find(item => item.link_path === linkPath);
+  if (!preimage) throw new UsageError('Snapshot has no captured preimage for this link');
+  const destination = normalizePath(requireOption(options, 'target'));
+  const result = publishRestore(destination, verification.snapshot, options, staging => {
+    if (preimage.root_type === 'directory') {
+      materializeTree(storeFor(verification.snapshot), preimage.content, staging);
+      if (JSON.stringify(scanContent(staging)) !== JSON.stringify(preimage.content.entries) || modeOf(fs.lstatSync(staging)) !== preimage.content.root_mode) throw new Error('Preimage restore failed verification');
+    } else {
+      const entry = preimage.content.entries[0];
+      fs.writeFileSync(staging, readObject(storeFor(verification.snapshot), entry.sha256, entry.size), { flag: 'wx', mode: entry.mode });
+      fs.chmodSync(staging, entry.mode);
+      if (sha256File(staging) !== entry.sha256 || modeOf(fs.lstatSync(staging)) !== entry.mode) throw new Error('Preimage restore failed verification');
+    }
+    return preimage.content.tree_hash;
+  });
+  return { ...result, action: 'preimage-restored', link: linkPath, original_target_path_matches: digest(Buffer.from(prospectiveRealPath(destination))) === preimage.target_path_sha256 };
 }
 
 function snapshotRetentionKey(snapshot) {
@@ -511,6 +652,7 @@ function main() {
       if (!check.ok) process.exitCode = 2;
     } else if (command === 'list') result = listSnapshots(options);
     else if (command === 'restore') result = restoreSnapshot(options);
+    else if (command === 'restore-preimage') result = restorePreimage(options);
     else if (command === 'prune') result = pruneSnapshots(options);
     else throw new UsageError(`Unknown command: ${command}`);
     output(result);
