@@ -4,7 +4,7 @@
 
 I-9 Skills is a toolkit for the full life of an agent skill: discover what already works, design one clear responsibility, author a complete package, validate it, publish it deliberately, and evolve it from real evidence. Every package is written in English, includes its own Apache-2.0 `LICENSE`, and works without assuming Codex, Claude, Copilot, OpenCode, or any other specific agent.
 
-**21 focused skills. One responsibility each. One reviewable output each.**
+**22 focused skills. One responsibility each. One reviewable output each.**
 
 The first release is `0.1.0-rc.1`: ready for independent pilot consumption while its contracts are exercised outside this repository.
 
@@ -57,6 +57,7 @@ The map highlights [Skill Routing](.agents/skills/skill-routing/SKILL.md), lists
 | Turn a vague idea into one well-scoped package | [`skill-design`](.agents/skills/skill-design/SKILL.md) | A design brief with boundaries |
 | Create or revise a portable package | [`skill-authoring`](.agents/skills/skill-authoring/SKILL.md) | A complete skill package |
 | Improve an existing collection safely | [`skills-audit`](.agents/skills/skills-audit/SKILL.md) or [`skill-evolution`](.agents/skills/skill-evolution/SKILL.md) | Evidence-linked findings or an evolved candidate |
+| Plan recurring collection maintenance | [`skills-maintenance-scheduling`](.agents/skills/skills-maintenance-scheduling/SKILL.md) | Approval-ready schedule proposal or `none` |
 | Release or install an approved revision | [`skill-publication`](.agents/skills/skill-publication/SKILL.md) or [`skill-installation`](.agents/skills/skill-installation/SKILL.md) | A publication or installation receipt |
 
 When no package clearly fits, choose no skill. The catalog is a shortlist, never a substitute for reading the selected `SKILL.md`.
@@ -81,6 +82,7 @@ Consult [`skills-catalog.json`](skills-catalog.json) for the generated machine-r
 | [`skill-publication`](.agents/skills/skill-publication/SKILL.md) | Publish one approved revision through one authorized channel | Publication receipt |
 | [`skill-installation`](.agents/skills/skill-installation/SKILL.md) | Install one approved immutable package | Installation receipt |
 | [`skills-snapshot`](.agents/skills/skills-snapshot/SKILL.md) | Create, verify, restore, and retain a selected local skill snapshot | Restorable snapshot |
+| [`skills-maintenance-scheduling`](.agents/skills/skills-maintenance-scheduling/SKILL.md) | Design bounded recurring maintenance without creating execution authority | Maintenance schedule proposal or `none` |
 | [`skills-audit`](.agents/skills/skills-audit/SKILL.md) | Audit a bounded collection for integrity and policy drift | Collection audit |
 | [`skill-evidence-collection`](.agents/skills/skill-evidence-collection/SKILL.md) | Organize bounded evidence for a later skill decision | Evidence packet |
 | [`skill-evolution`](.agents/skills/skill-evolution/SKILL.md) | Update one skill from supported new evidence | Evolved candidate and evolution record |
@@ -126,7 +128,7 @@ The arrows represent artifact handoffs. Start a user task at **Skill Routing**; 
 
 [![Preview of the interactive skill-management entry-path map](docs/assets/skill-management-entry-paths.preview.png)](docs/assets/skill-management-entry-paths.html)
 
-A typical creation run qualifies sources, synthesizes only distinct useful contributions, designs the boundary, authors the package, evaluates behavior, reviews security, and determines lifecycle readiness. Publication and installation remain explicit external actions. Existing collections enter through audit and refactoring; evidence-backed updates enter through evolution. Measured iterative improvement enters through optimization before evaluation.
+A typical creation run qualifies sources, synthesizes only distinct useful contributions, designs the boundary, authors the package, evaluates behavior, reviews security, and determines lifecycle readiness. Publication and installation remain explicit external actions. Existing collections enter through audit and refactoring; evidence-backed updates enter through evolution. Measured iterative improvement enters through optimization before evaluation. Recurring maintenance begins with `skills-maintenance-scheduling`, which returns an approval-ready proposal and leaves scheduler configuration and every maintenance side effect behind separate gates.
 
 ## Principles that keep the collection useful
 

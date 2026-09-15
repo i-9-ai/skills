@@ -1,5 +1,7 @@
 # Skills maintenance scheduling
 
+Related issue: [#15](https://github.com/i-9-ai/skills/issues/15)
+
 ## Objective
 
 Add one portable skill that turns an approved maintenance goal for a bounded skill collection into a reviewable maintenance-scheduling proposal. It must use an existing host scheduler only when the caller explicitly authorizes configuration; otherwise it returns a portable schedule contract for the local approval system.

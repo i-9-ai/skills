@@ -200,6 +200,18 @@
       ]
     },
     {
+      "name": "skills-maintenance-scheduling",
+      "path": ".agents/skills/skills-maintenance-scheduling",
+      "status": "pilot",
+      "description": "Use to turn an approved recurring maintenance goal for a bounded skill collection into an approval-ready schedule proposal. It does not configure a scheduler or execute maintenance.",
+      "tags": [
+        "governance",
+        "maintenance",
+        "scheduling",
+        "skills"
+      ]
+    },
+    {
       "name": "skills-refactoring",
       "path": ".agents/skills/skills-refactoring",
       "status": "pilot",

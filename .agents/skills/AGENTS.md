@@ -38,6 +38,7 @@ Run each package's safe commands and the repository validation suite. Behavioral
 - [skill-publication/SKILL.md](skill-publication/SKILL.md): publish one approved package revision.
 - [skill-routing/SKILL.md](skill-routing/SKILL.md): select the applicable skill, sequence, shortlist, or none.
 - [skill-security-review/SKILL.md](skill-security-review/SKILL.md): review one package for security and disclosure risk.
+- [skills-maintenance-scheduling/SKILL.md](skills-maintenance-scheduling/SKILL.md): propose bounded recurring maintenance with explicit authority, evidence, stop, and rollback controls.
 - [skills-audit/SKILL.md](skills-audit/SKILL.md): audit a bounded skill collection.
 - [skills-catalog/SKILL.md](skills-catalog/SKILL.md): derive and validate the collection catalog.
 - [skills-refactoring/SKILL.md](skills-refactoring/SKILL.md): plan a focused reorganization of an audited collection.
