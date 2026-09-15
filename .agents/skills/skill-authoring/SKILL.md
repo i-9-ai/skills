@@ -28,6 +28,18 @@ Inspect the target and preserve unrelated files. Resolve missing information fro
 
 Resolve this package's resources from the loaded `SKILL.md`, independently of the shell's working directory. Select output and run directories in the caller's authorized workspace, outside the installation. The installed package need not be writable or accompanied by its source repository.
 
+## Self-sufficient implementation and resource layout
+
+Teach the ordinary task through concrete decisions, prerequisites, defaults, connected implementation steps, verification, and likely failures with recovery. Do not leave domain-specific wiring to model prior knowledge or an external lookup. Include a normal minimal complete example directly in `SKILL.md` when it enables immediate implementation; code-facing examples must connect file layout, code, inputs/options, configuration or state, invocation, and verification.
+
+Keep commonly co-used information together. Use focused bundled references for independently needed topics, provider adapters, and advanced branches, with a topic and loading condition at each link. Select only the resources needed for the current task, not every reference. Detailed references remain ordinary package resources, not an optional offline mode. External official links supplement confirmation, unusual work, or version-sensitive verification; they never replace ordinary implementation guidance.
+
+For example, a Symfony Console package's normal route must let a reader create and register a command, declare arguments/options, inject and wire a collaborator, produce output and errors with exit statuses, invoke the command, and verify successful and failing behavior with CommandTester. Supply the necessary project layout and prerequisites. This is an illustrative acceptance criterion, not an executed Symfony benchmark.
+
+Preserve useful reviewed source content even when it does not fit the template's initial sections; adapt its placement and record justified removals. Advisory character, line, and token budgets never justify dropping procedures, complete examples, exceptions, or quality-critical detail. Distinguish them from verified specification/schema limits and actual collection helper bounds. Satisfy an entrypoint bound through complete reachable topic resources rather than loss of coverage.
+
+Report runnable example checks and behavioral exercises separately from structural validation. A benchmark requires actual recorded task executions, candidate identity, environment, artifacts, and observations; planned cases and scaffold checks are not benchmark results. Comparative claims require a recorded comparator under comparable conditions.
+
 ## Workflow
 
 1. **Intake.** Define the single outcome, activation and non-activation examples, acceptance criteria, resource budget, and permitted side effects. Record them in a run-local brief. For an unclear responsibility boundary, consult `skill-design` before discovery and retain that preliminary decision in intake. When the name is unresolved or collides, consult `skill-naming` after defining the responsibility; preserve an explicit valid name instead of adding an unnecessary naming stage.

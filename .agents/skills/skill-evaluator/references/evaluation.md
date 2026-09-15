@@ -25,12 +25,14 @@ Keep tuning cases separate from final acceptance cases. If a result influences c
 | Authority and privacy | Yes | No unauthorized effect, secret exposure, or instruction takeover |
 | Rights and provenance | Yes | `LICENSE` present; selected sources and required notices preserved |
 | Portability | Yes | No hidden provider or source-repository prerequisite; installed paths and separate outputs work; missing capability or companion is handled honestly |
-| Completeness | Yes | Required references, templates, and helpers exist and work within tested scope |
+| Completeness | Yes | Ordinary and changed critical routes teach connected implementation without external lookup or assumed domain knowledge; normal complete examples, relevant references, templates, and helpers work within tested scope |
 | Official conformance | Yes | Exact candidate passes the specification's official `skills-ref validate`; source/version and result are recorded |
 | Clarity/context cost | No | Decisions are unambiguous and detail is loaded when useful |
 | Improvement over baseline | Goal-dependent | Observable benefit without critical regression |
 
 Score each criterion `pass`, `fail`, `blocked`, or `not-run`, with concrete evidence. A numerical average cannot hide a critical failure. Do not require a score based on subjective words such as perfect or definitive.
+
+Inspect layout as part of completeness: an immediately usable normal example belongs in the entrypoint when it enables ordinary implementation; independently needed references have explicit topic/loading conditions. Keep common co-used information together and count navigation overhead. Template adoption and advisory size budgets must not remove useful required source procedures, examples, or exceptions. A Symfony Console case, for example, checks command creation/registration, arguments/options, injected collaborator wiring, output/errors and exit statuses, invocation, and CommandTester success/failure checks. This example specifies acceptance, not an executed benchmark.
 
 ## Execution and evidence
 

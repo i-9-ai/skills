@@ -48,6 +48,16 @@ Alternatives considered: a monolithic creator would duplicate specialist procedu
 | Caller configuration contract | Explicit non-secret configuration and secret boundary | Schema/validation where needed, redaction, no implicit discovery, and missing-prerequisite fallback |
 | Reviewable delivery | Changelog and English PR | Exact commit checks and independent review |
 
+## Self-sufficient task route acceptance
+
+Refine the inaugural design, authoring, evolution, optimization, and evaluation contracts so an installed package teaches ordinary work without relying on model prior knowledge or external lookup. Keep a complete normal example in the entrypoint when it enables immediate implementation; route independently needed topics to focused bundled references with explicit loading conditions. Keep tightly coupled information together when ordinary tasks almost always need it together. Choose layout from co-usage, completeness, measured context cost, and navigation overhead, never mechanically from file length.
+
+Preserve useful reviewed source procedures, decisions, exceptions, and examples when adapting a template; document any justified removal. Treat suggested character, line, and token budgets as advisory quality controls, separately from actual specification/schema limits and verified collection validation bounds. If a required bound constrains an entrypoint, retain necessary content in reachable task-specific resources rather than omitting it.
+
+Illustrative code-facing acceptance: a Symfony Console route explains prerequisites, file layout, command creation and registration, arguments/options, dependency injection and wiring, output/error handling and exit statuses, invocation, and CommandTester checks. This is an acceptance example, not a claim that a Symfony implementation or benchmark has been executed here.
+
+Validate changed packages with the official tool, repository checks, Changeset status, and whitespace checks. Inspect ordinary and conditional routes for missing steps and misleading evaluation claims. A benchmark requires recorded executions and observations; cases, scaffolds, and structural validation alone are not benchmark results. Obtain independent review on the exact commit. This refinement does not change parsers, provider integrations, recovery storage, host links, or publication authority. Rollback consists of reverting only this focused contract change while preserving concurrent work.
+
 ## Release and rollback boundaries
 
 The repository is written as public-ready from its first release. The owner selected Apache-2.0 for original content; third-party rights remain explicit regardless. No consumer is modified, no marketplace is published, and no upstream package is installed into a user's skill directory. Before merge, changes can be revised in this PR; after an authorized merge, prepare a revert PR or return consumers to their previous verified pin. Do not silently overwrite an evolved package when upstream changes.

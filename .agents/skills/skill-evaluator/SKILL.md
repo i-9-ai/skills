@@ -18,6 +18,14 @@ Produce an evidence-based evaluation report for one skill. Accept the exact cand
 
 Resolve this package's references and templates from the loaded `SKILL.md`. Evaluate the caller's explicit candidate path and write the report in their selected workspace; no authoring skill or source repository is required to run this evaluation.
 
+## Task-route completeness checks
+
+Before execution, trace ordinary and conditional task routes through the entrypoint and relevant bundled resources. Require concrete prerequisites, decisions, procedure, implementation wiring, commands or code, verification, exceptions, and recovery sufficient without domain prior knowledge or external lookup. For code-facing skills, check a normal minimal complete inline example when it enables immediate implementation; do not accept a bare instruction to read an external or offline guide instead of that example.
+
+Check that reference links identify their topic and loading condition, independently needed branches remain selective, and commonly co-used information stays together when that reduces navigation overhead. Do not reward a mechanical split or read-all requirement. Preserve useful reviewed source procedures and examples across template changes; inspect the rationale for omissions. Advisory length/token budgets cannot compensate for lost required coverage; verified specification/schema constraints and collection bounds are separate conformance checks.
+
+Exercise at least one ordinary implementation route and each changed critical branch in the frozen corpus. Grade actual artifacts and missing steps, not the presence of headings or an example file. Record planned, executed, passed, failed, blocked, and not-run cases distinctly. A benchmark claim requires actual recorded executions with identity, environment, inputs, observations, and a comparator when claiming improvement.
+
 ## Procedure
 
 1. Record the candidate identity and file hashes or immutable commit. Check that the brief has one responsibility and a primary output. Inspect the package, `LICENSE`, source rights/notices, required resources, and declared tools. Require a successful official `skills-ref validate` check on this exact candidate, from the tool linked by the [Agent Skills specification](https://agentskills.io/specification#validation). Verify the source/version identity and result or run a trusted installation within scope; a custom or manual check cannot substitute. Missing execution blocks readiness, and a failed official check requires correction.

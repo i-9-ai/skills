@@ -16,6 +16,16 @@ metadata:
 
 Evolve one existing skill from supported new evidence and return an updated candidate with a reviewable evolution record. Accept the current package, its provenance lock, upstream or operational evidence, confirmed constraints, and acceptance criteria.
 
+## Preserve complete task coverage
+
+Review the package's ordinary and conditional task routes before editing. Preserve the decisions, prerequisites, complete normal example, implementation wiring, verification, exceptions, and recovery that let the installed package work without model prior knowledge or external lookup. Official links supplement the route; they do not implement missing routine guidance.
+
+Reassess layout from observed co-usage: keep tightly coupled ordinary information and an immediately usable normal example together in the entrypoint; move independently needed adapters or advanced topics to focused bundled references with clear loading conditions. A selected route may load relevant references, but no task must load all references by default or opt into an offline mode. Preserve useful source corpus content independent of template shape and document justified removal.
+
+Treat body length and token targets as advisory budgets, never permission to remove quality-critical detail. Respect verified schema/specification limits and actual collection bounds separately; distribute necessary detail without breaking route completeness. Compare context cost together with coverage and navigation overhead, not file size alone.
+
+Refresh actual affected example checks and behavioral evaluations when a route changes. Record candidate identity, cases, environment, observed artifacts, and limitations. A benchmark consists of recorded executions; a validator pass, scaffold, or proposed case is not a benchmark result.
+
 ## Procedure
 
 1. Establish the current package identity, responsibility, version or revision, and frozen baseline. Normal evolution requires a passing baseline; stop if the starting bytes are ambiguous. A repair may start from an inherited known-failing baseline only when the exact failing checks, candidate bytes, and intended repair are frozen in the evolution record. Never label that baseline passing or use it to claim regression preservation.

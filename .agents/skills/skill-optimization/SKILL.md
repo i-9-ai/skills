@@ -20,6 +20,14 @@ This skill turns scored rollouts into bounded candidate edits. It does not decid
 
 Read [the optimization loop](references/optimization-loop.md) when creating the run record or adapting a compatible optimizer.
 
+## Coverage before context reduction
+
+Suggested body character, line, and token targets are advisory context budgets. They do not permit omitting procedures, complete examples, exceptions, or quality-critical detail. Verified specification/schema constraints and actual collection validation bounds remain separate requirements; preserve complete task routes through reachable topic resources where necessary. A frozen edit budget limits the search, not the quality floor: return no accepted candidate when the budget cannot accommodate a correct change.
+
+Retain a normal minimal complete example in the entrypoint when it enables immediate implementation. Keep information together when ordinary cases almost always need it together, even if the file is larger. Split independently loaded topics, provider adapters, and advanced branches into focused references with explicit conditions; select only relevant resources. Measure total loaded context and navigation overhead while retaining task coverage. Do not mechanically split by line count, assume references are only for rare detail, or treat self-sufficiency as an optional offline mode.
+
+Preserve useful reviewed source procedures and examples independently of template layout; document justified removals. Evaluate whether the candidate's selected route teaches implementation without relying on model prior knowledge or external lookup. A shorter artifact is rejected when it hides ordinary wiring or loses a required exception.
+
 ## Procedure
 
 1. Freeze the baseline identity, task splits, scoring rubric, target environment, cost limit, and acceptance threshold before any candidate result is observed.

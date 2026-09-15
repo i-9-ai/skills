@@ -14,6 +14,12 @@ This reference adapts the method described by [Microsoft SkillOpt](https://githu
 | Rejected-change record | Preserves negative evidence and prevents repetitive regressions. |
 | Best accepted revision | Separates experimentation from the artifact offered to lifecycle review. |
 
+## Layout and completeness constraints
+
+Body character, line, and token targets are advisory budgets, not grounds to omit required decisions, procedures, complete examples, or exceptions. Distinguish actual schema/specification constraints and collection validation bounds from discretionary size guidance. A textual edit budget constrains an optimization run; it never lowers its coverage floor. Preserve useful source corpus content even when adapting templates.
+
+Retain an immediately usable normal example in the entrypoint. Keep tightly coupled information together when ordinary tasks almost always co-use it; split independently needed topics and provider adapters with explicit loading conditions. Select relevant references, never all by default, and measure loaded context together with navigation overhead and task coverage. Self-sufficiency applies to the installed package and selected route, not an optional offline mode.
+
 ## Portable adaptation
 
 An execution host may use a local script, a compatible research tool, an agent harness, or a manual exercise with clearly labeled limits. The optimization contract remains the same: do not expose selection-validation cases during tuning, do not use final-acceptance cases during iterative selection, do not accept an edit without the final gate, and do not treat a higher tuning score as proof of general improvement.
