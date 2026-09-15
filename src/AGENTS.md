@@ -20,6 +20,7 @@ Update affected domain rules, adapters, use cases, tests, and documentation toge
 Run `npm run check` and inspect the required official workflow result for the exact PR head. Test process adapters using fake executors and temporary fixtures.
 
 ## Child DOX index
+- [Skill usage MCP](skill-usage-mcp.md): explicit observed-read recording and period rankings; no automatic hooks or activation inference.
 - [CLI](cli.mjs): command selection, outcomes, and exit codes.
 - [Repository use case](application/validate-repository.mjs): collection checks.
 - [Collection policy](domain/collection-policy.mjs): catalog, upstream-lock, and public-hygiene rules.

@@ -16,6 +16,7 @@ Test meaningful acceptance and rejection behavior, confinement, no-overwrite, an
 Run `npm test` from the repository root. Tests make no network requests and leave no fixture files in the checkout.
 
 ## Child DOX index
+- [Skill usage MCP tests](skill-usage-mcp.test.mjs): disposable stdio, concurrent read evidence and migration rejection checks.
 - [Skill helper tests](skill-tools.test.mjs): isolated scaffold, package, and handoff regressions.
 - [Distribution tests](distribution.test.mjs): detached package resources, read-only installations, directory aliases, and separate caller workspaces.
 - [Repository tests](repository.test.mjs): catalog, source locks, links, aliases, and publication corpus.

@@ -16,6 +16,7 @@ Before the first release, update the originating baseline rather than keep artif
 Verify every requirement has an implementation and a check or an explicit limit.
 
 ## Child DOX index
+- [Skill usage MCP](2026-09-15-16-00-00-skill-usage-mcp.md): explicit local read evidence and rankings in a dedicated transactional usage database.
 - [Skill authoring pipeline](2026-09-12-17-29-32-skill-authoring-pipeline.md): the initial collection and its validation workflow.
 - [Changesets adoption](2026-09-13-20-14-46-adopt-changesets.md): pending release-note management.
 - [Public Wiki mirror](2026-09-13-20-14-57-public-wiki.md): direct `docs/` synchronization to GitHub Wiki.
