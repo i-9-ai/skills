@@ -12,7 +12,7 @@ Add dynamic project/global skill discovery through `context available-skills`,
 with canonical deduplication, source labels and disclosed coverage limits.
 
 Expose the session adapter through `hook session-index`, Codex configuration
-rendering/comparison through `hook codex session-config` and `hook codex verify`,
+rendering/comparison through `hook session-config --host codex` and `hook verify --host codex`,
 and explicit read metrics through `mcp usage --db PATH`. Keep collection validation behavior, and remove the superseded standalone
 executables and transitional command aliases. Organize tests by unit layer
 and separate CLI/collection integration contracts. Automatic read collection and npm

@@ -11,7 +11,7 @@ This subtree owns lifecycle command adapters. Reusable discovery belongs to `con
 ## Local contracts
 
 - `SessionIndexHookCommand` (`hook session-index`) invokes the available-skills service and writes compact context. The host matcher selects startup, resume, clear and compact events.
-- Name host-specific operations explicitly: `hook codex session-config` and `hook codex verify`. Do not imply their JSON format works for other hosts.
+- Select each verified host explicitly with `hook session-config --host` and `hook verify --host`. HostHookConfiguration owns the Codex, Claude, Copilot and Gemini registrations and their distinct output envelopes; do not imply their JSON formats are interchangeable.
 - Configuration generation prints data. Verification compares configuration without executing it or proving host trust/enablement.
 - Repository `.codex/hooks.json` registers only implemented, tested handlers. Preserve the SessionStart status message `Loading available skills overview`.
 - PreToolUse proves a tool attempt, not a skill read or activation. Register future post-tool collection only after bounded payload parsing, success/read proof, correlation, deduplication, storage selection and failure behavior are tested.
@@ -24,11 +24,11 @@ Use named host adapters around the portable core. Document unavailable events an
 
 ## Verification
 
-Run `node bin/index.mjs hook codex verify --file .codex/hooks.json`, the CLI integration suite and affected service/repository tests using disposable fixtures.
+Run `node bin/index.mjs hook verify --host codex --file .codex/hooks.json`, the CLI integration suite and affected service/repository tests using disposable fixtures.
 
 ## Child DOX index
 
 - [Session index command](session-index.ts): lifecycle entrypoint for the compact overview.
-- [Codex configuration](codex/session-config.ts): prints the supported registration without writing files.
-- [Codex verification](codex/verify.ts): compares a supplied configuration and reports that no hook ran.
+- [Host configuration](session-config.ts): prints the selected registration without writing files.
+- [Host verification](verify.ts): compares a supplied configuration and reports that no hook ran.
 - [Hook inventory](list.ts): distinguishes implemented registrations from planned telemetry.

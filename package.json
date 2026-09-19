@@ -15,18 +15,20 @@
     "validate": "node bin/index.mjs validate",
     "test": "node --test \"tests/**/*.test.mjs\"",
     "check": "npm run format:check && npm run typecheck && npm run validate && npm test",
-    "format": "prettier --write \"src/**/*.ts\" \"bin/*.mjs\" \"tests/unit/**/*.mjs\" \"tests/integration/cli/**/*.mjs\"",
-    "format:check": "prettier --check \"src/**/*.ts\" \"bin/*.mjs\" \"tests/unit/**/*.mjs\" \"tests/integration/cli/**/*.mjs\"",
+    "format": "prettier --write \"src/**/*.ts\" \"bin/*.mjs\" \"tests/unit/**/*.mjs\" \"tests/integration/cli/**/*.mjs\" \"tests/packaging/*.mjs\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"bin/*.mjs\" \"tests/unit/**/*.mjs\" \"tests/integration/cli/**/*.mjs\" \"tests/packaging/*.mjs\"",
     "typecheck": "tsc --noEmit",
     "cli": "node bin/index.mjs",
     "ci:official": "node bin/index.mjs ci-official",
     "changeset": "changeset",
     "changeset:status": "changeset status",
-    "release:prepare": "changeset version"
+    "release:prepare": "changeset version",
+    "build": "npm run typecheck && node -e \"require('node:fs').rmSync('dist', {recursive: true, force: true})\" && tsc --project tsconfig.build.json",
+    "package:check": "npm run build && node --test tests/packaging/cli-package.mjs"
   },
   "oclif": {
     "bin": "i9-skills",
-    "commands": "./src/command",
+    "commands": "./dist/command",
     "topicSeparator": " "
   },
   "config": {
@@ -97,5 +99,20 @@
   "dependencies": {
     "@oclif/core": "5.0.0",
     "yaml": "2.9.1"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/i-9-ai/skills.git"
+  },
+  "homepage": "https://github.com/i-9-ai/skills",
+  "files": [
+    "bin/index.mjs",
+    "bin/index.md",
+    "dist/**/*.js",
+    ".agents/skills/**",
+    "skills-catalog.json",
+    "docs/**",
+    "LICENSE",
+    "NOTICE"
+  ]
 }

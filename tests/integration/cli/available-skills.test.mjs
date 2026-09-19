@@ -80,7 +80,7 @@ test('unified CLI help and invalid input preserve noninteractive failure boundar
         ['hook', 'session-index', '--max-entries', '0'],
         ['mcp', 'usage'],
         ['mcp', 'usage', '--db', 'relative.db'],
-        ['hook', 'codex', 'session-config', '--unknown'],
+        ['hook', 'session-config', '--host', 'codex', '--unknown'],
     ]) {
         const result = cli(args);
         assert.notEqual(result.status, 0, args.join(' '));
@@ -90,7 +90,7 @@ test('unified CLI help and invalid input preserve noninteractive failure boundar
 
 test('Codex hook render and verify use the unified entry without enabling it', (t) => {
     const root = fixture(t);
-    const generated = cli(['hook', 'codex', 'session-config']);
+    const generated = cli(['hook', 'session-config', '--host', 'codex']);
     assert.equal(generated.status, 0, generated.stderr);
     assert.deepEqual(JSON.parse(generated.stdout), new CodexHookConfiguration().codexSessionHook());
     assert.deepEqual(
@@ -100,10 +100,13 @@ test('Codex hook render and verify use the unified entry without enabling it', (
 
     const target = join(root, 'hooks.json');
     writeFileSync(target, generated.stdout);
-    assert.deepEqual(JSON.parse(cli(['hook', 'codex', 'verify', '--file', target]).stdout), {
-        matches: true,
-        executed: false,
-    });
+    assert.deepEqual(
+        JSON.parse(cli(['hook', 'verify', '--host', 'codex', '--file', target]).stdout),
+        {
+            matches: true,
+            executed: false,
+        },
+    );
     writeFileSync(target, '{}');
-    assert.equal(cli(['hook', 'codex', 'verify', '--file', target]).status, 1);
+    assert.equal(cli(['hook', 'verify', '--host', 'codex', '--file', target]).status, 1);
 });

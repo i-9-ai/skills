@@ -7,8 +7,8 @@ Run `npm ci` explicitly in this checkout first. Commands never install
 dependencies or compile code at startup. `npm run typecheck` checks types;
 native type stripping only executes erasable syntax.
 
-This is a checkout CLI. Node does not strip TypeScript under `node_modules`;
-a published npm/plugin distribution needs an explicit tested build.
+Checkout execution uses native TypeScript. The explicit build/package check
+prepares compiled JavaScript for node_modules; no runtime build runs implicitly.
 
 ## Commands
 
@@ -34,8 +34,8 @@ node bin/index.mjs ci-official
 node bin/index.mjs context available-skills --project ./example-project --no-global
 node bin/index.mjs context available-skills --global-root ./installed-skills --max-entries 50
 node bin/index.mjs hook list
-node bin/index.mjs hook codex session-config
-node bin/index.mjs hook codex verify --file .codex/hooks.json
+node bin/index.mjs hook session-config --host codex
+node bin/index.mjs hook verify --host codex --file .codex/hooks.json
 node bin/index.mjs hook session-index
 node bin/index.mjs mcp usage --db /absolute/local-data/skill-usage.db
 ```
@@ -65,8 +65,8 @@ to twenty displayed entries, supports up to 100, and discloses omissions.
 
 `hook session-index` provides the reusable overview at a lifecycle boundary.
 The Codex matcher owns startup/resume/clear/compact selection. The command is
-also a manual fallback and writes context only. `hook codex session-config`
-prints the Codex configuration; `hook codex verify` only compares its contents.
+also a manual fallback and writes context only. `hook session-config --host codex`
+prints the Codex configuration; `hook verify --host codex` only compares its contents.
 Neither command enables or installs a hook.
 
 `mcp usage` starts a stdio server and applies checksum-verified migrations
@@ -92,3 +92,30 @@ history; stop the MCP process and diagnose its directory/schema.
 command aliases are retained; all integrations use the commands above.
 
 Run `npm run check`, `npm run changeset:status`, and `git diff --check`.
+
+## Collection catalog maintenance
+
+Use catalog inspect, catalog check, or catalog sync with explicit --collection
+and --layout repository|global. Inspect validates the manifest; check additionally
+tests freshness; sync --dry-run reports the target and added/removed/refreshed
+names without writes. Sync alone atomically updates only skills-catalog.json.
+Repeat --allow-package-link-root for trusted global package owners.
+
+Aggregate commands are catalog aggregate inspect/check/sync/rebuild. Supply
+--index for reads, repeat --source id=PATH for checks/writes, and select an
+existing --output directory outside every source collection for writes. SQLite
+is the default and sync preserves history; --format json retains current state
+only. Rebuild rejects existing SQLite history without --reset-history. There is
+no aggregate dry-run: inspect/check and a verified backup precede explicit writes.
+
+## Host adapters and packed distribution
+
+Use hook session-config --host codex|claude|copilot|gemini and hook verify
+--host HOST --file FILE for standalone configuration. Use hook session-index
+--host HOST for its documented output envelope. Read the [host contract](../docs/host-hooks.md)
+before proposing installation; generation and fixture tests do not enable a host.
+
+Run npm run build and npm run package:check for the allowlisted compiled artifact.
+The same launcher uses source TypeScript in the checkout and JavaScript in the
+packed package. Read [distribution preparation](../docs/distribution-readiness.md)
+for actual coverage and the separate publication gate. The package stays private.

@@ -34,18 +34,23 @@ export default class AvailableSkillsCommand extends Command {
 
     async run(): Promise<void> {
         const { flags } = await this.parse(AvailableSkillsCommand);
+        this.log(this.renderContext(flags).trimEnd());
+    }
+
+    protected renderContext(flags: {
+        project?: string;
+        global: boolean;
+        'global-root'?: string;
+        'max-entries': number;
+    }): string {
         const globalRoot = flags.global
             ? (flags['global-root'] ?? join(homedir(), '.agents', 'skills'))
             : undefined;
 
-        this.log(
-            new AvailableSkillsService()
-                .renderAvailableSkills({
-                    project: new ProjectConfiguration({ root: flags.project }),
-                    globalRoot,
-                    maxEntries: flags['max-entries'],
-                })
-                .trimEnd(),
-        );
+        return new AvailableSkillsService().renderAvailableSkills({
+            project: new ProjectConfiguration({ root: flags.project }),
+            globalRoot,
+            maxEntries: flags['max-entries'],
+        });
     }
 }

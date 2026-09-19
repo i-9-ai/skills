@@ -129,7 +129,7 @@ implementation. No upstream implementation code was copied.
 `context available-skills` describes the reusable user outcome: inspect the
 skills discoverable for this session. `hook session-index` owns its lifecycle
 entry; Codex-specific JSON rendering/comparison lives under
-`hook codex session-config` and `hook codex verify`. `hook list` reports
+`hook session-config --host codex` and `hook verify --host codex`. `hook list` reports
 implemented/planned adapters. `mcp usage` is the first MCP responsibility.
 No host settings are installed and no automatic usage emitter is enabled.
 
@@ -299,23 +299,23 @@ All listed old paths are absent and replacements exist. The deleted source wrapp
 
 The repository reads installed package directories, so its class/file is SkillDiscoveryRepository rather than a catalog or session repository. AvailableSkillsService and AvailableSkillsInput describe the reusable overview; renderAvailableSkills performs discovery and renderOverview formats the result. Only SessionIndexHookCommand retains the lifecycle name and lives under hook/session-index. Command ID filenames remain oclif conventions. Unit files now identify SkillDiscoveryRepository and AvailableSkillsService; CLI tests cover the reusable command and its lifecycle adapter together. No old naming aliases or executable entrypoints are retained.
 
-## Catalog command group: designed, not implemented
+## Catalog command group
 
 Expose collection maintenance under `catalog`, separate from `context available-skills`. The latter discovers installed packages without writing a manifest; the catalog commands operate only on an explicitly selected collection and layout. Do not change SessionStart to synchronize catalogs.
 
-| Proposed command | Responsibility and effects |
+| Command | Responsibility and effects |
 | --- | --- |
 | `catalog inspect --collection PATH --layout LAYOUT` | Read and validate the selected manifest; report its identity, package count and location as text or JSON. No write. |
 | `catalog check --collection PATH --layout LAYOUT` | Compare the selected manifest with current package summaries through the existing checkCatalog helper. Staleness returns a nonzero status without modifying files. |
-| `catalog sync --collection PATH --layout LAYOUT --dry-run` | Show the exact target and deterministic metadata differences without writing. The helper needs a supported preview boundary and fixture tests before this flag is exposed. |
+| `catalog sync --collection PATH --layout LAYOUT --dry-run` | Show the exact target and deterministic metadata differences without writing. The helper previews through its validated no-write branch. |
 | `catalog sync --collection PATH --layout LAYOUT` | Explicitly update only that collection's skills-catalog.json through syncCatalog, preserving existing link/output checks and idempotence. No implicit home selection or package modification. |
-| `catalog aggregate <operation>` | Separate future commands for derived multi-source indexes and their history. Require named source catalogs and an explicit output. Rebuild must preserve the existing reset-history boundary; do not conflate it with ordinary manifest sync. |
+| `catalog aggregate <operation>` | Implemented commands for derived multi-source current-state inspection and history-preserving writes. Require named source catalogs and an explicit output. Rebuild must preserve the existing reset-history boundary; do not conflate it with ordinary manifest sync. |
 
 LAYOUT is `repository` or `global`; aggregate operations are `inspect`, `check`, `sync` and `rebuild`.
 
 Use CollectionCatalogService to coordinate the operations and CollectionCatalogRepository to adapt the existing deterministic helper. Commands own flags/help/output only. Keep portable package helpers internally callable and independently distributable, while repository automation points at the unified CLI. No new executable script is needed.
 
-Acceptance before implementation completion: command examples and error contracts; read-only inspection/check/preview; explicit write target reporting; idempotent sync; repository/global fixtures; duplicate/unsafe link rejection; no ambient HOME reads or writes; stale-manifest behavior; caller path with spaces; JSON/stdout discipline. Aggregate rebuild additionally needs loss-of-history prevention and preserved event/migration evidence tests. This follow-up records the design only: no catalog command is advertised as currently executable and no catalog was synchronized by this naming correction.
+Acceptance before implementation completion: command examples and error contracts; read-only inspection/check/preview; explicit write target reporting; idempotent sync; repository/global fixtures; duplicate/unsafe link rejection; no ambient HOME reads or writes; stale-manifest behavior; caller path with spaces; JSON/stdout discipline. Aggregate rebuild additionally needs loss-of-history prevention and preserved event/migration evidence tests. The catalog and aggregate command groups are implemented and fixture-tested, including no-write preview, staleness, linked-output rejection and retained SQLite history.
 
 ## Project configuration boundary
 

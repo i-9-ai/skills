@@ -11,7 +11,7 @@ Use Node.js built-ins and temporary directories. Never read or modify a user's i
 
 Keep unit suites aligned with source responsibilities and integration suites separate. Test filenames may identify the exercised component; do not create empty layer directories merely to mirror the source. Shared fixtures must preserve their own relative symlink/data paths when a test file moves.
 
-Unit and CLI integration test code uses the repository's pinned Prettier (`npm run format`); collection integration fixtures are excluded. Preserve meaningful blank lines and fixture contents. `npm run check` includes non-mutating format verification before behavioral tests.
+Unit, CLI integration and packaging test code uses the repository's pinned Prettier (`npm run format`); collection integration fixtures are excluded. Preserve meaningful blank lines and fixture contents. `npm run check` includes non-mutating format verification before behavioral tests.
 
 ## Work guidance
 Test meaningful acceptance and rejection behavior, confinement, no-overwrite, and evidence integrity. Keep structural tests separate from agent behavioral evaluation claims.
@@ -20,6 +20,7 @@ Test meaningful acceptance and rejection behavior, confinement, no-overwrite, an
 Run `npm test` from the repository root. Tests make no network requests and leave no fixture files in the checkout.
 
 ## Child DOX index
+- [Packed CLI verification](packaging/cli-package.mjs): allowlist and runtime checks under a disposable node_modules tree using only already-installed production dependencies.
 
 - [Configuration unit tests](unit/config): root precedence, stable named paths and invalid-input rejection without filesystem effects.
 

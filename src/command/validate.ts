@@ -7,7 +7,7 @@ import { CollectionValidationService } from '../service/CollectionValidationServ
 export default class ValidateCommand extends Command {
     static flags = { project: Flags.string({ description: 'Collection repository root.' }) };
     static description =
-        'ValidateCommand the repository collection without running the external official validator.';
+        'Validate the repository collection without running the external official validator.';
 
     async run() {
         const { flags } = await this.parse(ValidateCommand);

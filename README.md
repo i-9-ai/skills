@@ -188,8 +188,9 @@ Pending user-visible changes use [Changesets](docs/release-management.md) for ve
 Catalog maintenance is automated:
 
 ```sh
-node .agents/skills/skills-catalog/scripts/catalog_tools.mjs check .
-node .agents/skills/skills-catalog/scripts/catalog_tools.mjs sync .
+node bin/index.mjs catalog check --collection . --layout repository
+node bin/index.mjs catalog sync --collection . --layout repository --dry-run
+node bin/index.mjs catalog sync --collection . --layout repository
 ```
 
 The sync command derives names, paths, descriptions, and tags from each `SKILL.md`, writes only `skills-catalog.json`, and becomes a no-op on a second run. Lifecycle evidence remains a separate review record.

@@ -14,6 +14,9 @@ I-9 Skills is a public-ready framework for creating, validating, distributing, a
 - [Visual guides](assets/index.html): a GitHub Pages-ready landing page for interactive maps.
 
 ## Deeper references
+- [Distribution preparation](distribution-readiness.md): explicit JavaScript build, packed CLI verification and remaining publication gates.
+
+- [Host hooks](host-hooks.md): host-specific session configuration and context output, with explicit untested runtime boundaries.
 
 - [Positioning](positioning.md): public communication and demonstrations.
 - [Skill usage MCP](skill-usage-mcp.md): local observed-read evidence and rankings, with an explicit emitter and dedicated database.

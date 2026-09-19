@@ -459,6 +459,13 @@ function difference(current, desired) {
 
 function canonicalBytes(value) { return Buffer.from(`${JSON.stringify(value, null, 2)}\n`); }
 
+export function inspectCatalog(input, options = {}) {
+  const config = collectionConfig(input, options);
+  const current = readCatalog(config);
+  return { schema_version: 1, layout: config.layout, catalog: config.output,
+    packages: current.value.skills.length };
+}
+
 export function checkCatalog(input, options = {}) {
   const config = collectionConfig(input, options);
   checkAgentsReference(config);
@@ -477,6 +484,8 @@ export function syncCatalog(input, options = {}) {
   const desired = desiredCatalog(config);
   const next = canonicalBytes(desired);
   const changes = difference(current.value, desired);
+  if (options.dryRun === true) return { schema_version: 1, layout: config.layout, catalog: config.output,
+    packages: desired.skills.length, changed: !current.bytes?.equals(next), dry_run: true, written: false, ...changes };
   if (current.bytes?.equals(next)) return { schema_version: 1, layout: config.layout, catalog: config.output,
     packages: desired.skills.length, changed: false, ...changes };
   const temporary = path.join(config.root, `.skills-catalog.json.tmp-${process.pid}-${Date.now()}`);
@@ -516,18 +525,29 @@ export function syncCatalog(input, options = {}) {
 }
 
 function main(argv) {
-  requireCondition(argv.length >= 2 && ['check', 'sync'].includes(argv[0]),
-    'usage: catalog_tools.mjs <check|sync> <collection-root> [--layout <repository|global>] [--allow-package-link-root <path>]');
+  if (argv.length === 1 && argv[0] === '--help') return {
+    usage: 'catalog_tools.mjs <inspect|check|sync> <collection-root> [--layout <repository|global>] [--allow-package-link-root <path>] [--dry-run]',
+    effects: 'Only sync writes skills-catalog.json; --dry-run previews without writing.',
+    exits: { 0: 'success', 1: 'invalid input or stale catalog' }
+  };
+  requireCondition(argv.length >= 2 && ['inspect', 'check', 'sync'].includes(argv[0]),
+    'usage: catalog_tools.mjs <inspect|check|sync> <collection-root> [--layout <repository|global>] [--allow-package-link-root <path>] [--dry-run]');
   const command = argv[0]; const root = argv[1];
-  let layout = 'repository'; const allowPackageLinkRoots = [];
+  let layout = 'repository'; let dryRun = false; const allowPackageLinkRoots = [];
   for (let index = 2; index < argv.length; index += 1) {
-    const flag = argv[index]; const value = argv[++index];
+    const flag = argv[index];
+    if (flag === '--dry-run') {
+      requireCondition(command === 'sync' && !dryRun, '--dry-run applies once to sync only');
+      dryRun = true; continue;
+    }
+    const value = argv[++index];
     requireCondition(value !== undefined, `${flag} requires a value`);
     if (flag === '--layout') layout = value;
     else if (flag === '--allow-package-link-root') allowPackageLinkRoots.push(value);
     else throw new CatalogError(`unknown option: ${flag}`);
   }
-  const options = { layout, allowPackageLinkRoots };
+  const options = { layout, allowPackageLinkRoots, dryRun };
+  if (command === 'inspect') return inspectCatalog(root, options);
   return command === 'check' ? checkCatalog(root, options) : syncCatalog(root, options);
 }
 

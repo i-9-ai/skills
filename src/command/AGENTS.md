@@ -11,7 +11,7 @@ Commands adapt user input to services. Parent source instructions own implementa
 ## Local contracts
 
 - `bin/index.mjs` is the sole executable launcher; do not add parallel clients or undocumented compatibility aliases.
-- Use one command per independently useful operation. Group by stable capability, then operation: `context available-skills`, `hook codex verify`, `mcp usage`.
+- Use one command per independently useful operation. Group by stable capability, then operation: `context available-skills`, `hook verify --host codex`, `mcp usage`.
 - A reusable operation belongs to its user-facing domain. Lifecycle hooks call that operation; they do not determine its reusable name.
 - Class names end in `Command`. Files below this tree use oclif command-ID spelling, an intentional exception to class-matching filenames elsewhere.
 - Commands parse flags, invoke a service and render the result. Filesystem lookup, validation rules, migrations and protocol handling belong to their named components.
