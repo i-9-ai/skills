@@ -123,7 +123,7 @@ test('host first-receipt retries preserve time but reject conflicting mapped evi
 
 test('telemetry registration is inert and shell-quotes explicit local selections', () => {
     const generated = new TelemetryHookConfiguration().configuration("/data/user's $file.db", [
-        "project=/workspace/user's $(data)/skills",
+        "project=/example/user's $(data)/skills",
     ]);
     assert.deepEqual(Object.keys(generated.hooks), ['SessionStart', 'PreToolUse', 'PostToolUse']);
     assert.equal(generated.hooks.PreToolUse[0].matcher, '^Read$');
