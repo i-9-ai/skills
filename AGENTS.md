@@ -4,6 +4,13 @@
 
 Maintain a growing collection of reusable skills, beginning with the skill authoring pipeline. The canonical packages live in `.agents/skills/`.
 
+This repository contains only meta-skills: their primary responsibility must
+directly concern creating, discovering, evaluating, maintaining, distributing,
+or otherwise managing skills. General domain, tool, issue-management and
+execution procedures belong in the caller's separately selected skill
+collection, never in this repository's packages, catalog or delivery scope.
+Repository code and documentation support the meta-skill tooling only.
+
 Consult `skills-catalog.json` to discover the skills available in this repository. Use catalog metadata only to shortlist candidates, then read the selected package's `SKILL.md` before applying it. Choose no skill when none clearly matches.
 
 ## Ownership

@@ -111,9 +111,10 @@ update their indexes and input/side-effect descriptions together.
 
 Use the installed `@oclif/core@5.0.0` pattern discovery with a singular command
 directory. Node 24 strips erasable TypeScript during source execution; explicit
-type checking remains a development check. This is a checkout CLI, not a proven
-npm-installed distribution: Node refuses native stripping under node_modules.
-A later package/plugin release needs an explicit tested build/distribution path.
+type checking remains a development check. Node refuses native stripping under
+node_modules. The subsequent [meta-skill delivery plan](2026-09-19-14-34-36-meta-skill-delivery.md)
+adds an explicit compiled build and local packed-artifact test; registry and
+plugin publication remain separate boundaries.
 
 The oclif skill was used with its complete implementation and migration guides.
 Its explicit-discovery/manifest incompatibility assertion conflicts with the
@@ -305,7 +306,7 @@ Expose collection maintenance under `catalog`, separate from `context available-
 
 | Command | Responsibility and effects |
 | --- | --- |
-| `catalog inspect --collection PATH --layout LAYOUT` | Read and validate the selected manifest; report its identity, package count and location as text or JSON. No write. |
+| `catalog inspect --collection PATH --layout LAYOUT` | Read and validate the selected manifest; report its identity, package count and location as JSON. No write. |
 | `catalog check --collection PATH --layout LAYOUT` | Compare the selected manifest with current package summaries through the existing checkCatalog helper. Staleness returns a nonzero status without modifying files. |
 | `catalog sync --collection PATH --layout LAYOUT --dry-run` | Show the exact target and deterministic metadata differences without writing. The helper previews through its validated no-write branch. |
 | `catalog sync --collection PATH --layout LAYOUT` | Explicitly update only that collection's skills-catalog.json through syncCatalog, preserving existing link/output checks and idempotence. No implicit home selection or package modification. |
@@ -323,14 +324,14 @@ ProjectConfiguration under the singular config folder now resolves explicit root
 
 AvailableSkillsService consumes the configured local skill directory. Command adapters use the same class for validation roots. Global discovery remains an explicit separate input with the existing command-level no-global/override contract; ProjectConfiguration does not read HOME. The previous service/project-root.ts function and test were removed, replaced by configuration unit tests and a service test proving source selection without filesystem access.
 
-Project-configuration validation: strict TypeScript and the full 170-test suite pass; local collection validation passes. The obsolete root helper and its former unit file are absent, with no empty source/test directories left behind.
+Project-configuration acceptance requires strict TypeScript, the complete test suite and local collection validation. The obsolete root helper and its former unit file are absent, with no empty source/test directories left behind.
 
 ## Pinned CLI formatting
 
 Add Prettier 3.9.6 as an explicitly authorized development dependency. It replaces subjective formatting drift with one local formatter; it is not a runtime dependency, compiler or linter. The published engine requirement supports Node 24. No editor extension or runtime installation runs automatically.
 
-Scope formatting to TypeScript in src, the bin launcher, unit tests and CLI integration tests. Exclude distributed skills, collection integration fixtures, generated files and prose from the formatting commands. Use four spaces, single quotes, semicolons, LF and a 100-column print-width preference; retain logical blank lines. JSON/YAML configuration uses two spaces, and Markdown prose wrapping is preserved when explicitly formatted outside these commands.
+Scope formatting to TypeScript in src, the bin launcher, unit tests, CLI integration tests and packaging tests. Exclude distributed skills, collection integration fixtures, generated files and prose from the formatting commands. Use four spaces, single quotes, semicolons, LF and a 100-column print-width preference; retain logical blank lines. JSON/YAML configuration uses two spaces, and Markdown prose wrapping is preserved when explicitly formatted outside these commands.
 
 Provide format (explicit writes) and format:check (read-only), with the latter required by npm run check. Document editor use of the pinned local version. Validate the scoped formatter, strict types, complete behavioral suite, Changeset and diff. Removal is reversible through the package/lockfile dependency, scripts and configuration; it requires no data or runtime migration. Formatting must not alter fixture strings or expand into unrelated collection work.
 
-Implemented with one new development package and no runtime dependency. Scoped formatting and the full check pass (strict types, collection validation and 170 tests); the formatter also passes under Node 24.19.0. Changeset status and git diff --check pass. No commit, push, editor installation or host configuration change was performed.
+The formatter adds one development package and no runtime dependency. Exact validation and commit evidence belong in the review record. No editor installation or host configuration change is part of formatting.

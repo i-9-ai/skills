@@ -52,17 +52,17 @@ test('the allowlisted artifact runs from node_modules on Node 24+ without TypeSc
     const names = packed.files.map((file) => file.path);
     assert.ok(names.includes('dist/index.js'));
     assert.ok(names.includes('bin/index.mjs'));
-    assert.ok(names.includes('.agents/skills/beads-execution/SKILL.md'));
+    const sourceCatalog = JSON.parse(readFileSync(join(repository, 'skills-catalog.json')));
+    for (const skill of sourceCatalog.skills) {
+        assert.ok(names.includes(skill.path + '/SKILL.md'), skill.name);
+    }
     for (const name of names) {
         assert.ok(!name.startsWith('/') && !name.split('/').includes('..'), name);
         assert.match(
             name,
             /^(?:bin\/index\.(?:mjs|md)|dist\/.*\.js|\.agents\/skills\/|skills-catalog\.json|docs\/|package\.json|README\.md|LICENSE|NOTICE)/,
         );
-        assert.doesNotMatch(
-            name,
-            /^(?:src|tests|\.work|tmp|\.beads|\.codex|\.github|node_modules)\//,
-        );
+        assert.doesNotMatch(name, /^(?:src|tests|\.work|tmp|\.codex|\.github|node_modules)\//);
         assert.ok(!name.endsWith('.ts'), name);
         assert.ok(!name.split('/').includes('.DS_Store'), name);
     }
@@ -112,5 +112,5 @@ test('the allowlisted artifact runs from node_modules on Node 24+ without TypeSc
             root,
         ),
     );
-    assert.ok(catalog.packages >= 25);
+    assert.equal(catalog.packages, sourceCatalog.skills.length);
 });
