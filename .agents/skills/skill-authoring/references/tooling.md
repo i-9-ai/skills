@@ -41,21 +41,21 @@ Ordinary Markdown inline links, images, and reference definitions are checked ou
 
 Packages reject symlinks, special files, more than 2,048 entries, nesting beyond 24 components, files above 4 MiB, and total files above 32 MiB. File reads also reject hard links. Markdown and license reads are bounded to 256 KiB. The selected root is trusted; component inspection, final no-follow opens, descriptor checks, and bounded reads reject unsafe entries and detected changes. These checks assume a stable tree and cannot eliminate every concurrent path race. The validator does not execute package scripts or inspect remote sources.
 
-## Run protocol version 1
+## Run protocol version 2
 
 The JSON schema is in [run.schema.json](../assets/run.schema.json). A run manifest lives directly inside its run root. It contains only these fields:
 
-- `schema_version`: integer `1`.
+- `schema_version`: integer `2`. Historical version 1 manifests are not current readiness evidence.
 - `run_id` and `target_skill`: valid slugs.
 - `goal`: a nonblank string.
 - `status`: `draft`, `blocked`, or `validated`.
 - `sources`: objects containing `id`, `uri`, `revision`, `license`, and `reuse`.
-- `stages`: an ordered prefix of `intake`, `discovery`, `synthesis`, `design`, `authoring`, and `evaluation`.
+- `stages`: an ordered prefix of `intake`, `discovery`, `domain-research`, `synthesis`, `design`, `authoring`, and `evaluation`.
 
 Source IDs are unique. A URI is public HTTPS without credentials or query parameters, or a synthetic `urn:example:` identifier. Duplicate URI/revision pairs are rejected. `reuse` is `pattern`, `adapt`, `reference`, or `reject`. Adapted sources need a 40- or 64-character lowercase hexadecimal immutable revision and a declared license; the validator cannot determine whether the license actually permits reuse. `pattern` and `adapt` count as contributors, and two revisions of the same URI count only once.
 
-Each stage contains only `name`, `status`, `summary`, and `artifacts`. Stage status is `passed`, `skipped`, or `blocked`; summaries are nonblank and explain decisions. Every passed stage needs at least one nonempty evidence artifact. Synthesis may pass only with at least two distinct contributing source URIs. With fewer contributors, synthesis may be skipped with a reason in its summary. No other stage may be skipped. A blocked stage terminates the stage list, and the run status must be `blocked`. A `validated` run has all six stages and passed evaluation; a skipped synthesis with a justified shortfall is allowed.
+Each stage contains only `name`, `status`, `summary`, and `artifacts`. Stage status is `passed`, `skipped`, or `blocked`; summaries are nonblank and explain decisions. Every passed stage needs at least one nonempty evidence artifact. Domain research cannot be skipped: its dossier must record current opened public authority and the process-owner record or block with the missing evidence. Synthesis may pass with one or more distinct contributing skill-package URIs and that dossier. With no contributor, synthesis may be skipped with a reason in its summary. No other stage may be skipped. A blocked stage terminates the stage list, and the run status must be `blocked`. A `validated` run has all seven stages and passed evaluation; a skipped synthesis with a justified absence of contributors is allowed.
 
 Artifacts contain only `path` and `sha256`. Paths are relative POSIX file paths under the run root, with no absolute paths, backslashes, empty components, `.` or `..`, or symlinks. Hashes are lowercase SHA-256 hex strings over the exact file bytes. The manifest cannot hash itself. Reusing an artifact in another stage is allowed only with the same digest. Evaluation artifacts must document the checks, observations, failures, and remaining limits required by the evaluator; the checker verifies their presence and bytes, not the truth of their contents.
 
-Input is bounded to 1 MiB of UTF-8 JSON, 128 sources, six stages, 64 artifacts per stage, 4 MiB per artifact, and 32 MiB of unique artifact contents. Duplicate JSON fields, non-finite numbers, malformed schemas, unreadable files, and hash mismatches fail. JSON Schema expresses static shape; the Node validator also enforces ordering, source sufficiency, safe relative paths, and hashes.
+Input is bounded to 1 MiB of UTF-8 JSON, 128 sources, seven stages, 64 artifacts per stage, 4 MiB per artifact, and 32 MiB of unique artifact contents. Duplicate JSON fields, non-finite numbers, malformed schemas, unreadable files, and hash mismatches fail. JSON Schema expresses static shape; the Node validator also enforces ordering, source sufficiency, safe relative paths, and hashes.

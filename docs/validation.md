@@ -4,7 +4,7 @@ Every new or changed skill must pass the official `skills-ref validate` command 
 
 ## Local checks
 
-Use Node.js 24+. Repository checks, the standalone creator helper, and all regression tests use built-in modules. No npm dependency installation, Python, network access, or credential is needed locally. Commands and the external CI tool's pins are centralized in [package.json](../package.json).
+Use Node.js 24+ and run `npm ci` explicitly for the pinned CLI and type-checking dependencies. Subsequent local checks need no Python, network access or credentials. Standalone skill helpers still use built-in modules. Commands and official tool pins are centralized in [package.json](../package.json).
 
 From the repository root:
 
@@ -13,7 +13,7 @@ npm run check
 git diff --check
 ```
 
-`npm run validate` checks the collection, and `npm test` runs only disposable local tests. The code lives in [src/](../src/AGENTS.md): pure domain policy, application use cases, filesystem/process adapters, and a small CLI. The creator's standalone helper stays inside its own distributable package and is reused by a repository adapter.
+`npm run check` runs type checking, collection validation and disposable tests. Source lives in [src/](../src/AGENTS.md): singular command, service, repository, validator, migration and transport layers. The creator's standalone helper stays inside its distributable package and is reused by a repository.
 
 Run against an owned checkout that remains stable throughout validation. Unsafe entries and detected changes are rejected; these checks are not a sandbox against concurrent adversarial mutation. Do not run candidate scripts or allow other writers to mutate the selected package while checking it.
 
@@ -31,7 +31,7 @@ Lock verification is offline. It checks source identity, immutable revisions, sa
 
 ## Detached-package checks
 
-The [distribution regressions](../tests/distribution.test.mjs) copy only package directories into disposable layouts outside this checkout. They exercise the creator helper from an unrelated working directory, using read-only installed resources, separate output/run directories, and installer-style directory aliases. They also validate every package's copied resources without this repository's catalog, root instructions, `src/`, or package configuration. No consumer home or actual installation is modified.
+The [distribution regressions](../tests/integration/collection/distribution.test.mjs) copy only package directories into disposable layouts outside this checkout. They exercise the creator helper from an unrelated working directory, using read-only installed resources, separate output/run directories, and installer-style directory aliases. They also validate every package's copied resources without this repository's catalog, root instructions, `src/`, or package configuration. No consumer home or actual installation is modified.
 
 This is a reproducible package-relocation check, not an invocation of `npx skills` or proof of model behavior in every host. Official validation remains required separately.
 
@@ -45,7 +45,7 @@ Accept official evidence only for the exact PR head and package bytes. A standal
 
 The validator is built from [agentskills/agentskills at `69ef37e9424c0a7ea9dd2293b559e43ec8176379`](https://github.com/agentskills/agentskills/tree/69ef37e9424c0a7ea9dd2293b559e43ec8176379/skills-ref), whose package declares version `0.1.0` and Python `>=3.11`. The exact source archive has SHA-256 `0c9eabbe602095c4f4d771ee55bf74f6bc7e1c770f25d4fe29ce9802981daa20`. Its Apache-2.0 license and source stay in the isolated tool installation; the validator is not vendored into a skill.
 
-`package.json` records the official archive, version, and full runtime/build dependency hashes under `config.officialSkillValidator`. [Pure policy](../src/domain/official-validator-policy.mjs) checks immutable source identity, exact versions, unique dependency names, and hashes. The [process adapter](../src/infrastructure/official-validator-process.mjs) derives two temporary installation inputs and removes them afterward. It verifies an isolated Python 3.11+ environment, installs only hashed wheels, then builds the official source with dependency resolution and build isolation disabled. A failure stops later phases. No committed requirements file or duplicate version declaration is maintained in the implementation. This configuration is separate from the benchmark source lock.
+`package.json` records the official archive, version, and full runtime/build dependency hashes under `config.officialSkillValidator`. [Pure policy](../src/validator/OfficialValidator.ts) checks immutable source identity, exact versions, unique dependency names, and hashes. The [process adapter](../src/repository/OfficialValidatorProcessRepository.ts) derives two temporary installation inputs and removes them afterward. It verifies an isolated Python 3.11+ environment, installs only hashed wheels, then builds the official source with dependency resolution and build isolation disabled. A failure stops later phases. No committed requirements file or duplicate version declaration is maintained in the implementation. This configuration is separate from the benchmark source lock.
 
 The similarly named PyPI `skills-ref` distribution did not match the official source/executable identity during inspection, so this setup uses the official repository archive. A source pin and hashes establish identity, not a complete security certification. Update pins only after reviewing the source and repeating the checks.
 

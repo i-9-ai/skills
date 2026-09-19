@@ -24,11 +24,11 @@ Determine one skill's current lifecycle state and the next justified transition.
 4. Check whether required structural, official, behavioral, security, compatibility, provenance, and consumer evidence is present and current.
 5. Identify the single next transition supported by evidence: remain, promote, deprecate, or return for remediation. A transition may be blocked.
 6. Record the decision, supporting and counterevidence, expired evidence, unresolved risks, required owner, and the next review trigger.
-7. Return the review without modifying package bytes, catalog status, installation state, or publication state.
+7. Return the review without modifying package bytes, catalog fields, installation state, or publication state. Store the lifecycle decision in the caller's evidence system or portable review record, never in the inventory catalog.
 
 ## Tools and authority
 
-Use read-only inspection and validation-result verification. A lifecycle recommendation does not authorize catalog mutation, migration, installation, publication, or deletion. Hand an approved status change to the catalog owner and package changes to evolution or authoring.
+Use read-only inspection and validation-result verification. A lifecycle recommendation does not authorize catalog mutation, migration, installation, publication, or deletion. Record an approved lifecycle change in the target project's evidence system and hand package changes to evolution or authoring.
 
 ## Output and evaluation
 

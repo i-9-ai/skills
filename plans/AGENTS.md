@@ -16,6 +16,7 @@ Before the first release, update the originating baseline rather than keep artif
 Verify every requirement has an implementation and a check or an explicit limit.
 
 ## Child DOX index
+- [Unified CLI](2026-09-15-14-37-39-unified-cli-n-layer.md): oclif command migration, dynamic discovery, hook/MCP boundaries and cleanup.
 - [Skill usage MCP](2026-09-15-16-00-00-skill-usage-mcp.md): explicit local read evidence and rankings in a dedicated transactional usage database.
 - [Skill authoring pipeline](2026-09-12-17-29-32-skill-authoring-pipeline.md): the initial collection and its validation workflow.
 - [Changesets adoption](2026-09-13-20-14-46-adopt-changesets.md): pending release-note management.
@@ -28,3 +29,6 @@ Verify every requirement has an implementation and a check or an explicit limit.
 - [Portable runtime and setup contract](2026-09-13-23-21-01-portable-runtime-setup-contract.md): explicit runtime and setup declarations for self-contained skills.
 - [TypeScript repository tooling assessment](2026-09-13-23-23-25-typescript-tooling-assessment.md): conditional migration recipe for repository-owned CLI tooling.
 - [Aggregate skill index](2026-09-14-23-06-58-aggregate-skill-index.md): local SQLite or JSON projection across explicit collection catalogs.
+- [Skills maintenance scheduling](2026-09-13-20-52-55-skills-maintenance-scheduling.md): portable proposals for recurring, approval-gated skill maintenance.
+- [Global skills catalog](2026-09-14-23-58-02-global-skills-catalog.md): safe standalone catalog synchronization for repository and global collection layouts.
+- [Skill evolution event ledger](2026-09-15-01-52-50-skill-evolution-event-ledger.md): ordered SQLite migration and structured, rollback-aware skill evolution events.

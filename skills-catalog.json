@@ -1,10 +1,9 @@
 {
-  "schema_version": 2,
+  "schema_version": 1,
   "skills": [
     {
       "name": "skill-authoring",
       "path": ".agents/skills/skill-authoring",
-      "status": "pilot",
       "description": "Use to author or revise a focused skill package from a goal and design, coordinating discovery, synthesis, and evaluation through companion skills. Use skills-discovery for search alone.",
       "tags": [
         "authoring",
@@ -15,7 +14,6 @@
     {
       "name": "skill-design",
       "path": ".agents/skills/skill-design",
-      "status": "pilot",
       "description": "Use to resolve a skill's responsibility, interface, and design tradeoffs from a brief or merge plan before authoring. It does not discover sources or implement the package.",
       "tags": [
         "design",
@@ -24,9 +22,19 @@
       ]
     },
     {
+      "name": "skill-domain-research",
+      "path": ".agents/skills/skill-domain-research",
+      "description": "Use to research one proposed skill's subject, reconciling process-owner facts, reviewed skill claims, and current authoritative web sources into a bounded evidence dossier.",
+      "tags": [
+        "evidence",
+        "provenance",
+        "research",
+        "skills"
+      ]
+    },
+    {
       "name": "skill-evaluator",
       "path": ".agents/skills/skill-evaluator",
-      "status": "pilot",
       "description": "Use to evaluate a skill package against frozen behavioral cases and a baseline, returning evidence and a readiness verdict. It does not author fixes or publish the skill.",
       "tags": [
         "evaluation",
@@ -37,7 +45,6 @@
     {
       "name": "skill-evidence-collection",
       "path": ".agents/skills/skill-evidence-collection",
-      "status": "pilot",
       "description": "Use to collect, normalize, and preserve bounded evidence about one skill or skill collection for a later evaluation, lifecycle, or evolution decision. It does not judge or change the target.",
       "tags": [
         "evidence",
@@ -48,7 +55,6 @@
     {
       "name": "skill-evolution",
       "path": ".agents/skills/skill-evolution",
-      "status": "pilot",
       "description": "Use to update one existing skill from new evidence while preserving its responsibility, provenance, compatibility, and a reviewable change record.",
       "tags": [
         "evolution",
@@ -59,7 +65,6 @@
     {
       "name": "skill-icon-design",
       "path": ".agents/skills/skill-icon-design",
-      "status": "pilot",
       "description": "Use to design or refresh a distinct, accessible SVG icon for one skill package from its responsibility and visual constraints. It does not redesign other package content.",
       "tags": [
         "icons",
@@ -70,7 +75,6 @@
     {
       "name": "skill-installation",
       "path": ".agents/skills/skill-installation",
-      "status": "pilot",
       "description": "Use to install one approved skill package at an immutable source revision into a selected agent environment and return an auditable installation receipt.",
       "tags": [
         "installation",
@@ -81,7 +85,6 @@
     {
       "name": "skill-lifecycle-review",
       "path": ".agents/skills/skill-lifecycle-review",
-      "status": "pilot",
       "description": "Use to determine the lifecycle state and next justified transition for one skill from current evidence without editing or publishing the package.",
       "tags": [
         "governance",
@@ -92,7 +95,6 @@
     {
       "name": "skill-migration",
       "path": ".agents/skills/skill-migration",
-      "status": "pilot",
       "description": "Use to migrate one skill package between collections while preserving behavior, provenance, history, compatibility, and an auditable handoff.",
       "tags": [
         "migration",
@@ -103,7 +105,6 @@
     {
       "name": "skill-naming",
       "path": ".agents/skills/skill-naming",
-      "status": "pilot",
       "description": "Use to select or review a skill's canonical name, grouping related skills by domain and checking scope, cardinality, and known collisions. Return a naming decision without renaming files.",
       "tags": [
         "naming",
@@ -114,7 +115,6 @@
     {
       "name": "skill-optimization",
       "path": ".agents/skills/skill-optimization",
-      "status": "pilot",
       "description": "Use to improve one skill through scored rollouts, bounded candidate edits, and held-out validation. It does not discover sources, author unrelated skills, or publish changes.",
       "tags": [
         "evaluation",
@@ -125,7 +125,6 @@
     {
       "name": "skill-publication",
       "path": ".agents/skills/skill-publication",
-      "status": "pilot",
       "description": "Use to publish one approved skill package through an authorized distribution channel after exact-revision release gates have passed.",
       "tags": [
         "publication",
@@ -136,7 +135,6 @@
     {
       "name": "skill-routing",
       "path": ".agents/skills/skill-routing",
-      "status": "pilot",
       "description": "Use to decide whether a task should activate one skill, an ordered set of skills, or no skill from supplied catalogs. It recommends a route but does not invoke, install, or modify skills.",
       "tags": [
         "routing",
@@ -147,7 +145,6 @@
     {
       "name": "skill-security-review",
       "path": ".agents/skills/skill-security-review",
-      "status": "pilot",
       "description": "Use to review one skill package for secrets, private data, unsafe instructions, dangerous scripts, dependencies, permissions, and disclosure risk.",
       "tags": [
         "review",
@@ -158,7 +155,6 @@
     {
       "name": "skills-audit",
       "path": ".agents/skills/skills-audit",
-      "status": "pilot",
       "description": "Use to audit a collection of installed or authored skills for inventory, provenance, validation, policy, and drift, producing one findings report.",
       "tags": [
         "audit",
@@ -169,8 +165,7 @@
     {
       "name": "skills-catalog",
       "path": ".agents/skills/skills-catalog",
-      "status": "pilot",
-      "description": "Use to create, synchronize, or validate a repository catalog of skill packages from their SKILL.md metadata. It maintains inventory and summaries but does not choose a skill for a task.",
+      "description": "Use to create, synchronize, or validate a repository or global catalog from installed SKILL.md metadata. It maintains inventory and summaries but does not choose a skill for a task.",
       "tags": [
         "catalog",
         "metadata",
@@ -180,7 +175,6 @@
     {
       "name": "skills-discovery",
       "path": ".agents/skills/skills-discovery",
-      "status": "pilot",
       "description": "Use to discover and qualify existing skills for a specific task, returning pinned candidates and evidence. It does not install, merge, or author a skill.",
       "tags": [
         "discovery",
@@ -191,7 +185,6 @@
     {
       "name": "skills-host-compatibility",
       "path": ".agents/skills/skills-host-compatibility",
-      "status": "pilot",
       "description": "Use to verify declared repository-local aliases for a canonical skill collection and return a bounded structural compatibility report.",
       "tags": [
         "aliases",
@@ -200,9 +193,19 @@
       ]
     },
     {
+      "name": "skills-maintenance-scheduling",
+      "path": ".agents/skills/skills-maintenance-scheduling",
+      "description": "Use to turn an approved recurring maintenance goal for a bounded skill collection into an approval-ready schedule proposal. It does not configure a scheduler or execute maintenance.",
+      "tags": [
+        "governance",
+        "maintenance",
+        "scheduling",
+        "skills"
+      ]
+    },
+    {
       "name": "skills-refactoring",
       "path": ".agents/skills/skills-refactoring",
-      "status": "pilot",
       "description": "Use to turn an audit of an existing skill collection into a bounded decomposition and reorganization plan without editing the packages.",
       "tags": [
         "decomposition",
@@ -213,7 +216,6 @@
     {
       "name": "skills-snapshot",
       "path": ".agents/skills/skills-snapshot",
-      "status": "pilot",
       "description": "Create, verify, list, restore, and explicitly prune deterministic snapshots of a caller-selected skill collection or package. Use before risky skill maintenance; do not use to install or refactor skills.",
       "tags": [
         "backup",
@@ -225,7 +227,6 @@
     {
       "name": "skills-synthesis",
       "path": ".agents/skills/skills-synthesis",
-      "status": "pilot",
       "description": "Use to synthesize useful contributions from two or more reviewed skills into one coherent synthesis plan. It does not search for candidates, write the final package, or certify its quality.",
       "tags": [
         "provenance",

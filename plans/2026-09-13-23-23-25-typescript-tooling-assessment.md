@@ -16,8 +16,8 @@ The user requested an independent assessment of TypeScript, a command framework 
 
 Inspected baseline: `236aea4ae3b053789e020bf32d3d0e9a8fada235`, branch `codex/session-skill-index`. This is evidence of the inspected checkout, not proof of PR-head identity or CI success.
 
-- `src/cli.mjs` has three commands: `validate`, `ci-official`, and `session-index`. It validates argument count, reports results, and sets exit status in roughly 40 lines.
-- `src/domain/` already holds collection, official-validator, and session-index policies; `src/application/` orchestrates use cases; `src/infrastructure/` owns filesystem and process adapters.
+- The pre-migration standalone CLI had three commands: `validate`, `ci-official`, and `session-index`. It validates argument count, reports results, and sets exit status in roughly 40 lines.
+- The pre-migration `src/domain/` held collection, official-validator, and session-index policies; `src/application/` orchestrated use cases; `src/infrastructure/` owned filesystem and process adapters.
 - `validateRepository` directly constructs `CollectionFilesystem`; `validateOfficial` directly calls concrete adapters and repository validation. These are concrete seams for better isolated application tests.
 - `render-session-index.mjs` performs filesystem access inside the application layer. Moving that access into an adapter would clarify an existing dependency boundary.
 - Existing `node:test` suites already exercise pure rules, temporary filesystem fixtures, and fake process executors. They are useful behavioral regressions; many repository tests are integration tests rather than isolated application tests.

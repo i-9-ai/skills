@@ -1,18 +1,18 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Skill authoring run, version 1",
+  "title": "Skill authoring run, version 2",
   "description": "Static manifest shape. The Node.js validator additionally checks order, source sufficiency, safe paths, file bounds, and evidence hashes in an owned, stable workspace. It is not a sandbox against concurrent mutation, and no validator establishes behavioral quality.",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "run_id", "goal", "target_skill", "status", "sources", "stages"],
   "properties": {
-    "schema_version": {"const": 1, "type": "integer"},
+    "schema_version": {"const": 2, "type": "integer"},
     "run_id": {"$ref": "#/$defs/slug"},
     "goal": {"$ref": "#/$defs/summary"},
     "target_skill": {"$ref": "#/$defs/slug"},
     "status": {"enum": ["draft", "blocked", "validated"]},
     "sources": {"type": "array", "maxItems": 128, "items": {"$ref": "#/$defs/source"}},
-    "stages": {"type": "array", "maxItems": 6, "items": {"$ref": "#/$defs/stage"}}
+    "stages": {"type": "array", "maxItems": 7, "items": {"$ref": "#/$defs/stage"}}
   },
   "$defs": {
     "slug": {
@@ -43,7 +43,7 @@
       "additionalProperties": false,
       "required": ["name", "status", "summary", "artifacts"],
       "properties": {
-        "name": {"enum": ["intake", "discovery", "synthesis", "design", "authoring", "evaluation"]},
+        "name": {"enum": ["intake", "discovery", "domain-research", "synthesis", "design", "authoring", "evaluation"]},
         "status": {"enum": ["passed", "skipped", "blocked"]},
         "summary": {"$ref": "#/$defs/summary"},
         "artifacts": {"type": "array", "maxItems": 64, "items": {"$ref": "#/$defs/artifact"}}

@@ -5,7 +5,7 @@ export const LIMITS = Object.freeze({
   textBytes: 262_144, jsonBytes: 1_048_576, artifactBytes: 4_194_304,
   totalBytes: 33_554_432, entries: 2048, depth: 24, jsonDepth: 64,
 });
-export const STAGES = Object.freeze(['intake', 'discovery', 'synthesis', 'design', 'authoring', 'evaluation']);
+export const STAGES = Object.freeze(['intake', 'discovery', 'domain-research', 'synthesis', 'design', 'authoring', 'evaluation']);
 export const SLUG = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*(?![\s\S])/u;
 export const SHA256 = /^[0-9a-f]{64}(?![\s\S])/u;
 export const REVISION = /^(?:[0-9a-f]{40}|[0-9a-f]{64})(?![\s\S])/u;

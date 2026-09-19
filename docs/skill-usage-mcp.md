@@ -4,13 +4,13 @@ This first local MCP records **observed reads**, not activation. Starting it doe
 
 ## Start
 
-Use Node.js 24+; no dependency installation is needed. Create a caller-owned local data directory, then configure a stdio MCP client with command `node` and arguments pointing to `src/skill-usage-mcp.mjs`, `--db`, and an absolute database filename in that directory. Run directly from a checkout:
+Use Node.js 24+ and run `npm ci` explicitly in the checkout first. Create a caller-owned local data directory, then configure a stdio MCP client with command `node` and arguments pointing to `bin/index.mjs`, `mcp`, `usage`, `--db`, and an absolute database filename in that directory. Run directly from a checkout:
 
 ```sh
-node src/skill-usage-mcp.mjs --db /absolute/local-data/skill-usage.db
+node bin/index.mjs mcp usage --db /absolute/local-data/skill-usage.db
 ```
 
-The script and its `infrastructure/skill-usage-store.mjs` module can be copied together preserving their relative layout. This is a development distribution, not a published NPX package or installed plugin.
+The [unified CLI](../bin/index.md) composes the command, service, repository, migration and transport components. Use the complete checkout with its pinned dependencies. The former standalone launcher remains a compatibility shim; copying two old files is no longer a supported distribution. This is not yet a published NPX package or installed plugin.
 
 ## Report a read
 
@@ -37,6 +37,6 @@ Ordered checksum-verified migrations run in SQLite transactions. Inserts use `BE
 
 **Use a dedicated usage database for this delivery.** Existing catalog helpers replace database files and cannot safely run alongside this writer. Catalog or unrelated databases are rejected, untouched. Unifying the database requires a shared transactional catalog writer first.
 
-The adapter implements newline-delimited JSON-RPC stdio initialization, ping, tool discovery and calls; input messages are bounded to 64 KiB. No HTTP, resources, subscriptions or activation inference is implemented. Test with `node --test tests/skill-usage-mcp.test.mjs`.
+The adapter implements newline-delimited JSON-RPC stdio initialization, ping, tool discovery and calls; input messages are bounded to 64 KiB. No HTTP, resources, subscriptions or activation inference is implemented. Test with `node --test tests/integration/cli/skill-usage-mcp.test.mjs`.
 
 Protocol sources: [MCP stdio transport](https://modelcontextprotocol.io/specification/2025-11-25/basic/transports) and [MCP tools](https://modelcontextprotocol.io/specification/2025-11-25/server/tools), consulted September 15, 2026. The adapter is original code, not vendored upstream implementation.

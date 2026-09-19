@@ -8,6 +8,7 @@ Provide a bounded local index that combines canonical `skills-catalog.json` file
 
 - Migrate the pre-release canonical repository manifest from the generic `catalog.json` name to `skills-catalog.json` across validation, session hooks, documentation, examples, and tests, without an alias or duplicate.
 - Add a self-contained helper to `skills-catalog` for rebuilding or synchronizing an aggregate index from explicitly named catalog sources.
+- Establish the first public catalog and aggregate-index format as version `1`, with no compatibility branch for unpublished draft formats.
 - Prefer SQLite through the Node.js built-in `node:sqlite` module, with a deterministic JSON index fallback when that module is unavailable.
 - Store current source identifiers, stable catalog references, catalog digests, and validated skill records.
 - On SQLite sync, retain source observations and normalized added, changed, and removed skill states with timestamps and before/after metadata.
@@ -28,7 +29,7 @@ This change may read only explicitly supplied source catalogs and write an index
 
 1. Migrate every current repository consumer to the explicit `skills-catalog.json` path and remove the old generic path.
 2. Validate explicit source identifiers and read bounded regular `skills-catalog.json` files.
-3. Validate each catalog against the existing catalog contract and derive a deterministic current aggregate plus its SHA-256 source digest.
+3. Validate each catalog against schema version `1` with exactly `name`, `path`, `description`, and `tags` per package, then derive a deterministic current aggregate plus its SHA-256 source digest. Lifecycle evidence remains outside this inventory format.
 4. Write `skills-catalog.db` through Node.js built-in SQLite. `sync` preserves prior observations and skill changes transactionally; `rebuild` establishes a baseline and requires an explicit reset before discarding existing history.
 5. Write `skills-catalog.index.json` as the deterministic current-state fallback when SQLite is unavailable, and reject history commands rather than implying equivalent retention.
 6. Read generated index files for current list and exact-name or tag query operations; expose bounded SQLite history summaries and normalized skill change detail.
@@ -45,6 +46,8 @@ This change may read only explicitly supplied source catalogs and write an index
 - SQLite `sync` retains distinct observations and exact normalized skill changes without absolute source paths, prompts, package bodies, secrets, or telemetry.
 - The JSON fallback stays byte-deterministic for unchanged current state and refuses historical queries.
 - Repository validation and the session index consume only `skills-catalog.json`; no `catalog.json` alias remains.
+- The catalog and aggregate index both report format version `1`, reject other versions, and contain no manual lifecycle-status field.
+- SQLite synchronization retains `sync_runs`, `source_observations`, and `skill_changes`, including timestamps, retention limits, and explicit reset protection.
 
 ## Rollback
 

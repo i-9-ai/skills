@@ -23,7 +23,7 @@ The host owns hook trust. The repository owns the renderer and adapter. A user o
 
 ## Implementation sequence
 
-1. Add a Node renderer that reads skills-catalog.json and emits a bounded index with the Skill Routing entry point, selected routes, status, and an on-demand lookup instruction.
+1. Add a Node renderer that reads schema-version-`1` skills-catalog.json and emits a bounded index with the Skill Routing entry point, selected routes, and an on-demand lookup instruction. Lifecycle state is not part of the inventory catalog.
 2. Add the Codex SessionStart adapter and a manual fallback command that call the same renderer.
 3. Cover normal, empty, invalid, and oversized catalog inputs; document the host trust step and remove the adapter to roll back.
 

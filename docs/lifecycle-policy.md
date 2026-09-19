@@ -2,6 +2,8 @@
 
 The collection uses a portable maturity policy. It does not require a specific source-control host, CI service, ticket system, approval tool, or deployment platform.
 
+Lifecycle state is review evidence, not inventory metadata. Record it in the target project's existing approval system or in the portable approval record below. `skills-catalog.json` deliberately contains no hand-maintained maturity field.
+
 The canonical operational policy is bundled with [`skill-lifecycle-review`](../.agents/skills/skill-lifecycle-review/references/lifecycle-policy.md). In a consumer project, the reviewer first identifies the system already used for evidence and approval. That may be a pull-request review, CI gate, issue tracker, change-control record, signed release process, local review procedure, or another declared mechanism.
 
 If such a system exists and is authorized, the lifecycle decision records its identity, the reviewed revision, the decision, and any open findings. If it does not exist, the reviewer creates a portable approval record naming the candidate revision, evidence, acceptance owner, required decision, and next review trigger. Absence of a system never becomes implied approval.
@@ -22,4 +24,4 @@ A collection may define a stricter numeric threshold. Until it does, a reviewer 
 
 ## Regression and retirement
 
-Move a stable package back to `pilot` when evidence is stale or a material behavior or compatibility question remains unresolved. Deprecate it only with a clear successor or removal path. Lifecycle review records the decision; catalog mutation, publication, and migration remain separate authorized actions.
+Move a stable package back to `pilot` when evidence is stale or a material behavior or compatibility question remains unresolved. Deprecate it only with a clear successor or removal path. Lifecycle review records the decision outside the catalog; publication and migration remain separate authorized actions.

@@ -42,7 +42,7 @@ For material changes, obtain independent review on the exact commit. Fix pertine
 
 Every new or modified skill must pass the official `skills-ref validate` tool from the Agent Skills specification. Custom or manual checks do not replace this requirement; unavailable official execution leaves readiness blocked. Follow [validation setup](docs/validation.md) for the pinned official source and dependencies.
 
-Run `npm run check` and `git diff --check` with Node.js 24+. Repository tooling lives in `src/`, with domain rules, application use cases, and infrastructure adapters; `package.json` is its single dependency and command configuration. Local checks and tests require no Python or dependency installation. The GitHub workflow alone supplies Python for the external official validator, and its result must match the PR head. Tests must use disposable fixtures and must not modify a user's home, installed skills, or production state.
+Run `npm run check` and `git diff --check` with Node.js 24+ after explicit `npm ci`. Repository tooling uses singular N-layer directories under `src/`: command, service, repository, validator, migration and transport. `bin/index.mjs` is the thin launcher and `package.json` owns dependency/command configuration. Local checks require no Python, further installation or network. The GitHub workflow alone supplies Python for the external official validator, and its result must match the PR head. Tests use disposable fixtures and never modify a user's home, installed skills, or production state.
 
 ## Child DOX index
 
@@ -51,6 +51,7 @@ Run `npm run check` and `git diff --check` with Node.js 24+. Repository tooling 
 - [.agents/references/public-documentation.md](.agents/references/public-documentation.md): agent-facing guidance for the public documentation tree.
 - [plans/AGENTS.md](plans/AGENTS.md): implementation recipe and acceptance mapping.
 - [src/AGENTS.md](src/AGENTS.md): layered Node.js repository validation.
+- [bin/index.md](bin/index.md): unified CLI invocation, configuration, effects and failure recovery.
 - [tests/AGENTS.md](tests/AGENTS.md): synthetic regression and workflow tests.
 - [README.md](README.md): catalog, usage, and contributor entrypoint.
 - [SECURITY.md](SECURITY.md): trust boundaries and safe disclosure.

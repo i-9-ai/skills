@@ -1,5 +1,5 @@
 {
-  "description": "Load a compact, read-only I-9 Skills entry map from the canonical catalog.",
+  "description": "Discover a compact overview of installed project and global skills.",
   "hooks": {
     "SessionStart": [
       {
@@ -7,9 +7,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$(git rev-parse --show-toplevel)/src/cli.mjs\" session-index",
+            "command": "node \"$(git rev-parse --show-toplevel)/bin/index.mjs\" hook session-index",
             "timeout": 3,
-            "statusMessage": "Loading skill index",
+            "statusMessage": "Loading available skills overview",
             "additionalContextLimit": 1200
           }
         ]

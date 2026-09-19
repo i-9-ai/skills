@@ -4,7 +4,7 @@
 
 I-9 Skills is a toolkit for the full life of an agent skill: discover what already works, design one clear responsibility, author a complete package, validate it, publish it deliberately, and evolve it from real evidence. Every package is written in English, includes its own Apache-2.0 `LICENSE`, and works without assuming Codex, Claude, Copilot, OpenCode, or any other specific agent.
 
-**21 focused skills. One responsibility each. One reviewable output each.**
+**23 focused skills. One responsibility each. One reviewable output each.**
 
 The first release is `0.1.0-rc.1`: ready for independent pilot consumption while its contracts are exercised outside this repository.
 
@@ -32,17 +32,17 @@ immutable revision.
 
 The Skills CLI asks for a supported agent target when it cannot determine one. After installation, start a new agent session if its skill picker does not refresh automatically.
 
-## Optional session index
+## Available skills and optional session hook
 
-This source checkout includes a project-local Codex `SessionStart` adapter. When the project is trusted and hooks are enabled by the host, it supplies a compact, read-only map derived from `skills-catalog.json` at session start, resume, clear, and compaction. It does not load package bodies, install packages, or invoke a route.
+This source checkout includes a project-local Codex `SessionStart` adapter. After explicit `npm ci`, a trusted host can load a compact map from current project and global skill entrypoints at startup, resume, clear and compaction. Discovery reads bounded metadata, deduplicates canonical paths, and never installs packages or invokes a route.
 
 Hosts without hooks, or projects where the user has not enabled hook trust, use the identical manual fallback:
 
 ```sh
-node src/cli.mjs session-index
+node bin/index.mjs context available-skills
 ```
 
-The map highlights [Skill Routing](.agents/skills/skill-routing/SKILL.md), lists a bounded set of common entry points, and names omitted packages explicitly. After choosing a route, read the selected package's `SKILL.md`.
+The map lists discovered packages dynamically, labels their sources, and discloses omitted packages and incomplete coverage. Use `--no-global` for project-only discovery. Read the selected `SKILL.md` before use. The [CLI guide](bin/index.md) documents commands, limits, hooks and usage metrics.
 
 ## Suggested entry points
 
@@ -54,9 +54,11 @@ The map highlights [Skill Routing](.agents/skills/skill-routing/SKILL.md), lists
 | --- | --- | --- |
 | **Global entry point** | **[`skill-routing`](.agents/skills/skill-routing/SKILL.md)** | *One recommended skill, a short ordered route, an ambiguity shortlist, or `none`* |
 | Find strong existing approaches before building | [`skills-discovery`](.agents/skills/skills-discovery/SKILL.md) | A qualified candidate report |
+| Research a proposed skill's subject and governing evidence | [`skill-domain-research`](.agents/skills/skill-domain-research/SKILL.md) | A bounded evidence dossier |
 | Turn a vague idea into one well-scoped package | [`skill-design`](.agents/skills/skill-design/SKILL.md) | A design brief with boundaries |
 | Create or revise a portable package | [`skill-authoring`](.agents/skills/skill-authoring/SKILL.md) | A complete skill package |
 | Improve an existing collection safely | [`skills-audit`](.agents/skills/skills-audit/SKILL.md) or [`skill-evolution`](.agents/skills/skill-evolution/SKILL.md) | Evidence-linked findings or an evolved candidate |
+| Plan recurring collection maintenance | [`skills-maintenance-scheduling`](.agents/skills/skills-maintenance-scheduling/SKILL.md) | Approval-ready schedule proposal or `none` |
 | Release or install an approved revision | [`skill-publication`](.agents/skills/skill-publication/SKILL.md) or [`skill-installation`](.agents/skills/skill-installation/SKILL.md) | A publication or installation receipt |
 
 When no package clearly fits, choose no skill. The catalog is a shortlist, never a substitute for reading the selected `SKILL.md`.
@@ -70,6 +72,7 @@ Consult [`skills-catalog.json`](skills-catalog.json) for the generated machine-r
 | **[`skill-routing`](.agents/skills/skill-routing/SKILL.md)** | **Select a skill, short sequence, shortlist, or no skill** | **Routing decision** |
 | [`skills-host-compatibility`](.agents/skills/skills-host-compatibility/SKILL.md) | Verify repository-local aliases for a canonical collection | Structural compatibility report |
 | [`skills-discovery`](.agents/skills/skills-discovery/SKILL.md) | Find and qualify existing packages for one capability | Candidate report |
+| [`skill-domain-research`](.agents/skills/skill-domain-research/SKILL.md) | Reconcile process-owner, reviewed-package, and authoritative domain evidence | Research dossier |
 | [`skill-design`](.agents/skills/skill-design/SKILL.md) | Resolve one skill's responsibility and interface | Design brief |
 | [`skill-naming`](.agents/skills/skill-naming/SKILL.md) | Choose a collision-aware domain-first name | Naming decision |
 | [`skills-synthesis`](.agents/skills/skills-synthesis/SKILL.md) | Combine useful contributions from reviewed sources | Synthesis plan |
@@ -81,6 +84,7 @@ Consult [`skills-catalog.json`](skills-catalog.json) for the generated machine-r
 | [`skill-publication`](.agents/skills/skill-publication/SKILL.md) | Publish one approved revision through one authorized channel | Publication receipt |
 | [`skill-installation`](.agents/skills/skill-installation/SKILL.md) | Install one approved immutable package | Installation receipt |
 | [`skills-snapshot`](.agents/skills/skills-snapshot/SKILL.md) | Create, verify, restore, and retain a selected local skill snapshot | Restorable snapshot |
+| [`skills-maintenance-scheduling`](.agents/skills/skills-maintenance-scheduling/SKILL.md) | Design bounded recurring maintenance without creating execution authority | Maintenance schedule proposal or `none` |
 | [`skills-audit`](.agents/skills/skills-audit/SKILL.md) | Audit a bounded collection for integrity and policy drift | Collection audit |
 | [`skill-evidence-collection`](.agents/skills/skill-evidence-collection/SKILL.md) | Organize bounded evidence for a later skill decision | Evidence packet |
 | [`skill-evolution`](.agents/skills/skill-evolution/SKILL.md) | Update one skill from supported new evidence | Evolved candidate and evolution record |
@@ -120,13 +124,13 @@ flowchart LR
     V[Icon design] -. asset .-> A
 ```
 
-The arrows represent artifact handoffs. Start a user task at **Skill Routing**; start collection maintenance at the **Canonical catalog**. The session index is a compact read-only catalog view, not another source of truth. A host may execute stages sequentially or delegate them; subagents are optional. Specialists never assume a companion is installed, invoke another skill recursively, or acquire authority from a handoff.
+The arrows represent artifact handoffs. Start a user task at **Skill Routing**; start collection maintenance at the **Canonical catalog**. The available-skills overview reads installed package metadata; the session hook supplies that same compact view at startup. Neither is another source of truth. A host may execute stages sequentially or delegate them; subagents are optional. Specialists never assume a companion is installed, invoke another skill recursively, or acquire authority from a handoff.
 
 [Explore the interactive entry-path map](docs/assets/skill-management-entry-paths.html). Its source specification is [`docs/diagrams/skill-management-entry-paths.json`](docs/diagrams/skill-management-entry-paths.json), while the generated interactive artifact is [`docs/assets/skill-management-entry-paths.html`](docs/assets/skill-management-entry-paths.html).
 
 [![Preview of the interactive skill-management entry-path map](docs/assets/skill-management-entry-paths.preview.png)](docs/assets/skill-management-entry-paths.html)
 
-A typical creation run qualifies sources, synthesizes only distinct useful contributions, designs the boundary, authors the package, evaluates behavior, reviews security, and determines lifecycle readiness. Publication and installation remain explicit external actions. Existing collections enter through audit and refactoring; evidence-backed updates enter through evolution. Measured iterative improvement enters through optimization before evaluation.
+A typical creation run qualifies sources, researches the proposed skill's subject against current authoritative evidence and the process-owner record, synthesizes distinct useful contributions, designs the boundary, authors the package, evaluates behavior, reviews security, and determines lifecycle readiness. Publication and installation remain explicit external actions. Existing collections enter through audit and refactoring; evidence-backed updates enter through evolution. Measured iterative improvement enters through optimization before evaluation. Recurring maintenance begins with `skills-maintenance-scheduling`, which returns an approval-ready proposal and leaves scheduler configuration and every maintenance side effect behind separate gates.
 
 ## Principles that keep the collection useful
 
@@ -164,7 +168,7 @@ After installing the collection, paste this prompt into your agent to assess an 
 
 This is a capability matrix, not a claim that every host will render the same interface. The first independent Harness pilot will publish reproducible before-and-after evidence here once it is complete.
 
-Packages live in `.agents/skills`. The repository exposes relative aliases at `.github/skills` and `.claude/skills`, while `CLAUDE.md` points to `AGENTS.md`. Optional `agents/openai.yaml` files provide Codex interface metadata. Every package has a distinct source-attributed SVG icon and a matching PNG large-icon rendering; collection validation rejects missing, unsafe, or byte-identical SVG icons and missing interface assets.
+Packages live in `.agents/skills`. The repository exposes relative aliases at `.github/skills` and `.claude/skills`, while `CLAUDE.md` and `GEMINI.md` point to `AGENTS.md`. Optional `agents/openai.yaml` files provide Codex interface metadata. Every package has a distinct source-attributed SVG icon and a matching PNG large-icon rendering; collection validation rejects missing, unsafe, or byte-identical SVG icons and missing interface assets.
 
 Installed skills resolve references, assets, and scripts from their own package directory and write outputs to the caller-selected workspace. They do not depend on this checkout, its `skills-catalog.json`, repository commands, or CI. A missing companion produces a clear handoff; it never authorizes silent installation.
 
@@ -188,7 +192,7 @@ node .agents/skills/skills-catalog/scripts/catalog_tools.mjs check .
 node .agents/skills/skills-catalog/scripts/catalog_tools.mjs sync .
 ```
 
-The sync command derives descriptions and tags from each `SKILL.md`, preserves lifecycle status, writes only `skills-catalog.json`, and becomes a no-op on a second run.
+The sync command derives names, paths, descriptions, and tags from each `SKILL.md`, writes only `skills-catalog.json`, and becomes a no-op on a second run. Lifecycle evidence remains a separate review record.
 
 ### Cross-collection lookup
 

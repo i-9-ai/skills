@@ -41,4 +41,4 @@ Return a package to `pilot` when its evidence becomes stale or a material compat
 
 ## Boundaries
 
-This policy records a decision. It does not mutate the catalog, edit a package, merge a change, publish a release, or create approval authority.
+This policy records a decision outside the inventory catalog. The catalog contains package identity and routing metadata, not a lifecycle or maturity field. This policy does not mutate the catalog, edit a package, merge a change, publish a release, or create approval authority.

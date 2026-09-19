@@ -151,7 +151,7 @@ function validateSetupContract(root, frontmatter, text) {
 }
 
 function hasRecognizableLicenseText(declared, license) {
-  const value = license.toLowerCase();
+  const value = license.toLowerCase().replace(/\s+/gu, ' ');
   const normalized = declared.trim().toLowerCase();
   if (normalized === 'apache-2.0') return /apache license/u.test(value)
     && /version 2\.0/u.test(value)
@@ -168,6 +168,11 @@ function hasRecognizableLicenseText(declared, license) {
     && /the above copyright notice and this permission notice shall be included/u.test(value)
     && /the software is provided "as is", without warranty of any kind/u.test(value)
     && /in no event shall the authors or copyright holders be liable/u.test(value);
+  if (normalized.startsWith('proprietary')) return /copyright|©/u.test(value)
+    && /all rights reserved/u.test(value)
+    && /governed by/u.test(value)
+    && /(?:additional )?restrictions/u.test(value)
+    && /does not convey or imply any license or right/u.test(value);
   return /(?:license|licence|copyright)/u.test(value)
     && /(?:permission|redistribution|rights granted|licensed under)/u.test(value);
 }
@@ -229,7 +234,7 @@ export function validateRun(input) {
     const manifestName = path.basename(manifest);
     const data = fields(strictJson(root.readBytes(manifestName, LIMITS.jsonBytes)),
       ['schema_version', 'run_id', 'goal', 'target_skill', 'status', 'sources', 'stages'], 'run');
-    requireCondition(Number.isInteger(data.schema_version) && data.schema_version === 1, 'schema_version must be 1');
+    requireCondition(Number.isInteger(data.schema_version) && data.schema_version === 2, 'schema_version must be 2');
     validSlug(data.run_id, 'run_id'); validSlug(data.target_skill, 'target_skill'); nonblank(data.goal, 'goal');
     requireCondition(['draft', 'blocked', 'validated'].includes(data.status), 'invalid run status');
     requireCondition(Array.isArray(data.sources) && data.sources.length <= 128, 'sources must be an array of at most 128 items');
@@ -252,19 +257,19 @@ export function validateRun(input) {
       }
       if (['pattern', 'adapt'].includes(source.reuse)) contributors.add(uri);
     }
-    requireCondition(Array.isArray(data.stages) && data.stages.length <= STAGES.length, 'stages must be an ordered prefix of six stages');
+    requireCondition(Array.isArray(data.stages) && data.stages.length <= STAGES.length, 'stages must be an ordered prefix of seven stages');
     let blocked = false; let artifactCount = 0; let totalBytes = 0;
     const hashes = new Map();
     for (const [index, item] of data.stages.entries()) {
       const stage = fields(item, ['name', 'status', 'summary', 'artifacts'], 'stage');
-      requireCondition(stage.name === STAGES[index], 'stages must follow intake/discovery/synthesis/design/authoring/evaluation order');
+      requireCondition(stage.name === STAGES[index], 'stages must follow intake/discovery/domain-research/synthesis/design/authoring/evaluation order');
       requireCondition(!blocked, 'stages cannot proceed after a blocked stage');
       requireCondition(['passed', 'skipped', 'blocked'].includes(stage.status), 'invalid stage status');
       nonblank(stage.summary, 'stage summary');
-      if (stage.status === 'skipped') requireCondition(stage.name === 'synthesis' && contributors.size < 2,
-        'only synthesis may be skipped, and only with fewer than two distinct contributors');
-      if (stage.name === 'synthesis' && stage.status === 'passed') requireCondition(contributors.size >= 2,
-        'passed synthesis requires at least two distinct contributing sources');
+      if (stage.status === 'skipped') requireCondition(stage.name === 'synthesis' && contributors.size === 0,
+        'only synthesis may be skipped, and only with no contributing skill packages');
+      if (stage.name === 'synthesis' && stage.status === 'passed') requireCondition(contributors.size >= 1,
+        'passed synthesis requires at least one distinct contributing skill package');
       blocked = stage.status === 'blocked';
       requireCondition(Array.isArray(stage.artifacts) && stage.artifacts.length <= 64, 'artifacts must be an array of at most 64 items');
       requireCondition(stage.status !== 'passed' || stage.artifacts.length > 0, 'passed stages require nonempty hashed evidence artifacts');
@@ -288,7 +293,7 @@ export function validateRun(input) {
     }
     requireCondition((data.status === 'blocked') === blocked, 'blocked run status must correspond to a final blocked stage');
     if (data.status === 'validated') requireCondition(data.stages.length === STAGES.length && data.stages.at(-1).status === 'passed',
-      'validated runs require all six stages and passed evaluation');
+      'validated runs require all seven stages and passed evaluation');
     return { run_id: data.run_id, status: data.status, stages: data.stages.length, sources: data.sources.length, artifacts: artifactCount };
   } finally { root.close(); }
 }

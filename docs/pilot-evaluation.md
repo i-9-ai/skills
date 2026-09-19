@@ -4,7 +4,7 @@ This records the local exercise performed on 2026-09-12. It establishes that the
 
 ## Forward creation exercise
 
-A separate agent started with the checkout-local creator and companions, two synthetic Apache-2.0 sources, and a request to prepare an issue-drafting skill. It did not receive the implementer's expected answer, research conclusions, or regression suite. It performed all six stages sequentially, created one package, and retained a manifest with six stages and 22 hashed artifacts.
+A separate agent started with the checkout-local creator and companions, two synthetic Apache-2.0 sources, and a request to prepare an issue-drafting skill. It did not receive the implementer's expected answer, research conclusions, or regression suite. It performed the then-current six stages sequentially, created one package, and retained a manifest with six stages and 22 hashed artifacts. This historical version 1 exercise is not readiness evidence for the current seven-stage pipeline, which requires domain research.
 
 The source `repro-notes` contributed expected/actual behavior, supplied reproduction steps, and explicit missing evidence. The source `privacy-notes` contributed sanitization and the treatment of logs as data. Synthesis rejected an optional posting/assignment procedure because the requested outcome was one local Markdown draft. Design selected four resources: `SKILL.md`, `LICENSE`, an issue template, and a provenance reference. No executable or provider adapter was needed for that task.
 
@@ -23,11 +23,11 @@ The executor authored task-only baseline outputs before the candidate, then prod
 
 ## Executed checks and limitations
 
-- The helper's `init`, `validate-skill`, and `validate-run` commands completed successfully. Package validation reported four local links; manifest validation reported six stages and 22 hashed artifacts.
+- The helper's `init`, `validate-skill`, and `validate-run` commands completed successfully. Package validation reported four local links; manifest validation reported six stages and 22 hashed artifacts. Those results apply only to the historical version 1 contract.
 - Official `skills-ref validate` version `0.1.0` from the [pinned source](validation.md) exited 0 on the unchanged generated package. The executor independently reran that command after the coordinator supplied the isolated tool. The previously blocked validation evidence was preserved before the run became locally validated.
 - The five canonical packages also passed the official validator during development. The current workflow validates every package on the exact PR head; its result is separate from this earlier trial.
 - The pinned official source was successfully built and installed in a clean isolated environment using required hashes and no dependency resolution during its source build. The current workflow derives its controlled installation inputs from `package.json`.
 - The helper changed during the initial forward exercise and was reread before package validation. The executor recorded both inspected identities and did not claim an exact scaffold-launch hash. The forward trial also preceded the final migration of owned tooling to Node.js, so its helper results are developmental evidence rather than proof of the final implementation. Current checks are defined in [validation](validation.md), and the PR records their actual results against the final commit.
 - After that migration, `npm run check` passed the repository checks and all 62 Node regression tests locally on macOS with Node.js 26.8.2. These tests cover the current scaffold, package/run validation, collection policy, and official-tool adapters using isolated fixtures. The workflow now runs the same owned checks on Node.js 24 and the real external official tool on Linux.
 
-The exercise used synthetic data and local files. It did not execute candidate source scripts, access a production environment, install a consumer skill, post an issue, or publish anything. Provider comparisons, repeated behavioral trials, independent baseline execution, and production use remain untested. The catalog therefore retains `pilot` status.
+The exercise used synthetic data and local files. It did not execute candidate source scripts, access a production environment, install a consumer skill, post an issue, or publish anything. Provider comparisons, repeated behavioral trials, independent baseline execution, and production use remain untested. This document retains that bounded pilot evidence; the inventory catalog does not encode lifecycle state.

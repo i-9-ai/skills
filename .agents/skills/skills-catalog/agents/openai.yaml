@@ -1,6 +1,6 @@
 interface:
   display_name: "Skills Catalog"
-  short_description: "Synchronize and validate a repository skill catalog"
-  default_prompt: "Use $skills-catalog to synchronize this repository's skill catalog from its canonical SKILL.md metadata."
+  short_description: "Synchronize a repository or global skill catalog"
+  default_prompt: "Use $skills-catalog to synchronize this explicit skill collection from its installed SKILL.md metadata."
   icon_small: "./assets/icon.svg"
   icon_large: "./assets/icon.png"

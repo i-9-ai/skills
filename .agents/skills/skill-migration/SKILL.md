@@ -18,7 +18,7 @@ Migrate one skill package from a source collection to a target collection and re
 
 ## Procedure
 
-1. Establish the source package bytes, responsibility, provenance, license, catalog status, consumers, host metadata, and validation baseline.
+1. Establish the source package bytes, responsibility, provenance, license, catalog identity, any separately recorded lifecycle evidence, consumers, host metadata, and validation baseline.
 2. Assess target naming, path, policy, catalog, runtime, and dependency compatibility. Resolve collisions before copying any bytes.
 3. Define a cutover plan covering target addition, consumer transition, source deprecation or retention, rollback, and ownership. Avoid a period where two mutable packages claim the same canonical identity.
 4. Adapt only target-specific packaging and references. Preserve behavior unless a separately approved evolution record authorizes change.

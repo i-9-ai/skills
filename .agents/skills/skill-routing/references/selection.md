@@ -9,7 +9,7 @@
 | `ambiguous` | Up to three plausible routes remain and one missing fact changes the decision |
 | `none` | No clear match exists, a skill would expand scope, or ordinary capability is sufficient |
 
-A catalog match is a shortlist signal. Final routing should use the actual package boundary when accessible. A high-confidence route needs a verified package identity and a direct responsibility match; maturity does not compensate for a poor match.
+A catalog match is a shortlist signal. Final routing should use the actual package boundary when accessible. A high-confidence route needs a verified package identity and a direct responsibility match. Separately supplied lifecycle evidence may limit use, but catalog presence does not imply maturity.
 
 ## Comparison order
 
@@ -17,10 +17,10 @@ A catalog match is a shortlist signal. Final routing should use the actual packa
 2. Explicit boundary and near-miss exclusions.
 3. Inputs, side effects, dependencies, and authority fit.
 4. Handoff compatibility when a sequence is necessary.
-5. Maturity and evidence limits.
+5. Separately supplied lifecycle evidence and other evidence limits.
 6. Name, tags, and wording similarity as discovery aids only.
 
-Do not select a deprecated package silently. Do not treat `stable` as universal compatibility or `pilot` as unusable. When two catalogs contain the same name, identify each catalog and inspect package identity before choosing.
+When lifecycle evidence says a package is deprecated, do not select it silently. Do not treat a lifecycle decision as universal compatibility. When two catalogs contain the same name, identify each catalog and inspect package identity before choosing.
 
 ## Confidence
 

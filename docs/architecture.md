@@ -8,22 +8,24 @@ For example, a GitHub collection might separate CLI command selection, issue pre
 
 ## Repository tooling layers
 
-All owned tooling is Node.js. `package.json` centralizes commands and the official external tool's pins; local execution uses built-ins and requires no dependency installation. `src/` contains repository validation, while the creator's self-contained helper remains inside its skill package.
+The checkout CLI runs on Node.js 24 with pinned oclif and erasable TypeScript. `package.json` centralizes dependencies and the official tool pins. Run `npm ci` explicitly before local checks. The creator's self-contained helper remains inside its package.
 
 | Layer | Responsibility |
 | --- | --- |
 | CLI | Select a use case, present results, and set the process exit status |
-| Application | Order collection checks and the separate official CI validation use case |
-| Domain | Apply pure catalog, provenance, public-hygiene, and official-source rules |
-| Infrastructure | Inspect the filesystem, reuse the standalone package helper, query the Git index, and invoke the external official tool |
+| service | Coordinate collection validation, context discovery and MCP startup |
+| validator | Reusable catalog, provenance, public-hygiene and official-source checks |
+| repository | Filesystem/process access and the observed-read aggregate with derived rankings |
+| migration | Ordered checksum-verified SQLite schema history |
+| transport | Bounded MCP protocol handling |
 
-Domain rules do not launch processes or read files. Application use cases coordinate policy and adapters; infrastructure handles concrete I/O. The [source index](../src/AGENTS.md) records these boundaries. Python is installed only by the workflow for the upstream `skills-ref` command; no repository-owned validation logic is implemented in Python.
+Validators do not launch processes or read files. Services coordinate validators and repositories; commands own parsing/output. A thin `bin/index.mjs` launches the CLI. The [source index](../src/AGENTS.md) records these boundaries. Python is installed only by the workflow for the upstream `skills-ref` command; no repository-owned validation logic is implemented in Python.
 
 ## Execution contract
 
 The [creator's handoff protocol](../.agents/skills/skill-authoring/references/handoff-protocol.md) owns the run format. Specialists can be installed and used alone through their local inputs/outputs; they need no repository root files. The creator locates separately available companions through the host's inventory or trusted explicit paths and wraps their returned artifacts in ordered stages with SHA-256 evidence. Resource paths belong to the installed package; outputs belong to the caller's selected workspace.
 
-Stages are intake → discovery → synthesis → design → authoring → evaluation. The creator may consult `skill-design` within intake before discovery when clarification is needed; that preliminary brief does not replace the final design stage. With fewer than two contributing sources, synthesis is skipped with evidence. A passed synthesis must select useful contributions from distinct packages; mirrors and revisions of the same source cannot fill the minimum.
+Stages are intake → discovery → domain-research → synthesis → design → authoring → evaluation. The creator may consult `skill-design` within intake before discovery when clarification is needed; that preliminary brief does not replace the final design stage. Domain research always opens current public authoritative sources relevant to the proposed skill's subject and preserves the process-owner record, scope, date, conflicts, and unknowns. With no contributing skill package, synthesis is skipped with evidence; with one or more distinct contributing packages, it selects useful contributions against the required research dossier. Mirrors and revisions of the same source do not fill the contribution requirement.
 
 Every stage returns its result, evidence, limitations, and next consumer. The coordinator verifies the output before continuing. Changed inputs invalidate dependent stages. Missing capability, rights, authority, or critical test evidence produces a blocked handoff. Correction loops default to two rounds; the intake can set a different justified budget.
 
@@ -35,7 +37,7 @@ Naming is conditional intake/design work, not a seventh run stage. Names group b
 
 One agent reading the relevant packages in sequence is the reference execution. Where supported and authorized, independent candidate inspections and evaluation cases may run concurrently in isolated workspaces. Workers receive the minimal brief, raw inputs, output contract, and action scope. They do not own shared mutable state or remote publication. The creator reconciles disagreements and verifies returned artifacts.
 
-No runtime adapter is required for a distributed package. Optional Codex UI metadata and local icons accompany the packages; they do not execute a workflow or change the core. The project-local session-index adapter is separate: it renders bounded entry context from `skills-catalog.json` when a trusted host runs it, and has the same manual command fallback. It neither loads package bodies nor changes selection, installation, or execution authority. Resolve companion skills by the selected package set and identity; installed name collisions require explicit resolution. If a required package is missing, preserve completed work and name the missing capability rather than pretending that its stage ran.
+No runtime adapter is required for a distributed package. Optional Codex UI metadata and local icons accompany the packages; they do not execute a workflow or change the core. The project-local session-index adapter is separate: it renders bounded entry context from current project/global package metadata when a trusted host runs it, using `context available-skills` through `hook session-index`. It neither loads package bodies nor changes selection, installation, or execution authority. Resolve companion skills by the selected package set and identity; installed name collisions require explicit resolution. If a required package is missing, preserve completed work and name the missing capability rather than pretending that its stage ran.
 
 ## Provenance and evolution
 
@@ -45,10 +47,12 @@ The skill-evolution package can resolve a new upstream revision, capture it unde
 
 ## Collection lifecycle
 
-The canonical project path is `.agents/skills`. The Skills CLI explicitly searches it in the [inspected discovery implementation](https://github.com/vercel-labs/skills/blob/d667282815248da03a08a18272b5d2eef9caf77c/src/skills.ts). Repository aliases `.github/skills` and `.claude/skills` point to that directory, and `CLAUDE.md` points to `AGENTS.md`. They exist for host discovery, not backward compatibility with an obsolete internal layout. Validators recognize only these exact aliases at the repository boundary; symlinks inside skill packages remain forbidden.
+The canonical project path is `.agents/skills`. The Skills CLI explicitly searches it in the [inspected discovery implementation](https://github.com/vercel-labs/skills/blob/d667282815248da03a08a18272b5d2eef9caf77c/src/skills.ts). Repository aliases `.github/skills` and `.claude/skills` point to that directory, and `CLAUDE.md` plus `GEMINI.md` point to `AGENTS.md`. They exist for host discovery, not backward compatibility with an obsolete internal layout. Validators recognize only these exact aliases at the repository boundary; symlinks inside skill packages remain forbidden.
 
-The catalog is the package inventory and maturity record. The Git revision identifies the collection version; do not embed a self-referential HEAD hash in the catalog. A future consumer should pin an approved immutable revision and verify the selected package bytes in its own installation workflow. Releases, consumer migrations, and visibility changes require their own authorized delivery evidence.
+The catalog is a derived package inventory. The Git revision identifies the collection version; do not embed a self-referential HEAD hash in the catalog. Lifecycle evidence and decisions remain separate review records. A future consumer should pin an approved immutable revision and verify the selected package bytes in its own installation workflow. Releases, consumer migrations, and visibility changes require their own authorized delivery evidence.
 
 A caller that needs to compare several explicitly selected collections may build a local derived `skills-catalog.db` from their validated `skills-catalog.json` manifests. It is outside all source repositories, records logical source identifiers and catalog digests rather than local paths, and retains timestamped source observations plus normalized before/after skill changes. Its current source and skill tables remain a deterministic projection. The `skills-catalog.index.json` fallback provides the same current projection without history. These local indexes are not canonical catalogs, directory scanners, installers, activators, or source updaters.
 
-Initial packages are pilots. Follow the [lifecycle policy](lifecycle-policy.md) to evaluate promotion through the target project's existing evidence and approval system, or a portable approval record when none exists. Upstream benchmarking and local structural validation are prerequisites, not proof of production operation.
+Follow the [lifecycle policy](lifecycle-policy.md) to evaluate maturity through the target project's existing evidence and approval system, or a portable approval record when none exists. Catalog presence does not assign a lifecycle state. Upstream benchmarking and local structural validation are prerequisites, not proof of production operation.
+
+Recurring collection maintenance begins with `skills-maintenance-scheduling`. It freezes an explicit package inventory and revision, inspects only project-local scheduling and approval mechanisms, and returns a cadence proposal with the real executor, evidence owner, stop condition, and rollback path. The default is advisory. Even when scheduler configuration is separately authorized, scheduled runs remain limited to proposing work or collecting read-only evidence; they cannot approve, modify, install, merge, or publish a skill.

@@ -23,7 +23,7 @@ Extend the original authoring pipeline into a complete, modular skill-management
 
 ## Authority boundaries
 
-Lifecycle recommendations do not change catalog maturity, merge changes, install packages, publish releases, or create approval authority. A reviewer follows the target project's existing evidence and approval system when authorized; if none exists, it returns a portable approval record for a human decision.
+Lifecycle recommendations remain outside the inventory catalog. They do not merge changes, install packages, publish releases, or create approval authority. A reviewer follows the target project's existing evidence and approval system when authorized; if none exists, it returns a portable approval record for a human decision.
 
 ## Validation
 
