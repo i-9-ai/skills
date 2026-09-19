@@ -61,7 +61,20 @@ bounded to 64 MiB and 10000 files. Reads use the existing stable-workspace
 filesystem checks, which do not claim confinement against hostile concurrent
 mutation.
 
-Known host discovery paths are refused as staging destinations. Select an owned
+The plugin profile rejects empty source directories before output rather than
+silently dropping them and invalidating a directory link. Every final path,
+including the `skills/<name>/` prefix, must fit the shared 24-component and
+1024 UTF-16-code-unit relative-path bounds. Preview checks this conversion as
+well as the source package; a package that passes standalone validation can
+still exceed the plugin profile. Refusal preserves the source and creates no
+partial artifact for these preflight failures.
+
+Staging conservatively refuses any hidden directory followed by `skills` or
+`plugins`, `.config/<namespace>/skills` or `plugins`, and `.system`. It checks
+both selected and canonical paths, including nested targets, so an ancestor
+alias cannot bypass this rule. The rule covers common host roots without a
+fixed list of host names; it also excludes similarly shaped custom directories.
+Neutral scratch inside a managed worktree remains usable. Select an owned
 scratch directory and keep other writers away during preparation. A failed
 write retains its new partial directory for inspection and returns nonzero;
 manifests are written last. Never install a partial artifact. The command does

@@ -111,7 +111,14 @@ Complete Beads outcome i9-skills-2qm.12.2 through `plugin prepare --output`
 in the existing TypeScript CLI. Preview is the default; `--write` creates only
 a new, explicitly selected staging folder named `i9-skills`. Inspect and bound
 all selected source bytes before writing. Refuse existing destinations, linked
-or special source files, stale catalogs and known host discovery destinations.
+or special source files and stale catalogs. Staging rejects hidden-directory
+skills/plugins roots, .config namespace discovery roots and .system on both
+lexical and canonical paths, including descendants. This deliberately conservative
+shape rule also covers additional host names; managed-worktree scratch stays usable.
+Canonical source selection accepts real roots below ancestor aliases without
+mixing lexical and canonical path coordinates. Reject empty source directories
+and validate all prefixed artifact paths before writing, so conversion cannot
+silently break a package or defer predictable path failures to partial output.
 Retain an incomplete new artifact for inspection if writing fails; never
 replace or clean an existing directory.
 

@@ -10,6 +10,7 @@ import test from 'node:test';
 import {
     initSkill,
     DEFAULT_LICENSE_PATH,
+    validateSkill,
 } from '../../../.agents/skills/skill-authoring/scripts/skill_tools.mjs';
 import { syncCatalog } from '../../../.agents/skills/skills-catalog/scripts/catalog_tools.mjs';
 
@@ -35,12 +36,16 @@ function fixture(t) {
     };
     fs.writeFileSync(join(source, 'package.json'), JSON.stringify(manifest));
     syncCatalog(source, { layout: 'repository' });
-    const cli = (args = []) =>
-        spawnSync(process.execPath, [launcher, 'plugin', 'prepare', '--root', source, ...args], {
-            cwd: root,
-            encoding: 'utf8',
-            timeout: 10000,
-        });
+    const cli = (args = [], selectedRoot = source) =>
+        spawnSync(
+            process.execPath,
+            [launcher, 'plugin', 'prepare', '--root', selectedRoot, ...args],
+            {
+                cwd: root,
+                encoding: 'utf8',
+                timeout: 10000,
+            },
+        );
     return { root, source, skill, cli, manifest };
 }
 
@@ -149,9 +154,22 @@ test('plugin output refuses occupied or linked locations and known host discover
     for (const target of [
         '.agents/skills',
         '.agents/plugins',
+        '.codex/skills',
         '.codex/plugins',
+        '.claude/skills',
         '.claude/plugins',
+        '.github/skills',
+        '.copilot/skills',
+        '.gemini/skills',
+        '.agent/skills',
+        '.hermes/skills',
+        '.opencode/skills',
+        '.config/opencode/skills',
+        '.config/example/plugins',
         '.system',
+        '.GITHUB/SKILLS',
+        '.example/skills',
+        '.agents/skills/namespace',
     ]) {
         const parent = join(root, target);
         fs.mkdirSync(parent, { recursive: true });
@@ -160,10 +178,99 @@ test('plugin output refuses occupied or linked locations and known host discover
     }
 });
 
+test('lexical and canonical discovery ancestors reject aliases while neutral worktree staging remains available', (t) => {
+    const { root, cli } = fixture(t);
+    const neutral = join(root, 'neutral');
+    fs.mkdirSync(join(neutral, 'nested'), { recursive: true });
+    const host = join(root, 'lexical/.github');
+    fs.mkdirSync(host, { recursive: true });
+    fs.symlinkSync(neutral, join(host, 'skills'));
+    const lexical = cli(['--output', join(host, 'skills/nested/i9-skills'), '--write']);
+    assert.notEqual(lexical.status, 0);
+    assert.equal(fs.existsSync(join(neutral, 'nested/i9-skills')), false);
+
+    const canonical = join(root, '.opencode/skills');
+    fs.mkdirSync(join(canonical, 'nested'), { recursive: true });
+    fs.symlinkSync(canonical, join(root, 'neutral-alias'));
+    const redirected = cli(['--output', join(root, 'neutral-alias/nested/i9-skills'), '--write']);
+    assert.notEqual(redirected.status, 0);
+    assert.equal(fs.existsSync(join(canonical, 'nested/i9-skills')), false);
+
+    const staging = join(root, '.codex/worktrees/task/skills/.work/staging');
+    fs.mkdirSync(staging, { recursive: true });
+    const prepared = cli(['--output', join(staging, 'i9-skills'), '--write']);
+    assert.equal(prepared.status, 0, prepared.stderr);
+    assert.equal(JSON.parse(prepared.stdout).written, true);
+});
+
 test('plugin CLI documents explicit staging and rejects incomplete or unknown options', (t) => {
     const { cli, root } = fixture(t);
     assert.match(cli(['--help']).stdout, /--write/);
     assert.notEqual(cli().status, 0);
     assert.notEqual(cli(['--output', join(root, 'wrong-name')]).status, 0);
     assert.notEqual(cli(['--output', join(root, 'i9-skills'), '--install']).status, 0);
+});
+
+test('a real source below an ancestor alias has the same preview and artifact as its canonical selection', (t) => {
+    const { root, source, cli } = fixture(t);
+    fs.symlinkSync(root, join(root, 'ancestor-alias'));
+    const alias = join(root, 'ancestor-alias/source');
+    const output = join(root, 'i9-skills');
+    const canonical = cli(['--output', output]);
+    const selected = cli(['--output', output], alias);
+    assert.equal(canonical.status, 0, canonical.stderr);
+    assert.equal(selected.status, 0, selected.stderr);
+    assert.deepEqual(JSON.parse(selected.stdout), JSON.parse(canonical.stdout));
+    const written = cli(['--output', output, '--write'], alias);
+    assert.equal(written.status, 0, written.stderr);
+    assert.equal(
+        JSON.parse(written.stdout).inventory_sha256,
+        JSON.parse(canonical.stdout).inventory_sha256,
+    );
+    assert.deepEqual(
+        fs.readFileSync(join(output, 'skills/example-skill/SKILL.md')),
+        fs.readFileSync(join(source, '.agents/skills/example-skill/SKILL.md')),
+    );
+    fs.symlinkSync(source, join(root, 'linked-root'));
+    const linked = cli(['--output', output], join(root, 'linked-root'));
+    assert.notEqual(linked.status, 0);
+    assert.match(linked.stderr, /selected root must be a real directory/);
+});
+
+test('an empty referenced source directory is rejected before an incomplete plugin can be created', (t) => {
+    const { root, skill, cli } = fixture(t);
+    fs.mkdirSync(join(skill, 'empty'));
+    fs.appendFileSync(join(skill, 'SKILL.md'), '\n[Selected data directory](empty)\n');
+    assert.equal(validateSkill(skill).name, 'example-skill');
+    const output = join(root, 'i9-skills');
+    for (const options of [[], ['--write']]) {
+        const result = cli(['--output', output, ...options]);
+        assert.notEqual(result.status, 0);
+        assert.match(result.stderr, /empty directories/);
+        assert.equal(fs.existsSync(output), false);
+    }
+});
+
+test('all prefixed paths fit the output depth before preview or write succeeds', (t) => {
+    for (const depth of [22, 23, 24]) {
+        const { root, skill, cli } = fixture(t);
+        const directories = Array.from({ length: depth - 1 }, (_, index) => 'p' + index);
+        fs.mkdirSync(join(skill, ...directories), { recursive: true });
+        fs.writeFileSync(join(skill, ...directories, 'data.txt'), 'synthetic data');
+        assert.equal(validateSkill(skill).name, 'example-skill');
+        const output = join(root, 'i9-skills');
+        for (const options of [[], ['--write']]) {
+            const result = cli(['--output', output, ...options]);
+            if (depth === 22) {
+                assert.equal(result.status, 0, result.stderr);
+                continue;
+            }
+            assert.notEqual(result.status, 0);
+            assert.match(result.stderr, /path nesting exceeds the limit/);
+            assert.equal(fs.existsSync(output), false);
+        }
+        if (depth === 22) {
+            assert.equal(validateSkill(join(output, 'skills/example-skill')).name, 'example-skill');
+        }
+    }
 });

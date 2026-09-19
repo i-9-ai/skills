@@ -24,6 +24,17 @@ const semanticVersion = new RegExp(
         '(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?(?![\\s\\S])',
 );
 
+/** A conservative shape rule also covers new host names without an allowlist. */
+function isDiscoveryDestination(input: string): boolean {
+    const parts = input.replaceAll('\\', '/').toLowerCase().split('/');
+    const discoveryNames = ['skills', 'plugins'];
+    return parts.some((part, index) => {
+        if (part === '.system') return true;
+        if (part.startsWith('.') && discoveryNames.includes(parts[index + 1] ?? '')) return true;
+        return part === '.config' && discoveryNames.includes(parts[index + 2] ?? '');
+    });
+}
+
 /** Reads reviewed packages and writes a new staging artifact; never installs it. */
 export class PluginArtifactRepository {
     read(configuration: ProjectConfiguration): PluginSource {
@@ -58,7 +69,11 @@ export class PluginArtifactRepository {
                 }
             }
 
-            const catalog = source.readJson(relative(source.path, configuration.catalogFile()));
+            // Named paths share their lexical root; SafeRoot reads the relative
+            // name below its independently canonicalized source boundary.
+            const catalog = source.readJson(
+                relative(configuration.root(), configuration.catalogFile()),
+            );
             const files: PluginFile[] = [
                 { path: 'LICENSE', bytes: source.readBytes('LICENSE'), mode: 0o644 },
             ];
@@ -76,7 +91,12 @@ export class PluginArtifactRepository {
                 );
                 try {
                     skills.push(skill.name);
-                    for (const [file, info] of packageRoot.inventory()) {
+                    const entries = packageRoot.inventory();
+                    const nonemptyDirectories = new Set(entries.map(([file]) => dirname(file)));
+                    for (const [file, info] of entries) {
+                        if (info.isDirectory() && !nonemptyDirectories.has(file)) {
+                            throw new Error('Plugin packages must not contain empty directories.');
+                        }
                         if (!info.isFile()) continue;
                         totalBytes += info.size;
                         if (totalBytes > 64 * 1024 * 1024 || files.length >= 10_000) {
@@ -116,16 +136,14 @@ export class PluginArtifactRepository {
         if (basename(selected) !== 'i9-skills') {
             throw new Error('The new staging folder must be named i9-skills.');
         }
+        if (isDiscoveryDestination(selected)) {
+            throw new Error('Use a neutral staging folder outside host discovery directories.');
+        }
         const parent = new CollectionFilesystemRepository(dirname(selected));
 
         try {
             const destination = join(parent.path, 'i9-skills');
-            const normalized = destination.replaceAll('\\', '/').toLowerCase();
-            if (
-                /\/(?:\.agents|\.claude|\.gemini)\/(?:skills|plugins)(?:\/|$)/.test(normalized) ||
-                /\/\.codex\/(?:skills|plugins)(?:\/|$)/.test(normalized) ||
-                normalized.split('/').includes('.system')
-            ) {
+            if (isDiscoveryDestination(destination)) {
                 throw new Error('Use a neutral staging folder outside host discovery directories.');
             }
             if (parent.inspect('i9-skills', { allowMissingLeaf: true }).info) {

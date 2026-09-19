@@ -4,6 +4,7 @@ import { ProjectConfiguration } from '../config/ProjectConfiguration.ts';
 import { PluginArtifactRepository } from '../repository/PluginArtifactRepository.ts';
 import type { PluginFile } from '../repository/PluginArtifactRepository.ts';
 import { LIMITS } from '../repository/CollectionFilesystemRepository.ts';
+import { relativeParts } from '../../.agents/skills/skill-authoring/scripts/skill_tools.mjs';
 
 const jsonFile = (path: string, value: unknown): PluginFile => ({
     path,
@@ -71,6 +72,7 @@ export class PluginPreparationService {
         };
         // Manifests are written last; no scripts, registration or installation runs.
         const files = [...source.files, jsonFile('artifact-receipt.json', receipt), ...manifests];
+        for (const file of files) relativeParts(file.path);
         if (
             files.length > 10_000 ||
             files.reduce((total, file) => total + file.bytes.length, 0) > 64 * 1024 * 1024 ||
