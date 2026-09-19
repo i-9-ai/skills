@@ -13,4 +13,3 @@ authority, and separate structural and behavioral evidence. Upstream brevity
 advice never justifies removing required procedure or ordinary implementation
 wiring. Automatic dependency execution and provider-specific evaluation
 runners are not adopted. Later upstream revisions require a new review.
-
