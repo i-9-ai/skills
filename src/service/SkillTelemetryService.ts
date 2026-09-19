@@ -10,6 +10,16 @@ export class SkillTelemetryService {
         const event = new SkillTelemetryValidator().event(
             await new TelemetryInputRepository().read(file),
         );
+        if (logFile) {
+            const protectedFiles = [
+                database,
+                database + '-wal',
+                database + '-shm',
+                database + '-journal',
+            ];
+            if (file !== '-') protectedFiles.push(file);
+            TelemetryLogRepository.assertSeparate(logFile, protectedFiles);
+        }
         const store = new SkillReadRepository(database);
         try {
             const result = store.recordEvent(event);

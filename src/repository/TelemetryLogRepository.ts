@@ -9,7 +9,7 @@ import {
     renameSync,
     unlinkSync,
 } from 'node:fs';
-import { dirname, isAbsolute } from 'node:path';
+import { dirname, isAbsolute, basename, join, resolve } from 'node:path';
 
 export type TelemetryLogRecord = {
     timestamp: string;
@@ -25,6 +25,32 @@ export class TelemetryLogRepository {
     private readonly filename: string;
     private readonly maxBytes: number;
     private readonly archives: number;
+
+    /** Reject overlaps before SQLite or diagnostic writes can change selected data. */
+    static assertSeparate(filename: string, protectedFiles: string[]): void {
+        const protectedPaths = new Set(protectedFiles.map((file) => this.canonicalSelection(file)));
+        for (const suffix of ['', '.1', '.2', '.3']) {
+            if (protectedPaths.has(this.canonicalSelection(filename + suffix))) {
+                throw new Error('Diagnostic files overlap selected data');
+            }
+        }
+    }
+
+    private static canonicalSelection(filename: string): string {
+        let existing = resolve(filename);
+        const missing: string[] = [];
+        while (true) {
+            try {
+                return join(realpathSync(existing), ...missing);
+            } catch (error) {
+                if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+                const parent = dirname(existing);
+                if (parent === existing) throw error;
+                missing.unshift(basename(existing));
+                existing = parent;
+            }
+        }
+    }
 
     constructor(filename: string, maxBytes = 1_048_576, archives = 3) {
         if (!isAbsolute(filename) || realpathSync(dirname(filename)) !== dirname(filename)) {

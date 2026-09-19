@@ -93,7 +93,9 @@ Rollback uses that caller-owned backup rather than dropping new rows.
 Optional JSONL logs contain only timestamp, level, component, category and
 event/correlation UUIDs. They rotate at 1 MiB, retaining three archives; only
 the selected file and `.1`–`.3` are affected. Links and non-regular destinations
-are rejected. The directory must be an existing canonical absolute path. New
+are rejected. Preflight rejects overlap of any selected diagnostic file with
+the database, SQLite sidecars or the input file, including canonical aliases,
+before opening a writer. The directory must be an existing canonical absolute path. New
 files use mode 0600; pre-existing permissions remain caller-owned. Use a stable
 trusted directory: path inspection does not promise race-proof confinement or
 cross-process log rotation. SQLite remains the authoritative event store.
