@@ -15,5 +15,6 @@ Expose the session adapter through `hook session-index`, Codex configuration
 rendering/comparison through `hook session-config --host codex` and `hook verify --host codex`,
 and explicit read metrics through `mcp usage --db PATH`. Keep collection validation behavior, and remove the superseded standalone
 executables and transitional command aliases. Organize tests by unit layer
-and separate CLI/collection integration contracts. Automatic read collection and npm
-plugin publication remain outside this checkout-only delivery.
+and separate CLI/collection integration contracts. Automatic read collection is
+limited to the separately implemented optional Claude Read adapter; npm/plugin
+publication and consumer installation remain outside this local delivery.

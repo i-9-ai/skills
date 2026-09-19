@@ -38,6 +38,7 @@ Run `npm run check` and inspect the required official workflow result for the ex
 - [Official process repository](repository/OfficialValidatorProcessRepository.ts): temporary build inputs and shell-free execution.
 - [Skill discovery](repository/SkillDiscoveryRepository.ts): bounded project/global metadata discovery and canonical deduplication.
 - [Collection catalog](repository/CollectionCatalogRepository.ts): explicit collection inspection, checking and synchronization through the self-contained package helper.
+- [Plugin preparation](service/PluginPreparationService.ts): deterministic manifests and integrity receipt for a new inert local artifact, without installation or registration.
 - [Aggregate catalog](repository/AggregateCatalogRepository.ts): derived multi-source state and history through explicit source/index selections.
 - [Host hook configuration](service/HostHookConfiguration.ts): verified per-host registration and context envelopes around the same discovery service.
 - [Skill read repository](repository/SkillReadRepository.ts): transactional observed-read storage and ranking projections.

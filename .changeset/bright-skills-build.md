@@ -2,13 +2,13 @@
 "@i-9-ai/skills": patch
 ---
 
-## First public-ready release
+## Experimental distribution baseline
 
-Introduce I-9 Skills, a collection of 21 focused, agent-agnostic packages for building and improving reusable agent skills. Each package owns one responsibility, one primary output, a scoped Apache-2.0 license, and an explicit handoff boundary.
+Introduce I-9 Skills, a collection of 23 focused, agent-agnostic packages for building and improving reusable agent skills. Each package owns one responsibility, one primary output, a scoped Apache-2.0 license, and an explicit handoff boundary. The package remains private and experimental; local checks do not establish native host compatibility or production quality.
 
 ### What the collection provides
 
-- **Creation and quality:** discovery, synthesis, design, naming, authoring, evidence collection, independent evaluation, security review, and lifecycle decisions.
+- **Creation and quality:** discovery, authoritative domain research, synthesis, design, naming, authoring, evidence collection, independent evaluation, security review, and lifecycle decisions.
 - **Collection operations:** catalog synchronization, routing, installation, publication, migration, audits, refactoring plans, evidence-backed evolution, and measured optimization.
 - **Portable maturity decisions:** a lifecycle policy that uses each project's existing evidence and approval system, or returns a portable approval record when none exists.
 - **Complete package interfaces:** portable `SKILL.md` contracts, local references and templates, optional host metadata, plus distinct SVG and PNG interface assets.
@@ -19,9 +19,9 @@ Introduce I-9 Skills, a collection of 21 focused, agent-agnostic packages for bu
 
 - `npm run check` validates the repository contract and its behavioral suite.
 - `npm run ci:official` runs the official Agent Skills validation profile.
-- `node .agents/skills/skills-catalog/scripts/catalog_tools.mjs check .` detects catalog drift.
-- `node .agents/skills/skills-catalog/scripts/catalog_tools.mjs sync .` regenerates only the schema-version-`1` `skills-catalog.json`; lifecycle evidence is recorded separately.
-- `npx skills@1.5.26 add https://github.com/i-9-ai/skills/tree/ec321be85d854f55e6290e737df13101485d5f19 --global --skill '*' --yes` installs the reviewed collection revision into a user-level Skills scope after publication.
+- `node bin/index.mjs catalog check --collection . --layout repository` detects catalog drift.
+- `node bin/index.mjs catalog sync --collection . --layout repository` regenerates only the schema-version-`1` `skills-catalog.json`; lifecycle evidence is recorded separately. Add `--dry-run` to preview.
+- Future installation selects an immutable reviewed revision and an explicitly authorized consumer scope. No installation or registry release follows from this baseline.
 
 ### Release-management foundation
 

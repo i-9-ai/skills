@@ -17,6 +17,8 @@ preparing distribution, and evolving focused agent skills.
 
 ## Deeper references
 - [Distribution preparation](distribution-readiness.md): explicit JavaScript build, packed CLI verification and remaining publication gates.
+- [Plugin preparation](plugin-preparation.md): preview or create an inert, complete plugin artifact with no host registration.
+- [Public readiness](public-readiness.md): dated source/history and remote-surface audit with explicit evidence gaps.
 
 - [Host hooks](host-hooks.md): host-specific session configuration and context output, with explicit untested runtime boundaries.
 

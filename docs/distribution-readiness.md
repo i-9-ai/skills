@@ -22,8 +22,8 @@ commands remain pinned in package.json/lockfile.
 
 The package test packs without lifecycle scripts, checks its allowlist, extracts
 into a disposable node_modules location and copies only already installed
-production dependencies. It runs help, context, hook configuration and catalog
-checks with the executing Node version. No registry, consumer home, installed
+production dependencies. It runs help, context, hook configuration, catalog
+checks and explicit plugin artifact preparation with the executing Node version. No registry, consumer home, installed
 skills, Python, or dependency installation is used by that test.
 
 The generated local Codex environment file is excluded from this delivery
@@ -42,13 +42,16 @@ hooks use an already available executable or the checkout launcher.
 
 Before an authorized npm release, confirm ownership of the scoped identity, version and
 access, test actual target platforms and installation, inspect the packed files
-again, and deliberately remove private only in that release task. No plugin
-manifest is guessed: host plugin mechanisms need their own verified adapters.
+again, and deliberately remove private only in that release task. The
+[plugin preparation command](plugin-preparation.md) creates a separate local
+artifact with verified manifest formats and inert packages. Its preview and
+write checks do not establish native plugin ingestion or marketplace acceptance.
 
 Before public visibility, separately inventory GitHub branches, PRs, issues,
 discussions, releases, Actions logs/artifacts, Wiki, Pages, collaborators,
 rulesets and secret names. Local clean-tree checks cannot establish remote
-surface readiness. The existing Wiki workflow mirrors docs to the initialized
+surface readiness. The [dated readiness audit](public-readiness.md) records the
+current inventory and evidence gaps; repeat it before an external change. The existing Wiki workflow mirrors docs to the initialized
 Wiki using its separate token; the Pages workflow pushes docs/assets to
 gh-pages. Both select merged main. Their effects must remain part of the
 explicit publication decision; this task does not run or enable them.

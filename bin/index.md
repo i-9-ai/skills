@@ -44,9 +44,11 @@ node bin/index.mjs mcp usage --db /absolute/local-data/skill-usage.db
 node bin/index.mjs telemetry record --db /absolute/local-data/skill-usage.db --file event.json
 node bin/index.mjs telemetry rankings --db /absolute/local-data/skill-usage.db
 node bin/index.mjs telemetry trends --db /absolute/local-data/skill-usage.db --interval month
+node bin/index.mjs plugin prepare --output .work/plugin-preview/i9-skills
 ```
 
-Use each command's `--help`. Project resolution: explicit `--project`, then
+Use each command's `--help`. Project resolution: the command's explicit root flag
+(`--project` for context, `--root` for plugin preparation), then
 `I9_SKILLS_PROJECT_ROOT`, then this CLI's checkout. `ProjectConfiguration`
 resolves that selection once and derives its local skill, Codex hook and catalog
 paths without reading or creating them. Filesystem validation remains in repositories. Global discovery defaults
@@ -131,3 +133,10 @@ Run npm run build and npm run package:check for the allowlisted compiled artifac
 The same launcher uses source TypeScript in the checkout and JavaScript in the
 packed package. Read [distribution preparation](../docs/distribution-readiness.md)
 for actual coverage and the separate publication gate. The package stays private.
+
+`plugin prepare --output .work/plugin-preview/i9-skills` previews a separate
+inert plugin artifact. Create the staging parent explicitly; add `--write` to
+create its new child. Existing destinations are refused. Read the
+[plugin guide](../docs/plugin-preparation.md) for manifests, integrity receipts,
+bounded inputs and retained partial-write recovery. It never registers a
+marketplace, installs a consumer or enables an integration.

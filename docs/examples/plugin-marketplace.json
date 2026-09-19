@@ -1,0 +1,20 @@
+{
+  "name": "i9-skills-local",
+  "interface": {
+    "displayName": "I-9 Skills local review"
+  },
+  "plugins": [
+    {
+      "name": "i9-skills",
+      "source": {
+        "source": "local",
+        "path": "./plugins/i9-skills"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}

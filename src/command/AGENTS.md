@@ -34,4 +34,5 @@ Run command integration tests under `tests/integration/cli/`, strict type checki
 - [Telemetry operator guide](../../docs/skill-telemetry.md): explicit record, rankings and trend commands with metadata-only diagnostics.
 - [Available skills](context/available-skills.ts): reusable project/global overview with bounded discovery.
 - [Collection validation](validate.ts): local collection validation command.
+- [Plugin preparation](plugin/prepare.ts): preview or create an explicit new staging artifact; never registers or installs it.
 - [Official validation](ci-official.ts): CI-only external conformance orchestration.

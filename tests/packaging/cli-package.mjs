@@ -113,4 +113,21 @@ test('the allowlisted artifact runs from node_modules on Node 24+ without TypeSc
         ),
     );
     assert.equal(catalog.packages, sourceCatalog.skills.length);
+
+    const plugin = join(root, 'i9-skills');
+    const preparation = JSON.parse(
+        run(process.execPath, [launcher, 'plugin', 'prepare', '--output', plugin, '--write'], root),
+    );
+    assert.equal(preparation.packages, sourceCatalog.skills.length);
+    assert.equal(preparation.written, true);
+    for (const skill of sourceCatalog.skills) {
+        assert.deepEqual(
+            readFileSync(join(plugin, 'skills', skill.name, 'SKILL.md')),
+            readFileSync(join(installed, skill.path, 'SKILL.md')),
+        );
+    }
+    assert.equal(existsSync(join(plugin, 'AGENTS.md')), false);
+    assert.equal(existsSync(join(plugin, 'src')), false);
+    assert.equal(existsSync(join(plugin, '.agents')), false);
+    assert.equal(existsSync(join(root, '.agents/plugins/marketplace.json')), false);
 });
