@@ -29,7 +29,7 @@ This helper complements the required official `skills-ref validate` conformance 
 
 ## Skill checks
 
-`validate-skill` requires a regular UTF-8 `SKILL.md` and nonempty regular UTF-8 `LICENSE`, checks that frontmatter name matches the directory, limits the description to 220 characters and `SKILL.md` to 500 lines, and checks local Markdown links throughout the package. Required fields support plain or quoted scalar strings and indented literal/folded blocks. Optional `metadata` supports a flat mapping of two-space-indented string values with duplicate-key rejection; other optional frontmatter is not interpreted. This is not a complete YAML parser.
+`validate-skill` requires a regular UTF-8 `SKILL.md` and nonempty regular UTF-8 `LICENSE`, checks that frontmatter name matches the directory, limits the description to 220 characters, and checks local Markdown links throughout the package. It imposes no entrypoint line count; the bounded byte reads below still apply. Required fields support plain or quoted scalar strings and indented literal/folded blocks. Optional `metadata` supports a flat mapping of two-space-indented string values with duplicate-key rejection; other optional frontmatter is not interpreted. This is not a complete YAML parser.
 
 No model or effort metadata is required. The scaffold emits none. If `metadata.reasoning-effort` appears, it must be `low`, `medium`, or `high`; its meaning belongs in the body. Other flat string metadata, including descriptive `author`, `tags`, `source`, `source_url`, and namespaced host keys such as `opencode/autoinvoke`, is preserved without runtime interpretation. Array or nested metadata remains outside this helper's portable profile.
 

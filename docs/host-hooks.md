@@ -35,8 +35,11 @@ reason to fetch software at session startup.
 Claude's matcher selects startup, resume, clear and compact. Gemini's lifecycle
 matcher is an exact value, so its adapter leaves the matcher absent to cover
 documented SessionStart events rather than sending a pipe-delimited regex.
-Copilot uses its documented camelCase contract. Codex retains the tested local
-registration and status text "Loading available skills overview".
+Copilot uses its documented camelCase contract. Codex's current official contract
+supports the local registration, source matcher, plain developer-context stdout,
+seconds timeout, status text and `additionalContextLimit`. The configured status
+text remains "Loading available skills overview". Its context budget is a host
+output limit, not a claim that every discovered package was loaded.
 
 Antigravity maps a hook name directly to event arrays; its invocation handler
 is a direct list, without a tool matcher. Hermes configuration is normally YAML;
@@ -58,12 +61,17 @@ and host capabilities. Unsupported hosts use `context available-skills`.
 
 ## Evidence and limitations
 
-Reviewed on 2026-09-19: [Claude hooks](https://code.claude.com/docs/en/hooks),
+Reviewed on 2026-09-19: [Codex hooks](https://learn.chatgpt.com/docs/hooks),
+[Claude hooks](https://code.claude.com/docs/en/hooks),
 [Copilot hooks](https://docs.github.com/en/copilot/reference/hooks-reference),
 and [Gemini hooks](https://geminicli.com/docs/hooks/reference/), plus
 [Antigravity hooks](https://antigravity.google/docs/hooks?tab=ide) and
 [Hermes shell hooks](https://hermes-agent.nousresearch.com/docs/user-guide/features/hooks).
-The Codex contract is preserved from the existing reviewed repository adapter.
+Codex CLI 0.155.1 was inspected locally for version/help; it was not started as
+an agent session. The official Codex reference confirms that project hooks run
+with the session working directory, so the launcher uses the Git root. Codex
+combines matching hooks across sources; copying the entry to another layer can
+produce duplicate context. No source or trust setting was changed here.
 These changing interfaces require rechecking before installation. Tests cover
 configuration, timeout units, context envelopes, mismatch failures and no
 configuration writes in disposable fixtures. Native host trust, enablement and

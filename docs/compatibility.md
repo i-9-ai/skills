@@ -24,7 +24,7 @@ Primary documentation was inspected on 2026-09-12. This table records documented
 | Codex session index | Optional trusted project hook renders bounded project/global package metadata; the manual command renders the same output | Project-local `.codex/hooks.json`; no automatic trust, package loading, installation, or route invocation |
 | Claude Code | Reads `SKILL.md` and local resources under its skill directories; provider-specific frontmatter includes model and invocation controls. [Official guide](https://code.claude.com/docs/en/skills) | `.claude/skills` alias and `CLAUDE.md` alias; no required Claude-specific fields or hooks |
 | GitHub Copilot | Supports skill directories and resources; VS Code adds invocation/frontmatter and extension-level capabilities. [GitHub overview](https://docs.github.com/en/copilot/concepts/agents/about-agent-skills), [VS Code guide](https://code.visualstudio.com/docs/agent-customization/agent-skills) | `.github/skills` alias; no invented per-skill manifest or extension package |
-| Gemini | Repository guidance adapter | `GEMINI.md` alias to the canonical `AGENTS.md`; no Gemini-specific package metadata or runtime behavior |
+| Gemini CLI | `GEMINI.md` is the default context filename; `context.fileName` can select other names. [Official context guide](https://geminicli.com/docs/cli/gemini-md/) | Preserve the legacy `GEMINI.md` alias to canonical `AGENTS.md` without changing host settings; session hooks are described separately |
 | Antigravity | Current workspace location is `.agents/skills`; older `.agent/skills` remains a compatibility path. [Official guide](https://antigravity.google/docs/skills) | Native canonical tree; no duplicate legacy alias |
 | OpenCode | Documents standard skill metadata and `.agents/skills` discovery; permission settings belong to host configuration. [Official guide](https://opencode.ai/docs/skills/) | Native canonical tree; no required `opencode.json` or permission change |
 | Hermes | Reads `SKILL.md` and resources; supports extra platform and `metadata.hermes` fields. [Pinned authoring guide](https://github.com/NousResearch/hermes-agent/blob/d62716c7043e57ef7a29e81a02ddbc19334e29df/website/docs/developer-guide/creating-skills.md) | Portable packages available to its authorized loader; no unverified project-autoload claim or global symlink |
@@ -33,6 +33,14 @@ Primary documentation was inspected on 2026-09-12. This table records documented
 No documented per-skill `claude.yaml`, `copilot.yaml`, `hermes.yaml`, or similar sidecar was found. Nested `metadata.hermes` is outside the standard's flat string-map profile, and host hooks or permission settings can execute behavior; neither is silently added to the universal core. Useful future adapters must cite the runtime format they actually target. The [runtime-field comparison](../.agents/skills/skill-authoring/references/runtime-guidance.md) distinguishes Claude skill fields, Codex subagent configuration, Copilot CLI and VS Code, OpenCode V1/V2, and the remaining reviewed hosts.
 
 The four repository symlinks are exact relative aliases: `CLAUDE.md` → `AGENTS.md`, `GEMINI.md` → `AGENTS.md`, `.claude/skills` → `../.agents/skills`, and `.github/skills` → `../.agents/skills`. Validation does not traverse or count them as a second package tree. Use the canonical path with the strict package helper. Git preserves these aliases; environments that disable symlink checkout must use the canonical tree through their documented loader and must not treat a link's text as a duplicate skill.
+
+Instruction contracts were rechecked on 2026-09-19. [Codex](https://learn.chatgpt.com/docs/agent-configuration/agents-md)
+uses `AGENTS.md`. [Claude Code](https://code.claude.com/docs/en/memory#share-one-file-with-other-coding-tools)
+explicitly supports a `CLAUDE.md` symlink to that file. Its newer native AGENTS.md
+loading is conditional on version and settings; keeping the alias preserves the
+existing repository entrypoint. Gemini's filename adapter remains useful with
+its default settings. These are structural and documented contracts; no native
+host launch or Windows symlink checkout was tested, and no home settings changed.
 
 The optional Codex session index remains an adapter, rather than a portable package requirement. Its command discovers project and global `.agents/skills` entrypoints with canonical deduplication and writes bounded context. If a host does not support hooks, or the project is not trusted for them, run `node bin/index.mjs context available-skills` and use the same compact map manually.
 

@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
 
-import { digest, storeFor, persistTree, verifyTree, materializeTree, readObject, putObject } from './snapshot_objects.mjs';
+import { digest, storeFor, persistTree, verifyTree, materializeTree, readObject, putObject, readRegularFile, MAX_MANIFEST_BYTES } from './snapshot_objects.mjs';
 
 const TOOL_VERSION = '1.1.0';
 
@@ -119,7 +119,7 @@ function sha256Bytes(value) {
 }
 
 function sha256File(file) {
-  return sha256Bytes(fs.readFileSync(file));
+  return sha256Bytes(readRegularFile(file));
 }
 
 function modeOf(stat) {
@@ -195,7 +195,7 @@ function assertNoSensitiveMaterial(root, entries) {
       throw new UsageError(`Sensitive material path is not allowed in a snapshot: ${entry.path}`);
     }
     if (entry.type === 'file' && entry.size <= 1024 * 1024) {
-      const bytes = fs.readFileSync(path.join(root, ...segments));
+      const bytes = readRegularFile(path.join(root, ...segments));
       if (privateKeyPattern.test(bytes.toString('utf8'))) {
         throw new UsageError(`Private-key material is not allowed in a snapshot: ${entry.path}`);
       }
@@ -289,7 +289,7 @@ function writeJson(file, value) {
 function loadManifest(snapshot) {
   const file = path.join(snapshot, 'manifest.json');
   let value;
-  try { value = JSON.parse(fs.readFileSync(file, 'utf8')); } catch (error) {
+  try { value = JSON.parse(readRegularFile(file, MAX_MANIFEST_BYTES).toString('utf8')); } catch (error) {
     throw new UsageError(`Cannot read snapshot manifest: ${error.message}`);
   }
   if (![1, 2].includes(value?.schema_version) || !['collection', 'package'].includes(value?.selection?.scope)) {
@@ -402,7 +402,7 @@ function createSnapshot(options) {
     for (const capture of captures) {
       if (capture.rootType === 'directory') newObjects += persistTree(store, capture.contentTree, capture.target);
       else {
-        const bytes = fs.readFileSync(capture.target);
+        const bytes = readRegularFile(capture.target);
         if (/-----BEGIN (?:[A-Z0-9 ]+ )?PRIVATE KEY-----/.test(bytes.toString('utf8'))) throw new Error('Private-key material is not allowed in a snapshot');
         if (digest(bytes) !== capture.contentTree.entries[0].sha256) throw new Error('Link target changed during capture');
         newObjects += Number(putObject(store, bytes));
@@ -443,7 +443,7 @@ function listSnapshots(options) {
     try {
       const manifest = loadManifest(candidate);
       let createdAt = null;
-      try { createdAt = JSON.parse(fs.readFileSync(path.join(candidate, 'receipt.json'), 'utf8')).created_at ?? null; } catch {}
+      try { createdAt = JSON.parse(readRegularFile(path.join(candidate, 'receipt.json'), MAX_MANIFEST_BYTES).toString('utf8')).created_at ?? null; } catch {}
       snapshots.push({ name, path: candidate, scope: manifest.selection.scope, package: manifest.selection.package ?? null, tree_hash: manifest.content.tree_hash, created_at: createdAt });
     } catch {}
   }
@@ -600,7 +600,7 @@ function restorePreimage(options) {
 
 function snapshotRetentionKey(snapshot) {
   try {
-    const receipt = JSON.parse(fs.readFileSync(path.join(snapshot.path, 'receipt.json'), 'utf8'));
+    const receipt = JSON.parse(readRegularFile(path.join(snapshot.path, 'receipt.json'), MAX_MANIFEST_BYTES).toString('utf8'));
     if (typeof receipt.created_at === 'string' && !Number.isNaN(Date.parse(receipt.created_at))) return `${receipt.created_at}\0${snapshot.name}`;
   } catch {}
   return `0000-00-00T00:00:00.000Z\0${snapshot.name}`;

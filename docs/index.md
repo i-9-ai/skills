@@ -1,10 +1,12 @@
 # I-9 Skills documentation
 
-I-9 Skills is a public-ready framework for creating, validating, distributing, and evolving focused agent skills.
+I-9 Skills is an experimental collection and toolset for creating, validating,
+preparing distribution, and evolving focused agent skills.
 
 ## Start here
 
 - [Architecture](architecture.md): collection boundaries, specialist handoffs, and lifecycle.
+- [Collection review](collection-review.md): dated responsibility, overlap and icon decisions for the meta-skill collection.
 - [Authoring standards](authoring-standards.md): package design and contribution requirements.
 - [Compatibility](compatibility.md): portable contract and host-specific support.
 - [Validation](validation.md): local checks and the official Agent Skills validator.

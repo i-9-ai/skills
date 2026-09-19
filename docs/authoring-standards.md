@@ -14,7 +14,7 @@ Start with the domain, followed by a responsibility or subject. Use `skill` or `
 
 ## Portable package
 
-Use the [Agent Skills specification](https://agentskills.io/specification): a directory with YAML frontmatter and Markdown instructions. This collection intentionally uses a stricter authoring profile: simple string metadata, a description of at most 220 characters, a required `license`, a full `LICENSE`, and a body below 500 lines. The repository validator supports the documented subset, not arbitrary YAML.
+Use the [Agent Skills specification](https://agentskills.io/specification): a directory with YAML frontmatter and Markdown instructions. This collection intentionally uses a stricter metadata profile: simple string metadata, a description of at most 220 characters, a required `license`, and a full `LICENSE`. Entrypoint length is advisory; keep the essential workflow and complete ordinary examples together. The repository validator bounds file bytes for safe inspection but does not impose an editorial line count. It supports the documented subset, not arbitrary YAML.
 
 Write every instruction, template, example, and document in English. Keep the entrypoint concise; move task-specific detail to referenced files loaded only when useful. Bundle only resources with an actual consumer. Generate skill-specific scripts with documented dependencies and safe failure behavior, and test actual outputs in temporary fixtures.
 

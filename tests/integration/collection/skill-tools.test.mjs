@@ -116,6 +116,17 @@ test('valid package checks sibling resources and does not modify bytes', t => {
     const before = snapshot(packagePath); assert.equal(validateSkill(packagePath).local_links, 3); assert.deepEqual(snapshot(packagePath), before);
 });
 
+test('complete entrypoints can exceed an advisory line budget while file reads remain bounded', t => {
+    const packagePath = makeSkill(fixture(t));
+    const entrypoint = path.join(packagePath, 'SKILL.md');
+    fs.appendFileSync(entrypoint, '\n## Complete worked example\n\n```text\n' + 'A concrete example step.\n'.repeat(600) + '```\n');
+    const before = snapshot(packagePath);
+    assert.equal(validateSkill(packagePath).name, 'example-skill');
+    assert.deepEqual(snapshot(packagePath), before);
+    fs.appendFileSync(entrypoint, 'x'.repeat(256 * 1024));
+    assert.throws(() => validateSkill(packagePath), /exceeds 262144 bytes/u);
+});
+
 test('name mismatch and missing or empty LICENSE fail', t => {
     const packagePath = makeSkill(fixture(t)); const filename = path.join(packagePath, 'SKILL.md'); const original = fs.readFileSync(filename, 'utf8');
     fs.writeFileSync(filename, original.replace('name: example-skill', 'name: different-skill')); assert.throws(() => validateSkill(packagePath));
@@ -176,10 +187,9 @@ test('special files are rejected without blocking on a FIFO', t => {
     assert.throws(() => safe.readBytes('fifo'), ValidationError);
 });
 
-test('description and entrypoint length ceilings are enforced', t => {
+test('the collection description metadata ceiling is enforced', t => {
     const packagePath = makeSkill(fixture(t)); const filename = path.join(packagePath, 'SKILL.md'); const original = fs.readFileSync(filename, 'utf8');
     fs.writeFileSync(filename, original.replace('Use when a synthetic example is requested.', 'x'.repeat(221))); assert.throws(() => validateSkill(packagePath));
-    fs.writeFileSync(filename, original + 'line\n'.repeat(501)); assert.throws(() => validateSkill(packagePath));
 });
 
 test('file-size and path-depth bounds fail before reading content', t => {

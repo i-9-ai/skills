@@ -44,3 +44,5 @@ Return one evidence packet with target identity, decision question, normalized r
 The packet passes when every claim traces to an authorized item or is labeled a hypothesis; private material is not reproduced; the packet stays within one target scope; and a later specialist can verify what the evidence does and does not establish.
 
 For source influence and reuse decisions, read the [upstream guidance record](references/upstream-guidance.md) when reviewing provenance or future changes.
+
+When maintaining the icon, read its [source and metaphor record](assets/icon-source.md).

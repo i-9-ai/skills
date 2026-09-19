@@ -7,7 +7,7 @@ Own portable, independently usable skill packages.
 Each package owns one procedure and its supporting resources. The collection coordinator owns handoffs, not the specialist's decisions.
 
 ## Local contracts
-All content is English. A package consists of `SKILL.md`, its license, and only the local references, scripts, templates, and examples that its task needs. Metadata must identify what the skill does and when to use it. Keep descriptions within 220 characters and entrypoints under 500 lines; these are ceilings, not targets.
+All content is English. A package consists of `SKILL.md`, its license, and only the local references, scripts, templates, and examples that its task needs. Metadata must identify what the skill does and when to use it. Keep descriptions within the collection's 220-character metadata profile. Entrypoint length is advisory: preserve essential procedures and complete ordinary examples in the entrypoint, and use selective references for independently needed detail. Never split or truncate useful content only to meet a line or token target. Bounded file reads are an implementation safety limit, not an editorial length target.
 
 One responsibility is mandatory. A skill must have a single primary outcome, narrow activation criteria, and clear non-goals. Split an oversized proposal into independently useful skills before authoring it. Shared tools do not imply shared responsibility.
 

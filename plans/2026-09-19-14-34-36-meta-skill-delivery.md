@@ -20,8 +20,8 @@ separately authorized collection and are excluded from this delivery.
    preserves the existing SQLite history and explicit reset boundary.
 3. Add separate session configuration/output adapters for the documented Codex,
    Claude Code, Copilot CLI and Gemini CLI contracts around one context service.
-   Report the OpenCode plugin adapter and automatic read telemetry as
-   unimplemented, with a manual context or explicit observed-read fallback.
+   Report the OpenCode plugin adapter and read telemetry for hosts other than
+   Claude as unimplemented, with a manual context or observed-read fallback.
 4. Apply the reviewed Agent Skills guidance to authoring, design, evaluation,
    evidence collection and optimization. Preserve original wording, immutable
    provenance, self-contained routes and frozen final acceptance. Regulated
@@ -85,3 +85,49 @@ trash confinement defects. Repair them with disposable no-mutation rejection
 tests, preserving aggregate history and restorable content-addressed snapshots.
 Rollback is a revert of the focused repair; no existing snapshot is migrated or
 removed. Exact review and validation evidence stay in the caller's Beads graph.
+
+## Repository-only completion
+
+The later user clarification pauses all unfinished global non-meta work.
+Continue this repository's outcomes and retain the global Beads backlog as
+deferred; do not close it as part of repository readiness.
+
+Retain the existing instruction hierarchy. Correct the child skill contract and
+authoring helper together so an advisory 500-line target cannot displace an
+essential procedure or complete example. Keep byte-read safety bounds. This is
+an update to existing package policy, not a new instruction scope.
+
+Recheck the current Codex, Claude and Gemini instruction/hook contracts without
+launching or configuring a host. Complete the current 23-package responsibility
+and icon review. Independent snapshot review also requires special-file rejection
+before any blocking read, bounded manifests/objects, and inclusion of the bundled
+snapshot suite in the required npm check. Preserve shared-object concurrent
+publication and legacy restoration. Revert the focused fix to roll back source;
+never rewrite existing snapshot stores to accommodate a validator change.
+
+## Local plugin artifact preparation
+
+Complete Beads outcome i9-skills-2qm.12.2 through `plugin prepare --output`
+in the existing TypeScript CLI. Preview is the default; `--write` creates only
+a new, explicitly selected staging folder named `i9-skills`. Inspect and bound
+all selected source bytes before writing. Refuse existing destinations, linked
+or special source files, stale catalogs and known host discovery destinations.
+Retain an incomplete new artifact for inspection if writing fails; never
+replace or clean an existing directory.
+
+The artifact contains the catalog's actual packages under `skills/`, licenses,
+a deterministic integrity receipt, root Agent Plugins 1.0.0 `plugin.json` and
+the supported `.codex-plugin/plugin.json` compatibility manifest. Derive their
+shared identity/version from package.json. No new dependency, script execution,
+MCP connection, hook registration, host setting or marketplace registration is
+introduced. Repository instructions and source code are not plugin contents.
+
+Use the existing source/command/test scopes; no new child instruction contract
+is needed. Verify preview, byte-for-byte package inclusion, unsafe inputs,
+no-overwrite, manifest contracts and execution from the actual packed package.
+Validate the prepared compatibility manifest with the available plugin-creator
+validator; validate the portable manifest against the official schema outside
+the offline test suite. Local schema conformance does not establish host
+installation, UI rendering or marketplace acceptance. Revert the command,
+tests and documentation to remove this capability; generated staging artifacts
+are caller-owned and are never removed by rollback.

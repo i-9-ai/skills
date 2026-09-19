@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import crypto from 'node:crypto';
-import { materializeTree } from '../scripts/snapshot_objects.mjs';
+import { materializeTree, readRegularFile, MAX_OBJECT_BYTES } from '../scripts/snapshot_objects.mjs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawnSync, spawn } from 'node:child_process';
@@ -24,7 +24,7 @@ function fixture() {
 }
 
 function run(args, expected = 0) {
-  const result = spawnSync(process.execPath, [helper, ...args], { encoding: 'utf8' });
+  const result = spawnSync(process.execPath, [helper, ...args], { encoding: 'utf8', timeout: 5000 });
   assert.equal(result.status, expected, `stderr: ${result.stderr}\nstdout: ${result.stdout}`);
   return result;
 }
@@ -87,6 +87,53 @@ test('verify detects changed snapshot content', t => {
   const result = run(['verify', '--snapshot', path.join(f.store, 'clean')], 2);
   assert.equal(json(result).ok, false);
   assert.equal(json(result).checks.content_entries, false);
+});
+
+test('special manifest and object inputs fail promptly before restore can modify its target', t => {
+  for (const kind of ['manifest', 'object']) {
+    const f = fixture();
+    t.after(() => fs.rmSync(f.root, { recursive: true, force: true }));
+    run(['create', '--source', f.source, '--store', f.store, '--scope', 'collection', '--name', 'clean']);
+    const snapshot = path.join(f.store, 'clean');
+    const manifestFile = path.join(snapshot, 'manifest.json');
+    const manifest = JSON.parse(fs.readFileSync(manifestFile));
+    const hash = manifest.content.entries.find(entry => entry.path === 'alpha/SKILL.md').sha256;
+    const selected = kind === 'manifest' ? manifestFile : path.join(f.store, '.objects', 'sha256', hash);
+    fs.unlinkSync(selected);
+    const fifo = spawnSync('mkfifo', [selected], { encoding: 'utf8', timeout: 2000 });
+    assert.equal(fifo.status, 0, fifo.stderr);
+    run(['verify', '--snapshot', snapshot], kind === 'manifest' ? 1 : 2);
+    const before = fs.readFileSync(path.join(f.source, 'alpha', 'SKILL.md'));
+    run(['restore', '--snapshot', snapshot, '--target', f.source, '--scope', 'collection', '--replace'], 1);
+    assert.deepEqual(fs.readFileSync(path.join(f.source, 'alpha', 'SKILL.md')), before);
+    assert.equal(fs.existsSync(path.join(f.root, '.skills-snapshot-rollbacks')), false);
+  }
+});
+
+test('a special receipt cannot block list or retention preview', t => {
+  const f = fixture();
+  t.after(() => fs.rmSync(f.root, { recursive: true, force: true }));
+  run(['create', '--source', f.source, '--store', f.store, '--scope', 'collection', '--name', 'clean']);
+  const receipt = path.join(f.store, 'clean', 'receipt.json');
+  fs.unlinkSync(receipt);
+  assert.equal(spawnSync('mkfifo', [receipt], { timeout: 2000 }).status, 0);
+  const listed = json(run(['list', '--store', f.store, '--json']));
+  assert.equal(listed.snapshots[0].created_at, null);
+  run(['prune', '--store', f.store, '--keep', '0']);
+  assert.equal(fs.existsSync(path.join(f.store, '.trash')), false);
+});
+
+test('regular snapshot reads reject symlinks and oversized sparse files', t => {
+  const f = fixture();
+  t.after(() => fs.rmSync(f.root, { recursive: true, force: true }));
+  const file = path.join(f.root, 'data');
+  fs.writeFileSync(file, '');
+  assert.deepEqual(readRegularFile(file), Buffer.alloc(0));
+  const alias = path.join(f.root, 'alias');
+  fs.symlinkSync(file, alias);
+  assert.throws(() => readRegularFile(alias), /regular file/);
+  fs.truncateSync(file, MAX_OBJECT_BYTES + 1);
+  assert.throws(() => readRegularFile(file), /size exceeds/);
 });
 
 test('package restore replaces only the chosen package and retains rollback outside discovery', t => {

@@ -7,6 +7,34 @@ export const digest = bytes => crypto.createHash('sha256').update(bytes).digest(
 const hashPattern = /^[0-9a-f]{64}$/;
 const modeValid = value => Number.isInteger(value) && value >= 0 && value <= 0o777;
 const exists = file => { try { fs.lstatSync(file); return true; } catch (error) { if (error.code === 'ENOENT') return false; throw error; } };
+export const MAX_OBJECT_BYTES = 64 * 1024 * 1024;
+export const MAX_MANIFEST_BYTES = 8 * 1024 * 1024;
+
+/** Read only bounded regular files; O_NONBLOCK also prevents FIFO replacement from hanging. */
+export function readRegularFile(file, limit = MAX_OBJECT_BYTES, expectedSize) {
+  if (typeof fs.constants.O_NOFOLLOW !== 'number' || typeof fs.constants.O_NONBLOCK !== 'number') throw new Error('Safe file-read primitives are unavailable');
+  const before = fs.lstatSync(file);
+  if (!before.isFile() || before.isSymbolicLink()) throw new Error('Snapshot input must be a regular file');
+  if (!Number.isSafeInteger(before.size) || before.size > limit || expectedSize !== undefined && before.size !== expectedSize) throw new Error('Snapshot input size exceeds its bound or expected size');
+  // Object publication removes its temporary hard link; that changes ctime,
+  // but not bytes. Content hashes remain the integrity authority for objects.
+  const same = stat => stat.isFile() && stat.dev === before.dev && stat.ino === before.ino && stat.size === before.size && stat.mtimeMs === before.mtimeMs;
+  const descriptor = fs.openSync(file, fs.constants.O_RDONLY | fs.constants.O_NOFOLLOW | fs.constants.O_NONBLOCK);
+  try {
+    if (!same(fs.fstatSync(descriptor))) throw new Error('Snapshot input changed before reading');
+    const chunks = [];
+    let length = 0;
+    while (length <= before.size) {
+      const chunk = Buffer.allocUnsafe(Math.min(65536, before.size + 1 - length));
+      const count = fs.readSync(descriptor, chunk, 0, chunk.length, null);
+      if (count === 0) break;
+      chunks.push(chunk.subarray(0, count));
+      length += count;
+    }
+    if (length !== before.size || !same(fs.fstatSync(descriptor)) || !same(fs.lstatSync(file))) throw new Error('Snapshot input changed during reading');
+    return Buffer.concat(chunks, length);
+  } finally { fs.closeSync(descriptor); }
+}
 export function storeFor(snapshot) {
   const parent = path.dirname(snapshot);
   return path.basename(parent) === '.trash' && !exists(path.join(parent, '.objects')) ? path.dirname(parent) : parent;
@@ -27,14 +55,9 @@ function objectDirectory(store, create = false) {
 export function readObject(store, hash, size) {
   if (!hashPattern.test(hash)) throw new Error('Invalid object digest');
   const file = path.join(objectDirectory(store), hash);
-  const descriptor = fs.openSync(file, fs.constants.O_RDONLY | fs.constants.O_NOFOLLOW);
-  try {
-    const stat = fs.fstatSync(descriptor);
-    if (!stat.isFile()) throw new Error('Object must be a regular file');
-    const bytes = fs.readFileSync(descriptor);
-    if (digest(bytes) !== hash || (size !== undefined && bytes.length !== size)) throw new Error('Object integrity verification failed');
-    return bytes;
-  } finally { fs.closeSync(descriptor); }
+  const bytes = readRegularFile(file, MAX_OBJECT_BYTES, size);
+  if (digest(bytes) !== hash) throw new Error('Object integrity verification failed');
+  return bytes;
 }
 export function putObject(store, bytes) {
   const hash = digest(bytes);
@@ -85,7 +108,7 @@ export function persistTree(store, tree, source) {
     const file = path.join(source, ...entry.path.split('/'));
     const stat = fs.lstatSync(file);
     if (entry.type === 'file' && !stat.isFile() || entry.type === 'symlink' && !stat.isSymbolicLink()) throw new Error('Source changed during capture');
-    const bytes = entry.type === 'file' ? fs.readFileSync(file) : Buffer.from(fs.readlinkSync(file));
+    const bytes = entry.type === 'file' ? readRegularFile(file, MAX_OBJECT_BYTES, entry.size) : Buffer.from(fs.readlinkSync(file));
     if (digest(bytes) !== (entry.type === 'file' ? entry.sha256 : entry.target_sha256) || entry.type === 'file' && bytes.length !== entry.size) throw new Error('Source changed during capture');
     if (/-----BEGIN (?:[A-Z0-9 ]+ )?PRIVATE KEY-----/.test(bytes.toString('utf8'))) throw new Error('Private-key material is not allowed in a snapshot');
     if (putObject(store, bytes)) added += 1;

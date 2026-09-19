@@ -116,8 +116,6 @@ export function validateSkill(input) {
     const expected = validSlug(path.basename(root.path), 'package directory name');
     const inventory = root.inventory();
     const text = root.readText('SKILL.md');
-    const lines = text.split(/\r\n|\n|\r/u);
-    requireCondition(lines.length - (lines.at(-1) === '' ? 1 : 0) <= 500, 'SKILL.md exceeds 500 lines');
     const metadata = parseFrontmatter(text);
     requireCondition(validSlug(metadata.name, 'skill name') === expected, 'frontmatter name must match the package directory');
     nonblank(metadata.description, 'description', 220);

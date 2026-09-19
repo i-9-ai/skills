@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-/** Describes the supported Codex registration and explicitly unimplemented telemetry. */
+/** Codex SessionStart registration; read telemetry remains a separate host adapter. */
 export class CodexHookConfiguration {
     codexSessionHook() {
         return {

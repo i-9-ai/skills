@@ -55,7 +55,7 @@ Creation rejects overlapping source and store paths, unsafe names, recognized se
 
 The manifest omits timestamps and source absolute paths. Its sorted entries record type, POSIX mode, byte size and SHA-256 for files, plus link-target data for symbolic links. It also records the selected scope, content tree hash, source-link inventory, privacy-minimized projection observations, and creation validation status. `receipt.json` contains operational time and path information and is deliberately excluded from deterministic identity. Read [the manifest contract](references/manifest.md) when integrating with another tool.
 
-Verification validates sorted safe manifest paths and tree hashes, reads every referenced object as a regular file, checks byte hashes and sizes, and checks captured preimages. Schema-1 snapshots still verify against their existing `content/` copies without conversion. A mismatch fails with a nonzero exit and does not repair or restore anything.
+Verification validates sorted safe manifest paths and tree hashes, reads every referenced object as a regular file, checks byte hashes and sizes, and checks captured preimages. Manifest and receipt reads are bounded to 8 MiB and individual file/object reads to 64 MiB. Special files and links in these stored inputs are rejected before reading; nonblocking no-follow opens and descriptor checks reject detected replacements without waiting on a FIFO. Schema-1 snapshots still verify against their existing `content/` copies without conversion. A mismatch fails with a nonzero exit and does not repair or restore anything.
 
 ## Linked package target preimages
 
