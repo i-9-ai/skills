@@ -23,6 +23,7 @@ A skill has one responsibility and one primary output. If a request mixes tasks 
 - A recurring task, target user, representative requests, desired output, and destination.
 - Constraints, existing package if revising, relevant source material, and authority already granted.
 - Optional evaluated candidates, domain-research dossier, synthesis plan, design, and evaluation cases from an earlier run.
+- Sanitized task traces, human corrections, review feedback, and successful or failed outputs that reveal a recurring decision or mistake. Record the source and consent; extract a reusable pattern without embedding a private conversation or one task's answer.
 
 Inspect the target and preserve unrelated files. Resolve missing information from supplied context first. Ask only when the answer changes the outcome or is required for an action outside scope.
 
@@ -58,6 +59,10 @@ The full pipeline uses separately available `skills-discovery`, `skill-domain-re
 
 ## Handoffs and tooling
 
+Calibrate control at the step level. Use exact order, preconditions, and stop rules for fragile or consequential operations; use a justified default and explicit escape condition where several approaches are valid. Turn recurring observed mistakes into short, concrete gotchas placed before the risky step. For dependent work, keep a visible completion checklist and repeat only the checks affected by a correction. Do not compress away the ordinary implementation route.
+
+When adding a CLI helper, require noninteractive operation, discoverable help, bounded results on stdout, diagnostics on stderr, documented exit statuses, and a no-write preview for mutations when feasible. If a faithful preview is impossible, say why and provide an explicit approval boundary and rollback evidence. Test success, bad input, and the no-write path with disposable fixtures.
+
 Read the [handoff protocol](references/handoff-protocol.md) when coordinating more than one stage or resuming a run. The run manifest records ordered stages, source identities, artifact hashes, gaps, and readiness. Artifacts survive a context reset; verify them before resuming.
 
 Read [tooling](references/tooling.md) before using the optional Node.js helper. It scaffolds a package and checks structure and recorded artifact integrity in an owned, stable workspace. It does not call a model, merge source text, judge licensing compatibility, or prove behavioral quality. If this helper's runtime is unavailable, follow the manual checks in the authoring guide and record the limitation. Manual checks never substitute for required official validation.
@@ -77,3 +82,5 @@ Return the package path, run manifest, structural results including the official
 Require all critical evaluation criteria to pass and no unresolved scope, safety, license, or portability blocker. Default to at most two authoring correction rounds; stop earlier on repeated non-improvement or missing authority. `validated` describes the recorded local run, not universal compatibility or production approval. Publication and installation remain separate actions.
 
 Preserve the previous package and evidence when revising. On failure, retain the candidate in its isolated workspace and report the blocker. Do not overwrite the accepted version or delete user work as cleanup.
+
+For source influence and reuse decisions, read the [upstream guidance record](references/upstream-guidance.md) when reviewing provenance or future changes.

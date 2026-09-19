@@ -19,6 +19,12 @@ Run against an owned checkout that remains stable throughout validation. Unsafe 
 
 ## Collection checks and limits
 
+The pinned official validator checks its implemented frontmatter and naming
+rules. It does not audit executable behavior, local resource completeness,
+icons, source rights, private data, or task performance. The collection's
+stricter checks remain required in addition to official conformance; neither
+check replaces a recorded behavioral evaluation on the actual candidate.
+
 These checks maintain this source repository. They are not installed with a skill, and their commands must not be inferred in a consumer's project.
 
 `npm run validate` discovers catalog packages, checks local links across repository documents, validates committed example runs named `run.json`, and checks `upstreams.lock.json` if present. Its public hygiene scan recognizes a small set of high-confidence credential, private-key, authenticated-URL, and local-user-path patterns without echoing matched values. It is a basic guard; binary content and less recognizable secrets still need review.

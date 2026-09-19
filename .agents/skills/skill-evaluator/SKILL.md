@@ -28,6 +28,8 @@ Exercise at least one ordinary implementation route and each changed critical br
 
 ## Procedure
 
+Separate exploratory diagnosis from a final verdict. Exploratory cases may be added while discovering failure modes, but their outcomes are tuning evidence. Before claiming readiness, freeze an independent acceptance set and its observable rubric. Use the [portable case template](assets/evaluation-case.json) when the caller has no format; load the [case contract](references/case-contract.md) for fixture paths, assertion ownership, and result records. The JSON format is inert data, not an execution engine.
+
 1. Record the candidate identity and file hashes or immutable commit. Check that the brief has one responsibility and a primary output. Inspect the package, `LICENSE`, source rights/notices, required resources, and declared tools. Require a successful official `skills-ref validate` check on this exact candidate, from the tool linked by the [Agent Skills specification](https://agentskills.io/specification#validation). Verify the source/version identity and result or run a trusted installation within scope; a custom or manual check cannot substitute. Missing execution blocks readiness, and a failed official check requires correction.
 2. Freeze the [evaluation cases and rubric](references/evaluation.md) before seeing candidate outcomes. Include positive triggers, near-miss non-triggers, functional cases, and adversarial or failure cases relevant to the skill. Use synthetic fixtures and observable criteria.
 3. Run the same tasks against the candidate and baseline under comparable conditions. Use the environment's available model/session execution capability, or perform a clearly labeled manual behavioral exercise. No particular model, subagent API, or vendor CLI is required. Do not pretend a manual exercise is a cross-provider benchmark.
@@ -50,3 +52,5 @@ Return candidate/baseline identities, cases, observations, rubric scores, critic
 Use at most two correction/evaluation rounds by default, stopping on repeated non-improvement or missing required authority. Keep a separate untouched final acceptance set if earlier results influenced candidate selection. Do not call reused tuning cases held-out evidence.
 
 Preserve all evidence and the unchanged candidate. Evaluation creates reports and disposable test outputs; it does not replace installed packages, fix the source, release, or publish.
+
+For source influence and reuse decisions, read the [upstream guidance record](references/upstream-guidance.md) when reviewing provenance or future changes.

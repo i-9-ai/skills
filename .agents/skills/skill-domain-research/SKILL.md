@@ -36,7 +36,7 @@ Research always includes current public authoritative web sources, even when dis
 | --- | --- | --- |
 | Focused | Familiar, low-consequence subject with stable terminology and little disagreement | Every material question has an opened authoritative source, a dated evidence record, and no unexplained conflict |
 | Standard | New or changing subject, meaningful operational consequence, or incomplete owner/candidate evidence | Multiple search angles, original sources behind material secondary claims, negative/contrary evidence, and explicit unknowns |
-| Extended | Legal, accounting, tax, regulatory, medical, safety, security, financial, jurisdiction-sensitive, rapidly changing, or materially disputed subject | Applicable authority hierarchy, jurisdiction and effective-date checks, change history where relevant, conflict analysis, and named human specialist confirmation |
+| Extended | Legal, accounting, tax, regulatory, medical, safety, security, financial, jurisdiction-sensitive, rapidly changing, or materially disputed subject | Applicable authority hierarchy, jurisdiction and effective-date checks, change history where relevant, conflict analysis, and an explicit human-validation handoff for case-specific professional determinations |
 
 Escalate depth when novelty, volatility, consequence, ambiguity, jurisdictional variation, source dependence, or disagreement increases. A source quota cannot compensate for an unresolved controlling question. If current web access or an indispensable authority is unavailable, return a partial dossier marked `blocked_external_research`; do not substitute model memory or an old candidate skill and do not let a coordinated authoring run claim the research stage passed.
 
@@ -77,9 +77,9 @@ Return one research dossier in the caller's selected workspace containing:
 - a source register with identity, authority class, revision or document identifier, relevant dates, consultation date, scope, rights, and access gaps;
 - the three-track evidence matrix, including conflicts, unknowns, contrary evidence, and confidence reasons;
 - a concise findings section that separates supported facts, reported internal practice, inference, and unresolved applicability;
-- mandatory specialist-confirmation items and the next consumer, normally `skills-synthesis` or `skill-design`.
+- specialist-confirmation items for case-specific professional determinations and the next consumer, normally `skills-synthesis` or `skill-design`.
 
-The dossier passes when every material claim is traceable to an opened source or labeled as supplied fact/inference, current public research actually occurred, owner facts remain within their scope, external skills remain identifiable claims, citations support the attributed propositions, conflicts and unknowns are visible, and every consequential normative conclusion has an explicit human-confirmation gate. A long report, numerous links, or agreement among derivative sources does not establish readiness.
+The dossier passes when every material claim is traceable to an opened source or labeled as supplied fact/inference, current public research actually occurred, owner facts remain within their scope, external skills remain identifiable claims, citations support the attributed propositions, conflicts and unknowns are visible, and case-specific professional determinations have an explicit human-confirmation gate. A long report, numerous links, or agreement among derivative sources does not establish readiness.
 
 Default to one challenge pass and one correction pass. Stop earlier for unavailable required authority, unresolved jurisdiction or decision date, prohibited data handling, exhausted budget, or repeated non-improvement. Preserve partial evidence and state the blocker; do not manufacture completeness.
 

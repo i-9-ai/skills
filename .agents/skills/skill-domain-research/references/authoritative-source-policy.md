@@ -34,6 +34,11 @@ If jurisdiction, effective period, controlling status, or applicability is missi
 
 ## Legal and accounting material
 
+Collecting, comparing and synthesizing regulated-domain information is part of
+this research workflow. A professional-validation gate applies to a case-specific
+determination or advice; it does not prevent a factual dossier from documenting
+current authority, supported findings and open questions.
+
 Use current primary legal authority and official accounting, tax, or professional standard-setter material for the applicable jurisdiction and period. Secondary guides can explain vocabulary or reveal an issue, but they do not silently replace the controlling text. Some standards are licensed or paywalled: record the official identifier and accessible locator, respect quotation and redistribution limits, and mark inaccessible provisions as a verification gap.
 
 The dossier is research support. It must not decide a live person's legal position, prepare a filing conclusion, certify compliance, determine tax treatment, or select an accounting judgment from general sources alone. Name the exact conclusion and evidence that an appropriately qualified lawyer, accountant, tax professional, regulator-facing specialist, clinician, safety engineer, or other relevant expert must confirm. “Seek professional advice” without identifying the unresolved question is not a usable gate.

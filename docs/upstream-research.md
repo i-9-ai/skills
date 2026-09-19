@@ -53,3 +53,15 @@ Skillport offers rubric and example material but explicitly marks the evaluator 
 ## Future evolution
 
 Preserve this baseline until a reviewed change intentionally replaces it. A future comparison can inspect upstream file additions, removals, and modifications against `upstreams.lock.json`, map them to contribution decisions, and propose improvements with evidence. Do not update the lock solely to silence a changed hash, automatically overwrite local work, or treat a newer commit as a quality verdict.
+
+## Agent Skills guidance integration (2026-09-19)
+
+The authoring, design, evaluation, evidence-collection and optimization packages
+now include originally written guidance influenced by agentskills/agentskills
+revision `69ef37e9424c0a7ea9dd2293b559e43ec8176379`. Reviewed documentation under
+`docs/skill-creation/` is CC-BY-4.0; each consumer carries its own immutable
+reviewed-file and attribution record. Integration covers sanitized corrections,
+control proportional to fragility, noninteractive script interfaces, portable
+evaluation cases and description activation errors. Self-contained routes and
+untouched final acceptance remain mandatory. No upstream scripts or setup
+commands are adopted. Structural validation establishes no measured model gain.

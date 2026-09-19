@@ -20,6 +20,8 @@ This skill turns scored rollouts into bounded candidate edits. It does not decid
 
 Read [the optimization loop](references/optimization-loop.md) when creating the run record or adapting a compatible optimizer.
 
+For description or activation errors, use the [activation optimization route](references/activation-optimization.md). Optimize task selection separately from the behavior after activation; successful output cannot compensate for repeatedly selecting the wrong skill.
+
 ## Coverage before context reduction
 
 Suggested body character, line, and token targets are advisory context budgets. They do not permit omitting procedures, complete examples, exceptions, or quality-critical detail. Verified specification/schema constraints and actual collection validation bounds remain separate requirements; preserve complete task routes through reachable topic resources where necessary. A frozen edit budget limits the search, not the quality floor: return no accepted candidate when the budget cannot accommodate a correct change.
@@ -49,3 +51,5 @@ Do not send private rollouts, credentials, client data, or local environment sna
 The primary output is one best accepted candidate plus its optimization record. The record identifies the baseline, frozen splits, rubric, run budget, candidate diffs, aggregate scores, accepted revision, rejected changes, limitations, and rollback target.
 
 Pass when every accepted edit is bounded, traceable to tuning evidence, selected using separate validation cases, evaluated once on final-acceptance cases, and demonstrably improves the defined objective without a critical regression. The result is evidence for later lifecycle review; it is not publication, universal portability proof, or permission to replace an installed package.
+
+For source influence and reuse decisions, read the [upstream guidance record](references/upstream-guidance.md) when reviewing provenance or future changes.

@@ -22,6 +22,7 @@ Do not invent evidence, score a candidate, decide lifecycle state, edit a packag
 
 - A target skill or bounded collection, its current revision, and the decision question the evidence must support.
 - Authorized source material: test outputs, audit reports, usage observations, upstream comparisons, approved feedback, or security findings.
+- Sanitized execution traces and human corrections or review feedback, including successful routes and wasted steps. Preserve observation versus interpretation, and link any proposed generalization to the actual recurring evidence.
 - Scope, retention constraints, sensitivity classification, and destination specialist.
 
 Reject an ambiguous target, unbounded collection, unknown source ownership, or material that would expose credentials, private conversations, client data, or operational inventory. Record the gap without copying unsafe input.
@@ -41,3 +42,5 @@ Reject an ambiguous target, unbounded collection, unknown source ownership, or m
 Return one evidence packet with target identity, decision question, normalized records, source and sensitivity handling, confidence and limitations, contradictory or negative evidence, and the selected handoff or explicit `none`.
 
 The packet passes when every claim traces to an authorized item or is labeled a hypothesis; private material is not reproduced; the packet stays within one target scope; and a later specialist can verify what the evidence does and does not establish.
+
+For source influence and reuse decisions, read the [upstream guidance record](references/upstream-guidance.md) when reviewing provenance or future changes.
