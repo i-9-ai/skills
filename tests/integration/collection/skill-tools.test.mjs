@@ -336,9 +336,11 @@ test('draft and blocked prefixes preserve ordered resumable state', t => {
     assert.equal(validateRun(manifest).status, 'blocked');
 });
 
-test('one contributor permits synthesis with the required domain dossier', t => {
-    const { manifest, data } = makeRun(fixture(t)); data.sources = data.sources.slice(0, 1); writeJson(manifest, data);
-    assert.equal(validateRun(manifest).status, 'validated'); data.stages[2].summary = ' '; rejectRun(manifest, data);
+test('one contributor requires a reasoned direct-to-design synthesis skip', t => {
+    const { manifest, data } = makeRun(fixture(t)); data.sources = data.sources.slice(0, 1); rejectRun(manifest, data);
+    const synthesis = data.stages.find(stage => stage.name === 'synthesis'); synthesis.status = 'skipped'; synthesis.summary = 'One reviewed package contributes directly to design with the domain dossier.'; writeJson(manifest, data);
+    assert.equal(validateRun(manifest).status, 'validated'); synthesis.summary = ' '; rejectRun(manifest, data);
+    synthesis.summary = 'One reviewed package contributes directly to design with the domain dossier.'; data.stages[2].summary = ' '; rejectRun(manifest, data);
 });
 
 test('no contributors require a reasoned synthesis skip', t => {
@@ -377,6 +379,7 @@ test('reusable public sources require immutable revisions and adapted sources ne
 test('external reference and rejected sources require immutable revisions', t => {
     const { manifest, data } = makeRun(fixture(t)); const source = data.sources[0];
     source.uri = 'https://example.org/skill'; source.revision = 'main';
+    const synthesis = data.stages.find(stage => stage.name === 'synthesis'); synthesis.status = 'skipped'; synthesis.summary = 'Only the other package contributes; hand it directly to design.';
     for (const reuse of ['reference', 'reject']) {
         source.reuse = reuse; rejectRun(manifest, data);
         source.revision = 'a'.repeat(40); writeJson(manifest, data); assert.equal(validateRun(manifest).sources, 2);

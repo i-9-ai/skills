@@ -42,7 +42,7 @@ When needed, `skill-naming` returns a naming decision as an additional intake or
 
 ## Transitions, failures, and resume
 
-Append stages in order after checking their output. Domain research always passes with a dossier or blocks with its external-research gap; it cannot be skipped. With no distinct contributing skill package (`pattern` or `adapt`), mark synthesis `skipped` and explain why; references and rejected candidates do not count. One or more distinct contributing packages permit synthesis with the dossier. Mirrors or two revisions of the same source do not count twice. The other required stages must pass before a run is `validated`.
+Append stages in order after checking their output. Domain research always passes with a dossier or blocks with its external-research gap; it cannot be skipped. With fewer than two distinct contributing skill packages (`pattern` or `adapt`), mark synthesis `skipped` and explain why; references and rejected candidates do not count. When one package contributes, retain its reviewed contribution decisions and hand it with the dossier directly to design. Two or more distinct contributing packages permit synthesis with the dossier. Mirrors or two revisions of the same source do not count twice. The other required stages must pass before a run is `validated`.
 
 On a blocked stage, set the run to `blocked`, retain the partial artifacts, and stop dependent work. Distinguish missing evidence, missing capability, incompatible license, unresolved user choice, and test failure. An unexecuted evaluation is not a pass. Keep incomplete work `draft` when it has no known blocker.
 

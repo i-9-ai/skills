@@ -266,10 +266,10 @@ export function validateRun(input) {
       requireCondition(!blocked, 'stages cannot proceed after a blocked stage');
       requireCondition(['passed', 'skipped', 'blocked'].includes(stage.status), 'invalid stage status');
       nonblank(stage.summary, 'stage summary');
-      if (stage.status === 'skipped') requireCondition(stage.name === 'synthesis' && contributors.size === 0,
-        'only synthesis may be skipped, and only with no contributing skill packages');
-      if (stage.name === 'synthesis' && stage.status === 'passed') requireCondition(contributors.size >= 1,
-        'passed synthesis requires at least one distinct contributing skill package');
+      if (stage.status === 'skipped') requireCondition(stage.name === 'synthesis' && contributors.size < 2,
+        'only synthesis may be skipped, and only with fewer than two contributing skill packages');
+      if (stage.name === 'synthesis' && stage.status === 'passed') requireCondition(contributors.size >= 2,
+        'passed synthesis requires at least two distinct contributing skill packages');
       blocked = stage.status === 'blocked';
       requireCondition(Array.isArray(stage.artifacts) && stage.artifacts.length <= 64, 'artifacts must be an array of at most 64 items');
       requireCondition(stage.status !== 'passed' || stage.artifacts.length > 0, 'passed stages require nonempty hashed evidence artifacts');
