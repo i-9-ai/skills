@@ -96,8 +96,11 @@ the selected file and `.1`–`.3` are affected. Links and non-regular destinatio
 are rejected. Preflight rejects overlap of any selected diagnostic file with
 the database, SQLite sidecars or the input file, including canonical aliases,
 before opening a writer. Existing targets are also compared by filesystem
-identity; filename comparisons conservatively normalize Unicode and ignore case,
-including on case-sensitive filesystems. The directory must be an existing
+identity and parent identity; filename comparisons conservatively ignore ASCII
+case, including on case-sensitive filesystems. Uncreated non-ASCII filenames are
+rejected when logs are selected because filesystem Unicode folding cannot be
+inferred from JavaScript casing. Choose ASCII data/log filenames for portable
+registration. Existing directory names may contain Unicode. The directory must be an existing
 canonical absolute path. New
 files use mode 0600; pre-existing permissions remain caller-owned. Use a stable
 trusted directory: path inspection does not promise race-proof confinement or

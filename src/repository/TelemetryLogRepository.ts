@@ -55,10 +55,19 @@ export class TelemetryLogRepository {
     }
 
     private static comparisonKey(filename: string): string {
-        // Missing leaves cannot be resolved by realpath. Conservatively reject
-        // spelling aliases even on case-sensitive volumes: after SQLite creates
-        // the file, a case-insensitive rotation must not delete that new file.
-        return this.canonicalSelection(filename).normalize('NFC').toLowerCase();
+        const canonical = this.canonicalSelection(filename);
+        const leaf = basename(canonical);
+        if (!this.fileIdentity(filename) && /[^\x20-\x7e]/.test(leaf)) {
+            // Filesystem Unicode folding is platform-specific (for example ß/SS).
+            // Missing leaves have no inode to compare, so reject that ambiguity
+            // instead of presenting JavaScript lowercase as filesystem identity.
+            throw new Error('Uncreated diagnostic/data filenames require portable ASCII spelling');
+        }
+        const parent = this.fileIdentity(dirname(canonical));
+        if (parent) return `${parent}:${leaf.toLowerCase()}`;
+        // A missing parent cannot be used by either writer; retain a lexical
+        // comparison so an exact overlap still fails before writer preparation.
+        return canonical.toLowerCase();
     }
 
     private static canonicalSelection(filename: string): string {

@@ -12,10 +12,13 @@ export class ClaudeTelemetryAdapter {
     observation(value: unknown, timestamp: string): ClaudeObservation | undefined {
         const input = this.object(value);
         const name = input.hook_event_name;
-        if (!['SessionStart', 'PreToolUse', 'PostToolUse'].includes(String(name))) return;
+        if (typeof name !== 'string') throw new Error('Expected a native hook event name');
+        if (!['SessionStart', 'PreToolUse', 'PostToolUse'].includes(name)) return;
         const session = this.identifier(input.session_id);
         if (name === 'SessionStart') {
-            if (!['startup', 'clear'].includes(String(input.source))) return;
+            if (typeof input.source !== 'string')
+                throw new Error('Expected a native session source');
+            if (!['startup', 'clear'].includes(input.source)) return;
             return { event: this.event('session.started', session, 'session-start', timestamp) };
         }
         if (input.tool_name !== 'Read') return;

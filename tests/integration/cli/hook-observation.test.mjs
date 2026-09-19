@@ -139,3 +139,31 @@ test('telemetry registration is inert and shell-quotes explicit local selections
         ]),
     );
 });
+
+test('malformed host event discriminators cannot masquerade as successful reads', () => {
+    const adapter = new ClaudeTelemetryAdapter();
+    const payload = {
+        session_id: 'session',
+        tool_name: 'Read',
+        tool_use_id: 'tool',
+        tool_input: { file_path: '/test/SKILL.md' },
+    };
+    for (const name of [['PreToolUse'], ['PostToolUse'], {}, null, 1]) {
+        assert.throws(
+            () =>
+                adapter.observation(
+                    { ...payload, hook_event_name: name },
+                    '2026-09-19T00:00:00.000Z',
+                ),
+            /event name/,
+        );
+    }
+    assert.throws(
+        () =>
+            adapter.observation(
+                { session_id: 'session', hook_event_name: 'SessionStart', source: ['startup'] },
+                '2026-09-19T00:00:00.000Z',
+            ),
+        /session source/,
+    );
+});

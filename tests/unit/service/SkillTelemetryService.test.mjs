@@ -80,4 +80,13 @@ test('diagnostic destinations and rotation archives cannot change selected datab
         /overlap/,
     );
     assert.ok(!fs.existsSync(path.join(root, 'future.db')));
+    const unicodeLog = path.join(root, 'stra\u00dfe.log');
+    fs.writeFileSync(unicodeLog, 'x'.repeat(1_048_576));
+    const foldedDb = path.join(root, 'STRASSE.LOG.3');
+    await assert.rejects(
+        new SkillTelemetryService().record(foldedDb, input, unicodeLog),
+        /ASCII|overlap/,
+    );
+    assert.ok(!fs.existsSync(foldedDb));
+    assert.equal(fs.statSync(unicodeLog).size, 1_048_576);
 });
