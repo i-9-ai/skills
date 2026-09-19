@@ -1,5 +1,5 @@
 ---
-"i9-skills": minor
+"@i-9-ai/skills": minor
 ---
 
 Prepare the unified CLI for an explicitly built local package with a deliberate

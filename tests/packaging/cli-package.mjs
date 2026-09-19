@@ -47,8 +47,8 @@ test('the allowlisted artifact runs from node_modules on Node 24+ without TypeSc
     const packResult = JSON.parse(
         run('npm', ['pack', '--ignore-scripts', '--json', '--pack-destination', root]),
     );
-    const packed = Array.isArray(packResult) ? packResult[0] : packResult['i9-skills'];
-    assert.equal(packed?.name, 'i9-skills');
+    const packed = Array.isArray(packResult) ? packResult[0] : packResult['@i-9-ai/skills'];
+    assert.equal(packed?.name, '@i-9-ai/skills');
     const names = packed.files.map((file) => file.path);
     assert.ok(names.includes('dist/index.js'));
     assert.ok(names.includes('bin/index.mjs'));
@@ -68,7 +68,7 @@ test('the allowlisted artifact runs from node_modules on Node 24+ without TypeSc
     }
 
     const modules = join(root, 'consumer', 'node_modules');
-    const installed = join(modules, 'i9-skills');
+    const installed = join(modules, '@i-9-ai', 'skills');
     mkdirSync(installed, { recursive: true });
     run(
         'tar',

@@ -1,5 +1,5 @@
 ---
-"i9-skills": patch
+"@i-9-ai/skills": patch
 ---
 
 Add `skill-domain-research`, which produces a bounded evidence dossier by reconciling process-owner facts, reviewed skill claims, and current authoritative web sources. Legal, accounting, tax, regulatory, and other consequential research records jurisdiction, source/revision and consultation dates, conflicts, unknowns, and exact human specialist-confirmation gates; it distinguishes research findings from a qualified human's case-specific determination or advice.

@@ -1,5 +1,5 @@
 ---
-"i9-skills": minor
+"@i-9-ai/skills": minor
 ---
 
 Add host-specific session configuration and context output for Codex, Claude

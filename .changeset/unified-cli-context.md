@@ -1,5 +1,5 @@
 ---
-"i9-skills": minor
+"@i-9-ai/skills": minor
 ---
 
 Unify repository tooling behind an oclif CLI with a thin bin launcher and Node 24

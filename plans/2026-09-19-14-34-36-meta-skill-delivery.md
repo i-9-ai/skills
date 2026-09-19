@@ -29,7 +29,9 @@ separately authorized collection and are excluded from this delivery.
    professional determinations receive a qualified human-validation handoff.
 5. Keep the generated local Codex environment file excluded. Explicit setup
    uses npm ci; command startup never fetches or installs dependencies.
-6. Prepare a private local packed artifact with a deliberate allowlist. The
+6. Prepare the authorized `@i-9-ai/skills` package identity with bin `i9-skills`,
+   retaining private true and updating lockfile, pending Changesets and actual
+   scoped node_modules tests. Prepare a local packed artifact with a deliberate allowlist. The
    build checks strict types, replaces disposable dist output and emits the
    same TypeScript as JavaScript. The launcher selects source in the checkout
    and built code in node_modules. No runtime compilation is introduced.
@@ -68,3 +70,18 @@ requires separate registry identity/version and publication authorization.
 Before any visibility change, inventory the remote GitHub surfaces separately.
 Neither local hygiene checks nor the existing Pages/Wiki workflows authorize
 that change.
+
+## Reconciliation refinements
+
+The current-session reconciliation also requires consistent research premises
+across design, evolution, evaluation, discovery and synthesis, plus current
+collection reevaluation on refactoring. Authoring routes one source directly to
+design and reserves synthesis for two distinct contributions. Preserve the
+complete useful corpus and sourced regulated information; gate individual
+professional decisions separately.
+
+Independent baseline review identified output alias confinement and snapshot
+trash confinement defects. Repair them with disposable no-mutation rejection
+tests, preserving aggregate history and restorable content-addressed snapshots.
+Rollback is a revert of the focused repair; no existing snapshot is migrated or
+removed. Exact review and validation evidence stay in the caller's Beads graph.

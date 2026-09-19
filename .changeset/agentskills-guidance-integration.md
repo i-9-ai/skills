@@ -1,5 +1,5 @@
 ---
-"i9-skills": minor
+"@i-9-ai/skills": minor
 ---
 
 Integrate reviewed Agent Skills guidance into authoring, design, evaluation,

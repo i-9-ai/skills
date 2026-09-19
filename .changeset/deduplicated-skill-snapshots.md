@@ -1,5 +1,5 @@
 ---
-"i9-skills": patch
+"@i-9-ai/skills": patch
 ---
 
 Store new skills-snapshot captures as complete manifests backed by shared SHA-256 objects, reusing unchanged file and symlink-text bytes instead of repeating full copies. Preserve verification and restoration of existing schema-1 backups.

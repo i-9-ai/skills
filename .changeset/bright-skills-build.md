@@ -1,5 +1,5 @@
 ---
-"i9-skills": patch
+"@i-9-ai/skills": patch
 ---
 
 ## First public-ready release

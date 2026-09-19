@@ -1,5 +1,6 @@
 # Local package distribution preparation
 
+The prepared npm identity is `@i-9-ai/skills`, with the executable `i9-skills`.
 The npm package remains private. No release, registry upload, marketplace
 registration or global installation is authorized by a build or package test.
 The currently usable executable is the single bin/index.mjs launcher.
@@ -30,9 +31,16 @@ because its npm install setup was not the lockfile-driven contract. Explicit
 setup is npm ci in a trusted checkout, followed by npm run check. No startup
 hook invokes setup and no unreviewed environment file is part of the package.
 
+The local packed test uses the actual scoped node_modules layout. A future
+authorized published version can be invoked with an explicitly pinned package:
+`npx --package=@i-9-ai/skills@<reviewed-version> i9-skills --help`.
+This is a release recipe, not an available registry release. It may download
+software and therefore never belongs in an automatic session hook. Installed
+hooks use an already available executable or the checkout launcher.
+
 ## Remaining external gates
 
-Before an authorized npm release, decide the registry identity/version and
+Before an authorized npm release, confirm ownership of the scoped identity, version and
 access, test actual target platforms and installation, inspect the packed files
 again, and deliberately remove private only in that release task. No plugin
 manifest is guessed: host plugin mechanisms need their own verified adapters.
