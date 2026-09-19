@@ -20,6 +20,7 @@ I-9 Skills is a public-ready framework for creating, validating, distributing, a
 
 - [Positioning](positioning.md): public communication and demonstrations.
 - [Skill usage MCP](skill-usage-mcp.md): local observed-read evidence and rankings, with an explicit emitter and dedicated database.
+- [Local skill telemetry](skill-telemetry.md): typed session, attempt and read observations, period trends and bounded diagnostic logs.
 - [Planning protocol](planning-protocol.md): durable planning for material work.
 - [Pilot runbook](pilot-runbook.md): a bounded, evidence-first procedure for the first external collection pilot.
 - [Pilot evaluation](pilot-evaluation.md): current pilot evidence and limitations.

@@ -4,6 +4,7 @@ import { closeSync, constants, lstatSync, openSync, realpathSync } from 'node:fs
 import { dirname, isAbsolute } from 'node:path';
 import { SkillReadMigration } from '../migration/SkillReadMigration.ts';
 import { readFields, SkillReadValidator } from '../validator/SkillReadValidator.ts';
+import { SkillTelemetryValidator } from '../validator/SkillTelemetryValidator.ts';
 
 /** Persists observed reads; rankings are projections of this event aggregate. */
 export class SkillReadRepository {
@@ -11,30 +12,36 @@ export class SkillReadRepository {
     private closed = false;
     private readonly validator = new SkillReadValidator();
 
-    constructor(filename: string) {
+    constructor(filename: string, { readOnly = false } = {}) {
         if (!isAbsolute(filename)) throw new Error('Database path must be absolute');
         if (realpathSync(dirname(filename)) !== dirname(filename))
             throw new Error('Database parent must be canonical');
 
-        try {
-            closeSync(
-                openSync(
-                    filename,
-                    constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL,
-                    0o600,
-                ),
-            );
-        } catch (error) {
-            if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
+        if (!readOnly) {
+            try {
+                closeSync(
+                    openSync(
+                        filename,
+                        constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL,
+                        0o600,
+                    ),
+                );
+            } catch (error) {
+                if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
+            }
         }
 
         const info = lstatSync(filename);
         if (!info.isFile() || info.isSymbolicLink() || info.nlink !== 1)
             throw new Error('Expected regular database file');
 
-        this.database = new DatabaseSync(filename);
+        this.database = new DatabaseSync(filename, { readOnly });
 
         try {
+            if (readOnly) {
+                new SkillReadMigration().verifySkillReads(this.database);
+                return;
+            }
             new SkillReadMigration().migrateSkillReads(this.database);
         } catch (error) {
             this.close();
@@ -53,6 +60,15 @@ export class SkillReadRepository {
         this.database.exec('BEGIN IMMEDIATE');
 
         try {
+            if (
+                this.database
+                    .prepare('SELECT event_id FROM usage_events WHERE event_id=?')
+                    .get(event.event_id)
+            ) {
+                throw new Error(
+                    'Event ID belongs to typed telemetry; retry through its original interface',
+                );
+            }
             const existing = this.database
                 .prepare('SELECT * FROM usage_reads WHERE event_id=?')
                 .get(event.event_id);
@@ -72,6 +88,84 @@ export class SkillReadRepository {
             this.database.exec('ROLLBACK');
             throw error;
         }
+    }
+
+    /** Atomically retain a typed event and project only successful observations. */
+    recordEvent(value: unknown) {
+        const event = new SkillTelemetryValidator().event(value);
+        const envelope = JSON.stringify(event);
+        this.database.exec('BEGIN IMMEDIATE');
+        try {
+            const previous = this.database
+                .prepare('SELECT envelope FROM usage_events WHERE event_id=?')
+                .get(event.event_id);
+            if (previous && previous.envelope !== envelope)
+                throw new Error('Event ID already has different evidence');
+            if (previous) {
+                this.database.exec('COMMIT');
+                return { recorded: false, event_id: event.event_id, event_type: event.event_type };
+            }
+            if (
+                this.database
+                    .prepare('SELECT event_id FROM usage_reads WHERE event_id=?')
+                    .get(event.event_id)
+            ) {
+                throw new Error('Event ID already belongs to legacy read evidence');
+            }
+            this.database
+                .prepare('INSERT INTO usage_events VALUES (?, ?, ?, ?, ?)')
+                .run(event.event_id, event.event_type, event.occurred_at, event.session, envelope);
+            if (event.event_type === 'skill.read.observed') {
+                this.database
+                    .prepare('INSERT INTO usage_reads VALUES (?, ?, ?, ?, ?, ?)')
+                    .run(
+                        event.event_id,
+                        event.payload.collection!,
+                        event.payload.skill!,
+                        event.payload.revision!,
+                        event.session,
+                        event.occurred_at,
+                    );
+            }
+            this.database.exec('COMMIT');
+            return { recorded: true, event_id: event.event_id, event_type: event.event_type };
+        } catch (error) {
+            this.database.exec('ROLLBACK');
+            throw error;
+        }
+    }
+
+    /** UTC buckets distinguish explicit starts, read attempts and successful reads. */
+    trends(value: unknown = {}) {
+        const { from, until, interval, limit } = new SkillTelemetryValidator().trends(value);
+        const width = interval === 'day' ? 10 : 7;
+        const rows = this.database
+            .prepare(
+                `
+            SELECT period, SUM(reads) AS reads, SUM(read_sessions) AS read_sessions,
+                SUM(attempts) AS attempts, SUM(session_starts) AS session_starts,
+                SUM(started_sessions) AS started_sessions
+            FROM (
+                SELECT substr(occurred_at, 1, ?) AS period, COUNT(*) AS reads,
+                    COUNT(DISTINCT session) AS read_sessions, 0 AS attempts,
+                    0 AS session_starts, 0 AS started_sessions
+                FROM usage_reads WHERE occurred_at >= ? AND occurred_at < ? GROUP BY period
+                UNION ALL
+                SELECT substr(occurred_at, 1, ?) AS period, 0, 0,
+                    SUM(event_type='skill.read.attempted'), SUM(event_type='session.started'),
+                    COUNT(DISTINCT CASE WHEN event_type='session.started' THEN session END)
+                FROM usage_events WHERE occurred_at >= ? AND occurred_at < ? GROUP BY period
+            ) GROUP BY period ORDER BY period DESC LIMIT ?
+        `,
+            )
+            .all(width, from, until, width, from, until, limit + 1);
+        return {
+            from,
+            until,
+            interval,
+            truncated: rows.length > limit,
+            rows: rows.slice(0, limit),
+        };
     }
 
     rank(value: unknown = {}) {

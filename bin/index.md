@@ -7,6 +7,9 @@ Run `npm ci` explicitly in this checkout first. Commands never install
 dependencies or compile code at startup. `npm run typecheck` checks types;
 native type stripping only executes erasable syntax.
 
+`.node-version` records the verified Node 24.19.0 development runtime. The
+launcher accepts Node 24+; an ambient newer Node is not evidence of Node 24 testing.
+
 Checkout execution uses native TypeScript. The explicit build/package check
 prepares compiled JavaScript for node_modules; no runtime build runs implicitly.
 
@@ -38,6 +41,9 @@ node bin/index.mjs hook session-config --host codex
 node bin/index.mjs hook verify --host codex --file .codex/hooks.json
 node bin/index.mjs hook session-index
 node bin/index.mjs mcp usage --db /absolute/local-data/skill-usage.db
+node bin/index.mjs telemetry record --db /absolute/local-data/skill-usage.db --file event.json
+node bin/index.mjs telemetry rankings --db /absolute/local-data/skill-usage.db
+node bin/index.mjs telemetry trends --db /absolute/local-data/skill-usage.db --interval month
 ```
 
 Use each command's `--help`. Project resolution: explicit `--project`, then
@@ -73,6 +79,11 @@ Neither command enables or installs a hook.
 to the caller-owned dedicated SQLite database. Explicit calls record observed
 reads and query period rankings. Standard output contains protocol messages
 only. See the [usage contract](../docs/skill-usage-mcp.md).
+
+The explicit `telemetry` commands store typed session starts, read attempts and
+successful reads with occurrence/correlation UUIDs. Queries are read-only;
+optional bounded logs retain categories and IDs. Read the complete
+[telemetry contract](../docs/skill-telemetry.md) before choosing an emitter.
 
 Automatic telemetry is planned. Pre-tool events prove attempts only. A future
 post-tool adapter must prove a successful skill-file read, correlate a stable
