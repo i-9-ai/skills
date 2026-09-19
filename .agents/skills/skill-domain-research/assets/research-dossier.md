@@ -50,7 +50,15 @@ Preserve unresolved disagreement, missing authority, stale evidence, and failed 
 
 ## Normative and specialist-confirmation gate
 
-For each consequential legal, accounting, tax, regulatory, medical, safety, financial, privacy, or security conclusion, record the applicable jurisdiction and date, controlling source status, the exact applicability or interpretation question, the qualified specialist needed, and what authoring must avoid until confirmation.
+For each consequential normative finding, record the applicable jurisdiction,
+date, controlling source status, and unresolved applicability or interpretation
+questions. Collecting and synthesizing that evidence does not require a
+professional approval gate.
+
+For a case-specific professional determination or advice, additionally identify
+the exact conclusion, the qualified specialist needed, and the decision that
+must await that person's validation. Preserve the usable research findings and
+their limitations while that separate determination remains pending.
 
 ## Handoff
 
