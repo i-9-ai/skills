@@ -34,6 +34,17 @@ unknown types and conflicting retries fail. Explicit callers allocate random
 UUIDs once and reuse them on retry. Host adapters may deterministically map
 documented session/tool occurrence IDs to opaque UUIDs for retry identity;
 they cannot infer activation or fabricate successful reads from pre-tool events.
+The verified Claude adapter uses first committed receipt time because the native
+payload supplies no event timestamp; repeated host occurrence IDs preserve that
+time while requiring all other mapped evidence to agree. Only discovered skill
+entrypoints count; partial reads remain observations without completeness claims.
+
+The inspected Antigravity and Hermes contracts support context at first model
+invocation rather than a shared SessionStart schema. Add independent context
+adapters using invocationNum=0 and extra.is_first_turn=true, respectively. Hermes
+uses explicit sh -c because its command parser does not itself expand shell
+expressions. OpenCode remains a versioned plugin integration with manual context
+fallback; no untested plugin/SDK registration is generated.
 
 Expose noninteractive telemetry record/rankings/trends commands around a shared
 service. Record reads one bounded regular JSON file or bounded stdin. Queries

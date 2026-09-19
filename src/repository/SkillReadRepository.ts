@@ -91,14 +91,20 @@ export class SkillReadRepository {
     }
 
     /** Atomically retain a typed event and project only successful observations. */
-    recordEvent(value: unknown) {
+    recordEvent(value: unknown, { preserveFirstReceipt = false } = {}) {
         const event = new SkillTelemetryValidator().event(value);
-        const envelope = JSON.stringify(event);
         this.database.exec('BEGIN IMMEDIATE');
         try {
             const previous = this.database
                 .prepare('SELECT envelope FROM usage_events WHERE event_id=?')
                 .get(event.event_id);
+            // Hosts without event timestamps use the first successful local receipt.
+            // Only the verified host service opts into this; explicit CLI evidence
+            // keeps its supplied timestamp and exact conflict semantics.
+            if (previous && preserveFirstReceipt) {
+                event.occurred_at = JSON.parse(String(previous.envelope)).occurred_at;
+            }
+            const envelope = JSON.stringify(event);
             if (previous && previous.envelope !== envelope)
                 throw new Error('Event ID already has different evidence');
             if (previous) {

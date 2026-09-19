@@ -8,11 +8,12 @@ import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
 const launcher = fileURLToPath(new URL('../../../bin/index.mjs', import.meta.url));
-function cli(args, cwd) {
+function cli(args, cwd, input) {
     return spawnSync(process.execPath, [launcher, ...args], {
         cwd,
         encoding: 'utf8',
         timeout: 10000,
+        input,
     });
 }
 
@@ -60,7 +61,37 @@ test('unsupported adapters fail rather than generating inert registration', () =
     const inventory = JSON.parse(cli(['hook', 'list']).stdout);
     assert.match(inventory.find((entry) => entry.host === 'opencode').status, /unimplemented/);
     assert.match(
-        inventory.find((entry) => entry.name === 'skill-read-metrics').status,
+        inventory.find((entry) => entry.name === 'skill-read-metrics' && entry.host === 'other')
+            .status,
         /unimplemented/,
     );
+});
+
+test('Antigravity and Hermes emit first-invocation context through distinct native contracts', (t) => {
+    const root = realpathSync(mkdtempSync(join(tmpdir(), 'i9-extra-host-')));
+    t.after(() => rmSync(root, { recursive: true, force: true }));
+    for (const [host, first, later] of [
+        ['antigravity', { invocationNum: 0 }, { invocationNum: 1 }],
+        [
+            'hermes',
+            { hook_event_name: 'pre_llm_call', extra: { is_first_turn: true } },
+            { hook_event_name: 'pre_llm_call', extra: { is_first_turn: false } },
+        ],
+    ]) {
+        const args = ['hook', 'session-index', '--host', host, '--project', root, '--no-global'];
+        const result = cli(args, root, JSON.stringify(first));
+        assert.equal(result.status, 0, result.stderr);
+        const output = JSON.parse(result.stdout);
+        const context =
+            host === 'antigravity' ? output.injectSteps[0].ephemeralMessage : output.context;
+        assert.match(context, /No readable skill entrypoints/);
+        assert.deepEqual(JSON.parse(cli(args, root, JSON.stringify(later)).stdout), {});
+        const malformed = host === 'hermes' ? '{"hook_event_name":"pre_llm_call"}' : '{}';
+        assert.notEqual(cli(args, root, malformed).status, 0);
+        const config = JSON.parse(cli(['hook', 'session-config', '--host', host], root).stdout);
+        if (host === 'antigravity')
+            assert.equal(config['i9-available-skills'].PreInvocation[0].timeout, 3);
+        if (host === 'hermes') assert.match(config.hooks.pre_llm_call[0].command, /^sh -c '/);
+        assert.deepEqual(readdirSync(root), []);
+    }
 });

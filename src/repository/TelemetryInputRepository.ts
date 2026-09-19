@@ -5,8 +5,10 @@ import { strictJson } from '../../.agents/skills/skill-authoring/scripts/lib/con
 
 /** Reads one small event without following links or retaining input content. */
 export class TelemetryInputRepository {
-    async read(filename: string, input: Readable = process.stdin): Promise<unknown> {
-        const limit = 8192;
+    async read(filename: string, input: Readable = process.stdin, limit = 8192): Promise<unknown> {
+        if (!Number.isInteger(limit) || limit < 1 || limit > 1_048_576) {
+            throw new Error('Invalid bounded JSON input limit');
+        }
         if (filename === '-') {
             const chunks: Buffer[] = [];
             let size = 0;

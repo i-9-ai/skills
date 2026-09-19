@@ -85,13 +85,14 @@ successful reads with occurrence/correlation UUIDs. Queries are read-only;
 optional bounded logs retain categories and IDs. Read the complete
 [telemetry contract](../docs/skill-telemetry.md) before choosing an emitter.
 
-Automatic telemetry is planned. Pre-tool events prove attempts only. A future
-post-tool adapter must prove a successful skill-file read, correlate a stable
-event ID and opaque session, and submit through the usage service or MCP.
-Shell command text alone is insufficient. Retries, partial reads, helper
-scripts and host-managed loading need explicit coverage rules. Failures must
-preserve the user's task and report missing telemetry. No pre/post-tool
-emitter is enabled in this delivery.
+`hook telemetry-config --host claude --db /absolute/local-data/usage.db
+--collection project=/absolute/project/.agents/skills` prints an optional
+observation registration. `hook observe` maps native Claude Read events into
+the shared event store: attempts and successes remain distinct, stable host
+occurrences deduplicate, and first receipt time survives retries. It records
+entrypoint reads only; Bash, implicit loading and reference files are outside
+coverage. The [host contract](../docs/host-hooks.md) explains failure behavior.
+No host registration is installed or enabled by these commands.
 
 ## Failures and the single entrypoint
 
@@ -121,7 +122,7 @@ no aggregate dry-run: inspect/check and a verified backup precede explicit write
 
 ## Host adapters and packed distribution
 
-Use hook session-config --host codex|claude|copilot|gemini and hook verify
+Use hook session-config --host codex|claude|copilot|gemini|antigravity|hermes and hook verify
 --host HOST --file FILE for standalone configuration. Use hook session-index
 --host HOST for its documented output envelope. Read the [host contract](../docs/host-hooks.md)
 before proposing installation; generation and fixture tests do not enable a host.
