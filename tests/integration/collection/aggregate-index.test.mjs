@@ -451,3 +451,32 @@ test("aggregate indexes only accept validated catalog entries and bounded querie
     await assert.rejects(() => queryAggregateIndex(result.index, { sqliteLoader: unavailableSqlite }), /query needs/);
     await assert.rejects(() => queryAggregateIndex(result.index, { name: "not a slug", sqliteLoader: unavailableSqlite }), /slug/);
 });
+
+test("aggregate output rejects source aliases before creating any directories", async t => {
+    const root = fixture(t);
+    const sourceRoot = path.join(root, "source");
+    const filename = writeCatalog(sourceRoot, catalog([skill("alpha-skill")]));
+    const alias = path.join(root, "source-alias");
+    fs.symlinkSync(sourceRoot, alias);
+    for (const operation of [rebuildAggregateIndex, syncAggregateIndex]) {
+        for (const output of [path.join(sourceRoot, "nested", "output"), path.join(alias, "nested", "output")]) {
+            await assert.rejects(() => operation({ sources: [source("alpha", filename)], output, format: "json" }), /outside source/);
+            assert.equal(fs.existsSync(path.join(sourceRoot, "nested")), false);
+        }
+        await assert.rejects(() => operation({ sources: [source("alpha", path.join(alias, "skills-catalog.json"))], output: path.join(sourceRoot, "nested"), format: "json" }), /outside source/);
+        assert.equal(fs.existsSync(path.join(sourceRoot, "nested")), false);
+    }
+    assert.deepEqual(fs.readdirSync(sourceRoot), ["skills-catalog.json"]);
+});
+
+test("aggregate output resolves safe ancestors and refuses a linked destination", async t => {
+    const root = fixture(t);
+    const filename = writeCatalog(path.join(root, "source"), catalog([skill("alpha-skill")]));
+    const safe = path.join(root, "safe");
+    fs.mkdirSync(safe);
+    const alias = path.join(root, "safe-alias");
+    fs.symlinkSync(safe, alias);
+    const result = await rebuildAggregateIndex({ sources: [source("alpha", filename)], output: path.join(alias, "nested"), format: "json" });
+    assert.equal(result.index, path.join(fs.realpathSync(safe), "nested", "skills-catalog.index.json"));
+    await assert.rejects(() => rebuildAggregateIndex({ sources: [source("alpha", filename)], output: alias, format: "json" }), /real directory/);
+});

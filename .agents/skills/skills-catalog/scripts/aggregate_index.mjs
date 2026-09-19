@@ -237,20 +237,43 @@ function historyDelta(previousIndex, nextIndex) {
   return { sourceObservations, skillChanges };
 }
 
-function prepareOutput(directory) {
+function prepareOutput(directory, sources) {
   requireCondition(typeof directory === "string" && directory.length > 0, "output directory is required");
   const absolute = path.resolve(directory);
+  // Resolve existing ancestors before creating anything. An alias must not hide
+  // that a proposed output lives in a source collection.
+  let ancestor = absolute;
+  const missing = [];
+  while (true) {
+    try {
+      const info = fs.lstatSync(ancestor);
+      requireCondition(ancestor !== absolute || !info.isSymbolicLink(), "output directory must be a real directory");
+      requireCondition(fs.statSync(ancestor).isDirectory(), "output ancestor must be a directory");
+      break;
+    } catch (error) {
+      if (error.code !== "ENOENT") throw error;
+      missing.unshift(path.basename(ancestor));
+      const parent = path.dirname(ancestor);
+      requireCondition(parent !== ancestor, "output ancestor is missing");
+      ancestor = parent;
+    }
+  }
+  const expected = path.join(fs.realpathSync(ancestor), ...missing);
+  ensureOutsideSources(expected, sources);
   try { fs.mkdirSync(absolute, { recursive: true, mode: 0o700 }); }
   catch { throw new AggregateIndexError("output directory cannot be created"); }
   const info = fs.lstatSync(absolute, { bigint: true });
   requireCondition(info.isDirectory() && !info.isSymbolicLink(), "output directory must be a real directory");
-  return absolute;
+  const canonical = fs.realpathSync(absolute);
+  requireCondition(canonical === expected, "output directory changed during creation");
+  ensureOutsideSources(canonical, sources);
+  return canonical;
 }
 
 function ensureOutsideSources(output, sources) {
   const normalized = `${path.resolve(output)}${path.sep}`;
   for (const source of sources) {
-    const parent = `${path.resolve(path.dirname(source.filename))}${path.sep}`;
+    const parent = `${fs.realpathSync(path.dirname(source.filename))}${path.sep}`;
     requireCondition(!normalized.startsWith(parent), "output directory must be outside source catalog directories");
   }
 }
@@ -623,13 +646,13 @@ async function writeAggregateIndex({ sources, output, format, sqliteLoader, mode
   requireCondition(["auto", "sqlite", "json"].includes(format), "format must be auto, sqlite, or json");
   const parsed = (sources ?? []).map(sourceRecord);
   const index = deriveAggregateIndex(parsed);
-  const directory = prepareOutput(output);
-  ensureOutsideSources(directory, parsed);
   const module = format === "json" ? null : await sqliteModule(sqliteLoader);
   if (format === "sqlite" && module === null) throw new AggregateIndexError("SQLite is unavailable; use format=json or provide Node.js with node:sqlite");
+  const timestamp = module ? observedTimestamp(observedAt) : null;
+  const directory = prepareOutput(output, parsed);
   const filename = path.join(directory, module ? SQLITE_FILE : JSON_FILE);
   let observation = null;
-  if (module) observation = writeSqlite(filename, index, module.DatabaseSync, { mode, observedAt: observedTimestamp(observedAt), resetHistory });
+  if (module) observation = writeSqlite(filename, index, module.DatabaseSync, { mode, observedAt: timestamp, resetHistory });
   else {
     const expectedBytes = optionalRegularBytes(filename, "existing JSON index", MAX_INDEX_BYTES);
     replaceAtomically(filename, canonicalBytes(index), { expectedBytes });

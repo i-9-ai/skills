@@ -616,9 +616,25 @@ function pruneSnapshots(options) {
   const selected = ordered.slice(keep);
   const moved = [];
   if (options.apply && selected.length > 0) {
+    const canonicalStore = fs.realpathSync(listed.store);
     const trash = path.join(listed.store, '.trash');
-    fs.mkdirSync(trash, { recursive: true, mode: 0o700 });
+    try {
+      fs.mkdirSync(trash, { mode: 0o700 });
+    } catch (error) {
+      if (error.code !== 'EEXIST') throw error;
+    }
+    const trashInfo = fs.lstatSync(trash);
+    if (!trashInfo.isDirectory() || trashInfo.isSymbolicLink()
+        || fs.realpathSync(trash) !== path.join(canonicalStore, '.trash')) {
+      throw new UsageError('Snapshot trash must be a real directory inside its store');
+    }
     for (const snapshot of selected) {
+      const currentTrash = fs.lstatSync(trash);
+      if (!currentTrash.isDirectory() || currentTrash.isSymbolicLink()
+          || currentTrash.dev !== trashInfo.dev || currentTrash.ino !== trashInfo.ino
+          || fs.realpathSync(listed.store) !== canonicalStore) {
+        throw new UsageError('Snapshot store or trash changed during retention');
+      }
       let destination = path.join(trash, snapshot.name);
       if (fs.existsSync(destination)) destination = path.join(trash, `${snapshot.name}-${crypto.randomBytes(4).toString('hex')}`);
       fs.renameSync(snapshot.path, destination);

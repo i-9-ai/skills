@@ -238,6 +238,26 @@ test('retention preserves shared objects and trashed manifests remain verifiable
   for (const moved of prune.moved) run(['verify', '--snapshot', moved.to]);
 });
 
+test('retention rejects linked or non-directory trash without moving snapshots', t => {
+  const f = fixture(); t.after(() => fs.rmSync(f.root, { recursive: true, force: true }));
+  create(f, 'retained');
+  const outside = path.join(f.root, 'outside');
+  fs.mkdirSync(outside);
+  const trash = path.join(f.store, '.trash');
+  fs.symlinkSync(outside, trash);
+  const before = fs.readFileSync(path.join(f.store, 'retained', 'manifest.json'));
+  let result = run(['prune', '--store', f.store, '--keep', '0', '--apply'], 1);
+  assert.match(result.stderr, /trash must be a real directory/);
+  assert.deepEqual(fs.readdirSync(outside), []);
+  assert.deepEqual(fs.readFileSync(path.join(f.store, 'retained', 'manifest.json')), before);
+  run(['verify', '--snapshot', path.join(f.store, 'retained')]);
+  fs.unlinkSync(trash);
+  fs.writeFileSync(trash, 'not a directory');
+  result = run(['prune', '--store', f.store, '--keep', '0', '--apply'], 1);
+  assert.match(result.stderr, /trash must be a real directory/);
+  assert.deepEqual(fs.readFileSync(path.join(f.store, 'retained', 'manifest.json')), before);
+});
+
 test('corrupt/replaced objects are refused and cannot be silently repaired by capture', t => {
   const f = fixture(); t.after(() => fs.rmSync(f.root, { recursive: true, force: true }));
   create(f, 'original');
