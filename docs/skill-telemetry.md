@@ -95,7 +95,10 @@ event/correlation UUIDs. They rotate at 1 MiB, retaining three archives; only
 the selected file and `.1`–`.3` are affected. Links and non-regular destinations
 are rejected. Preflight rejects overlap of any selected diagnostic file with
 the database, SQLite sidecars or the input file, including canonical aliases,
-before opening a writer. The directory must be an existing canonical absolute path. New
+before opening a writer. Existing targets are also compared by filesystem
+identity; filename comparisons conservatively normalize Unicode and ignore case,
+including on case-sensitive filesystems. The directory must be an existing
+canonical absolute path. New
 files use mode 0600; pre-existing permissions remain caller-owned. Use a stable
 trusted directory: path inspection does not promise race-proof confinement or
 cross-process log rotation. SQLite remains the authoritative event store.

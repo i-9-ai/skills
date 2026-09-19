@@ -6,6 +6,7 @@ import {
     openSync,
     closeSync,
     realpathSync,
+    statSync,
     renameSync,
     unlinkSync,
 } from 'node:fs';
@@ -28,12 +29,36 @@ export class TelemetryLogRepository {
 
     /** Reject overlaps before SQLite or diagnostic writes can change selected data. */
     static assertSeparate(filename: string, protectedFiles: string[]): void {
-        const protectedPaths = new Set(protectedFiles.map((file) => this.canonicalSelection(file)));
+        const protectedPaths = new Set(protectedFiles.map((file) => this.comparisonKey(file)));
+        const protectedIdentities = new Set(
+            protectedFiles.map((file) => this.fileIdentity(file)).filter(Boolean),
+        );
         for (const suffix of ['', '.1', '.2', '.3']) {
-            if (protectedPaths.has(this.canonicalSelection(filename + suffix))) {
+            const selected = filename + suffix;
+            if (
+                protectedPaths.has(this.comparisonKey(selected)) ||
+                protectedIdentities.has(this.fileIdentity(selected))
+            ) {
                 throw new Error('Diagnostic files overlap selected data');
             }
         }
+    }
+
+    private static fileIdentity(filename: string): string | undefined {
+        try {
+            const info = statSync(filename);
+            return `${info.dev}:${info.ino}`;
+        } catch (error) {
+            if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined;
+            throw error;
+        }
+    }
+
+    private static comparisonKey(filename: string): string {
+        // Missing leaves cannot be resolved by realpath. Conservatively reject
+        // spelling aliases even on case-sensitive volumes: after SQLite creates
+        // the file, a case-insensitive rotation must not delete that new file.
+        return this.canonicalSelection(filename).normalize('NFC').toLowerCase();
     }
 
     private static canonicalSelection(filename: string): string {

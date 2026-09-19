@@ -63,4 +63,21 @@ test('diagnostic destinations and rotation archives cannot change selected datab
         /overlap/,
     );
     assert.ok(!fs.existsSync(missingDb));
+    const upperLog = path.join(root, 'TELEMETRY.LOG');
+    fs.writeFileSync(upperLog, 'x'.repeat(1_048_576));
+    const lowerDb = path.join(root, 'telemetry.log.3');
+    await assert.rejects(new SkillTelemetryService().record(lowerDb, input, upperLog), /overlap/);
+    assert.ok(!fs.existsSync(lowerDb));
+    assert.equal(fs.statSync(upperLog).size, 1_048_576);
+    await assert.rejects(
+        new SkillTelemetryService().record(db, input, path.join(root, 'USAGE.DB')),
+        /overlap/,
+    );
+    assert.deepEqual(fs.readFileSync(db), beforeDb);
+    const upperSidecar = path.join(root, 'FUTURE.DB-WAL');
+    await assert.rejects(
+        new SkillTelemetryService().record(path.join(root, 'future.db'), input, upperSidecar),
+        /overlap/,
+    );
+    assert.ok(!fs.existsSync(path.join(root, 'future.db')));
 });
