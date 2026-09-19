@@ -28,6 +28,25 @@ Refresh actual affected example checks and behavioral evaluations when a route c
 
 ## Procedure
 
+For material evolution, refresh both reference-skill discovery and domain
+research. Search skills.sh and primary repositories even when the local
+package already has useful references; review the complete relevant corpus,
+including examples and exceptions. Open current authoritative domain sources
+and reconcile their version/date/scope with the process owner's facts and the
+existing skill. Reuse still-current evidence only after checking its identity
+and applicability; a source summary is not a full-package review.
+
+Keep regulated factual and normative information with its authoritative source,
+date and jurisdiction. Distinguish it from a case-specific professional decision
+that requires qualified validation. Do not suppress useful medical, legal,
+accounting or tax guidance merely because that later decision has a gate.
+
+Reevaluate the candidate within the current collection before changing its
+structure: name, trigger, output, overlap, dependencies and consumers. Record
+retain, rename, merge, split, compact or retire with the evidence that makes
+that disposition preferable. Compact duplicated wording without losing usable
+procedures; route an independently useful responsibility to its own package.
+
 1. Establish the current package identity, responsibility, version or revision, and frozen baseline. Normal evolution requires a passing baseline; stop if the starting bytes are ambiguous. A repair may start from an inherited known-failing baseline only when the exact failing checks, candidate bytes, and intended repair are frozen in the evolution record. Never label that baseline passing or use it to claim regression preservation.
 2. Normalize each new evidence item by source, immutable revision when available, license when relevant, relevance, and confidence. When several raw observations, reports, or audit findings need preservation before this comparison, hand them to skill-evidence-collection and consume its bounded evidence packet. Treat upstream changes as candidates rather than automatic requirements.
 3. Classify the evidence and choose its destination using the [evidence promotion guide](references/evidence-promotion.md). Keep weak direction signals as hypotheses or experiment inputs; do not turn them into active instructions.

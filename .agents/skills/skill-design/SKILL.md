@@ -30,6 +30,27 @@ Define evaluation cases and expected artifacts, but call them benchmark results 
 
 ## Procedure
 
+A final design for a new or materially revised skill requires two different
+research inputs: a skills.sh/primary-repository discovery record covering the
+complete relevant packages, and current authoritative domain research. Similar
+skills never replace domain research. Reconcile both with the process owner's
+actual workflow and constraints; identify missing owner input as an assumption
+instead of inventing it. A preliminary design may map the responsibility and
+research questions before those inputs exist, but cannot label the final
+implementation contract ready.
+
+Preserve source scope, version, observation date and conflict decisions. Legal,
+tax, accounting and medical facts or normative requirements remain legitimate
+research inputs. Attribute them to their jurisdiction and current authority;
+reserve qualified validation for an individual professional determination,
+not for the mere inclusion of factual guidance. Owner preferences cannot
+silently override a standard or legal requirement.
+
+When revising a skill, compare its proposed name, trigger, output and scope
+against the current collection. Decide retain, rename, merge, split, compact
+or retire from actual overlap and consumers. A refactor is not complete merely
+because the same text fits a new template.
+
 Design instruction strength from each operation's failure cost and tolerance for variation. Fragile sequences need ordered prerequisites and explicit stopping rules. Flexible work needs a recommended default, its rationale, and the condition that warrants another approach. Include concrete gotchas from authorized corrections and a checkpoint checklist when omissions are a known failure mode. Preserve useful task evidence without turning a single observed solution into a universal rule.
 
 1. State the single job, user, primary output, and likely mistakes the skill should prevent. Check existing context before asking for more information.

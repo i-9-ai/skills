@@ -20,6 +20,20 @@ Resolve this package's references and templates from the loaded `SKILL.md`. Eval
 
 ## Task-route completeness checks
 
+Verify the research behind a new or materially revised candidate: task-specific
+skills.sh and primary-source discovery, full relevant reference-package review,
+current authoritative domain research, and reconciliation with process-owner
+input. Finding a similar skill is not a substitute for domain research. Record
+missing evidence, unresolved conflicts and unverified owner assumptions as
+findings; a well-formatted package cannot compensate for an unsupported claim.
+
+For regulated domains, grade factual and normative statements against their
+dated authoritative sources and jurisdiction. Grade the boundary between that
+information and an individual professional determination separately. Do not
+fail useful sourced information solely because a later case decision needs a
+qualified professional. When the candidate was refactored, inspect the current
+collection's name/scope/overlap and retain/merge/split/compact decision too.
+
 Before execution, trace ordinary and conditional task routes through the entrypoint and relevant bundled resources. Require concrete prerequisites, decisions, procedure, implementation wiring, commands or code, verification, exceptions, and recovery sufficient without domain prior knowledge or external lookup. For code-facing skills, check a normal minimal complete inline example when it enables immediate implementation; do not accept a bare instruction to read an external or offline guide instead of that example.
 
 Check that reference links identify their topic and loading condition, independently needed branches remain selective, and commonly co-used information stays together when that reduces navigation overhead. Do not reward a mechanical split or read-all requirement. Preserve useful reviewed source procedures and examples across template changes; inspect the rationale for omissions. Advisory length/token budgets cannot compensate for lost required coverage; verified specification/schema constraints and collection bounds are separate conformance checks.

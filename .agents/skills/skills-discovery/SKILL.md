@@ -20,6 +20,19 @@ Resolve this package's references and templates from the loaded `SKILL.md`. Save
 
 ## Procedure
 
+Discovery is mandatory evidence for skill construction even when the caller
+already knows a similar package. Inspect the complete relevant reference corpus,
+not only its description or entrypoint: useful examples, exceptions and recovery
+instructions must survive the later selection or receive an explicit rejection
+reason. A template mismatch is not a reason to discard useful content.
+
+Keep this candidate report distinct from domain research. The author still
+needs opened current authoritative sources and the process owner's workflow,
+then a reconciliation of those facts with candidate claims. Flag stale API,
+standard, jurisdiction or professional assertions for that research instead of
+promoting a source skill to authority. Regulated facts may be researched and
+included; case-specific professional decisions have their own validation gate.
+
 1. Convert the goal into at least two task-specific queries or synonyms. Search skills.sh and the cited primary repositories. Inspect user-supplied candidates as well; do not let the search ranking replace the user's objective.
 2. Prefer a small, diverse shortlist with actual functional overlap. Use popularity, maintenance, and audit badges as discovery signals, not proof of safety or production quality. Start with at most five candidates and two search refinements unless the user sets another budget.
 3. Resolve each repository reference to an immutable commit. Inspect the complete relevant package inventory: entrypoint, referenced documents, scripts, templates, examples, evaluations, assets, and scoped license. Look for nested license overrides. Track files inspected and files not inspected.
