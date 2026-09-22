@@ -52,3 +52,12 @@ test('Wiki rewriting follows indented continuation of an open paragraph', () => 
         'Read\n    [the guide](https://github.com/example/skills/blob/main/README.md)\n',
     );
 });
+
+test('Wiki rewriting follows an indented lazy blockquote continuation', () => {
+    const source = '> Read\n    [the guide](../README.md)\n';
+    const result = new WikiLinkService().rewrite(source, 'docs/index.md', 'example/skills');
+    assert.equal(
+        result,
+        '> Read\n    [the guide](https://github.com/example/skills/blob/main/README.md)\n',
+    );
+});
