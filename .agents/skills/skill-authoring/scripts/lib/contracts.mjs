@@ -268,7 +268,12 @@ function visibleMarkdown(text) {
       continue;
     }
     const paragraph = line.replace(/^\s{0,3}>[ \t]?/u, '');
-    paragraphOpen = paragraph.trim().length > 0 && !/^\s{0,3}(?:#{1,6}\s|[-+*]\s|\d+[.)]\s|-{3,}\s*$|\*{3,}\s*$)/u.test(paragraph);
+    const quotedList = line !== paragraph && paragraph.match(/^\s{0,3}(?:[-+*]|\d+[.)])[ \t]+/u);
+    if (quotedList) {
+      paragraphOpen = paragraph.slice(quotedList[0].length).trim().length > 0;
+      continue;
+    }
+    paragraphOpen = paragraph.trim().length > 0 && !/^\s{0,3}(?:#{1,6}\s|-{3,}\s*$|\*{3,}\s*$)/u.test(paragraph);
   }
   return stripInlineCode(lines.join(''));
 }

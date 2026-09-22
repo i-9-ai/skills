@@ -191,6 +191,8 @@ test('nested Markdown list links are checked while indented code remains an exam
         '- Parent\n      [Missing](missing.md)',
         '- Parent\nlazy paragraph continuation\n\n    [Missing](missing.md)',
         '> Read\n    [Missing](missing.md)',
+        '> - Read\n    [Missing](missing.md)',
+        '> 1. Read\n    [Missing](missing.md)',
     ]) {
         fs.writeFileSync(filename, `${original}\n${markup}\n`);
         assert.throws(() => validateSkill(packagePath), /invalid local link/);
