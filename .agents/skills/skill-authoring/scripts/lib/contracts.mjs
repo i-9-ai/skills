@@ -252,13 +252,13 @@ function visibleMarkdown(text) {
 
     const indentation = line.match(/^[ \t]*/u)[0].replace(/\t/g, '    ').length;
     const listMarker = line.match(/^[ \t]*(?:[-+*]|\d+[.)])[ \t]+/u);
-    while (listStack.length && indentation < listStack.at(-1).contentIndent) listStack.pop();
+    while (listStack.length && indentation < listStack.at(-1).contentIndent && (!paragraphOpen || listMarker)) listStack.pop();
 
     const parent = listStack.at(-1);
     if (listMarker && (indentation < 4 || (parent && indentation < parent.contentIndent + 4))) {
       const markerIndent = listMarker[0].replace(/\t/g, '    ').length;
       listStack.push({ contentIndent: markerIndent });
-      paragraphOpen = false;
+      paragraphOpen = line.slice(listMarker[0].length).trim().length > 0;
       continue;
     }
 
