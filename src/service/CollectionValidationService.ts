@@ -7,6 +7,7 @@ import {
 } from '../repository/CollectionFilesystemRepository.ts';
 import {
     IGNORED_ROOT_NAMES,
+    IGNORED_RELATIVE_PATHS,
     REPOSITORY_ALIASES,
     CollectionValidator,
 } from '../validator/CollectionValidator.ts';
@@ -29,6 +30,7 @@ export class CollectionValidationService {
             root.rejectTrackedScratch();
             const inventory = root.inventory({
                 ignoredRootNames: IGNORED_ROOT_NAMES,
+                ignoredRelativePaths: IGNORED_RELATIVE_PATHS,
                 allowedSymlinks: REPOSITORY_ALIASES,
             });
             for (const [relative, target] of Object.entries(REPOSITORY_ALIASES))

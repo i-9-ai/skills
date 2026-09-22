@@ -56,7 +56,8 @@ function packageName(value) {
 }
 
 function readFile(filename, maximum = MAX_FILE_BYTES) {
-    const fd = fs.openSync(filename, fs.constants.O_RDONLY | fs.constants.O_NOFOLLOW);
+    requireValue(fs.lstatSync(filename).isFile(), 'Expected one bounded regular file');
+    const fd = fs.openSync(filename, fs.constants.O_RDONLY | fs.constants.O_NOFOLLOW | fs.constants.O_NONBLOCK);
     try {
         const before = fs.fstatSync(fd);
         requireValue(before.isFile() && before.nlink === 1 && before.size <= maximum, 'Expected one bounded regular file');

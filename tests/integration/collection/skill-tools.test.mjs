@@ -166,6 +166,16 @@ test('fenced examples, inline code, and remote links are not local dependencies'
     assert.equal(validateSkill(packagePath).local_links, 0);
 });
 
+test('nested Markdown list links are checked while indented code remains an example', t => {
+    const packagePath = makeSkill(fixture(t));
+    const filename = path.join(packagePath, 'SKILL.md');
+    const original = fs.readFileSync(filename, 'utf8');
+    fs.writeFileSync(filename, `${original}\n- Parent\n    - [Missing](missing.md)\n`);
+    assert.throws(() => validateSkill(packagePath), /invalid local link/);
+    fs.writeFileSync(filename, `${original}\n    [Example](missing.md)\n`);
+    assert.equal(validateSkill(packagePath).local_links, 0);
+});
+
 test('standalone validation finds multiline Markdown and embedded HTML dependencies', t => {
     const packagePath = makeSkill(fixture(t));
     const filename = path.join(packagePath, 'SKILL.md');

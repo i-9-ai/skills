@@ -453,8 +453,8 @@ test('wrong targets and additional symlinks are rejected', (t) => {
 test('root scratch is never read, while similarly named package directories are checked', (t) => {
     const { root, packagePath } = makeRepository(t);
     const sentinel = 'ghp_' + 'A'.repeat(36);
-    const scratch = ['.work', 'tmp', 'node_modules', '.beads', '.codex'].map((directory) => {
-        fs.mkdirSync(join(root, directory));
+    const scratch = ['.work', 'tmp', 'node_modules', '.beads', '.codex/environments'].map((directory) => {
+        fs.mkdirSync(join(root, directory), { recursive: true });
         const file = join(root, directory, 'private.txt');
         fs.writeFileSync(file, sentinel);
         return file;
@@ -462,6 +462,13 @@ test('root scratch is never read, while similarly named package directories are 
     guardContentReads(scratch, () => assert.equal(new CollectionValidationService().validateRepository(root).packages, 1));
     fs.mkdirSync(join(packagePath, 'tmp'));
     fs.writeFileSync(join(packagePath, 'tmp', 'private.txt'), sentinel);
+    assert.throws(() => new CollectionValidationService().validateRepository(root), /possible GitHub credential/);
+});
+
+test('Codex source files remain in the public hygiene corpus', t => {
+    const { root } = makeRepository(t);
+    fs.mkdirSync(join(root, '.codex'));
+    fs.writeFileSync(join(root, '.codex', 'hooks.json'), 'ghp_' + 'A'.repeat(36));
     assert.throws(() => new CollectionValidationService().validateRepository(root), /possible GitHub credential/);
 });
 
@@ -477,6 +484,15 @@ test('tracked root scratch is rejected without reading its contents or echoing i
         assert.ok(!error.message.includes('synthetic-private-name'));
         return true;
     }));
+});
+
+test('tracked Beads state is rejected even though its directory is skipped', t => {
+    const { root } = makeRepository(t);
+    fixtureGit(root, 'init', '-q');
+    fs.mkdirSync(join(root, '.beads'));
+    fs.writeFileSync(join(root, '.beads', 'state.json'), '{}\n');
+    fixtureGit(root, 'add', '-f', '--', '.beads/state.json');
+    assert.throws(() => new CollectionValidationService().validateRepository(root), /must not be tracked/);
 });
 
 test('cache-named directories do not bypass the publication hygiene corpus', (t) => {

@@ -115,8 +115,9 @@ export class SafeRoot {
       throw error;
     }
   }
-  inventory({ ignoredNames = [], ignoredRootNames = [], allowedSymlinks = {} } = {}) {
+  inventory({ ignoredNames = [], ignoredRootNames = [], ignoredRelativePaths = [], allowedSymlinks = {} } = {}) {
     const ignored = new Set(ignoredNames); const ignoredRoot = new Set(ignoredRootNames);
+    const ignoredPaths = new Set(ignoredRelativePaths);
     const result = []; let total = 0;
     const visit = parts => {
       requireCondition(parts.length <= LIMITS.depth, 'directory nesting exceeds the limit');
@@ -129,9 +130,9 @@ export class SafeRoot {
         if (snapshot) this.verifySnapshot(snapshot); else this.assertStable();
         let entry;
         while ((entry = directory.readSync()) !== null) {
-          if (ignored.has(entry.name) || (parts.length === 0 && ignoredRoot.has(entry.name))) continue;
-          requireCondition(result.length < LIMITS.entries, 'package entry count exceeds the limit');
           const relative = [...parts, entry.name].join('/');
+          if (ignored.has(entry.name) || (parts.length === 0 && ignoredRoot.has(entry.name)) || ignoredPaths.has(relative)) continue;
+          requireCondition(result.length < LIMITS.entries, 'package entry count exceeds the limit');
           const inspected = this.inspect(relative, { allowSymlinkLeaf: Object.hasOwn(allowedSymlinks, relative) });
           const { info } = inspected;
           if (info.isSymbolicLink()) {

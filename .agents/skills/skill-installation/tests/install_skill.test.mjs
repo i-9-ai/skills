@@ -79,6 +79,17 @@ test('detached helper installs only pinned Git bytes and verifies a receipt with
     assert.deepEqual(fs.readdirSync(f.collection), ['sample-skill']);
 });
 
+test('special-file receipt fails promptly without waiting for a writer', t => {
+    const f = fixture(t);
+    const receipt = path.join(f.state, 'receipt.json');
+    const created = spawnSync('mkfifo', [receipt], { timeout: 2_000 });
+    assert.equal(created.status, 0, created.stderr?.toString());
+    const result = f.invoke('verify', ['--receipt', receipt, '--destination', f.destination]);
+    assert.notEqual(result.status, 0);
+    assert.equal(result.error, undefined);
+    assert.match(result.stderr, /bounded regular file/);
+});
+
 test('collisions are preserved and explicit replacement has verified reversible prior bytes', t => {
     const f = fixture(t);
     fs.mkdirSync(f.destination);

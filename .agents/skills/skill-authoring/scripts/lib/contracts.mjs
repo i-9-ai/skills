@@ -218,7 +218,7 @@ function stripInlineCode(line) {
       output += line.slice(cursor);
       break;
     }
-    output += line.slice(cursor, end + width).replace(/[^\r\n]/gu, ' ');
+    output += line.slice(cursor, end + width).replace(/[^\r\n]/g, ' ');
     cursor = end + width;
   }
   return output;
@@ -238,7 +238,8 @@ function visibleMarkdown(text) {
       lines[index] = ' '.repeat(line.length);
       continue;
     }
-    if (fence !== null || /^(?: {4}|\t)/u.test(line)) lines[index] = ' '.repeat(line.length);
+    const nestedList = /^ {4,}(?:[-+*]|\d+[.)])\s/u.test(line);
+    if (fence !== null || (/^(?: {4}|\t)/u.test(line) && !nestedList)) lines[index] = ' '.repeat(line.length);
   }
   return stripInlineCode(lines.join(''));
 }

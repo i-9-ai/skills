@@ -21,6 +21,7 @@ export class CollectionFilesystemRepository extends skillTools.SafeRoot {
     override inventory(
         options: {
             ignoredRootNames?: readonly string[];
+            ignoredRelativePaths?: readonly string[];
             allowedSymlinks?: Readonly<Record<string, string>>;
         } = {},
     ): Array<[string, Stats]> {
@@ -125,6 +126,8 @@ export class CollectionFilesystemRepository extends skillTools.SafeRoot {
                 '.work',
                 'tmp',
                 'node_modules',
+                '.beads',
+                '.codex/environments',
             ],
             {
                 env,
