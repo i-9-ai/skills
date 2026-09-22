@@ -34,8 +34,12 @@ test('Wiki rewriting preserves balanced destinations, references, titles and cod
 });
 
 test('Wiki rewriting preserves offsets after Unicode code spans and follows nested lists', () => {
-    const source = '`😀` [Repository](../README.md)\n- Parent\n    - [Nested](../README.md)\n';
+    const source =
+        '`😀` [Repository](../README.md)\n- Parent\n    - Nested paragraph\n      [Nested](../README.md)\n';
     const result = new WikiLinkService().rewrite(source, 'docs/index.md', 'example/skills');
     const target = 'https://github.com/example/skills/blob/main/README.md';
-    assert.equal(result, `\`😀\` [Repository](${target})\n- Parent\n    - [Nested](${target})\n`);
+    assert.equal(
+        result,
+        `\`😀\` [Repository](${target})\n- Parent\n    - Nested paragraph\n      [Nested](${target})\n`,
+    );
 });

@@ -174,6 +174,17 @@ test('nested Markdown list links are checked while indented code remains an exam
     assert.throws(() => validateSkill(packagePath), /invalid local link/);
     fs.writeFileSync(filename, `${original}\n    [Example](missing.md)\n`);
     assert.equal(validateSkill(packagePath).local_links, 0);
+    for (const markup of [
+        '- Parent\n    - Nested paragraph\n      [Missing](missing.md)',
+        '- Parent\n\n    See [Missing](missing.md).',
+    ]) {
+        fs.writeFileSync(filename, `${original}\n${markup}\n`);
+        assert.throws(() => validateSkill(packagePath), /invalid local link/);
+    }
+    fs.writeFileSync(filename, `${original}\nCode example:\n\n    - [Example](missing.md)\n`);
+    assert.equal(validateSkill(packagePath).local_links, 0);
+    fs.writeFileSync(filename, `${original}\n- Parent\n\n      - [Example](missing.md)\n`);
+    assert.equal(validateSkill(packagePath).local_links, 0);
 });
 
 test('standalone validation finds multiline Markdown and embedded HTML dependencies', t => {

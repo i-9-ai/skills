@@ -227,6 +227,7 @@ function stripInlineCode(line) {
 /** Preserve source offsets while excluding fenced and inline code examples. */
 function visibleMarkdown(text) {
   let fence = null;
+  const listStack = [];
   const lines = text.split(/(\r\n|\n|\r)/u);
   for (let index = 0; index < lines.length; index += 2) {
     const line = lines[index];
@@ -238,8 +239,25 @@ function visibleMarkdown(text) {
       lines[index] = ' '.repeat(line.length);
       continue;
     }
-    const nestedList = /^ {4,}(?:[-+*]|\d+[.)])\s/u.test(line);
-    if (fence !== null || (/^(?: {4}|\t)/u.test(line) && !nestedList)) lines[index] = ' '.repeat(line.length);
+    if (fence !== null) {
+      lines[index] = ' '.repeat(line.length);
+      continue;
+    }
+    if (!line.trim()) continue;
+
+    const indentation = line.match(/^[ \t]*/u)[0].replace(/\t/g, '    ').length;
+    const listMarker = line.match(/^[ \t]*(?:[-+*]|\d+[.)])[ \t]+/u);
+    while (listStack.length && indentation < listStack.at(-1).contentIndent) listStack.pop();
+
+    const parent = listStack.at(-1);
+    if (listMarker && (indentation < 4 || (parent && indentation < parent.contentIndent + 4))) {
+      const markerIndent = listMarker[0].replace(/\t/g, '    ').length;
+      listStack.push({ contentIndent: markerIndent });
+      continue;
+    }
+
+    const codeIndent = listStack.length ? listStack.at(-1).contentIndent + 4 : 4;
+    if (indentation >= codeIndent) lines[index] = ' '.repeat(line.length);
   }
   return stripInlineCode(lines.join(''));
 }
