@@ -96,7 +96,7 @@ A scheduled run may gather evidence or propose work only within its declared mod
 
 ## Output and acceptance
 
-Return one JSON artifact with `decision` equal to `propose`, `none`, or `blocked`. A proposal includes the target, maintenance goal, recurrence, scheduler and executor, authority, route, evidence owner and destination, stopping rule, and rollback path. Use the bundled synthetic examples for [an existing scheduler](examples/existing-scheduler.json), [no local scheduler](examples/no-scheduler.json), [explicit configuration authority](examples/configure-authorized.json), and [no recurring need](examples/no-recurring-need.json).
+Return one JSON artifact with `decision` equal to `propose`, `none`, or `blocked`. A proposal includes the target, maintenance goal, recurrence, scheduler and executor, authority, route, evidence owner and destination, stopping rule, and rollback path. A blocked artifact may set `target` to `null` only until its bounded identity is established; retain `reason` and one `required_action`. Use the bundled synthetic examples for [an existing scheduler](examples/existing-scheduler.json), [no local scheduler](examples/no-scheduler.json), [explicit configuration authority](examples/configure-authorized.json), and [no recurring need](examples/no-recurring-need.json).
 
 Accept a proposal only when the target is bounded, the cadence is justified and least-frequent, the real executor is named, all side-effect controls remain false, evidence has an owner and destination, configuration authority is explicit, and the stop and rollback paths are actionable. Default to one correction round after validation; unresolved target, authority, scheduler, owner, or secret-handling defects return `blocked`.
 

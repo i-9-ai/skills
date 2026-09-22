@@ -8,6 +8,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 import { DEFAULT_ICON_PATH, DEFAULT_LARGE_ICON_PATH, DEFAULT_LICENSE_PATH, LIMITS, REVISION, SHA256, STAGES, SafeRoot, ValidationError, initSkill, parseFrontmatter, strictJson, validSlug, validateMetadata, validateRun, validateSkill } from '../../../.agents/skills/skill-authoring/scripts/skill_tools.mjs';
+import { htmlLinks, markdownLinks } from '../../../.agents/skills/skill-authoring/scripts/lib/contracts.mjs';
 
 const HELPER = fileURLToPath(new URL('../../../.agents/skills/skill-authoring/scripts/skill_tools.mjs', import.meta.url));
 const EFFORT_METADATA = `metadata:
@@ -163,6 +164,47 @@ test('fenced examples, inline code, and remote links are not local dependencies'
     const packagePath = makeSkill(fixture(t));
     fs.appendFileSync(path.join(packagePath, 'SKILL.md'), '\n```md\n[Example](not-a-file.md)\n```\n`[Example](also-not-a-file.md)`\n[Remote](https://example.org/reference)\n[Contact](mailto:example@example.org)\n');
     assert.equal(validateSkill(packagePath).local_links, 0);
+});
+
+test('standalone validation finds multiline Markdown and embedded HTML dependencies', t => {
+    const packagePath = makeSkill(fixture(t));
+    const filename = path.join(packagePath, 'SKILL.md');
+    const original = fs.readFileSync(filename, 'utf8');
+    for (const markup of [
+        '[guide\ntext](missing.md)', '<img src="missing.png">', '<a href=missing.md>guide</a>',
+        '<video poster="missing.png"></video>', '<img srcset="https://example.org/ok.png 1x, missing.png 2x">',
+        '<link imagesrcset="missing.png 1x, https://example.org/ok.png 2x">',
+    ]) {
+        fs.writeFileSync(filename, `${original}\n${markup}\n`);
+        assert.throws(() => validateSkill(packagePath), /invalid local link/);
+    }
+    fs.writeFileSync(filename, `${original}\n\`<img src="missing.png">\`\n\`<a\nhref="missing.md">\`\n\`\`\`html\n<img src="missing.png">\n\`\`\`\n<!-- <img src="missing.png"> -->\n`);
+    assert.equal(validateSkill(packagePath).local_links, 0);
+});
+
+test('HTML resource discovery preserves line locations and ignores attributes inside values or script bodies', () => {
+    assert.deepEqual(htmlLinks('<img title=\'fake src="hidden.png"\'\r\n srcset="first.png 1x, second.png 2x" poster="third.png">'), [
+        [2, 'first.png'], [2, 'second.png'], [2, 'third.png'],
+    ]);
+    assert.deepEqual(htmlLinks('<script src="real.js">const fake = \'<img src="ignored.png">\';</script>'), [[1, 'real.js']]);
+    assert.deepEqual(markdownLinks('first\n[wrapped\nlabel](guide.md)\n<img src="image&#46;png">'), [[3, 'guide.md'], [4, 'image.png']]);
+    const links = htmlLinks('<a href="same.md">link</a>'.repeat(100000));
+    assert.equal(links.length, 100000);
+    assert.deepEqual(links.at(-1), [1, 'same.md']);
+});
+
+test('license validation rejects a mismatched declaration and missing Apache terms', t => {
+    const packagePath = makeSkill(fixture(t));
+    const filename = path.join(packagePath, 'SKILL.md');
+    const original = fs.readFileSync(filename, 'utf8');
+    fs.writeFileSync(filename, original.replace('license: Apache-2.0', 'license: GPL-3.0'));
+    assert.throws(() => validateSkill(packagePath), /declared package license/);
+    fs.writeFileSync(filename, original);
+    const license = fs.readFileSync(path.join(packagePath, 'LICENSE'), 'utf8');
+    fs.writeFileSync(path.join(packagePath, 'LICENSE'), license.replace(/perpetual,\s+worldwide,\s+non-exclusive/u, 'limited'));
+    assert.throws(() => validateSkill(packagePath), /declared package license/);
+    fs.writeFileSync(path.join(packagePath, 'LICENSE'), license.replace(/\n/gu, '\r\n'));
+    assert.equal(validateSkill(packagePath).name, 'example-skill');
 });
 
 test('package symlinks and hard links are rejected before reading outside contents', t => {
@@ -366,6 +408,26 @@ test('duplicate IDs and source identities are rejected', t => {
     const { manifest, data } = makeRun(fixture(t));
     data.sources[1].id = data.sources[0].id; rejectRun(manifest, data);
     const duplicate = makeRun(fixture(t)); duplicate.data.sources[1].uri = duplicate.data.sources[0].uri; rejectRun(duplicate.manifest, duplicate.data);
+});
+
+test('source identities normalize unreserved encodings and reject single-label origins', t => {
+    const { manifest, data } = makeRun(fixture(t));
+    data.sources[0].uri = 'https://example.org/skill';
+    data.sources[1].uri = 'https://example.org/%73kill';
+    for (const source of data.sources) source.revision = 'a'.repeat(40);
+    rejectRun(manifest, data);
+    data.sources[1].uri = 'urn:example:second';
+    for (const host of ['intranet', 'build-server', 'localhost.']) {
+        data.sources[0].uri = `https://${host}/source`;
+        rejectRun(manifest, data);
+    }
+    data.sources[0].uri = 'urn:example:adaptation';
+    data.sources[0].reuse = 'adapt';
+    data.sources[0].revision = 'synthetic-v1';
+    rejectRun(manifest, data);
+    data.sources[0].revision = 'a'.repeat(40);
+    writeJson(manifest, data);
+    assert.equal(validateRun(manifest).sources, 2);
 });
 
 test('equivalent HTTPS hosts and trailing separators cannot fabricate separate sources', t => {

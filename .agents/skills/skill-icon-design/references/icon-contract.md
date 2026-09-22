@@ -6,7 +6,8 @@ Use this contract for the final package asset:
 - simple geometry that remains legible at 32 pixels;
 - sufficient contrast and no dependence on color alone;
 - no scripts, event handlers, animation, embedded raster data, external URLs, fonts, or style imports;
-- no trademarks, copied artwork, private prompts, personal data, credentials, or local paths;
+- no unauthorized or misleading trademarks or unlicensed copied artwork; a composite icon may use a policy-supported service mark only as the secondary cue under the entrypoint's attribution and non-affiliation rules;
+- no private prompts, personal data, credentials, or local paths;
 - a distinct metaphor and distinct bytes within the target collection;
 - a package-relative host reference such as `./assets/icon.svg` when host metadata is present.
 

@@ -10,6 +10,13 @@ const MAX_ROUTE_STEPS = 32;
 const SLUG = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/u;
 const MOVING_REVISION = /^(?:\*|head|latest|current|main|master)$/iu;
 const SENSITIVE_FIELD = /(?:apikey|credential|password|privatekey|secret|token)/u;
+const SENSITIVE_VALUE = [
+  /-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----/u,
+  /\bAKIA[A-Z0-9]{16}\b/u,
+  /\bgh[pousr]_[A-Za-z0-9]{36,255}\b|\bgithub_pat_[A-Za-z0-9_]{22,255}\b/u,
+  /\bsk-(?:proj-)?[A-Za-z0-9_-]{40,}\b/u,
+  /https?:\/\/[^\s/:]+:[^\s/@]+@/u,
+];
 
 export class ProposalError extends Error {
   constructor(message) {
@@ -158,6 +165,11 @@ function uniqueStrings(value, label, { max = 64, slugs = false, empty = false } 
 }
 
 function rejectSensitiveFields(value, location = 'proposal') {
+  if (typeof value === 'string') {
+    requireCondition(!SENSITIVE_VALUE.some(pattern => pattern.test(value)),
+      `${location} contains credential-like content`);
+    return;
+  }
   if (Array.isArray(value)) {
     value.forEach((item, index) => rejectSensitiveFields(item, `${location}[${index}]`));
     return;
@@ -188,7 +200,7 @@ function validateNone(value) {
 
 function validateBlocked(value) {
   exactObject(value, ['schema_version', 'decision', 'target', 'reason', 'required_action'], 'blocked result');
-  validateTarget(value.target);
+  if (value.target !== null) validateTarget(value.target);
   text(value.reason, 'reason', 2048);
   text(value.required_action, 'required_action', 2048);
 }

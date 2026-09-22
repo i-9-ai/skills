@@ -33,7 +33,7 @@ Require all of the following:
 - no unresolved critical blocker; and
 - an approval recorded through the identified local review system or the portable approval record.
 
-The collection may set a stricter numeric threshold for repeated outcomes. If it has not, keep the package in `pilot`; do not invent a threshold.
+The criteria above are the portable default. Evidence must demonstrate repeated useful outcomes rather than one successful run. A collection may set a stricter numeric threshold; apply it when declared, but do not invent a threshold or block an otherwise supported transition merely because no number was configured.
 
 ### Stable to pilot or deprecated
 

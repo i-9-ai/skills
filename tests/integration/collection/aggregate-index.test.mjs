@@ -8,9 +8,10 @@ import path from "node:path";
 import { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
 import test from "node:test";
-import { AggregateIndexError, attachEvolutionRollbackProof, deriveAggregateIndex, queryAggregateIndex, readAggregateIndex, readHistorySummary, readEvolutionEvents, readSkillChanges, rebuildAggregateIndex, recordEvolutionEvent, syncAggregateIndex } from '../../../.agents/skills/skills-catalog/scripts/aggregate_index.mjs';
+import { AggregateIndexError, attachEvolutionRollbackProof, deriveAggregateIndex, queryAggregateIndex, readAggregateIndex, readHistorySummary, readEvolutionEvents, readSkillChanges, rebuildAggregateIndex, recordEvolutionEvent, syncAggregateIndex } from '../../../.agents/skills/skills-catalog-index/scripts/aggregate_index.mjs';
+import { AggregateCatalogRepository } from '../../../src/repository/AggregateCatalogRepository.ts';
 
-const HELPER = fileURLToPath(new URL("../../../.agents/skills/skills-catalog/scripts/aggregate_index.mjs", import.meta.url));
+const HELPER = fileURLToPath(new URL("../../../.agents/skills/skills-catalog-index/scripts/aggregate_index.mjs", import.meta.url));
 
 function fixture(t) {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "aggregate-index-test-"));
@@ -109,6 +110,18 @@ test("aggregate index derives a stable, source-qualified JSON fallback", async t
     assert.equal(index.sources[0].catalog_sha256, createHash("sha256").update(fs.readFileSync(alpha)).digest("hex"));
     assert.equal(JSON.stringify(index).includes(root), false, "the derived index must not retain source paths");
     assert.deepEqual(await queryAggregateIndex(result.index, { tag: "example", sqliteLoader: unavailableSqlite }), [index.skills[0]]);
+});
+
+test("aggregate sources accept equals signs in paths and reject duplicate JSON fields", async t => {
+    const root = fixture(t);
+    const filename = writeCatalog(path.join(root, "team=a"), catalog([skill("example-skill")]));
+    const result = await rebuildAggregateIndex({
+        sources: [source("team", filename)], output: path.join(root, "out"), sqliteLoader: unavailableSqlite,
+    });
+    assert.equal(result.skills, 1);
+    assert.equal((await new AggregateCatalogRepository().check(result.index, [source("team", filename)])).matches, true);
+    fs.writeFileSync(filename, '{"schema_version":1,"skills":[],"skills":[]}');
+    assert.throws(() => deriveAggregateIndex([{ id: "team", filename }]), /duplicate JSON field/);
 });
 
 test("aggregate index uses SQLite when Node provides node:sqlite", async t => {
@@ -320,6 +333,14 @@ test("evolution ledger rejects duplicate and invalid events without changing dat
     const invalid = evolutionEvent("merge", [eventPackage("source", "alpha-skill", "a".repeat(64))], "invalid-merge");
     const beforeInvalid = fs.readFileSync(result.index);
     await assert.rejects(() => recordEvolutionEvent(result.index, invalid), /invalid source and target package cardinality/);
+    assert.deepEqual(fs.readFileSync(result.index), beforeInvalid);
+
+    const repeated = evolutionEvent("merge", [
+        eventPackage("source", "alpha-skill", "a".repeat(64)),
+        eventPackage("source", "alpha-skill", "a".repeat(64)),
+        eventPackage("target", "merged-skill", "b".repeat(64)),
+    ], "repeated-merge");
+    await assert.rejects(() => recordEvolutionEvent(result.index, repeated), /identities must be distinct/);
     assert.deepEqual(fs.readFileSync(result.index), beforeInvalid);
 
     const unsafe = evolutionEvent("update", [

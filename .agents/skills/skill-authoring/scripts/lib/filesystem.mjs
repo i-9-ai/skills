@@ -72,6 +72,7 @@ export class SafeRoot {
     }
   }
   info(relative) { return this.inspect(relative).info; }
+  /** @param {string} relative @param {number} [limit] */
   readBytes(relative, limit = LIMITS.textBytes) {
     requireCondition(Number.isSafeInteger(limit) && limit >= 0 && limit <= LIMITS.totalBytes, 'invalid file read limit');
     requireCondition(Number.isInteger(fs.constants.O_NOFOLLOW) && Number.isInteger(fs.constants.O_NONBLOCK),

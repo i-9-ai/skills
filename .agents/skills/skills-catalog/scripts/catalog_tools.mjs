@@ -10,6 +10,7 @@ const MAX_CATALOG_BYTES = 1024 * 1024;
 const MAX_SKILL_BYTES = 256 * 1024;
 const MAX_PACKAGES = 256;
 const MAX_DIRECTORIES = 8192;
+const MAX_DIRECTORY_ENTRIES = 16384;
 const MAX_JSON_DEPTH = 64;
 
 export class CatalogError extends Error {
@@ -35,9 +36,9 @@ function validSlug(value, label, limit = 64) {
 }
 
 /** Bounded JSON parsing with duplicate-key detection keeps this package standalone. */
-function strictJson(bytes) {
+export function strictJson(bytes, { maxBytes = MAX_CATALOG_BYTES } = {}) {
   requireCondition(Buffer.isBuffer(bytes) || bytes instanceof Uint8Array, 'JSON input must be UTF-8 bytes');
-  requireCondition(bytes.byteLength <= MAX_CATALOG_BYTES, 'JSON exceeds the byte limit');
+  requireCondition(bytes.byteLength <= maxBytes, 'JSON exceeds the byte limit');
   let source;
   try { source = new TextDecoder('utf-8', { fatal: true }).decode(bytes); }
   catch { throw new CatalogError('invalid UTF-8 JSON'); }
@@ -365,6 +366,22 @@ function directAllowedTarget(config, linkPath, linkName) {
   return { resolved, info, allowed };
 }
 
+function boundedEntries(directory) {
+  const entries = [];
+  const handle = fs.opendirSync(directory);
+  try {
+    let entry;
+    while ((entry = handle.readSync()) !== null) {
+      entries.push(entry);
+      requireCondition(entries.length <= MAX_DIRECTORY_ENTRIES,
+        `global discovery exceeds ${MAX_DIRECTORY_ENTRIES} entries in one directory`);
+    }
+  } finally {
+    handle.closeSync();
+  }
+  return entries.sort((left, right) => left.name.localeCompare(right.name));
+}
+
 function discoverGlobal(config) {
   const packages = []; let directories = 0;
   const walk = (directory, relativeParts) => {
@@ -372,8 +389,7 @@ function discoverGlobal(config) {
     requireCondition(directories <= MAX_DIRECTORIES, `global discovery exceeds ${MAX_DIRECTORIES} directories`);
     const before = fs.lstatSync(directory, { bigint: true });
     requireCondition(before.isDirectory() && !before.isSymbolicLink(), `${relativeParts.join('/')} must be a real directory`);
-    const entries = fs.readdirSync(directory, { withFileTypes: true })
-      .sort((left, right) => left.name.localeCompare(right.name));
+    const entries = boundedEntries(directory);
     const skill = entries.find(entry => entry.name === 'SKILL.md');
     if (skill !== undefined) {
       requireCondition(skill.isFile() && !skill.isSymbolicLink(), `${relativeParts.join('/')}/SKILL.md must be a regular file`);
@@ -390,8 +406,7 @@ function discoverGlobal(config) {
     requireCondition(after.dev === before.dev && after.ino === before.ino,
       `${relativeParts.join('/')} changed during discovery`);
   };
-  const entries = fs.readdirSync(config.skillsIdentity.resolved, { withFileTypes: true })
-    .sort((left, right) => left.name.localeCompare(right.name));
+  const entries = boundedEntries(config.skillsIdentity.resolved);
   for (const entry of entries) {
     if (entry.name === '.system' || entry.name === '.DS_Store') continue;
     const child = path.join(config.skillsIdentity.resolved, entry.name);

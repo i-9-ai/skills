@@ -60,7 +60,7 @@ Package entries retain a logical source ID, package name and path, revision, and
 - `npm run check`
 - `npm run changeset:status`
 - `git diff --check`
-- Official `skills-ref validate` for the modified detached `skills-catalog` package
+- Official `skills-ref validate` for the detached `skills-catalog-index` package, which now owns this ledger after the pre-release aggregate package split
 - A synthetic legacy database retains its original synchronization runs and skill changes after migration.
 - A failed migration or event insert leaves the original database bytes unchanged.
 - Every supported action enforces its source and target package cardinality.

@@ -4,7 +4,7 @@
 
 I-9 Skills is a toolkit for the full life of an agent skill: discover what already works, design one clear responsibility, author a complete package, validate it, publish it deliberately, and evolve it from real evidence. Every package is written in English, includes its own Apache-2.0 `LICENSE`, and works without assuming Codex, Claude, Copilot, OpenCode, or any other specific agent.
 
-**23 focused skills. One responsibility each. One reviewable output each.**
+**24 focused skills. One responsibility each. One reviewable output each.**
 
 The working package version is `0.1.0-rc.1`. This is an experimental collection
 for explicit pilots; the npm package remains private and unpublished. Structural
@@ -101,6 +101,7 @@ Consult [`skills-catalog.json`](skills-catalog.json) for the generated machine-r
 | [`skills-refactoring`](.agents/skills/skills-refactoring/SKILL.md) | Design a focused reorganization of an audited collection | Refactoring plan |
 | [`skill-migration`](.agents/skills/skill-migration/SKILL.md) | Move one skill between collections | Migrated package and migration record |
 | [`skills-catalog`](.agents/skills/skills-catalog/SKILL.md) | Derive and validate a collection inventory | `skills-catalog.json` |
+| [`skills-catalog-index`](.agents/skills/skills-catalog-index/SKILL.md) | Query explicit collections and retain local changes/evolution evidence | Local aggregate index and history |
 ## From idea to durable skill system
 
 ```mermaid
@@ -207,7 +208,7 @@ The sync command derives names, paths, descriptions, and tags from each `SKILL.m
 
 ### Cross-collection lookup
 
-Each repository keeps its own `skills-catalog.json` as its canonical, versioned inventory. When a local workstation needs to compare explicitly selected collections, the `skills-catalog` package can derive `skills-catalog.db` outside every source repository. SQLite `sync` retains source observations and normalized added, changed, and removed skill history; `history` and `changes` inspect it. The deterministic `skills-catalog.index.json` fallback provides current lookup only. Neither index alters a source catalog, installs or activates a skill, grants permissions, or runs setup. See the [aggregate-index contract](.agents/skills/skills-catalog/references/aggregate-index.md) for commands, bounds, retention, and storage rules.
+Each repository keeps its own `skills-catalog.json` as its canonical, versioned inventory. When a local workstation needs to compare explicitly selected collections, the separate `skills-catalog-index` package can derive `skills-catalog.db` outside every source repository. SQLite `sync` retains source observations and normalized added, changed, and removed skill history; `history` and `changes` inspect it. The deterministic `skills-catalog.index.json` fallback provides current lookup only. Neither index alters a source catalog, installs or activates a skill, grants permissions, or runs setup. The repository's `catalog aggregate` CLI routes reuse that standalone package. See the [aggregate-index contract](.agents/skills/skills-catalog-index/references/aggregate-index.md) for commands, bounds, retention, and storage rules.
 
 ## Provenance and security
 

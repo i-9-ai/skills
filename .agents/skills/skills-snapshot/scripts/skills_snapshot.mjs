@@ -106,7 +106,10 @@ function safeRelative(value, label = 'package') {
   if (typeof value !== 'string' || value.length === 0 || value.includes('\0') || path.isAbsolute(value)) {
     throw new UsageError(`Unsafe ${label} path: ${value}`);
   }
-  const portable = value.replaceAll('\\', '/').replace(/^\.\//, '');
+  const portable = value.replaceAll('\\', '/');
+  if (portable.split('/').some(component => component === '' || component === '.' || component === '..')) {
+    throw new UsageError(`Unsafe ${label} path: ${value}`);
+  }
   const normalized = path.posix.normalize(portable);
   if (normalized === '.' || normalized === '..' || normalized.startsWith('../') || normalized.includes('/../')) {
     throw new UsageError(`Unsafe ${label} path: ${value}`);

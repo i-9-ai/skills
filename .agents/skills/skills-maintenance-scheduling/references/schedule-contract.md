@@ -4,9 +4,9 @@ Load this reference when producing or validating the JSON artifact. The contract
 
 - `propose`: recurrence is justified and the complete schedule proposal follows.
 - `none`: no recurring schedule is justified; retain the bounded target and reason.
-- `blocked`: a proposal depends on one unresolved target, scheduler, owner, authority, or secret-handling decision; retain the required action.
+- `blocked`: a proposal depends on one unresolved target, scheduler, owner, authority, or secret-handling decision; retain the required action. Set `target` to `null` only when its bounded identity cannot yet be established; otherwise retain the complete frozen target.
 
-All variants use `schema_version: 1` and a target with:
+All variants use `schema_version: 1`. A known target uses:
 
 - `collection_id`: a stable lowercase identifier;
 - `revision`: an immutable commit, digest, release, or content-addressed catalog identity;

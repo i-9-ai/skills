@@ -5,7 +5,7 @@ import {
     readAggregateIndex,
     syncAggregateIndex,
     rebuildAggregateIndex,
-} from '../../.agents/skills/skills-catalog/scripts/aggregate_index.mjs';
+} from '../../.agents/skills/skills-catalog-index/scripts/aggregate_index.mjs';
 
 export type AggregateCatalogInput = {
     sources: string[];
@@ -24,7 +24,7 @@ export class AggregateCatalogRepository {
     async check(filename: string, sources: string[]) {
         const records = sources.map((source) => {
             const separator = source.indexOf('=');
-            if (separator < 1 || separator !== source.lastIndexOf('=')) {
+            if (separator < 1) {
                 throw new Error('Source must use source-id=/path/to/skills-catalog.json.');
             }
             return { id: source.slice(0, separator), filename: source.slice(separator + 1) };

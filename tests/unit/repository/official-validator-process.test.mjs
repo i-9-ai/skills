@@ -47,6 +47,18 @@ test('derives the official source and hash-locked phases from package.json only'
         assert.ok(requirements.phases[0].content.includes(wheel.sha256));
 });
 
+test('official validator configuration rejects duplicate manifest fields', (t) => {
+    const { root } = fixture(t);
+    writeFileSync(
+        join(root, 'package.json'),
+        '{"config":{},"config":{"officialSkillValidator":{}}}',
+    );
+    assert.throws(
+        () => new OfficialValidatorProcessRepository().readOfficialConfiguration(root),
+        /duplicate JSON field/,
+    );
+});
+
 test('validates every canonical package using argument arrays and aggregates failures', (t) => {
     const { root, container } = fixture(t);
     const calls = [];

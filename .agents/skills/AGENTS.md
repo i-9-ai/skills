@@ -48,4 +48,7 @@ Run each package's safe commands and the repository validation suite. Behavioral
 - [skills-maintenance-scheduling/SKILL.md](skills-maintenance-scheduling/SKILL.md): propose bounded recurring maintenance with explicit authority, evidence, stop, and rollback controls.
 - [skills-audit/SKILL.md](skills-audit/SKILL.md): audit a bounded skill collection.
 - [skills-catalog/SKILL.md](skills-catalog/SKILL.md): derive and validate the collection catalog.
+- [skills-catalog-index/SKILL.md](skills-catalog-index/SKILL.md): derive a local multi-collection index and preserve observed/evidenced history without changing source catalogs.
+- [skills-host-compatibility/SKILL.md](skills-host-compatibility/SKILL.md): produce a capability map and thin host adapters around a portable skill; installation remains explicit.
+- [skills-snapshot/SKILL.md](skills-snapshot/SKILL.md): capture and verify restorable skill-package states outside discovery roots without replacing the live collection.
 - [skills-refactoring/SKILL.md](skills-refactoring/SKILL.md): plan a focused reorganization of an audited collection.

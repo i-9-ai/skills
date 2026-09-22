@@ -63,6 +63,20 @@ test('create rejects a store inside the selected source', t => {
   assert.match(result.stderr, /must not overlap/);
 });
 
+test('package and linked-target selections reject parent or empty path components', t => {
+  const f = fixture();
+  t.after(() => fs.rmSync(f.root, { recursive: true, force: true }));
+  for (const selected of ['alpha/../beta', './beta', 'alpha//beta']) {
+    const result = run(['create', '--source', f.source, '--store', f.store, '--scope', 'package',
+      '--name', 'invalid', '--package', selected], 1);
+    assert.match(result.stderr, /Unsafe package path/);
+  }
+  const result = run(['create', '--source', f.source, '--store', f.store, '--scope', 'collection',
+    '--name', 'invalid', '--capture-link-target', 'alpha/../beta'], 1);
+  assert.match(result.stderr, /Unsafe .* path/);
+  assert.equal(fs.existsSync(path.join(f.store, 'invalid')), false);
+});
+
 test('create rejects conventional credentials and private-key material', t => {
   const f = fixture();
   t.after(() => fs.rmSync(f.root, { recursive: true, force: true }));

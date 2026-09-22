@@ -453,7 +453,7 @@ test('wrong targets and additional symlinks are rejected', (t) => {
 test('root scratch is never read, while similarly named package directories are checked', (t) => {
     const { root, packagePath } = makeRepository(t);
     const sentinel = 'ghp_' + 'A'.repeat(36);
-    const scratch = ['.work', 'tmp', 'node_modules'].map((directory) => {
+    const scratch = ['.work', 'tmp', 'node_modules', '.beads', '.codex'].map((directory) => {
         fs.mkdirSync(join(root, directory));
         const file = join(root, directory, 'private.txt');
         fs.writeFileSync(file, sentinel);
@@ -532,17 +532,25 @@ test('public hygiene scans binary payloads without requiring UTF-8 decoding', (t
     });
 });
 
-test('visual guide publication only deploys main and stages new pages before diffing', () => {
+test('documentation publication verifies inputs before staging and publishing main', () => {
     const workflow = fs.readFileSync(join(process.cwd(), '.github', 'workflows', 'publish-visual-guides.yml'), 'utf8');
     assert.match(workflow, /concurrency:\n\s+group: publish-visual-guides-\$\{\{ github\.repository \}\}\n\s+cancel-in-progress: false/);
     assert.match(workflow, /with:\n\s+ref: main\n\s+persist-credentials: false/);
     assert.match(workflow, /git add --all\n\s+if git diff --quiet --staged; then/);
+    const verification = workflow.indexOf("new VisualGuideRepository().verify('.')");
+    assert.ok(verification > 0, 'visual-guide verification must run');
+    assert.ok(verification < workflow.indexOf('GITHUB_TOKEN:'), 'verify before configuring publication credentials');
+    assert.ok(verification < workflow.indexOf('rsync -a'), 'verify before copying publishable assets');
+    assert.doesNotMatch(workflow, /continue-on-error:/);
+    assert.match(workflow, /node-version: '24'/);
     const wikiWorkflow = fs.readFileSync(join(process.cwd(), '.github', 'workflows', 'sync-wiki.yml'), 'utf8');
     assert.match(wikiWorkflow, /concurrency:\n\s+group: sync-wiki-\$\{\{ github\.repository \}\}\n\s+cancel-in-progress: false/);
     assert.match(wikiWorkflow, /with:\n\s+ref: main\n\s+persist-credentials: false/);
     assert.match(wikiWorkflow, /git ls-remote --exit-code --heads "https:\/\/github\.com\/\$\{REPOSITORY\}\.wiki\.git"/);
-    assert.match(wikiWorkflow, /python3 - <<'PY'[\s\S]*https:\/\/github\.com\/\{repository\}\/blob\/main\/\{resolved\}/);
-    assert.match(wikiWorkflow, /def rewrite_markdown\(body, replace\):[\s\S]*fence is not None[\s\S]*line\.find\('`', cursor\)/);
+    assert.match(wikiWorkflow, /node-version: '24'/);
+    const rewrite = wikiWorkflow.indexOf("new WikiMirrorRepository().rewrite('.wiki', process.env.REPOSITORY)");
+    assert.ok(rewrite > wikiWorkflow.indexOf('rsync -a'), 'rewrite the copied Wiki pages');
+    assert.ok(rewrite < wikiWorkflow.indexOf('git add --all'), 'rewrite before staging');
     assert.match(wikiWorkflow, /Wiki Home collision:[\s\S]*exit 1/);
     assert.match(wikiWorkflow, /git add --all\n\s+if git diff --quiet --staged; then/);
 });

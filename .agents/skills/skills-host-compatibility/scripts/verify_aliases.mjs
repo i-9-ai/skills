@@ -3,6 +3,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { strictJson } from './strict-json.mjs';
 
 const KINDS = new Set(['skills', 'guidance']);
 const MAX_CONTRACT_BYTES = 1024 * 1024;
@@ -108,6 +109,8 @@ function validateContract(input) {
   const guidancePath = guidanceCandidate ? existingInside(root, guidanceCandidate, 'guidance_path') : null;
   const aliases = input.aliases.map((alias, index) => {
     if (!alias || typeof alias !== 'object' || Array.isArray(alias)) fail(`alias ${index} must be an object`);
+    const allowed = new Set(['kind', 'path', 'shape', 'target']);
+    if (!Object.keys(alias).every(key => allowed.has(key))) fail(`alias ${index} has unknown fields`);
     if (!KINDS.has(alias.kind)) fail(`alias ${index} has an unsupported kind`);
     if (alias.shape !== 'symbolic-link') fail(`alias ${index} has an unsupported shape`);
     const aliasPath = relativePath(alias.path, `alias ${index} path`);
@@ -137,7 +140,12 @@ function inspectAlias(root, canonicalPath, guidancePath, alias) {
     return { ...alias, disposition: 'unsupported-shape' };
   }
   const actualTarget = fs.readlinkSync(alias.filename);
-  const actualPath = inspectLinkTarget(root, alias.filename, actualTarget, `alias ${alias.path}`);
+  let actualPath;
+  try { actualPath = inspectLinkTarget(root, alias.filename, actualTarget, `alias ${alias.path}`); }
+  catch (error) {
+    if (!error.message.endsWith('escapes the root')) throw error;
+    return { ...alias, disposition: 'wrong-target', actual_target: actualTarget };
+  }
   if (actualPath === null) return { ...alias, disposition: 'broken', actual_target: actualTarget };
   const canonicalTarget = alias.kind === 'skills' ? canonicalPath : guidancePath;
   if (actualTarget !== alias.target || actualPath !== canonicalTarget) {
@@ -153,8 +161,8 @@ export function verifyAliases(input) {
     const filename = below(root, path.join(root, item), 'observed path');
     const info = entryInside(root, filename, 'observed path');
     if (!info) return [];
-    if (info.isSymbolicLink()) inspectLinkTarget(root, filename, fs.readlinkSync(filename), 'observed path');
-    else existingInside(root, filename, 'observed path');
+    // An undeclared leaf is evidence of an entry, not authority to follow it.
+    if (!info.isSymbolicLink()) existingInside(root, filename, 'observed path');
     return [{ path: item, disposition: 'not-declared' }];
   });
   return {
@@ -189,8 +197,8 @@ function readContract(filename) {
     if (!sameFile(before, fs.fstatSync(descriptor)) || !sameFile(before, fs.lstatSync(filename))) {
       fail('contract changed during reading');
     }
-    try { return JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes.subarray(0, length))); }
-    catch { fail('contract must contain valid UTF-8 JSON'); }
+    try { return strictJson(bytes.subarray(0, length)); }
+    catch { fail('contract must contain unambiguous valid UTF-8 JSON'); }
   } finally { if (descriptor !== undefined) fs.closeSync(descriptor); }
 }
 

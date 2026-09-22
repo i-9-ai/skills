@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { validateCatalogData } from "./catalog_tools.mjs";
+import { strictJson, validateCatalogData } from "./catalog_data.mjs";
 
 const SOURCE_ID = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/;
 const MAX_SOURCES = 64;
@@ -68,14 +68,14 @@ function regularBytes(filename, label, limit) {
 }
 
 function parseJson(bytes, label) {
-  try { return JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)); }
-  catch { throw new AggregateIndexError(`${label} must be valid UTF-8 JSON`); }
+  try { return strictJson(bytes, { maxBytes: MAX_INDEX_BYTES }); }
+  catch (error) { throw new AggregateIndexError(`${label} must be valid UTF-8 JSON: ${error.message}`); }
 }
 
 function sourceRecord(specification) {
   requireCondition(typeof specification === "string", "source must be text");
   const separator = specification.indexOf("=");
-  requireCondition(separator > 0 && separator === specification.lastIndexOf("="), "source must use source-id=/path/to/skills-catalog.json");
+  requireCondition(separator > 0, "source must use source-id=/path/to/skills-catalog.json");
   const id = requireSlug(specification.slice(0, separator), "source id");
   const filename = specification.slice(separator + 1);
   requireCondition(filename.length > 0, "source catalog path is required");
@@ -954,6 +954,9 @@ function validateEvolutionEvent(value, { allowLegacy = false } = {}) {
     digestOrNull(item.content_sha256, `packages[${index}].content_sha256`);
     return { ...item, path: item.path.replaceAll("\\", "/"), content_sha256: item.content_sha256 ?? null };
   });
+  const identities = packages.map(item => `${item.role}\0${item.source_id}\0${item.name}`);
+  requireCondition(new Set(identities).size === identities.length,
+    "evolution event package roles and identities must be distinct");
   const sourceCount = packages.filter(item => item.role === "source").length;
   const targetCount = packages.filter(item => item.role === "target").length;
   const cardinality = {
@@ -1275,7 +1278,9 @@ async function main(argv) {
   return readSkillChanges(options.index, options);
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
+const isMainModule = process.argv[1] && fs.realpathSync.native(fileURLToPath(import.meta.url))
+  === fs.realpathSync.native(process.argv[1]);
+if (isMainModule) {
   try { process.stdout.write(`${JSON.stringify(await main(process.argv.slice(2)))}\n`); }
   catch (error) { process.stderr.write(`${error.name}: ${error.message}\n`); process.exitCode = 1; }
 }

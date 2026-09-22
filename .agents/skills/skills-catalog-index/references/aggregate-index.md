@@ -1,4 +1,4 @@
-# Aggregate index contract
+# Aggregate skill index contract
 
 ## Purpose
 

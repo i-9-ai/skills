@@ -4,7 +4,14 @@ import { CollectionValidationError } from './CollectionValidationError.ts';
 import { createHash } from 'node:crypto';
 import { inflateSync } from 'node:zlib';
 
-export const IGNORED_ROOT_NAMES = Object.freeze(['.git', '.work', 'tmp', 'node_modules']);
+export const IGNORED_ROOT_NAMES = Object.freeze([
+    '.git',
+    '.beads',
+    '.codex',
+    '.work',
+    'tmp',
+    'node_modules',
+]);
 export const REPOSITORY_ALIASES = Object.freeze({
     'CLAUDE.md': 'AGENTS.md',
     'GEMINI.md': 'AGENTS.md',

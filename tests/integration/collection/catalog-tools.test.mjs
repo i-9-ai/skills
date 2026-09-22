@@ -70,6 +70,15 @@ test('global discovery rejects links inside real package trees', (t) => {
     assert.throws(() => syncCatalog(root, { layout: 'global' }), /must not be a symbolic link/);
 });
 
+test('global discovery bounds one directory before sorting its entries', (t) => {
+    const root = fixture(t);
+    skill(path.join(root, 'skills', 'alpha'), 'alpha');
+    for (let index = 0; index <= 16384; index++) {
+        fs.writeFileSync(path.join(root, 'skills', `entry-${index}`), '');
+    }
+    assert.throws(() => syncCatalog(root, { layout: 'global' }), /exceeds 16384 entries/);
+});
+
 test('catalog output and collection roots reject symbolic and hard links', (t) => {
     const root = fixture(t);
     skill(path.join(root, 'skills', 'alpha'), 'alpha');

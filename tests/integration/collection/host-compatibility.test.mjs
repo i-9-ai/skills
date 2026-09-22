@@ -133,22 +133,22 @@ test('rejects intermediate and followed symlink escapes from the supplied reposi
 
     fs.symlinkSync('.agents/skills', path.join(root, '.claude'), 'dir');
     fs.symlinkSync(outside, path.join(root, '.claude', 'external'), 'dir');
-    assert.throws(() => verifyAliases({
+    assert.equal(verifyAliases({
         root,
         canonical_path: '.agents/skills',
         aliases: [{ kind: 'skills', path: '.claude/external', shape: 'symbolic-link', target: '.' }],
-    }), /escapes the root/);
-    assert.throws(() => verifyAliases({
+    }).aliases[0].disposition, 'wrong-target');
+    assert.deepEqual(verifyAliases({
         root, canonical_path: '.agents/skills', aliases: [], observed_paths: ['.claude/external'],
-    }), /escapes the root/);
+    }).observed, [{ path: '.claude/external', disposition: 'not-declared' }]);
     fs.symlinkSync(path.join(outside, 'missing'), path.join(root, 'external-dangling'));
-    assert.throws(() => verifyAliases({
+    assert.deepEqual(verifyAliases({
         root, canonical_path: '.agents/skills', aliases: [], observed_paths: ['external-dangling'],
-    }), /escapes the root/);
-    assert.throws(() => verifyAliases({
+    }).observed, [{ path: 'external-dangling', disposition: 'not-declared' }]);
+    assert.equal(verifyAliases({
         root, canonical_path: '.agents/skills',
         aliases: [{ kind: 'skills', path: 'external-dangling', shape: 'symbolic-link', target: '.agents/skills' }],
-    }), /escapes the root/);
+    }).aliases[0].disposition, 'wrong-target');
 });
 
 test('runs directly when the helper script path contains a space', (t) => {
@@ -157,6 +157,7 @@ test('runs directly when the helper script path contains a space', (t) => {
     fs.mkdirSync(helperDirectory);
     const helper = path.join(helperDirectory, 'verify aliases.mjs');
     fs.copyFileSync(helperSource, helper);
+    fs.copyFileSync(path.join(path.dirname(helperSource), 'strict-json.mjs'), path.join(helperDirectory, 'strict-json.mjs'));
     const contract = path.join(root, 'contract.json');
     fs.writeFileSync(contract, JSON.stringify({ root, canonical_path: '.agents/skills', aliases: [] }));
     const result = spawnSync(process.execPath, [helper, contract], { encoding: 'utf8' });
@@ -193,6 +194,24 @@ test('CLI rejects unsafe and oversized contract files without exposing malformed
     fs.writeFileSync(contract, sentinel);
     result = spawnSync(process.execPath, [helperSource, contract], { encoding: 'utf8', timeout: 5000 });
     assert.equal(result.status, 1);
-    assert.match(result.stderr, /contract must contain valid UTF-8 JSON/);
+    assert.match(result.stderr, /contract must contain unambiguous valid UTF-8 JSON/);
     assert.ok(!result.stderr.includes(sentinel));
+});
+
+test('alias contracts reject unknown fields and duplicate JSON scope keys', (t) => {
+    const root = fixture(t);
+    const contract = { root, canonical_path: '.agents/skills', aliases: [] };
+    assert.throws(() => verifyAliases({ ...contract, observed_path: [] }), /unknown fields/);
+    assert.throws(() => verifyAliases({ ...contract, aliases: [{ kind: 'skills', path: 'alias', shape: 'symbolic-link', target: '.agents/skills', extra: true }] }), /unknown fields/);
+    const filename = path.join(root, 'contract.json');
+    for (const content of [
+        JSON.stringify(contract).replace('"aliases":[]', '"aliases":[],"aliases":[]'),
+        JSON.stringify(contract).replace('"aliases":[]', '"aliases":[{"kind":"skills","path":"alias","shape":"symbolic-link","target":".agents/skills","targ\\u0065t":".agents/skills"}]'),
+    ]) {
+        fs.writeFileSync(filename, content);
+        const result = spawnSync(process.execPath, [helperSource, filename], { encoding: 'utf8', timeout: 5000 });
+        assert.equal(result.status, 1);
+        assert.match(result.stderr, /unambiguous valid UTF-8 JSON/);
+        assert.equal(result.stdout, '');
+    }
 });

@@ -19,7 +19,14 @@ export class ClaudeTelemetryAdapter {
             if (typeof input.source !== 'string')
                 throw new Error('Expected a native session source');
             if (!['startup', 'clear'].includes(input.source)) return;
-            return { event: this.event('session.started', session, 'session-start', timestamp) };
+            return {
+                event: this.event(
+                    'session.started',
+                    session,
+                    `session-start:${input.source}`,
+                    timestamp,
+                ),
+            };
         }
         if (input.tool_name !== 'Read') return;
         const occurrence = this.identifier(input.tool_use_id);

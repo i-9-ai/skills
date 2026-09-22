@@ -173,6 +173,17 @@
       ]
     },
     {
+      "name": "skills-catalog-index",
+      "path": ".agents/skills/skills-catalog-index",
+      "description": "Use to combine explicit skill catalogs into a local searchable index, synchronize their change history, or record evidenced evolution operations. It does not maintain source catalogs or choose a skill.",
+      "tags": [
+        "catalog",
+        "history",
+        "index",
+        "skills"
+      ]
+    },
+    {
       "name": "skills-discovery",
       "path": ".agents/skills/skills-discovery",
       "description": "Use to discover and qualify existing skills for a specific task, returning pinned candidates and evidence. It does not install, merge, or author a skill.",

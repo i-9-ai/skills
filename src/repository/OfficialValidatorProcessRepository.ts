@@ -5,12 +5,12 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { OfficialRequirements } from '../validator/OfficialValidator.ts';
 import { spawnSync } from 'node:child_process';
+import { strictJson } from '../../.agents/skills/skill-authoring/scripts/lib/contracts.mjs';
 
 /** Owns official-tool filesystem discovery and shell-free process execution. */
 export class OfficialValidatorProcessRepository {
     readOfficialConfiguration(root: string): unknown {
-        return JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).config
-            ?.officialSkillValidator;
+        return strictJson(readFileSync(join(root, 'package.json'))).config?.officialSkillValidator;
     }
 
     installOfficialValidator(

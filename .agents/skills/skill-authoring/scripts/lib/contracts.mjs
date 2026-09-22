@@ -218,39 +218,59 @@ function stripInlineCode(line) {
       output += line.slice(cursor);
       break;
     }
-    output += ' '.repeat(end + width - cursor);
+    output += line.slice(cursor, end + width).replace(/[^\r\n]/gu, ' ');
     cursor = end + width;
   }
   return output;
 }
 
-/** Ordinary Markdown only: HTML, escaped syntax, generated links, and anchors need review. */
-export function markdownLinks(text) {
+/** Preserve source offsets while excluding fenced and inline code examples. */
+function visibleMarkdown(text) {
   let fence = null;
-  const visible = text.split(/\r\n|\n|\r/u).map(line => {
+  const lines = text.split(/(\r\n|\n|\r)/u);
+  for (let index = 0; index < lines.length; index += 2) {
+    const line = lines[index];
     const marker = line.match(/^\s{0,3}(`{3,}|~{3,})/u);
     if (marker) {
       const run = marker[1];
       if (fence === null) fence = run;
       else if (run[0] === fence[0] && run.length >= fence.length) fence = null;
-      return '';
+      lines[index] = ' '.repeat(line.length);
+      continue;
     }
-    return fence ? '' : stripInlineCode(line);
-  });
-  const links = [];
-  for (const [index, line] of visible.entries()) {
-    for (const target of inlineMarkdownLinks(line)) links.push([index + 1, target]);
-    for (const match of line.matchAll(/^\s{0,3}\[[^\[\]]+\]:\s*(?:<([^>]+)>|(\S+))/gu)) links.push([index + 1, match[1] ?? match[2]]);
+    if (fence !== null || /^(?: {4}|\t)/u.test(line)) lines[index] = ' '.repeat(line.length);
   }
-  return links;
+  return stripInlineCode(lines.join(''));
+}
+
+/** Ordinary Markdown links, reference definitions, and resource-bearing HTML. */
+export function markdownLinks(text) {
+  const visible = visibleMarkdown(text);
+  const lineAt = lineNumberLookup(visible);
+  const links = markdownLinkRanges(text).map(({ start, target }) => [lineAt(start), target]);
+  return links.concat(htmlLinks(visible)).sort(([left], [right]) => left - right);
+}
+
+/** Raw destination ranges permit meaning-preserving rewrites outside examples. */
+export function markdownLinkRanges(text) {
+  const visible = visibleMarkdown(text);
+  const links = inlineMarkdownLinks(visible);
+  for (const match of visible.matchAll(/^[ \t]{0,3}\[[^\[\]\r\n]+\]:[ \t]*(?:<([^>]+)>|(\S+))/gmu)) {
+    const target = match[1] ?? match[2];
+    const start = match.index + match[0].lastIndexOf(target);
+    links.push({ start, end: start + target.length, target });
+  }
+  return links.sort((left, right) => left.start - right.start);
 }
 
 function inlineMarkdownLinks(line) {
   const links = [];
   for (const start of inlineMarkdownLinkStarts(line)) {
     let cursor = start;
+    let targetStart = start;
     let target = '';
     if (line[cursor] === '<') {
+      targetStart += 1;
       const end = line.indexOf('>', cursor + 1);
       if (end === -1) continue;
       target = line.slice(cursor + 1, end);
@@ -277,7 +297,7 @@ function inlineMarkdownLinks(line) {
       cursor = end + 1;
       while (/\s/u.test(line[cursor] ?? '')) cursor += 1;
     }
-    if (line[cursor] === ')') links.push(target);
+    if (line[cursor] === ')') links.push({ start: targetStart, end: targetStart + target.length, target });
   }
   return links;
 }
@@ -332,13 +352,60 @@ export function checkMarkdown(root, relative, text) {
   return count;
 }
 
+function lineNumberLookup(text) {
+  const starts = [0];
+  for (const match of text.matchAll(/\r\n|\n|\r/gu)) starts.push(match.index + match[0].length);
+  return index => {
+    let low = 0;
+    let high = starts.length;
+    while (low + 1 < high) {
+      const middle = (low + high) >>> 1;
+      if (starts[middle] <= index) low = middle;
+      else high = middle;
+    }
+    return low + 1;
+  };
+}
+
+function htmlAttributeValue(value) {
+  return value.replace(/&(?:#(x[0-9a-f]+|[0-9]+)|amp|quot|apos|lt|gt);/giu, (entity, numeric) => {
+    if (!numeric) return { '&amp;': '&', '&quot;': '"', '&apos;': "'", '&lt;': '<', '&gt;': '>' }[entity.toLowerCase()];
+    const code = numeric[0].toLowerCase() === 'x' ? Number.parseInt(numeric.slice(1), 16) : Number(numeric);
+    requireCondition(code > 0 && code <= 0x10ffff && !(code >= 0xd800 && code <= 0xdfff), 'invalid HTML character reference');
+    return String.fromCodePoint(code);
+  });
+}
+
+function srcsetTargets(value) {
+  const targets = [];
+  let cursor = 0;
+  while (cursor < value.length) {
+    while (/[\s,]/u.test(value[cursor] ?? '')) cursor += 1;
+    const start = cursor;
+    while (cursor < value.length && !/\s/u.test(value[cursor])) cursor += 1;
+    const token = value.slice(start, cursor);
+    if (!token) break;
+    targets.push(token.replace(/,+$/u, ''));
+    if (token.endsWith(',')) continue;
+    while (cursor < value.length && value[cursor] !== ',') cursor += 1;
+  }
+  return targets;
+}
+
 export function htmlLinks(text) {
+  const lineAt = lineNumberLookup(text);
   const links = [];
   for (const tag of htmlTags(text)) {
-    const source = tag.source;
-    for (const attribute of source.matchAll(/\s(?:href|src)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/giu)) {
-      const line = text.slice(0, tag.index + attribute.index).split(/\r\n|\n|\r/u).length;
-      links.push([line, attribute[1] ?? attribute[2] ?? attribute[3]]);
+    const attributes = tag.source.slice(tag.name.length + 1);
+    for (const attribute of attributes.matchAll(/([^\s=/>]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/gu)) {
+      const name = attribute[1].toLowerCase();
+      if (!['href', 'src', 'poster', 'srcset', 'imagesrcset'].includes(name)) continue;
+      const raw = attribute[2] ?? attribute[3] ?? attribute[4];
+      if (raw === undefined) continue;
+      const value = htmlAttributeValue(raw);
+      const targets = name.endsWith('srcset') ? srcsetTargets(value) : [value];
+      const line = lineAt(tag.index + tag.name.length + 1 + attribute.index);
+      for (const target of targets) links.push([line, target]);
     }
   }
   return links;
@@ -347,9 +414,15 @@ export function htmlLinks(text) {
 function htmlTags(text) {
   const tags = [];
   for (let index = 0; index < text.length; index += 1) {
+    if (text.startsWith('<!--', index)) {
+      const end = text.indexOf('-->', index + 4);
+      index = end === -1 ? text.length : end + 2;
+      continue;
+    }
     if (text[index] !== '<' || !/[A-Za-z]/u.test(text[index + 1] ?? '')) continue;
     let cursor = index + 2;
     while (/[A-Za-z0-9:-]/u.test(text[cursor] ?? '')) cursor += 1;
+    const name = text.slice(index + 1, cursor).toLowerCase();
     let quote = '';
     for (; cursor < text.length; cursor += 1) {
       const character = text[cursor];
@@ -357,7 +430,14 @@ function htmlTags(text) {
         if (character === quote) quote = '';
       } else if (character === '"' || character === "'") quote = character;
       else if (character === '>') {
-        tags.push({ index, source: text.slice(index, cursor + 1) });
+        tags.push({ index, name, source: text.slice(index, cursor + 1) });
+        index = cursor;
+        if (['script', 'style', 'textarea', 'title'].includes(name)) {
+          const close = new RegExp(`</${name}\\s*>`, 'giu');
+          close.lastIndex = cursor + 1;
+          const match = close.exec(text);
+          index = match ? match.index + match[0].length - 1 : text.length;
+        }
         break;
       } else if (character === '<') break;
     }

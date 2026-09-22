@@ -93,6 +93,22 @@ test('credential-bearing schedule fields are rejected without exposing their val
     invalid.scheduler.configuration[field] = 'synthetic-value';
     assert.throws(() => validateProposal(invalid), /credential-bearing field/);
   }
+  const embedded = structuredClone(proposal);
+  embedded.maintenance_goal = `Review ${'sk-proj-' + 'A'.repeat(44)} monthly`;
+  assert.throws(() => validateProposal(embedded), /credential-like content/);
+});
+
+test('a blocked decision can carry an unresolved target without inventing its identity', () => {
+  const blocked = {
+    schema_version: 1,
+    decision: 'blocked',
+    target: null,
+    reason: 'The collection has not been identified.',
+    required_action: 'Identify the collection and freeze its revision.',
+  };
+  assert.equal(validateProposal(blocked).target, null);
+  assert.throws(() => validateProposal({ ...blocked, decision: 'none', required_action: undefined }),
+    ProposalError);
 });
 
 test('none is a minimal decision and cannot smuggle a cadence into authorization', () => {

@@ -25,7 +25,7 @@ Resolve resources and the helper from this installed package. The target reposit
 3. In read-only work, run `inspect` to summarize the existing catalog, `check` to compare it with packages, or `sync --dry-run` to preview the derived result. Report missing packages, orphaned entries, malformed metadata, and changed summaries without editing the target.
 4. When catalog mutation is authorized, run `sync`, inspect the resulting diff, and retain unrelated repository changes. Sync may add newly discovered packages, remove entries whose canonical directories no longer exist, and refresh derived fields.
 5. Validate the synchronized file against the bundled [JSON Schema](assets/skills-catalog.schema.json), rerun the repository's available checks when they are verified, and report the inventory count plus added, removed, and refreshed names.
-6. When several explicit collections need cross-source lookup or local change history, build a derived aggregate index using [the aggregate-index contract](references/aggregate-index.md). Each `skills-catalog.json` remains authoritative; `skills-catalog.db` is a searchable local projection that retains source observations and normalized changes.
+6. For cross-collection lookup, synchronization history or evolution records, hand the explicit catalog paths to a separately available `skills-catalog-index` package. Verify its identity in the caller's actual inventory; a missing companion is a bounded handoff, not authority to install it. This package neither creates aggregate indexes nor maintains an operation ledger.
 
 Use the helper as an argument array or shell command with a verified absolute package path. Repository layout remains the default for compatibility:
 
@@ -50,57 +50,12 @@ node "<installed-skill>/scripts/catalog_tools.mjs" sync "<global-collection-root
 
 The explicit root is the parent of the selected skill directory and the sole output directory. `inspect` and `check` are read-only; `sync --dry-run` derives the proposed catalog without creating an output or temporary file. `sync` atomically replaces only `<root>/skills-catalog.json`. Global package links must resolve to same-named direct children of an allowed package root; repeat `--allow-package-link-root` for more than one trusted source. The helper rejects linked collection roots, nested links, linked or hard-linked catalog files, non-regular package entrypoints, invalid frontmatter, and inputs above its documented bounds. It does not depend on another installed skill package.
 
-### Cross-collection lookup
-
-Use the separate aggregate helper only when the caller already has explicit catalog sources and needs a local cross-source shortlist. It writes outside source collections and does not change them:
-
-```sh
-node "<installed-skill>/scripts/aggregate_index.mjs" rebuild \
-  --source "alpha=<alpha-catalog>/skills-catalog.json" \
-  --source "beta=<beta-catalog>/skills-catalog.json" \
-  --output "<local-index-directory>"
-node "<installed-skill>/scripts/aggregate_index.mjs" sync \
-  --source "alpha=<alpha-catalog>/skills-catalog.json" \
-  --source "beta=<beta-catalog>/skills-catalog.json" \
-  --output "<local-index-directory>"
-node "<installed-skill>/scripts/aggregate_index.mjs" query \
-  --index "<index-returned-by-rebuild>" \
-  --tag "catalog"
-node "<installed-skill>/scripts/aggregate_index.mjs" history \
-  --index "<local-index-directory>/skills-catalog.db"
-node "<installed-skill>/scripts/aggregate_index.mjs" changes \
-  --index "<local-index-directory>/skills-catalog.db" \
-  --name "skills-discovery"
-```
-
-It writes the local derived `skills-catalog.db` with Node.js built-in SQLite and falls back deterministically to a current-state-only `skills-catalog.index.json` when SQLite is unavailable. `sync` retains SQLite history; `rebuild` establishes a new baseline and refuses to discard an existing history unless reset is explicit. See [the aggregate-index contract](references/aggregate-index.md) for the output schema, bounds, safe storage location, exact query options, and failure cases.
-
-### Evolution operation ledger
-
-After a SQLite synchronization run exists, record an applied skill operation from one bounded JSON file. The helper migrates legacy v1 or v2 SQLite databases transactionally before inserting the event and leaves the original bytes unchanged if migration or insertion fails:
-
-```sh
-node "<installed-skill>/scripts/aggregate_index.mjs" evolution-record \
-  --index "<local-index-directory>/skills-catalog.db" \
-  --event-file "<caller-workspace>/skill-evolution-event.json"
-node "<installed-skill>/scripts/aggregate_index.mjs" evolution-prove \
-  --index "<local-index-directory>/skills-catalog.db" \
-  --proof-file "<caller-workspace>/legacy-event-rollback-proof.json"
-node "<installed-skill>/scripts/aggregate_index.mjs" evolution-events \
-  --index "<local-index-directory>/skills-catalog.db" \
-  --action "merge" \
-  --package "github-issues" \
-  --limit "20"
-```
-
-The event file names an existing `sync_runs.id`, one action (`rename`, `merge`, `split`, `create`, `retire`, `update`, or `relink`), source and target package identities and revisions, changed files, before and after state, evidence, validations, a snapshot reference, and a rollback instruction. Schema version 2 also requires verified package bytes or a reverse patch for every participant, an explicit host-link/worktree map, and exclusion of `.system`. `evolution-prove` may attach that proof once to a preserved legacy event. Use one unique event key per applied operation. Read the complete field contract and examples in [the aggregate-index reference](references/aggregate-index.md). The JSON fallback cannot retain or query evolution history.
-
 ## Output and boundaries
 
-Return the catalog path, schema version, package count, and concrete changes or mismatches. For an aggregate lookup, return the local index format, source count, skill count, and query result; for SQLite history, include the observation time and added, changed, and removed counts. For an evolution record, return its event ID, key, run ID, action, and status. Never treat an index update or recorded event as authority for the package mutation it describes. An absent package directory is evidence for an orphaned catalog entry, not authorization to delete the package elsewhere. A lifecycle decision, package rename, installation, publication, or source edit requires its own output and is not performed by this skill.
+Return the catalog path, schema version, package count, and concrete changes or mismatches. An absent package directory is evidence for an orphaned catalog entry, not authorization to delete the package elsewhere. A lifecycle decision, package rename, installation, publication, or source edit requires its own output and is not performed by this skill.
 
 The optional `reasoning-effort: medium` hint suits metadata reconciliation and ambiguous migrations. It does not select a model, change runtime settings, or grant filesystem authority. Do not add secrets, local absolute paths, runtime state, benchmark claims, or self-referential Git hashes to the catalog.
 
 ## Acceptance and stopping
 
-The catalog passes when every package selected by its explicit layout appears exactly once, every derived field matches its `SKILL.md`, entries are sorted, the schema is exact, and a second sync changes no bytes. An evolution event passes when the run exists, its action shape is valid, all participating revisions and changed files are explicit, its key is new, `.system` is excluded, and its evidence, validation, snapshot, verified rollback artifact, and link/worktree map round-trip from SQLite. Stop without writing when the collection root or layout is ambiguous, a package link has no explicit trusted root, required metadata is invalid, the catalog is linked, mutation is not authorized, or a claimed operation lacks evidence or rollback. Structural agreement does not establish behavioral quality, safe execution, lifecycle maturity, installation success, or production readiness.
+The catalog passes when every package selected by its explicit layout appears exactly once, every derived field matches its `SKILL.md`, entries are sorted, the schema is exact, and a second sync changes no bytes. Stop without writing when the collection root or layout is ambiguous, a package link has no explicit trusted root, required metadata is invalid, the catalog is linked, or mutation is not authorized. Structural agreement does not establish behavioral quality, safe execution, lifecycle maturity, installation success, or production readiness.

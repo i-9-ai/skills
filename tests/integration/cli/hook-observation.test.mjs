@@ -42,6 +42,7 @@ test('native Read hooks distinguish attempts/success, stable retries and privacy
     };
     for (const payload of [
         { ...base, hook_event_name: 'SessionStart', source: 'startup' },
+        { ...base, hook_event_name: 'SessionStart', source: 'clear' },
         { ...base, hook_event_name: 'PreToolUse' },
         { ...base, hook_event_name: 'PostToolUseFailure', error: 'sensitive-error' },
         { ...base, hook_event_name: 'PostToolUse' },
@@ -58,7 +59,7 @@ test('native Read hooks distinguish attempts/success, stable retries and privacy
         assert.equal(store.rank().rows[0].reads, 1);
         const [bucket] = store.trends().rows;
         assert.equal(bucket.attempts, 1);
-        assert.equal(bucket.session_starts, 1);
+        assert.equal(bucket.session_starts, 2);
         assert.equal(bucket.reads, 1);
     } finally {
         store.close();

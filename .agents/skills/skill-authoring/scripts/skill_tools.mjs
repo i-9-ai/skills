@@ -151,15 +151,14 @@ function validateSetupContract(root, frontmatter, text) {
 function hasRecognizableLicenseText(declared, license) {
   const value = license.toLowerCase().replace(/\s+/gu, ' ');
   const normalized = declared.trim().toLowerCase();
-  if (normalized === 'apache-2.0') return /apache license/u.test(value)
-    && /version 2\.0/u.test(value)
-    && /grant of copyright license/u.test(value)
-    && /grant of patent license/u.test(value)
-    && /redistribution/u.test(value)
-    && /trademark/u.test(value)
-    && /disclaimer of warranty/u.test(value)
-    && /limitation of liability/u.test(value)
-    && /end of terms and conditions/u.test(value);
+  if (normalized === 'apache-2.0') {
+    // The standard terms are invariant; whitespace and the optional application
+    // appendix/copyright notice may differ without truncating a license clause.
+    const end = 'end of terms and conditions';
+    const index = value.indexOf(end);
+    const terms = value.slice(0, index + end.length).trim();
+    return index !== -1 && digestBytes(terms) === '95cef6332b35354c12f9d666ab9ff47002e6f7ef937924896882b2e0cdb7a0d6';
+  }
   if (normalized === 'mit') return /mit license/u.test(value)
     && /permission is hereby granted, free of charge, to any person obtaining a copy/u.test(value)
     && /to deal in the software without restriction/u.test(value)
@@ -171,8 +170,7 @@ function hasRecognizableLicenseText(declared, license) {
     && /governed by/u.test(value)
     && /(?:additional )?restrictions/u.test(value)
     && /does not convey or imply any license or right/u.test(value);
-  return /(?:license|licence|copyright)/u.test(value)
-    && /(?:permission|redistribution|rights granted|licensed under)/u.test(value);
+  return false;
 }
 
 function markdownHeadings(text) {
@@ -209,7 +207,7 @@ function publicSourceHostname(hostname) {
   if (host.includes(':')) return host !== '::' && host !== '::1' && !host.startsWith('::ffff:')
     && !/^f[cd][0-9a-f:]*$/u.test(host) && !/^fe[89ab][0-9a-f:]*$/u.test(host)
     && !/^::ffff:(?:127|10|192\.168|169\.254|172\.(?:1[6-9]|2[0-9]|3[0-1]))\./u.test(host);
-  return true;
+  return parts.length >= 2 && parts.every(part => /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/u.test(part));
 }
 
 function sourceIdentity(source) {
@@ -222,7 +220,10 @@ function sourceIdentity(source) {
   const synthetic = parsed.protocol === 'urn:' && parsed.pathname.startsWith('example:') && !parsed.search && !parsed.hash;
   requireCondition(publicHttps || synthetic, 'source uri must be public HTTPS without credentials/query/fragment or a synthetic urn:example');
   parsed.search = ''; parsed.hash = '';
-  return parsed.href.replace(/\/$/u, '');
+  return parsed.href.replace(/%[0-9a-f]{2}/giu, encoded => {
+    const character = String.fromCharCode(Number.parseInt(encoded.slice(1), 16));
+    return /^[A-Za-z0-9._~-]$/u.test(character) ? character : encoded.toUpperCase();
+  }).replace(/\/$/u, '');
 }
 
 export function validateRun(input) {
@@ -250,6 +251,7 @@ export function validateRun(input) {
       if (uri.startsWith('https:')) requireCondition(REVISION.test(revision),
         'external public sources require an immutable 40/64-hex revision');
       if (source.reuse === 'adapt') {
+        requireCondition(REVISION.test(revision), 'adapted sources require an immutable 40/64-hex revision');
         requireCondition(!['unknown', 'unknown license', 'tbd', 'none', 'unlicensed', 'proprietary', 'no-license', 'n/a', 'na'].includes(license.trim().toLowerCase()),
           'adapted sources require a declared reusable license; compatibility needs review');
       }
