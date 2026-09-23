@@ -10,7 +10,7 @@ Change the affected parser, validators, CLI and plugin preparation, aggregate qu
 
 The user subsequently selected title-cased Markdown filenames with spaces for the public `docs/` pages and `Home.md` as the single documentation/Wiki entrypoint. Rename only those pages, update inbound links and Wiki assertions, and leave the web asset `docs/assets/index.html` and package-local reference filenames unchanged.
 
-The follow-up Wiki request adds a global, separately owned `github-wiki` skill outside this repository. In this repository, verify `has_wiki` before mirroring and exclude any `AGENTS.md` in `docs/`, including stale copies in the Wiki. Validate the workflow locally with disposable Git and rsync fixtures; actual Wiki publication still occurs only on the existing main-branch workflow after merge.
+The follow-up Wiki request adds a global, separately owned `github-wiki` skill outside this repository. In this repository, verify `has_wiki` before mirroring and exclude any `AGENTS.md` in `docs/`, including stale copies in the Wiki. The existing Wiki repository class performs the mirror with Node built-ins, so disposable local fixtures verify behavior without additional shell tools. Actual Wiki publication still occurs only on the existing main-branch workflow after merge.
 
 ## Implementation and rollback
 

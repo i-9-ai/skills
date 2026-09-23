@@ -11,7 +11,7 @@ Make the reviewed meta-skill collection in PR #2 installable as a Codex plugin a
 - Add `plugins/i9-skills` as the release candidate produced by the existing deterministic `plugin prepare` command.
 - Add `.agents/plugins/marketplace.json` with a local relative source path to that artifact.
 - Add a drift check against the canonical packages and update documentation/tests so reviewers can verify freshness and installation prerequisites.
-- Keep the separate `github-wiki` skill in the user's global collection. Finish the repository Wiki workflow guard that excludes `AGENTS.md`.
+- Keep the separate `github-wiki` skill in the user's global collection. Verify Wiki availability in the workflow and reuse its existing Node repository class for a testable mirror that excludes `AGENTS.md`.
 - Do not install the plugin, import the marketplace, publish a release, change visibility, enable the Wiki, merge, or alter a consumer's host configuration.
 
 ## Implementation and validation

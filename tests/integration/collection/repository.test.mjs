@@ -577,13 +577,10 @@ test('documentation publication verifies inputs before staging and publishing ma
     assert.match(wikiWorkflow, /GITHUB_TOKEN: \$\{\{ secrets\.GITHUB_TOKEN \}\}/);
     assert.match(wikiWorkflow, /gh api "repos\/\$\{GITHUB_REPOSITORY\}" --jq '\.has_wiki'/);
     assert.match(wikiWorkflow, /clone --depth 1 "https:\/\/github\.com\/\$\{REPOSITORY\}\.wiki\.git"/);
-    assert.match(wikiWorkflow, /rsync -a --delete --exclude='\.git\/' --exclude='AGENTS\.md'/);
-    assert.match(wikiWorkflow, /find \.wiki -name \.git -prune -o -name AGENTS\.md -exec rm -f -- \{\} \+/);
     assert.match(wikiWorkflow, /node-version: '24'/);
-    const rewrite = wikiWorkflow.indexOf("new WikiMirrorRepository().rewrite('.wiki', process.env.REPOSITORY)");
-    assert.ok(rewrite > wikiWorkflow.indexOf('rsync -a'), 'rewrite the copied Wiki pages');
-    assert.ok(rewrite < wikiWorkflow.indexOf('git add --all'), 'rewrite before staging');
-    assert.match(wikiWorkflow, /documentation mirror must include Home\.md[\s\S]*exit 1/);
+    const synchronize = wikiWorkflow.indexOf("new WikiMirrorRepository().synchronize('docs', '.wiki', process.env.REPOSITORY)");
+    assert.ok(synchronize > wikiWorkflow.indexOf('clone --depth 1'), 'synchronize after cloning');
+    assert.ok(synchronize < wikiWorkflow.indexOf('git add --all'), 'synchronize before staging');
     assert.match(wikiWorkflow, /git add --all\n\s+if git diff --quiet --staged; then/);
 });
 
