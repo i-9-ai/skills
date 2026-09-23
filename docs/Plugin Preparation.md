@@ -1,11 +1,20 @@
-# Prepare a local plugin artifact
+# Prepare and verify the repository plugin
 
-`plugin prepare` makes the repository's reviewed skill collection available as
-a separate, inspectable plugin artifact. Preparation does not install a plugin,
-register a marketplace, enable a hook, contact an MCP server or publish content.
-The npm CLI and the plugin remain separate distribution units.
+The repository includes a complete plugin under `plugins/i9-skills` and a
+repository marketplace manifest at `.agents/plugins/marketplace.json`. The
+plugin is generated from the canonical `.agents/skills` packages; it is not a
+second authoring location. `npm run check` verifies that its receipt and file
+inventory still match those source packages. The npm CLI and plugin remain
+separate distribution units.
 
-After explicit checkout setup, select a new neutral staging directory:
+To refresh the tracked plugin after changing a skill, remove only the generated
+`plugins/i9-skills` directory after reviewing its diff, then run:
+
+```sh
+node bin/index.mjs plugin prepare --output plugins/i9-skills --write
+```
+
+To preview without touching tracked files, select a new neutral directory:
 
 ```sh
 mkdir -p .work/plugin-preview
@@ -94,12 +103,13 @@ outside distributed packages. Run official `skills-ref validate` on every
 bundled skill. These structural checks do not replace an explicitly authorized
 installation test in each intended consumer.
 
-The inert [marketplace example](examples/plugin-marketplace.json) describes a
-future repository marketplace whose plugin artifact would live at
-`plugins/i9-skills`. Its path is relative to that future marketplace's repository
-root. This documentation file is not a registered marketplace. A separate
-authorized installation task must select the destination, review existing
-entries, copy the verified artifact, apply the host's current registration
-contract and verify discovery. Do not copy it into an active host configuration
-as part of preparation. Public directory submission and workspace publication
-remain separate authorization boundaries.
+The repository [marketplace manifest](../.agents/plugins/marketplace.json)
+references `./plugins/i9-skills` relative to the repository root. After this
+branch is merged, an authorized consumer can import the marketplace with
+`codex plugin marketplace add i-9-ai/skills --ref main` and then install with
+`codex plugin add i9-skills@i9-skills`. A private repository requires Git access
+for that consumer. The checked-in manifest and artifact prepare those steps;
+they do not execute them, prove native ingestion or make the repository public.
+Before public marketplace use, verify the exact merged ref, plugin UI rendering,
+package count, and update behavior in a consumer environment. Public directory
+submission and workspace publication remain separate authorization boundaries.

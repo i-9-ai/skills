@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Skills Catalog",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "skills"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "skills": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 256,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "path", "description", "tags"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"},
+          "path": {"type": "string", "maxLength": 1024, "pattern": "^(?:\\.agents/skills|skills)/(?:[a-z][a-z0-9]*(?:-[a-z0-9]+)*/)*[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"},
+          "description": {"type": "string", "minLength": 1, "maxLength": 220},
+          "tags": {
+            "type": "array",
+            "maxItems": 16,
+            "uniqueItems": true,
+            "items": {"type": "string", "minLength": 1, "maxLength": 48, "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"}
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "schema_version": 2,
+  "run_id": "merge-example",
+  "goal": "Create a focused issue-drafting skill from complementary synthetic procedures.",
+  "target_skill": "issue-draft",
+  "status": "draft",
+  "sources": [],
+  "stages": [
+    {
+      "name": "intake",
+      "status": "passed",
+      "summary": "Recorded the single outcome, action boundary, and acceptance criteria; remaining stages have not run.",
+      "artifacts": [
+        {
+          "path": "intake.md",
+          "sha256": "26e373796f613ebca3a2e88be78b52db6539478c8131e6c61168e4b3618715ff"
+        }
+      ]
+    }
+  ]
+}

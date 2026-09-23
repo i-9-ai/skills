@@ -575,7 +575,10 @@ test('documentation publication verifies inputs before staging and publishing ma
     assert.match(wikiWorkflow, /concurrency:\n\s+group: sync-wiki-\$\{\{ github\.repository \}\}\n\s+cancel-in-progress: false/);
     assert.match(wikiWorkflow, /with:\n\s+ref: main\n\s+persist-credentials: false/);
     assert.match(wikiWorkflow, /GITHUB_TOKEN: \$\{\{ secrets\.GITHUB_TOKEN \}\}/);
+    assert.match(wikiWorkflow, /gh api "repos\/\$\{GITHUB_REPOSITORY\}" --jq '\.has_wiki'/);
     assert.match(wikiWorkflow, /clone --depth 1 "https:\/\/github\.com\/\$\{REPOSITORY\}\.wiki\.git"/);
+    assert.match(wikiWorkflow, /rsync -a --delete --exclude='\.git\/' --exclude='AGENTS\.md'/);
+    assert.match(wikiWorkflow, /find \.wiki -name \.git -prune -o -name AGENTS\.md -exec rm -f -- \{\} \+/);
     assert.match(wikiWorkflow, /node-version: '24'/);
     const rewrite = wikiWorkflow.indexOf("new WikiMirrorRepository().rewrite('.wiki', process.env.REPOSITORY)");
     assert.ok(rewrite > wikiWorkflow.indexOf('rsync -a'), 'rewrite the copied Wiki pages');

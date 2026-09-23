@@ -33,6 +33,14 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '24'
+      - name: Verify the Wiki is enabled
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "$(gh api "repos/${GITHUB_REPOSITORY}" --jq '.has_wiki')" != true ]; then
+            echo "::error::Enable the repository Wiki and create its first page before synchronizing docs."
+            exit 1
+          fi
       - name: Clone and synchronize the Wiki
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -40,7 +48,8 @@ jobs:
         run: |
           git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GITHUB_TOKEN" | base64 -w 0)" \
             clone --depth 1 "https://github.com/${REPOSITORY}.wiki.git" .wiki
-          rsync -a --delete --exclude='.git' docs/ .wiki/
+          rsync -a --delete --exclude='.git/' --exclude='AGENTS.md' docs/ .wiki/
+          find .wiki -name .git -prune -o -name AGENTS.md -exec rm -f -- {} +
           node --input-type=module <<'NODE'
           import { WikiMirrorRepository } from './src/repository/WikiMirrorRepository.ts';
           new WikiMirrorRepository().rewrite('.wiki', process.env.REPOSITORY);

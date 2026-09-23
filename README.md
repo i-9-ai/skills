@@ -15,7 +15,9 @@ The prepared CLI package name is `@i-9-ai/skills` and its executable is
 `i9-skills`. In a trusted checkout, run `npm ci`, then `npm run check` and
 `npm run package:check` on Node.js 24+. Read the
 [distribution preparation](docs/Distribution%20Readiness.md) for the local packed
-test and the separate future registry/plugin release boundaries.
+test and the separate future registry/plugin release boundaries. A generated
+Codex plugin and repository marketplace entry are included for review; importing
+or installing them remains a separate consumer action after merge.
 
 ## Install
 

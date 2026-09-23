@@ -1,0 +1,1312 @@
+{
+  "schema_version": 1,
+  "plugin": "i9-skills",
+  "version": "0.1.0-rc.1",
+  "skills": [
+    "skill-authoring",
+    "skill-design",
+    "skill-domain-research",
+    "skill-evaluator",
+    "skill-evidence-collection",
+    "skill-evolution",
+    "skill-icon-design",
+    "skill-installation",
+    "skill-lifecycle-review",
+    "skill-migration",
+    "skill-naming",
+    "skill-optimization",
+    "skill-publication",
+    "skill-routing",
+    "skill-security-review",
+    "skills-audit",
+    "skills-catalog",
+    "skills-catalog-index",
+    "skills-discovery",
+    "skills-host-compatibility",
+    "skills-maintenance-scheduling",
+    "skills-refactoring",
+    "skills-snapshot",
+    "skills-synthesis"
+  ],
+  "files": [
+    {
+      "path": ".codex-plugin/plugin.json",
+      "size": 839,
+      "mode": 420,
+      "sha256": "fef2f28c11cea08368c5f44675186e5055a19c8e19ec20303f8d430fbe856a4e"
+    },
+    {
+      "path": "LICENSE",
+      "size": 11358,
+      "mode": 420,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "plugin.json",
+      "size": 475,
+      "mode": 420,
+      "sha256": "410021eacb3db5ef3fe86ca1e23912048aef614bae72bf87fb240c8e39d3a64c"
+    },
+    {
+      "path": "skills/skill-authoring/LICENSE",
+      "size": 11358,
+      "mode": 420,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "skills/skill-authoring/SKILL.md",
+      "size": 16685,
+      "mode": 420,
+      "sha256": "0ceedcb11e5ea40034c02182343584d8af8d813ea87382cda711fc687f33aea3"
+    },
+    {
+      "path": "skills/skill-authoring/agents/openai.yaml",
+      "size": 327,
+      "mode": 420,
+      "sha256": "796c6b38b760262744ad84db5571ef1377e09daceaf7a4276d701c81912744f9"
+    },
+    {
+      "path": "skills/skill-authoring/assets/icon-source.md",
+      "size": 1486,
+      "mode": 420,
+      "sha256": "f3122575ab94aa973cda9d68827c8b307d5c62419e30193dbe5f70735a1c25a8"
+    },
+    {
+      "path": "skills/skill-authoring/assets/icon.png",
+      "size": 3831,
+      "mode": 420,
+      "sha256": "3c19435131538e537825c985e7f6149a0cbf13d4c70a163954b5fd6574873dcf"
+    },
+    {
+      "path": "skills/skill-authoring/assets/icon.svg",
+      "size": 794,
+      "mode": 420,
+      "sha256": "2bff26363c6b755693a84c1f834a04aef66eb8ee4d252a46f042077535ff8f4c"
+    },
+    {
+      "path": "skills/skill-authoring/assets/run.schema.json",
+      "size": 2940,
+      "mode": 420,
+      "sha256": "49b71af97a39acd42a838f33db8ad36e8d6daf679afaf9d45e67e33ab25740f5"
+    },
+    {
+      "path": "skills/skill-authoring/assets/skill-template.md",
+      "size": 6238,
+      "mode": 420,
+      "sha256": "b517878b1fcab830a5a50d2d36d93940e45fad6a5e6b219aa4a09f9d6f29c814"
+    },
+    {
+      "path": "skills/skill-authoring/examples/merge-run/intake.md",
+      "size": 865,
+      "mode": 420,
+      "sha256": "26e373796f613ebca3a2e88be78b52db6539478c8131e6c61168e4b3618715ff"
+    },
+    {
+      "path": "skills/skill-authoring/examples/merge-run/run.json",
+      "size": 588,
+      "mode": 420,
+      "sha256": "0e7c9c132c0c69f737565eaa40f9a15a173a5a393af50454626f892b52189ca9"
+    },
+    {
+      "path": "skills/skill-authoring/references/authoring.md",
+      "size": 13652,
+      "mode": 420,
+      "sha256": "6aeec59945e910318aa3ee98213107541f762327029f0bf1ee8e503503123073"
+    },
+    {
+      "path": "skills/skill-authoring/references/handoff-protocol.md",
+      "size": 7069,
+      "mode": 420,
+      "sha256": "667a4e0460385cc8d4df34fa652d8913754a7345fb1c8df7d2b2f22bff5c1b96"
+    },
+    {
+      "path": "skills/skill-authoring/references/openai-yaml.md",
+      "size": 4110,
+      "mode": 420,
+      "sha256": "6c02a7c98d4f805935857f8cc6dd5250e2a3a9e0a928b49bf50f68995006d840"
+    },
+    {
+      "path": "skills/skill-authoring/references/runtime-guidance.md",
+      "size": 10518,
+      "mode": 420,
+      "sha256": "ac97a0b521cf18a6635cfd6735d93e44eaceddc96fe3db5c2251cfe678dc84b0"
+    },
+    {
+      "path": "skills/skill-authoring/references/tooling.md",
+      "size": 10400,
+      "mode": 420,
+      "sha256": "7cdde577fde355178006e12cf38137262499328b9d884e5cb9ede4f4a279ca48"
+    },
+    {
+      "path": "skills/skill-authoring/references/upstream-guidance.md",
+      "size": 1183,
+      "mode": 420,
+      "sha256": "77a6fc85fbbf1154bbc37b4aff44c90a4ce24aad9e43f7bf86b95f5711dfd886"
+    },
+    {
+      "path": "skills/skill-authoring/references/validation.md",
+      "size": 2441,
+      "mode": 420,
+      "sha256": "a30d0fbded8cd2b35588cb281d8519a8d3ceee55b72ca0e7641202aecbe47a87"
+    },
+    {
+      "path": "skills/skill-authoring/scripts/lib/contracts.mjs",
+      "size": 21191,
+      "mode": 420,
+      "sha256": "bca2ca8b307ae0e57fd64b94d227bd54dfc14d6d9b7f005da830a1285cf82cac"
+    },
+    {
+      "path": "skills/skill-authoring/scripts/lib/filesystem.mjs",
+      "size": 8522,
+      "mode": 420,
+      "sha256": "278195dec4e9d7339a82ca137cf37fc9d40c0ac06e33e0b12c1333b6f9d65ced"
+    },
+    {
+      "path": "skills/skill-authoring/scripts/skill_tools.mjs",
+      "size": 28282,
+      "mode": 420,
+      "sha256": "5917eab76aba0af137615a81b18308d153bf5f46762e8e5c4f405d74c142726f"
+    },
+    {
+      "path": "skills/skill-design/LICENSE",
+      "size": 11358,
+      "mode": 420,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "skills/skill-design/SKILL.md",
+      "size": 9378,
+      "mode": 420,
+      "sha256": "9e99ad46434a99cf6b45ce23012a059a2c2f98087d2a5aa6b7f789d20df5ab69"
+    },
+    {
+      "path": "skills/skill-design/agents/openai.yaml",
+      "size": 314,
+      "mode": 420,
+      "sha256": "d9892f0f97ac81f75a4bf30e848239a0a0f9bea8a2ab488ff35540bf21d13e8e"
+    },
+    {
+      "path": "skills/skill-design/assets/design-brief.md",
+      "size": 1393,
+      "mode": 420,
+      "sha256": "166c2860acec242d7f2fdd91f7a1cb8ff661772542005aa87db42abac90f9cec"
+    },
+    {
+      "path": "skills/skill-design/assets/icon-source.md",
+      "size": 1498,
+      "mode": 420,
+      "sha256": "e820cae188246a8528d06426b2388adf6f1f8e9e8cfe4f396e30f9601c0a93c3"
+    },
+    {
+      "path": "skills/skill-design/assets/icon.png",
+      "size": 4369,
+      "mode": 420,
+      "sha256": "ff4fefffc2aa4d0c3c1edaa5675c992fd9890a55b4475da65c11aec197b14a0f"
+    },
+    {
+      "path": "skills/skill-design/assets/icon.svg",
+      "size": 804,
+      "mode": 420,
+      "sha256": "a6b3da5fd344c9ebf24985ee752937eb45aa32ffe65ddc0043ea9fa69a485f01"
+    },
+    {
+      "path": "skills/skill-design/references/decisions.md",
+      "size": 1532,
+      "mode": 420,
+      "sha256": "ed043bb64824f5373a365cedd75706a69c8e360c4b3e5d22aff041f8eb66d083"
+    },
+    {
+      "path": "skills/skill-design/references/upstream-guidance.md",
+      "size": 1130,
+      "mode": 420,
+      "sha256": "1193785cfc19d0d29def1a9479fb73a109a8a9708a83061a2d3fbb39a15fff2d"
+    },
+    {
+      "path": "skills/skill-domain-research/LICENSE",
+      "size": 11358,
+      "mode": 420,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "skills/skill-domain-research/SKILL.md",
+      "size": 11526,
+      "mode": 420,
+      "sha256": "91f927307365669165dafb58d00f7634a4ef6974f712e1f877148fef8968571d"
+    },
+    {
+      "path": "skills/skill-domain-research/agents/openai.yaml",
+      "size": 324,
+      "mode": 420,
+      "sha256": "ee363df3a58e42cbaf014cfa1e9f73bfd559f43ac207d76c75c58db2d28de930"
+    },
+    {
+      "path": "skills/skill-domain-research/assets/icon.png",
+      "size": 6052,
+      "mode": 420,
+      "sha256": "c71fbd1826d05ee3d98dc0e3cb3e027d8d6990e4b5d80922c6d713c6ea46e544"
+    },
+    {
+      "path": "skills/skill-domain-research/assets/icon.svg",
+      "size": 993,
+      "mode": 420,
+      "sha256": "05f7b64828327f6e2f773a9183774d655d80e8dd74c268ac9d4c38cc2ee3c3ea"
+    },
+    {
+      "path": "skills/skill-domain-research/assets/research-dossier.md",
+      "size": 3576,
+      "mode": 420,
+      "sha256": "4e1fdd996eaeb7bdb1606aa14a063f7a0ce6d10d12f8cb16707fa7d9823f2aad"
+    },
+    {
+      "path": "skills/skill-domain-research/references/authoritative-source-policy.md",
+      "size": 5186,
+      "mode": 420,
+      "sha256": "0c353228946b0b66bb294f7b8cbbcf310208c60359f30f1c7a69bdb997126060"
+    },
+    {
+      "path": "skills/skill-domain-research/references/provenance.md",
+      "size": 2822,
+      "mode": 420,
+      "sha256": "082a9dbbb6845424d58ebb63aab72ae904e85edd081adf750792705d58bf9e52"
+    },
+    {
+      "path": "skills/skill-evaluator/LICENSE",
+      "size": 11358,
+      "mode": 420,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "skills/skill-evaluator/SKILL.md",
+      "size": 8223,
+      "mode": 420,
+      "sha256": "067e579236cca3a223979791a6e368ebc7ca7f80df15e492ff2b44f74564b41f"
+    },
+    {
+      "path": "skills/skill-evaluator/agents/openai.yaml",
+      "size": 316,
+      "mode": 420,
+      "sha256": "2747efc4e38a22f7f9d845718f4a6ad761d40304817d3917f5746678e86a9f39"
+    },
+    {
+      "path": "skills/skill-evaluator/assets/evaluation-case.json",
+      "size": 607,
+      "mode": 420,
+      "sha256": "6f5b98e4f66e6b187fb21f71242a83610569ddef9656138e3b8dbd8d22ea1deb"
+    },
+    {
+      "path": "skills/skill-evaluator/assets/evaluation-report.md",
+      "size": 1388,
+      "mode": 420,
+      "sha256": "348888f292f117c3c8648e2741e3db13800be299e9782cfe2bf1492e5679179b"
+    },
+    {
+      "path": "skills/skill-evaluator/assets/icon-source.md",
+      "size": 1500,
+      "mode": 420,
+      "sha256": "56bc3f83e98951dad8741d37a2eb7bdaa7bf7e45d2c19ad1672d293ae6ced0a6"
+    },
+    {
+      "path": "skills/skill-evaluator/assets/icon.png",
+      "size": 4138,
+      "mode": 420,
+      "sha256": "a2acc5aaa3bd8747edacfae3e0462624f473160cc2fe43fd5f9d024ef8b8c2ef"
+    },
+    {
+      "path": "skills/skill-evaluator/assets/icon.svg",
+      "size": 854,
+      "mode": 420,
+      "sha256": "287483a60c431d1159a830d8b48813aa0a018093b6e96a6ca48622bdb5d1b8d9"
+    },
+    {
+      "path": "skills/skill-evaluator/references/case-contract.md",
+      "size": 1653,
+      "mode": 420,
+      "sha256": "c16f1ef7787e3298050462ddd922f441d641b56bef64b8906ff0156fd4dc4777"
+    },
+    {
+      "path": "skills/skill-evaluator/references/evaluation.md",
+      "size": 4801,
+      "mode": 420,
+      "sha256": "4cc685b15a3f30bb67b0cfd3a164b42a6c21a82011e04269cf013643edee2f84"
+    },
+    {
+      "path": "skills/skill-evaluator/references/upstream-guidance.md",
+      "size": 1145,
+      "mode": 420,
+      "sha256": "fa79864f52691fec44116162a838ee809930b22d2559a638f66ac2d3cdf321b4"
+    },
+    {
+      "path": "skills/skill-evidence-collection/LICENSE",
+      "size": 11358,
+      "mode": 420,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "skills/skill-evidence-collection/NOTICE",
+      "size": 1124,
+      "mode": 420,
+      "sha256": "f296bcb51968fb92344a403b04bc03b22eb2193fbab27d527dbd78b8f3ca97ae"
+    },
+    {
+      "path": "skills/skill-evidence-collection/SKILL.md",
+      "size": 4084,
+      "mode": 420,
+      "sha256": "cafff7416378adcb9cda16756d43a34b94cc744f59991320538d339c81d9d583"
+    },
+    {
+      "path": "skills/skill-evidence-collection/agents/openai.yaml",
+      "size": 305,
+      "mode": 420,
+      "sha256": "9396d968e7c2b02ba5adc4335fdf54f87992274acbf6ffb3376654a2effe25b0"
+    },
+    {
+      "path": "skills/skill-evidence-collection/assets/icon-source.md",
+      "size": 570,
+      "mode": 420,
+      "sha256": "03217cb03c45481bfcccd0a35fca84937109c2ae1c27f7c98e8d97d128dab853"
+    },
+    {
+      "path": "skills/skill-evidence-collection/assets/icon.png",
+      "size": 5565,
+      "mode": 420,
+      "sha256": "cec489d629353cde797b3367bd7764f8ec695455702b04dc6830e285e3d2f147"
+    },
+    {
+      "path": "skills/skill-evidence-collection/assets/icon.svg",
+      "size": 904,
+      "mode": 420,
+      "sha256": "e907e69a1bcb1f3f477cfae8623f88c7cb4cf422cdd160cf3bb0dd018a6228e7"
+    },
+    {
+      "path": "skills/skill-evidence-collection/references/evidence-packet.md",
+      "size": 1967,
+      "mode": 420,
+      "sha256": "48f228b682604324a06e58cae1a9945722be6fad6bfde561591824f9db6364a7"
+    },
+    {
+      "path": "skills/skill-evidence-collection/references/upstream-guidance.md",
+      "size": 1110,
+      "mode": 420,
+      "sha256": "0e77c0b11405c981a3ab5f2ab6c914659c596d4b82dbe9acc2a24917e6df8600"
+    },
+    {
+      "path": "skills/skill-evolution/LICENSE",
+      "size": 11358,
+      "mode": 420,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "skills/skill-evolution/SKILL.md",
+      "size": 7134,
+      "mode": 420,
+      "sha256": "e60707a78966837d6057d06766d1cce96a2dd8fed4baf42bf3ec37d5b462c670"
+    },
+    {
+      "path": "skills/skill-evolution/agents/openai.yaml",
+      "size": 321,
+      "mode": 420,
+      "sha256": "72db7b3e6740a64d3e47d9cb9166232b9ee3d13f55632aa28e82c9a92aee5e77"
+    },
+    {
+      "path": "skills/skill-evolution/assets/icon-source.md",
+      "size": 1492,
+      "mode": 420,
+      "sha256": "736cff7a6a0f0528746d89fc5e3608defee0bbf77f85a0eaaa979169f28a18c3"
+    },
+    {
+      "path": "skills/skill-evolution/assets/icon.png",
+      "size": 5712,
+      "mode": 420,
+      "sha256": "2d775c266ba292123c3c2632c3dac0e25cc7868179d3ea0b55141c22011420c7"
+    },
+    {
+      "path": "skills/skill-evolution/assets/icon.svg",
+      "size": 942,
+      "mode": 420,
+      "sha256": "c743d4ab9540b8bc6304d7651e13b472b083f2a19b9ecc6a5b7ce96c5f20ef4d"
+    },
+    {
+      "path": "skills/skill-evolution/references/evidence-promotion.md",
+      "size": 3071,
+      "mode": 420,
+      "sha256": "2f862fb8dc8fa5de81c896febbce528a9e189ce7b60278b0b205a6148c3ff520"
+    },
+    {
+      "path": "skills/skill-icon-design/LICENSE",
+      "size": 11358,
+      "mode": 420,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "skills/skill-icon-design/SKILL.md",
+      "size": 4275,
+      "mode": 420,
+      "sha256": "23345c8f7717f67a07089620ff6bd85649889df20fec34244051d2afa8cb1dcf"
+    },
+    {
+      "path": "skills/skill-icon-design/agents/openai.yaml",
+      "size": 292,
+      "mode": 420,
+      "sha256": "a54c7d8ccffdd0c7f5ecc5fb7f0fa03e79b3211485997b2537adf32a6936ff2f"
+    },
+    {
+      "path": "skills/skill-icon-design/assets/icon-source.md",
+      "size": 1494,
+      "mode": 420,
+      "sha256": "144a566505bfd14c9a3f7d0355c1a89dee960c71676dd12e6f656ff4b7e92fd6"
+    },
+    {
+      "path": "skills/skill-icon-design/assets/icon.png",
+      "size": 5167,
+      "mode": 420,
+      "sha256": "5cf4c40b8643e23e3cf6cf2b1470c9fb88931e060eba5c874dd09dfa288efe2b"
+    },
+    {
+      "path": "skills/skill-icon-design/assets/icon.svg",
+      "size": 1148,
+      "mode": 420,
+      "sha256": "06817998ae4592841c73ba4eca3c72f050c50c35e8ad859fbd23722a293a3f22"
+    },
+    {
+      "path": "skills/skill-icon-design/references/icon-contract.md",
+      "size": 1034,
+      "mode": 420,
+      "sha256": "87dc82044dd0aad5cad065afbb9d4b50113c59aba4cd5f1d26b31decafcce8f0"
+    },
+    {
+      "path": "skills/skill-icon-design/references/icon-sources.md",
+      "size": 2270,
+      "mode": 420,
+      "sha256": "25b74c9502a513a2191119f485295471b9703fbed4a0bf8cfc3be86affb256e0"
+    },
+    {
+      "path": "skills/skill-installation/LICENSE",
+      "size": 11358,
+      "mode": 420,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "skills/skill-installation/SKILL.md",
+      "size": 6289,
+      "mode": 420,
+      "sha256": "ba73dfd73dc1fff24ee365d1ce7d4f2c9dfccc0b5820efbd384be1333066d50a"
+    },
+    {
+      "path": "skills/skill-installation/agents/openai.yaml",
+      "size": 331,
+      "mode": 420,
+      "sha256": "d96eeb1bfab7e6e3f96bfefa605c680b98972d9a6a1a18f381b3bc00be48c7b7"
+    },
+    {
+      "path": "skills/skill-installation/assets/icon-source.md",
+      "size": 1492,
+      "mode": 420,
+      "sha256": "45ae94ea83d797c8b2c49a24028bc047750b885f958c0d0a02a46c165a050a33"
+    },
+    {
+      "path": "skills/skill-installation/assets/icon.png",
+      "size": 3926,
+      "mode": 420,
+      "sha256": "8ea24627ebdc764eb6d4f5ef5487acef42c7a774664cfa12d7f4fc7889200008"
+    },
+    {
+      "path": "skills/skill-installation/assets/icon.svg",
+      "size": 696,
+      "mode": 420,
+      "sha256": "22e457c0ff93f6cb565b5c6d76b3761da26f57dc10d62794a7877c97232dbd12"
+    },
+    {
+      "path": "skills/skill-installation/references/generic-fallback.md",
+      "size": 12727,
+      "mode": 420,
+      "sha256": "531ea5e343ddcdc51d6eaf19edec43ba9eef7c0182dec17401625a104e5c2716"
+    },
+    {
+      "path": "skills/skill-installation/scripts/install_skill.mjs",
+      "size": 22145,
+      "mode": 420,
+      "sha256": "d58de3bd810febaae7e57f84e3f610d64e2565b8c0c68c73bf25e79b926cac62"
+    },
+    {
+      "path": "skills/skill-installation/tests/install_skill.test.mjs",
+      "size": 14539,
+      "mode": 420,
+      "sha256": "888b7bbe0b9826fc7b8a870a01dd2dcf30c532923b7f7e4b1b038c93be93faa5"
+    },
+    {
+      "path": "skills/skill-lifecycle-review/LICENSE",
+      "size": 11358,
+      "mode": 420,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "skills/skill-lifecycle-review/SKILL.md",
+      "size": 2576,
+      "mode": 420,
+      "sha256": "060ea7fc1ed43748c6418bc6994c597b5893f9820acd9389b5d41030539a25c8"
+    },
+    {
+      "path": "skills/skill-lifecycle-review/agents/openai.yaml",
+      "size": 339,
+      "mode": 420,
+      "sha256": "f7165b30db7994ca27d29bf13b2bbc9862718091a0c0ab0a012e2f681b33fdc6"
+    },
+    {
+      "path": "skills/skill-lifecycle-review/assets/icon-source.md",
+      "size": 1498,
+      "mode": 420,
+      "sha256": "1a73544615520357b1b828a531d1eb2168d4743e8a79b89b04f2781d22f190bb"
+    },
+    {
+      "path": "skills/skill-lifecycle-review/assets/icon.png",
+      "size": 3806,
+      "mode": 420,
+      "sha256": "08c901525f511fa0d48e6f2b1a17bf4e5b947f5bdd1f3067e37f3c81fce76ef4"
+    },
+    {
+      "path": "skills/skill-lifecycle-review/assets/icon.svg",
+      "size": 827,
+      "mode": 420,
+      "sha256": "58d2b5ae8e70e27ffee8da82b91a176fda3588fcee266d70257fe409b8d01bcf"
+    },
+    {
+      "path": "skills/skill-lifecycle-review/references/lifecycle-policy.md",
+      "size": 2764,
+      "mode": 420,
+      "sha256": "6e2608ad36b125fd78b4e14649227f03909841750ed65d42964b6cd954bd805f"
+    },
+    {
+      "path": "skills/skill-migration/LICENSE",
+      "size": 11358,
+      "mode": 420,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "skills/skill-migration/SKILL.md",
+      "size": 3376,
+      "mode": 420,
+      "sha256": "fb1d0d80201b47c27ebd3c5ae45542193b63cfe0b2746ccfdccce38ef02c7a30"
+    },
+    {
+      "path": "skills/skill-migration/agents/openai.yaml",
+      "size": 323,
+      "mode": 420,
+      "sha256": "3409e7b91b518011931bdcc97244aa8ff296fa4880b3c35d8f32148c5a8fa5f9"
+    },
+    {
+      "path": "skills/skill-migration/assets/icon-source.md",
+      "size": 1500,
+      "mode": 420,
+      "sha256": "b61664e36f8a5a84dd4f3857f7d2f9c7e465d65a239811d26cb27902f23b20f5"
+    },
+    {
+      "path": "skills/skill-migration/assets/icon.png",
+      "size": 4028,
+      "mode": 420,
+      "sha256": "1ad173b9f0c91dfca25356b5416d9cc8515f51c81704b732a817f5f74033a898"
+    },
+    {
+      "path": "skills/skill-migration/assets/icon.svg",
+      "size": 722,
+      "mode": 420,
+      "sha256": "901becfd2a789e58f9d6f0246f41f92cc494e1c285ee4b17d2f2f506e7c253ab"
+    },
+    {
+      "path": "skills/skill-naming/LICENSE",
+      "size": 11358,
+      "mode": 420,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "skills/skill-naming/SKILL.md",
+      "size": 4137,
+      "mode": 420,
+      "sha256": "06287ae4c3ba217f4c60f307e18d6da1a28710d0286c58e70c25318cf52961e3"
+    },
+    {
+      "path": "skills/skill-naming/agents/openai.yaml",
+      "size": 322,
+      "mode": 420,
+      "sha256": "44f859179257d4fd08281eb7718b3e01fc3a14de073ac3408ee7e71983af9240"
+    },
+    {
+      "path": "skills/skill-naming/assets/icon-source.md",
+      "size": 1490,
+      "mode": 420,
+      "sha256": "6a8369cbf3e02d7497dbf96dc9d5c51052b5c29a60952687aaa113d2602a4291"
+    },
+    {
+      "path": "skills/skill-naming/assets/icon.png",
+      "size": 3871,
+      "mode": 420,
+      "sha256": "22297e646f8a7ed18de2088e319f50f9b1d8a3d793eb8a58a232b13e1dd4edef"
+    },
+    {
+      "path": "skills/skill-naming/assets/icon.svg",
+      "size": 775,
+      "mode": 420,
+      "sha256": "d639c7850525389fb035ef63efdc4b5557978cba5e816d67ed1ea8bef95d4045"
+    },
+    {
+      "path": "skills/skill-naming/assets/naming-decision.md",
+      "size": 974,
+      "mode": 420,
+      "sha256": "d3466dcf9f301f936549bab30515d1cf5a2556639df4393ad51c252625c5eb04"
+    },
+    {
+      "path": "skills/skill-naming/references/conventions.md",
+      "size": 3701,
+      "mode": 420,
+      "sha256": "7e0e561034771e040b93b90efd59251cdd0e5ab43f50b335fa2e37513f829b58"
+    },
+    {
+      "path": "skills/skill-optimization/LICENSE",
+      "size": 11358,
+      "mode": 420,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "skills/skill-optimization/SKILL.md",
+      "size": 6581,
+      "mode": 420,
+      "sha256": "e699cd0ec17f4076019b87a9241763cd01e29a3726d99d0a019731adfc8d9ec1"
+    },
+    {
+      "path": "skills/skill-optimization/agents/openai.yaml",
+      "size": 295,
+      "mode": 420,
+      "sha256": "dc4a4c09034b8991fd4832cacb7ecf5aef663bfa55025d7469a3aa54eb7cd6b8"
+    },
+    {
+      "path": "skills/skill-optimization/assets/icon-source.md",
+      "size": 1502,
+      "mode": 420,
+      "sha256": "3f006ce375a3db3dae4784ac61c13d35a961c7e52e39e2c17d619b918595e3f8"
+    },
+    {
+      "path": "skills/skill-optimization/assets/icon.png",
+      "size": 4130,
+      "mode": 420,
+      "sha256": "e8a3e6db62139804a806a9523c1f97772e22d50229067128395c89b920f8eef9"
+    },
+    {
+      "path": "skills/skill-optimization/assets/icon.svg",
+      "size": 726,
+      "mode": 420,
+      "sha256": "920cb4f8ebf995836ca1e6f5270fea97e034b1a4cfddc4c617c3f89afd812405"
+    },
+    {
+      "path": "skills/skill-optimization/references/activation-optimization.md",
+      "size": 2220,
+      "mode": 420,
+      "sha256": "9d68893c3995fdfb40447c86183b73987573e3dbc93299081fd47c46a056a68e"
+    },
+    {
+      "path": "skills/skill-optimization/references/optimization-loop.md",
+      "size": 6058,
+      "mode": 420,
+      "sha256": "c4af3867d68d44df7157a30773c1f0162e3df9885dc681530e45192f41701110"
+    },
+    {
+      "path": "skills/skill-optimization/references/upstream-guidance.md",
+      "size": 1133,
+      "mode": 420,
+      "sha256": "52a4c03724b837fada4e2ec4fa1ca4bdef217508aa0fdfa205402ffa358eda60"
+    },
+    {
+      "path": "skills/skill-publication/LICENSE",
+      "size": 11358,
+      "mode": 420,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "skills/skill-publication/SKILL.md",
+      "size": 2855,
+      "mode": 420,
+      "sha256": "992a616aac34843858263b1a8b6a73d68fe42f6db85d3b0b5a85962add9c2bb7"
+    },
+    {
+      "path": "skills/skill-publication/agents/openai.yaml",
+      "size": 343,
+      "mode": 420,
+      "sha256": "f40daf55232f5f146be8cfe684b60f1d6864540172e4574b30cffbd837c2d4cf"
+    },
+    {
+      "path": "skills/skill-publication/assets/icon-source.md",
+      "size": 1494,
+      "mode": 420,
+      "sha256": "d02bbf6c04c4cd313520df5847fcfbbfa61f76201a52cef80514d438b3ee46a3"
+    },
+    {
+      "path": "skills/skill-publication/assets/icon.png",
+      "size": 3803,
+      "mode": 420,
+      "sha256": "67b181f54ead43647c8e4046e419ef96b5655da57871a0eb60541cb4e93ac769"
+    },
+    {
+      "path": "skills/skill-publication/assets/icon.svg",
+      "size": 690,
+      "mode": 420,
+      "sha256": "f18c0cafe8b71ea87f115bff1ac377cc84dc8716c00cd913d8c2a9331ecf89b6"
+    },
+    {
+      "path": "skills/skill-publication/references/distribution-adapters.md",
+      "size": 1809,
+      "mode": 420,
+      "sha256": "0d90bf6996087c33d101dd8d0470ce89445dfe865de46c2b971a4fad14a538d8"
+    },
+    {
+      "path": "skills/skill-routing/LICENSE",
+      "size": 11358,
+      "mode": 420,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "skills/skill-routing/SKILL.md",
+      "size": 4638,
+      "mode": 420,
+      "sha256": "6857df1d480bb7a3ea3904139ae9e39976df5bdf11c83ef375c88e7b72ecc628"
+    },
+    {
+      "path": "skills/skill-routing/agents/openai.yaml",
+      "size": 310,
+      "mode": 420,
+      "sha256": "37843529ce97a0fb245bc33c7a1bf8c53310f3449c4860aadd5ee5f8129caac5"
+    },
+    {
+      "path": "skills/skill-routing/assets/icon-source.md",
+      "size": 1479,
+      "mode": 420,
+      "sha256": "4d1c8c185fb0f0f1d39dee69620d6033a7b21b0c145e3444ce319378e09f3bef"
+    },
+    {
+      "path": "skills/skill-routing/assets/icon.png",
+      "size": 4489,
+      "mode": 420,
+      "sha256": "bc3b00098d2e4f54dbd04ac4c1378d738e49aae85bc5c05fcba08c97c62d2384"
+    },
+    {
+      "path": "skills/skill-routing/assets/icon.svg",
+      "size": 1054,
+      "mode": 420,
+      "sha256": "3f4accb875eb244ec9c1c3e0c0e602799fcdfdcb655239511d29c9e96ba37134"
+    },
+    {
+      "path": "skills/skill-routing/assets/routing-decision.md",
+      "size": 1461,
+      "mode": 420,
+      "sha256": "5c1a2cd91bca4fe72640e7e847703f84b781493e4524a162165b646d0526535c"
+    },
+    {
+      "path": "skills/skill-routing/references/selection.md",
+      "size": 3272,
+      "mode": 420,
+      "sha256": "518fc3ece7fb0fdc0549eeb5cb5f0f02415b058b51e721eba73111721d72f709"
+    },
+    {
+      "path": "skills/skill-security-review/LICENSE",
+      "size": 11358,
+      "mode": 420,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "skills/skill-security-review/SKILL.md",
+      "size": 2508,
+      "mode": 420,
+      "sha256": "21ce4dcb64ce55c2a4e15d9dbe2728214d0521e21c7b2d822096392c518852a7"
+    },
+    {
+      "path": "skills/skill-security-review/agents/openai.yaml",
+      "size": 330,
+      "mode": 420,
+      "sha256": "e7fd0f6412a5d50ce788cb45b9199105a2891afdf01daf91ed5a45259a3e6e6e"
+    },
+    {
+      "path": "skills/skill-security-review/assets/icon-source.md",
+      "size": 1500,
+      "mode": 420,
+      "sha256": "a9d0a490a4ab030ae524106b006b3650f72798392098a46f4a111c4443881e91"
+    },
+    {
+      "path": "skills/skill-security-review/assets/icon.png",
+      "size": 4999,
+      "mode": 420,
+      "sha256": "805bf6a75bece091c82fd4fe6eb26fb994be46af915b70cc40042687b51eb588"
+    },
+    {
+      "path": "skills/skill-security-review/assets/icon.svg",
+      "size": 777,
+      "mode": 420,
+      "sha256": "ceeea3a3064b5b61da63c760cda85d871f496d1628674110d7b571354fc31155"
+    },
+    {
+      "path": "skills/skills-audit/LICENSE",
+      "size": 11358,
+      "mode": 420,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "skills/skills-audit/SKILL.md",
+      "size": 2191,
+      "mode": 420,
+      "sha256": "dfa8a3de9c8cdd783ff73b163ab984d425246f5195ee5d65311972b2c0e99371"
+    },
+    {
+      "path": "skills/skills-audit/agents/openai.yaml",
+      "size": 318,
+      "mode": 420,
+      "sha256": "6652c21f2acffca1553eb736d108f6c1c9d045ada8a6a4882ef2e3cb02618fdb"
+    },
+    {
+      "path": "skills/skills-audit/assets/icon-source.md",
+      "size": 1494,
+      "mode": 420,
+      "sha256": "b530740cfff22bc683c0008a841d88e1e930a439c7adba2664c5e723dca47022"
+    },
+    {
+      "path": "skills/skills-audit/assets/icon.png",
+      "size": 5194,
+      "mode": 420,
+      "sha256": "5eee298aefe34151a9573db3715f1cf563d8ad6910ad7d9407b718f92887051a"
+    },
+    {
+      "path": "skills/skills-audit/assets/icon.svg",
+      "size": 877,
+      "mode": 420,
+      "sha256": "42704047115693ce36a6a3a432092947d2949fddc44128efb2e694346a015557"
+    },
+    {
+      "path": "skills/skills-catalog-index/LICENSE",
+      "size": 11358,
+      "mode": 420,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "skills/skills-catalog-index/NOTICE",
+      "size": 632,
+      "mode": 420,
+      "sha256": "d4ac5427b5de01296c8a26bff23b39c39647f814e7b7136dc79fcef443ecab9b"
+    },
+    {
+      "path": "skills/skills-catalog-index/SKILL.md",
+      "size": 9015,
+      "mode": 420,
+      "sha256": "5e4182c14f3dad83d725f24e1b5c494a95e9b3a0fe2a420ff5507ad16aead182"
+    },
+    {
+      "path": "skills/skills-catalog-index/agents/openai.yaml",
+      "size": 361,
+      "mode": 420,
+      "sha256": "84a024a7c894eb59b79486cf97591b2b0d6cb0135d33a9c964708d8614c7378d"
+    },
+    {
+      "path": "skills/skills-catalog-index/assets/icon-source.md",
+      "size": 1401,
+      "mode": 420,
+      "sha256": "53c69137076c7c75152c044477ab33e3ce511da5ca16009a8d32becfd90bea99"
+    },
+    {
+      "path": "skills/skills-catalog-index/assets/icon.png",
+      "size": 10282,
+      "mode": 420,
+      "sha256": "81965fbe9ea2a9ee3f1855ac136ed2424c950d4e785c91cf1e4d1ec8c0bbbc47"
+    },
+    {
+      "path": "skills/skills-catalog-index/assets/icon.svg",
+      "size": 805,
+      "mode": 420,
+      "sha256": "295e90b4d76f74d69a820a7944cc8becb54def62f1881a6a9753ad5505953557"
+    },
+    {
+      "path": "skills/skills-catalog-index/examples/alpha/skills-catalog.json",
+      "size": 233,
+      "mode": 420,
+      "sha256": "3b1877f9f9adf7975c87e44cad1371f24d0e51bfbaf384fa35bbab17cf906963"
+    },
+    {
+      "path": "skills/skills-catalog-index/examples/beta/skills-catalog.json",
+      "size": 224,
+      "mode": 420,
+      "sha256": "baa38da60da39f27b8ee567787e175378244c402666c170c99cf66bce2b2718d"
+    },
+    {
+      "path": "skills/skills-catalog-index/references/aggregate-index.md",
+      "size": 14284,
+      "mode": 420,
+      "sha256": "01118f5fca8372df2ec8ca3df7ac937889348b82b19acbb93e66c90832b5d6fc"
+    },
+    {
+      "path": "skills/skills-catalog-index/references/provenance.md",
+      "size": 2735,
+      "mode": 420,
+      "sha256": "1b0cc3f0e513ecebd97e00e5185016eafe75da7bc17440ccfb5f2ee44b707a87"
+    },
+    {
+      "path": "skills/skills-catalog-index/scripts/aggregate_index.mjs",
+      "size": 72339,
+      "mode": 420,
+      "sha256": "9922405ba110df15a8ef036db3633a5bd1beee7e1e1e05a4cf6b22cd0c1486c0"
+    },
+    {
+      "path": "skills/skills-catalog-index/scripts/catalog_data.mjs",
+      "size": 6844,
+      "mode": 420,
+      "sha256": "20acd28b14ba371026fba9deff904dbfb1d90961c8516c19d8f29e4735fd3c7f"
+    },
+    {
+      "path": "skills/skills-catalog/LICENSE",
+      "size": 11358,
+      "mode": 420,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "skills/skills-catalog/SKILL.md",
+      "size": 5908,
+      "mode": 420,
+      "sha256": "ce10305f4e36cef62880a9506484658db82668bbab0305ed802218dd75925740"
+    },
+    {
+      "path": "skills/skills-catalog/agents/openai.yaml",
+      "size": 308,
+      "mode": 420,
+      "sha256": "85a8634a4cdef61b6fc9863923ab60559021b962b19c50b4205268397630e193"
+    },
+    {
+      "path": "skills/skills-catalog/assets/icon-source.md",
+      "size": 1510,
+      "mode": 420,
+      "sha256": "4e8ba754d5977fc8b1302c4974598ce01d96ef7978666457c70ced40b23ab695"
+    },
+    {
+      "path": "skills/skills-catalog/assets/icon.png",
+      "size": 4223,
+      "mode": 420,
+      "sha256": "27c2dab558c197817b4ea882de7e9d056717ab808ef476d2cc30e01c4400103f"
+    },
+    {
+      "path": "skills/skills-catalog/assets/icon.svg",
+      "size": 825,
+      "mode": 420,
+      "sha256": "52a3d833181239b5e54f1d1ad520035865d1788be7fe6465563822bf6ffb95c8"
+    },
+    {
+      "path": "skills/skills-catalog/assets/skills-catalog.schema.json",
+      "size": 1126,
+      "mode": 420,
+      "sha256": "ba8a65ca24d2551bd906c373e6d9a3518232a495ebd7404397f9ac391d73ae63"
+    },
+    {
+      "path": "skills/skills-catalog/references/catalog-contract.md",
+      "size": 3935,
+      "mode": 420,
+      "sha256": "e1eee5d85236b70a363ced9eb8f5e56f863e2df80676e8af258f798a8f087c21"
+    },
+    {
+      "path": "skills/skills-catalog/scripts/catalog_tools.mjs",
+      "size": 29583,
+      "mode": 420,
+      "sha256": "ae173ca2c43ccef726e340804234b0425a3bbbbc5a2e74d44773a95b2b66b93b"
+    },
+    {
+      "path": "skills/skills-discovery/LICENSE",
+      "size": 11358,
+      "mode": 420,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "skills/skills-discovery/SKILL.md",
+      "size": 5773,
+      "mode": 420,
+      "sha256": "c3ae81331eb1f7a40a7bd034da000ecb9c44bd22d6248f30185769325443552f"
+    },
+    {
+      "path": "skills/skills-discovery/agents/openai.yaml",
+      "size": 308,
+      "mode": 420,
+      "sha256": "51fe28220c21dab2f92f28bbb12d26e4a71759da682e299179a6966fb2eb2592"
+    },
+    {
+      "path": "skills/skills-discovery/assets/candidate-report.md",
+      "size": 1038,
+      "mode": 420,
+      "sha256": "f76400fa07b125c8e327a81bb553042ca902f24b5ec3111b5853e207537285b5"
+    },
+    {
+      "path": "skills/skills-discovery/assets/icon-source.md",
+      "size": 1492,
+      "mode": 420,
+      "sha256": "280af11c2e22eade9e8d7bf26ae19c2e22f91711ff3dbec429f5ef41dae580c9"
+    },
+    {
+      "path": "skills/skills-discovery/assets/icon.png",
+      "size": 5081,
+      "mode": 420,
+      "sha256": "c00a8a278302ba5d48dde1cddf232b6b35c39d8b79aaf94be2638be45cd0e3f8"
+    },
+    {
+      "path": "skills/skills-discovery/assets/icon.svg",
+      "size": 882,
+      "mode": 420,
+      "sha256": "640ce1851af2af6d9700a0c20791cddd0805d3fd10e82e19fb8283c742fd31fe"
+    },
+    {
+      "path": "skills/skills-discovery/references/source-review.md",
+      "size": 2734,
+      "mode": 420,
+      "sha256": "5aae2a16e390cc11f268d334a3677fe90bf4954602378c8224e164abcddc7306"
+    },
+    {
+      "path": "skills/skills-host-compatibility/LICENSE",
+      "size": 11324,
+      "mode": 420,
+      "sha256": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a"
+    },
+    {
+      "path": "skills/skills-host-compatibility/SKILL.md",
+      "size": 5844,
+      "mode": 420,
+      "sha256": "d100cd7fd1e31c90b9a1f21ef5aee24bf0737c3aaa0ed1b1d1b25b257bc35be0"
+    },
+    {
+      "path": "skills/skills-host-compatibility/agents/openai.yaml",
+      "size": 348,
+      "mode": 420,
+      "sha256": "a2f45e411c603ecba9090d33f5ce66bc1607d871f4f4ade31583e9729e139230"
+    },
+    {
+      "path": "skills/skills-host-compatibility/assets/icon.png",
+      "size": 2396,
+      "mode": 420,
+      "sha256": "03bf7e9c4053ec6fe02002942e439b974dc1fdd921c565c852d5823194fb4e6c"
+    },
+    {
+      "path": "skills/skills-host-compatibility/assets/icon.svg",
+      "size": 554,
+      "mode": 420,
+      "sha256": "7d493d794b3220ac97bb9bf45de90da34d329586d25a9f8ff2521853186ffc5f"
+    },
+    {
+      "path": "skills/skills-host-compatibility/examples/repository-local-report.md",
+      "size": 1520,
+      "mode": 420,
+      "sha256": "b30034335c041e33bfa94dea6f6cba58834ae86de77592fd05adbac0e2e51706"
+    },
+    {
+      "path": "skills/skills-host-compatibility/scripts/strict-json.mjs",
+      "size": 2712,
+      "mode": 420,
+      "sha256": "07672e0e6f9e21f89eef73c4b9758ba9e603a890528b67c9b250794c9c4f7ddd"
+    },
+    {
+      "path": "skills/skills-host-compatibility/scripts/verify_aliases.mjs",
+      "size": 10683,
+      "mode": 420,
+      "sha256": "4ebab526922b7d8d510b8431643fd029b805540f996bb5ad058198af8ba1e19c"
+    },
+    {
+      "path": "skills/skills-maintenance-scheduling/LICENSE",
+      "size": 11358,
+      "mode": 420,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "skills/skills-maintenance-scheduling/SKILL.md",
+      "size": 10026,
+      "mode": 420,
+      "sha256": "eb8dfb1564398983387bf202fb1b15591931749e33ca9adef57e252ac6c90a03"
+    },
+    {
+      "path": "skills/skills-maintenance-scheduling/agents/openai.yaml",
+      "size": 375,
+      "mode": 420,
+      "sha256": "38574aff96044d6b42ebc652f254c85466f8477d7b8242851cb462c52ced4a2f"
+    },
+    {
+      "path": "skills/skills-maintenance-scheduling/assets/icon.png",
+      "size": 16870,
+      "mode": 420,
+      "sha256": "562466d34390eb7a2f445d3fe691b44cf6bfc8f7cd88b4deef845227ecc872d6"
+    },
+    {
+      "path": "skills/skills-maintenance-scheduling/assets/icon.svg",
+      "size": 790,
+      "mode": 420,
+      "sha256": "661e94194c7e0b505dc6432723b13920090302500f002d7e6e4cb6da62373eed"
+    },
+    {
+      "path": "skills/skills-maintenance-scheduling/examples/configure-authorized.json",
+      "size": 2868,
+      "mode": 420,
+      "sha256": "e4113187a99064afbdec1a6fb33f104a9c1d2d66c513b528324825a6c2adcfa9"
+    },
+    {
+      "path": "skills/skills-maintenance-scheduling/examples/existing-scheduler.json",
+      "size": 3163,
+      "mode": 420,
+      "sha256": "c20879e6bf9870895ca664e431d242f1a92417dc73d23df023fbe5e84bd81baf"
+    },
+    {
+      "path": "skills/skills-maintenance-scheduling/examples/no-recurring-need.json",
+      "size": 316,
+      "mode": 420,
+      "sha256": "27d6a603037b6f2470b915ef549ff10781b4e77b81e33a498f942ed62f7df686"
+    },
+    {
+      "path": "skills/skills-maintenance-scheduling/examples/no-scheduler.json",
+      "size": 2366,
+      "mode": 420,
+      "sha256": "671f025392d232c752b8240beb6e787386ccbfdbda7c830678c2502a54f06670"
+    },
+    {
+      "path": "skills/skills-maintenance-scheduling/references/schedule-contract.md",
+      "size": 4244,
+      "mode": 420,
+      "sha256": "e456bcc83a129fd09ef9cd3c41f5be1c96a453c76095499c33c90d2ee42b381f"
+    },
+    {
+      "path": "skills/skills-maintenance-scheduling/scripts/validate_proposal.mjs",
+      "size": 16319,
+      "mode": 420,
+      "sha256": "a5b94a92e56b1bd3b076b883e6c6698117f4a9546a5a6c47114bf1b46faaf7ff"
+    },
+    {
+      "path": "skills/skills-refactoring/LICENSE",
+      "size": 11358,
+      "mode": 420,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "skills/skills-refactoring/SKILL.md",
+      "size": 3876,
+      "mode": 420,
+      "sha256": "d185754a5dc672a8aab10eac9de6909480c6e49fdf5d6cc90bde3078d6d17cb0"
+    },
+    {
+      "path": "skills/skills-refactoring/agents/openai.yaml",
+      "size": 337,
+      "mode": 420,
+      "sha256": "43f4fe7abd5319a443c0e11cc344d7605e6da51ee757876e02ec564220836bb8"
+    },
+    {
+      "path": "skills/skills-refactoring/assets/icon-source.md",
+      "size": 1516,
+      "mode": 420,
+      "sha256": "a0fb59845899c6c4566a98ddfece93c32fd9eb949bed8d07efa68139d48138a3"
+    },
+    {
+      "path": "skills/skills-refactoring/assets/icon.png",
+      "size": 4021,
+      "mode": 420,
+      "sha256": "8be5e9ecb849a3ce6e63d167be12b418b664681005d894380f7ef506925f1b07"
+    },
+    {
+      "path": "skills/skills-refactoring/assets/icon.svg",
+      "size": 710,
+      "mode": 420,
+      "sha256": "c4a0311fe8798f5076b03c23ec1e7a926f359a22f0112c27c1b03307b289e6f5"
+    },
+    {
+      "path": "skills/skills-snapshot/LICENSE",
+      "size": 11358,
+      "mode": 420,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "skills/skills-snapshot/SKILL.md",
+      "size": 12426,
+      "mode": 420,
+      "sha256": "0c39363dfeb4d3db78e2b39f675e683b30945f852bbd840ae4138bafe13ae720"
+    },
+    {
+      "path": "skills/skills-snapshot/agents/openai.yaml",
+      "size": 318,
+      "mode": 420,
+      "sha256": "6c5c97ae258dac1ba394f2d7044cf54680f6e5039fac7e11e012204db7aa34d2"
+    },
+    {
+      "path": "skills/skills-snapshot/assets/icon.png",
+      "size": 8440,
+      "mode": 420,
+      "sha256": "7c13c21a6514659c1bf6f870c195a3d1ffc17666a747db86826f0634fcd04ce6"
+    },
+    {
+      "path": "skills/skills-snapshot/assets/icon.svg",
+      "size": 464,
+      "mode": 420,
+      "sha256": "e65f91e1b1e6dca6b77be8a81e40044efbfcfb15df39ff4bb41f8472a2db87f6"
+    },
+    {
+      "path": "skills/skills-snapshot/references/manifest.md",
+      "size": 7077,
+      "mode": 420,
+      "sha256": "df8f7a6443bbd51118bb0e10d7af2f674232230319f82b3850eb8bb8176a2993"
+    },
+    {
+      "path": "skills/skills-snapshot/scripts/skills_snapshot.mjs",
+      "size": 35806,
+      "mode": 493,
+      "sha256": "343fce16cd58cafbd38e12dbfcdd24d5e9811710eb13afbee62814a8c019eafd"
+    },
+    {
+      "path": "skills/skills-snapshot/scripts/snapshot_objects.mjs",
+      "size": 8555,
+      "mode": 420,
+      "sha256": "96bdeaf35d6a6ebf21ddb2f4645f61fa17b77d42b1d8893d500ad71c897627ab"
+    },
+    {
+      "path": "skills/skills-snapshot/tests/skills_snapshot.test.mjs",
+      "size": 23762,
+      "mode": 420,
+      "sha256": "7edd56b2bdddc7ba329215f4b10c6489f08f04267823a65240796afbd8089332"
+    },
+    {
+      "path": "skills/skills-synthesis/LICENSE",
+      "size": 11358,
+      "mode": 420,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "skills/skills-synthesis/SKILL.md",
+      "size": 6757,
+      "mode": 420,
+      "sha256": "3229e54c7c6ff432d39d035f40ea24ef01e7d365f46206e5c55305bbaa6555ad"
+    },
+    {
+      "path": "skills/skills-synthesis/agents/openai.yaml",
+      "size": 308,
+      "mode": 420,
+      "sha256": "cfdb1158a216d68fecca0e2959ce51ab5a1885f90a3f2098b6820f98890390fd"
+    },
+    {
+      "path": "skills/skills-synthesis/assets/contribution-matrix.md",
+      "size": 925,
+      "mode": 420,
+      "sha256": "7c5db5a9b9ba8e31862e0c9c6d3a697464251fc67a408db97fab43d5271d86f3"
+    },
+    {
+      "path": "skills/skills-synthesis/assets/icon-source.md",
+      "size": 1500,
+      "mode": 420,
+      "sha256": "95541c11676573f3db78dde8f9237a73c63ddcb806d24c1e32a9d9dbf7cee546"
+    },
+    {
+      "path": "skills/skills-synthesis/assets/icon.png",
+      "size": 3937,
+      "mode": 420,
+      "sha256": "22be595937c6adf51e4cbf3a429db625d4d4074c8b5b33eeac0cf695e5235d97"
+    },
+    {
+      "path": "skills/skills-synthesis/assets/icon.svg",
+      "size": 810,
+      "mode": 420,
+      "sha256": "3a2bfe92f11cc3f1d8cc4c24985cff72f57b6bf270cf084fb0ae5f8740c319b1"
+    },
+    {
+      "path": "skills/skills-synthesis/references/synthesis.md",
+      "size": 2787,
+      "mode": 420,
+      "sha256": "6f6a647f36f36618167d32e95bebe0fda29565588a30e49e199686ff0fd1c006"
+    }
+  ],
+  "inventory_sha256": "6e2f665cb1a421d85e8e8cb31bbb3c030581904c0099a9f21a5d35229f51e03a"
+}

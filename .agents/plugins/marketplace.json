@@ -1,7 +1,7 @@
 {
-  "name": "i9-skills-local",
+  "name": "i9-skills",
   "interface": {
-    "displayName": "I-9 Skills local review"
+    "displayName": "I9 Skills"
   },
   "plugins": [
     {
