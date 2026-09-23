@@ -347,6 +347,18 @@ test('collection rejects PNG icons with unknown critical chunks', (t) => {
     assert.throws(() => new CollectionValidationService().validateRepository(root), /valid PNG/);
 });
 
+test('collection rejects PNG chunks with a lowercase reserved third byte', t => {
+    const { root, packagePath } = makeRepository(t);
+    const valid = transparentPng();
+    const malformed = Buffer.concat([
+        valid.subarray(0, 33),
+        pngChunk('abcd', Buffer.alloc(0)),
+        valid.subarray(33),
+    ]);
+    fs.writeFileSync(join(packagePath, 'assets', 'icon.png'), malformed);
+    assert.throws(() => new CollectionValidationService().validateRepository(root), /valid PNG/);
+});
+
 test('collection rejects indexed PNG icons without a palette', (t) => {
     const { root, packagePath } = makeRepository(t);
     const icon = join(packagePath, 'assets', 'icon.png');
@@ -562,7 +574,8 @@ test('documentation publication verifies inputs before staging and publishing ma
     const wikiWorkflow = fs.readFileSync(join(process.cwd(), '.github', 'workflows', 'sync-wiki.yml'), 'utf8');
     assert.match(wikiWorkflow, /concurrency:\n\s+group: sync-wiki-\$\{\{ github\.repository \}\}\n\s+cancel-in-progress: false/);
     assert.match(wikiWorkflow, /with:\n\s+ref: main\n\s+persist-credentials: false/);
-    assert.match(wikiWorkflow, /git ls-remote --exit-code --heads "https:\/\/github\.com\/\$\{REPOSITORY\}\.wiki\.git"/);
+    assert.match(wikiWorkflow, /GITHUB_TOKEN: \$\{\{ secrets\.GITHUB_TOKEN \}\}/);
+    assert.match(wikiWorkflow, /clone --depth 1 "https:\/\/github\.com\/\$\{REPOSITORY\}\.wiki\.git"/);
     assert.match(wikiWorkflow, /node-version: '24'/);
     const rewrite = wikiWorkflow.indexOf("new WikiMirrorRepository().rewrite('.wiki', process.env.REPOSITORY)");
     assert.ok(rewrite > wikiWorkflow.indexOf('rsync -a'), 'rewrite the copied Wiki pages');

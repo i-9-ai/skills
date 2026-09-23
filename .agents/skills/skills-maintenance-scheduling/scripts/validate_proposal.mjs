@@ -189,7 +189,9 @@ function validateTarget(value) {
   requireCondition(!MOVING_REVISION.test(value.revision), 'target.revision must be immutable or content-addressed');
   const packages = uniqueStrings(value.packages, 'target.packages', { max: MAX_PACKAGES, slugs: true });
   requireCondition(!packages.includes('*'), 'target.packages must not contain wildcards');
-  uniqueStrings(value.exclusions, 'target.exclusions', { max: MAX_PACKAGES, slugs: true, empty: true });
+  const exclusions = uniqueStrings(value.exclusions, 'target.exclusions', { max: MAX_PACKAGES, slugs: true, empty: true });
+  requireCondition(exclusions.every(item => !packages.includes(item)),
+    'target.exclusions must not overlap target.packages');
 }
 
 function validateNone(value) {
@@ -211,7 +213,7 @@ function validateRecurrence(value) {
   exactObject(value.cadence, ['description', 'minimum_interval'], 'recurrence.cadence');
   text(value.cadence.description, 'recurrence.cadence.description', 512);
   text(value.cadence.minimum_interval, 'recurrence.cadence.minimum_interval', 32);
-  requireCondition(/^P(?=\d|T\d)(?:\d+Y)?(?:\d+M)?(?:\d+W)?(?:\d+D)?(?:T(?:\d+H)?(?:\d+M)?(?:\d+S)?)?$/u
+  requireCondition(/^P(?=\d|T\d)(?:\d+Y)?(?:\d+M)?(?:\d+W)?(?:\d+D)?(?:T(?=\d+[HMS])(?:\d+H)?(?:\d+M)?(?:\d+S)?)?$/u
     .test(value.cadence.minimum_interval), 'recurrence.cadence.minimum_interval must be an ISO 8601 duration');
   requireCondition(/[1-9]/u.test(value.cadence.minimum_interval),
     'recurrence.cadence.minimum_interval must be greater than zero');

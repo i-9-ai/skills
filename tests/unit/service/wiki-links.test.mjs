@@ -61,3 +61,15 @@ test('Wiki rewriting follows an indented lazy blockquote continuation', () => {
         '> Read\n    [the guide](https://github.com/example/skills/blob/main/README.md)\n',
     );
 });
+
+test('Wiki rewriting preserves a parenthesized link title', () => {
+    const result = new WikiLinkService().rewrite(
+        '[Guide](../README.md (caption))',
+        'docs/index.md',
+        'example/skills',
+    );
+    assert.equal(
+        result,
+        '[Guide](https://github.com/example/skills/blob/main/README.md (caption))',
+    );
+});

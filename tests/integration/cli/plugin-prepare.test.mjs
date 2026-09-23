@@ -24,6 +24,19 @@ function fixture(t) {
     const skills = join(source, '.agents/skills');
     fs.mkdirSync(skills, { recursive: true });
     const skill = initSkill('example-skill', skills);
+    const assetSource = fileURLToPath(
+        new URL('../../../.agents/skills/skill-design/', import.meta.url),
+    );
+    for (const relative of ['agents/openai.yaml', 'assets/icon.svg', 'assets/icon.png']) {
+        const destination = join(skill, relative);
+        fs.mkdirSync(join(destination, '..'), { recursive: true });
+        fs.copyFileSync(join(assetSource, relative), destination);
+    }
+    const interfaceFile = join(skill, 'agents/openai.yaml');
+    fs.writeFileSync(
+        interfaceFile,
+        fs.readFileSync(interfaceFile, 'utf8').replaceAll('$skill-design', '$example-skill'),
+    );
     fs.writeFileSync(join(source, 'AGENTS.md'), 'Use skills-catalog.json for discovery.\n');
     fs.copyFileSync(DEFAULT_LICENSE_PATH, join(source, 'LICENSE'));
     const manifest = {
@@ -137,6 +150,26 @@ test('plugin source preflight rejects unsafe assets, stale catalogs and malforme
     assert.notEqual(cli(['--output', output, '--write']).status, 0);
     assert.equal(fs.existsSync(output), false);
     assert.equal(fs.readFileSync(sentinel, 'utf8'), 'preserve');
+});
+
+test('plugin preparation requires collection icons and validates their contents', (t) => {
+    const { root, skill, cli } = fixture(t);
+    const output = join(root, 'i9-skills');
+    for (const relative of ['agents/openai.yaml', 'assets/icon.svg', 'assets/icon.png']) {
+        const filename = join(skill, relative);
+        const original = fs.readFileSync(filename);
+        fs.rmSync(filename);
+        const result = cli(['--output', output, '--write']);
+        assert.notEqual(result.status, 0, relative);
+        assert.equal(fs.existsSync(output), false);
+        fs.writeFileSync(filename, original);
+    }
+    const svg = join(skill, 'assets/icon.svg');
+    const original = fs.readFileSync(svg);
+    fs.writeFileSync(svg, '<svg onload="alert(1)"/>');
+    assert.notEqual(cli(['--output', output, '--write']).status, 0);
+    assert.equal(fs.existsSync(output), false);
+    fs.writeFileSync(svg, original);
 });
 
 test('plugin output refuses occupied or linked locations and known host discovery paths', (t) => {

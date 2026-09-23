@@ -10,6 +10,17 @@ For example, a GitHub collection might separate CLI command selection, issue pre
 
 The checkout CLI runs on Node.js 24 with pinned oclif and erasable TypeScript. `package.json` centralizes dependencies and the official tool pins. Run `npm ci` explicitly before local checks. The creator's self-contained helper remains inside its package.
 
+```mermaid
+flowchart LR
+    Bin[bin/index.mjs] --> Command[command]
+    Command --> Service[service]
+    Service --> Validator[validator]
+    Service --> Repository[repository]
+    Repository --> Migration[migration]
+    Service --> Transport[transport]
+    Repository --> Packages[Canonical skill packages]
+```
+
 | Layer | Responsibility |
 | --- | --- |
 | CLI | Select a use case, present results, and set the process exit status |
@@ -25,7 +36,17 @@ Validators do not launch processes or read files. Services coordinate validators
 
 The [creator's handoff protocol](../.agents/skills/skill-authoring/references/handoff-protocol.md) owns the run format. Specialists can be installed and used alone through their local inputs/outputs; they need no repository root files. The creator locates separately available companions through the host's inventory or trusted explicit paths and wraps their returned artifacts in ordered stages with SHA-256 evidence. Resource paths belong to the installed package; outputs belong to the caller's selected workspace.
 
-Stages are intake → discovery → domain-research → synthesis → design → authoring → evaluation. The creator may consult `skill-design` within intake before discovery when clarification is needed; that preliminary brief does not replace the final design stage. Domain research always opens current public authoritative sources relevant to the proposed skill's subject and preserves the process-owner record, scope, date, conflicts, and unknowns. With no contributing skill package, synthesis is skipped with evidence; with one or more distinct contributing packages, it selects useful contributions against the required research dossier. Mirrors and revisions of the same source do not fill the contribution requirement.
+Stages are intake → discovery → domain-research → conditional synthesis → design → authoring → evaluation. The creator may consult `skill-design` within intake before discovery when clarification is needed; that preliminary brief does not replace the final design stage. Domain research always opens current public authoritative sources relevant to the proposed skill's subject and preserves the process-owner record, scope, date, conflicts, and unknowns. With no contributing skill package, synthesis is skipped with evidence. With one contributing package, its useful contributions go directly to design alongside the research dossier. Synthesis compares two or more distinct contributing packages. Mirrors and revisions of the same source do not fill the contribution requirement.
+
+```mermaid
+flowchart LR
+    Intake --> Discovery --> Research[Domain research]
+    Research --> Count{Distinct contributing<br/>skill packages}
+    Count -->|none| Design
+    Count -->|one| Design
+    Count -->|two or more| Synthesis --> Design
+    Design --> Authoring --> Evaluation
+```
 
 Every stage returns its result, evidence, limitations, and next consumer. The coordinator verifies the output before continuing. Changed inputs invalidate dependent stages. Missing capability, rights, authority, or critical test evidence produces a blocked handoff. Correction loops default to two rounds; the intake can set a different justified budget.
 

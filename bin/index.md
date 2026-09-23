@@ -32,7 +32,7 @@ optional; no editor settings or extensions are installed by the CLI.
 
 ```sh
 node bin/index.mjs --help
-node bin/index.mjs validate
+node bin/index.mjs validate --project .
 node bin/index.mjs ci-official
 node bin/index.mjs context available-skills --project ./example-project --no-global
 node bin/index.mjs context available-skills --global-root ./installed-skills --max-entries 50

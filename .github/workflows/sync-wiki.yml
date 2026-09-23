@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: sync-wiki-${{ github.repository }}
@@ -23,14 +23,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Require the Wiki write token
-        env:
-          WIKI_SYNC_TOKEN: ${{ secrets.WIKI_SYNC_TOKEN }}
-        run: |
-          if [ -z "$WIKI_SYNC_TOKEN" ]; then
-            echo "::error::Set the WIKI_SYNC_TOKEN Actions secret before synchronizing the GitHub Wiki."
-            exit 1
-          fi
       - name: Check out repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -43,16 +35,11 @@ jobs:
           node-version: '24'
       - name: Clone and synchronize the Wiki
         env:
-          WIKI_SYNC_TOKEN: ${{ secrets.WIKI_SYNC_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPOSITORY: ${{ github.repository }}
         run: |
-          git config --global http.https://github.com/.extraheader "AUTHORIZATION: basic $(printf 'x-access-token:%s' "$WIKI_SYNC_TOKEN" | base64 -w 0)"
-          trap 'git config --global --unset-all http.https://github.com/.extraheader || true' EXIT
-          if ! git ls-remote --exit-code --heads "https://github.com/${REPOSITORY}.wiki.git" >/dev/null 2>&1; then
-            echo "::error::Initialize the GitHub Wiki with its first page before synchronizing it."
-            exit 1
-          fi
-          git clone "https://github.com/${REPOSITORY}.wiki.git" .wiki
+          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GITHUB_TOKEN" | base64 -w 0)" \
+            clone --depth 1 "https://github.com/${REPOSITORY}.wiki.git" .wiki
           rsync -a --delete --exclude='.git' docs/ .wiki/
           node --input-type=module <<'NODE'
           import { WikiMirrorRepository } from './src/repository/WikiMirrorRepository.ts';
@@ -74,4 +61,4 @@ jobs:
             exit 0
           fi
           git commit -m "docs: synchronize Wiki from main"
-          git push
+          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GITHUB_TOKEN" | base64 -w 0)" push

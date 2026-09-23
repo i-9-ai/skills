@@ -51,7 +51,7 @@ node "<installed-skill>/scripts/aggregate_index.mjs" rebuild \
 
 node "<installed-skill>/scripts/aggregate_index.mjs" query \
   --index "<caller-workspace>/skill-index/skills-catalog.db" \
-  --name "catalog-example"
+  --name "catalog-example" --limit 20
 
 node "<installed-skill>/scripts/aggregate_index.mjs" sync \
   --source "alpha=<installed-skill>/examples/alpha/skills-catalog.json" \

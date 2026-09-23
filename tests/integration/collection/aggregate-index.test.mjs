@@ -112,6 +112,25 @@ test("aggregate index derives a stable, source-qualified JSON fallback", async t
     assert.deepEqual(await queryAggregateIndex(result.index, { tag: "example", sqliteLoader: unavailableSqlite }), [index.skills[0]]);
 });
 
+test("aggregate queries cap results and accept a smaller explicit limit", async t => {
+    const root = fixture(t);
+    const sources = [];
+    for (let group = 0; group < 5; group += 1) {
+        const id = `group-${group}`;
+        const skills = Array.from({ length: 256 }, (_, number) =>
+            skill(`skill-${group}-${String(number).padStart(3, "0")}`, ["common"]));
+        sources.push(source(id, writeCatalog(path.join(root, id), catalog(skills))));
+    }
+    const result = await rebuildAggregateIndex({
+        sources, output: path.join(root, "out"), sqliteLoader: unavailableSqlite,
+    });
+    assert.equal((await queryAggregateIndex(result.index, { tag: "common", sqliteLoader: unavailableSqlite })).length, 1000);
+    assert.equal((await queryAggregateIndex(result.index, { tag: "common", limit: 7, sqliteLoader: unavailableSqlite })).length, 7);
+    await assert.rejects(() => queryAggregateIndex(result.index, {
+        tag: "common", limit: 1001, sqliteLoader: unavailableSqlite,
+    }), /limit must be an integer/);
+});
+
 test("aggregate sources accept equals signs in paths and reject duplicate JSON fields", async t => {
     const root = fixture(t);
     const filename = writeCatalog(path.join(root, "team=a"), catalog([skill("example-skill")]));

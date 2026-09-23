@@ -93,6 +93,14 @@ test('the allowlisted artifact runs from node_modules on Node 24+ without TypeSc
     assert.equal(JSON.parse(readFileSync(join(installed, 'package.json'))).private, true);
     const launcher = join(installed, 'bin/index.mjs');
     assert.match(run(process.execPath, [launcher, '--help'], root), /TOPICS/);
+    const implicitValidation = spawnSync(process.execPath, [launcher, 'validate'], {
+        cwd: root,
+        env: environment,
+        encoding: 'utf8',
+        timeout: 30000,
+    });
+    assert.notEqual(implicitValidation.status, 0);
+    assert.match(implicitValidation.stderr, /Missing required flag project/);
     assert.match(
         run(
             process.execPath,

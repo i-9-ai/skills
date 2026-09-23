@@ -722,14 +722,21 @@ export async function readAggregateIndex(filename, { sqliteLoader } = {}) {
   return validateIndex(parseJson(bytes, "aggregate index"));
 }
 
-export async function queryAggregateIndex(filename, { name, tag, sourceId, sqliteLoader } = {}) {
+export async function queryAggregateIndex(filename, { name, tag, sourceId, limit, sqliteLoader } = {}) {
   if (name !== undefined) requireSlug(name, "skill name");
   if (tag !== undefined) requireSlug(tag, "skill tag");
   if (sourceId !== undefined) requireSlug(sourceId, "source id");
   requireCondition(name !== undefined || tag !== undefined || sourceId !== undefined, "query needs a name, tag, or source id");
+  const maximum = queryLimit(limit, MAX_QUERY_RESULTS);
   const index = await readAggregateIndex(filename, { sqliteLoader });
-  return index.skills.filter(skill => (name === undefined || skill.name === name)
-    && (tag === undefined || skill.tags.includes(tag)) && (sourceId === undefined || skill.source_id === sourceId));
+  const matches = [];
+  for (const skill of index.skills) {
+    if ((name !== undefined && skill.name !== name) || (tag !== undefined && !skill.tags.includes(tag))
+      || (sourceId !== undefined && skill.source_id !== sourceId)) continue;
+    matches.push(skill);
+    if (matches.length === maximum) break;
+  }
+  return matches;
 }
 
 function queryLimit(value, defaultValue) {
@@ -1267,7 +1274,6 @@ async function main(argv) {
     `${command} does not accept evolution event options`);
   if (command === "list") return readAggregateIndex(options.index);
   if (command === "query") {
-    requireCondition(!options.limit, "query does not accept --limit");
     return queryAggregateIndex(options.index, options);
   }
   requireCondition(!options.tag, `${command} does not accept --tag`);

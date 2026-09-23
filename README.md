@@ -110,7 +110,9 @@ flowchart LR
     R --> RT[Smallest valid route<br/>or none]
 
     subgraph Build
-      GAP((Capability gap)) --> D[Discover] --> S[Synthesize] --> G[Design] --> A[Author]
+      GAP((Capability gap)) --> D[Discover] --> DR[Domain research] --> DC{Distinct contributing<br/>skill packages}
+      DC -->|none or one| G[Design] --> A[Author]
+      DC -->|two or more| S[Synthesize] --> G
       C((Canonical catalog)) --> HC[Host compatibility]
     end
 

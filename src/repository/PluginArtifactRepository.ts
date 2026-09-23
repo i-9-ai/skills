@@ -4,6 +4,7 @@ import { basename, dirname, join, relative, resolve } from 'node:path';
 import { ProjectConfiguration } from '../config/ProjectConfiguration.ts';
 import { CollectionFilesystemRepository, LIMITS } from './CollectionFilesystemRepository.ts';
 import { CollectionCatalogRepository } from './CollectionCatalogRepository.ts';
+import { CollectionAssetValidationService } from '../service/CollectionAssetValidationService.ts';
 
 export type PluginFile = { path: string; bytes: Buffer; mode: number };
 export type PluginSource = {
@@ -83,9 +84,11 @@ export class PluginArtifactRepository {
 
             let totalBytes = files.reduce((total, file) => total + file.bytes.length, 0);
             const skills: string[] = [];
+            const assets = new CollectionAssetValidationService();
 
             for (const skill of catalog.skills) {
-                source.validatePackage(skill.path);
+                const details = source.validatePackage(skill.path);
+                assets.validatePackage(source, skill.path, details.openai_interface);
                 const packageRoot = new CollectionFilesystemRepository(
                     join(source.path, skill.path),
                 );

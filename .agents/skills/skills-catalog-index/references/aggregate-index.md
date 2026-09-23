@@ -43,7 +43,7 @@ node "<installed-skill>/scripts/aggregate_index.mjs" query \
   --name "skills-discovery"
 node "<installed-skill>/scripts/aggregate_index.mjs" query \
   --index "<local-index-directory>/skills-catalog.db" \
-  --tag "catalog"
+  --tag "catalog" --limit "100"
 node "<installed-skill>/scripts/aggregate_index.mjs" history \
   --index "<local-index-directory>/skills-catalog.db" \
   --source-id "alpha" \

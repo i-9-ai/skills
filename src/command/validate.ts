@@ -5,7 +5,9 @@ import { ProjectConfiguration } from '../config/ProjectConfiguration.ts';
 import { CollectionValidationService } from '../service/CollectionValidationService.ts';
 
 export default class ValidateCommand extends Command {
-    static flags = { project: Flags.string({ description: 'Collection repository root.' }) };
+    static flags = {
+        project: Flags.string({ description: 'Collection repository root.', required: true }),
+    };
     static description =
         'Validate the repository collection without running the external official validator.';
 

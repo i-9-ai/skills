@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
 import { fileURLToPath } from 'node:url';
-import { createHash } from 'node:crypto';
 import {
     CollectionFilesystemRepository,
     LIMITS,
@@ -12,6 +11,7 @@ import {
     CollectionValidator,
 } from '../validator/CollectionValidator.ts';
 import { CollectionValidationError } from '../validator/CollectionValidationError.ts';
+import { CollectionAssetValidationService } from './CollectionAssetValidationService.ts';
 import { checkCatalog } from '../../.agents/skills/skills-catalog/scripts/catalog_tools.mjs';
 
 const DEFAULT_ROOT = fileURLToPath(new URL('../../', import.meta.url));
@@ -50,44 +50,9 @@ export class CollectionValidationService {
             for (const relative of packages)
                 packageInterfaces.set(relative, root.validatePackage(relative).openai_interface);
             checkCatalog(root.path);
-            const iconDigests = new Set<string>();
-            const pngDigests = new Set();
-            for (const relative of packages) {
-                const metadata = `${relative}/agents/openai.yaml`;
-                const smallIcon = `${relative}/assets/icon.svg`;
-                const largeIcon = `${relative}/assets/icon.png`;
-                if (!files.has(metadata) || !files.has(smallIcon) || !files.has(largeIcon)) {
-                    throw new CollectionValidationError(
-                        `${relative} must include agents/openai.yaml, assets/icon.svg, and assets/icon.png`,
-                    );
-                }
-                const openAi = packageInterfaces.get(relative);
-                if (
-                    openAi?.icon_small !== './assets/icon.svg' ||
-                    openAi.icon_large !== './assets/icon.png'
-                ) {
-                    throw new CollectionValidationError(
-                        `${relative} must declare the required small SVG and large PNG icons`,
-                    );
-                }
-                let svg;
-                try {
-                    svg = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(
-                        root.readBytes(smallIcon, LIMITS.textBytes),
-                    );
-                } catch {
-                    throw new CollectionValidationError(`${smallIcon} must be valid UTF-8`);
-                }
-                this.validator.validateCollectionIcon(smallIcon, svg, iconDigests);
-                const largePng = root.readBytes(largeIcon, LIMITS.artifactBytes);
-                const pngDigest = createHash('sha256').update(largePng).digest('hex');
-                if (pngDigests.has(pngDigest))
-                    throw new CollectionValidationError(
-                        `${largeIcon} duplicates another skill icon`,
-                    );
-                pngDigests.add(pngDigest);
-                this.validator.validateCollectionPng(largeIcon, largePng);
-            }
+            const assets = new CollectionAssetValidationService(this.validator);
+            for (const relative of packages)
+                assets.validatePackage(root, relative, packageInterfaces.get(relative));
             let localLinks = 0;
             let textFiles = 0;
             const sorted = [...files].sort();

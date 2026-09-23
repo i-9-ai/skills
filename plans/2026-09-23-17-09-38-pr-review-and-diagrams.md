@@ -1,0 +1,25 @@
+# PR review corrections and architecture diagrams
+
+## Objective
+
+Resolve the nine actionable comments on [PR #2](https://github.com/i-9-ai/skills/pull/2) at `4cd2dc0` and make the public diagrams accurately describe the implemented skill pipeline and repository tooling. Track delivery in Beads `i9-skills-2qm.20`.
+
+## Scope and boundaries
+
+Change the affected parser, validators, CLI and plugin preparation, aggregate query, tests, Wiki workflow, and the README and architecture diagrams. Preserve the existing routes and package formats unless a review finding requires a documented correction. The interactive entry-path map remains a high-level route selector; update its source and generated artifacts only if its existing claims become false. Do not merge, publish, release, install into a consumer, or change repository visibility.
+
+## Implementation and rollback
+
+1. Reproduce each comment in a synthetic fixture and correct the smallest owning component.
+2. Refresh diagrams from the verified implementation, including the zero/one/multiple discovery branches and repository CLI boundaries.
+3. Review the complete diff and its Changeset, validate on Node.js 24, run the official skill validator for each changed package, and obtain independent review of the exact commit.
+4. Push the reviewed commit to the existing PR branch and check its comments and workflows on that SHA.
+
+Revert the focused commit if the correction fails or the diagrams cannot be reconciled with the implementation. Keep Beads open until the pushed SHA and checks provide closure evidence.
+
+## Acceptance evidence
+
+- All nine review comments have a fix or explicit evidence-based disposition.
+- Markdown link and fence cases, PNG reserved bit, required plugin assets, malformed maintenance intervals and contradictory targets, packed `validate` behavior, and query bounds have regression coverage.
+- README and architecture diagrams show the implemented route and branch behavior without contradicting the interactive overview.
+- `npm ci`, `npm run check`, `npm run changeset:status`, `git diff --check`, and official `skills-ref validate` pass as applicable. PR checks pass on the pushed head; review feedback is checked again.

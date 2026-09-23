@@ -30,5 +30,3 @@ preparing distribution, and evolving focused agent skills.
 - [Pilot evaluation](pilot-evaluation.md): current pilot evidence and limitations.
 - [Upstream research](upstream-research.md): reviewed sources, adoption decisions, and provenance.
 - [Security policy](https://github.com/i-9-ai/skills/blob/main/SECURITY.md): disclosure boundaries and security reporting.
-
-`docs/` is the canonical public documentation tree. After a change to this directory merges into `main`, GitHub Actions mirrors it to the initialized GitHub Wiki. Create its first page and configure `WIKI_SYNC_TOKEN` before the first synchronization. The Wiki uses this page as `Home`.

@@ -170,7 +170,9 @@ export class CollectionValidator {
             const type = bytes.toString('ascii', offset + 4, offset + 8);
             const end = offset + 12 + size;
             this.requireCondition(
-                size <= LIMIT_PNG_CHUNK && end <= bytes.length && /^[A-Za-z]{4}$/.test(type),
+                size <= LIMIT_PNG_CHUNK &&
+                    end <= bytes.length &&
+                    /^[A-Za-z]{2}[A-Z][A-Za-z]$/.test(type),
                 `${relative} must be a valid PNG`,
             );
             const content = bytes.subarray(offset + 8, offset + 8 + size);

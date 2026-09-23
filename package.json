@@ -12,7 +12,7 @@
     "node": ">=24"
   },
   "scripts": {
-    "validate": "node bin/index.mjs validate",
+    "validate": "node bin/index.mjs validate --project .",
     "test": "node --test \"tests/**/*.test.mjs\" \".agents/skills/*/tests/*.test.mjs\"",
     "check": "npm run format:check && npm run typecheck && npm run validate && npm test",
     "format": "prettier --write \"src/**/*.ts\" \"bin/*.mjs\" \"tests/unit/**/*.mjs\" \"tests/integration/cli/**/*.mjs\" \"tests/packaging/*.mjs\"",

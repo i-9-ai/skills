@@ -232,12 +232,15 @@ function visibleMarkdown(text) {
   const lines = text.split(/(\r\n|\n|\r)/u);
   for (let index = 0; index < lines.length; index += 2) {
     const line = lines[index];
-    const marker = line.match(/^\s{0,3}(`{3,}|~{3,})/u);
+    const quotePrefix = line.match(/^(?: {0,3}>[ \t]?)*/u)[0];
+    const quoteDepth = (quotePrefix.match(/>/gu) ?? []).length;
+    if (fence !== null && fence.quoteDepth > quoteDepth) fence = null;
+    const marker = line.slice(quotePrefix.length).match(/^ {0,3}(`{3,}|~{3,})/u);
     if (marker) {
       paragraphOpen = false;
       const run = marker[1];
-      if (fence === null) fence = run;
-      else if (run[0] === fence[0] && run.length >= fence.length) fence = null;
+      if (fence === null) fence = { run, quoteDepth };
+      else if (run[0] === fence.run[0] && run.length >= fence.run.length) fence = null;
       lines[index] = ' '.repeat(line.length);
       continue;
     }
@@ -325,10 +328,16 @@ function inlineMarkdownLinks(line) {
     }
     if (!target) continue;
     while (/\s/u.test(line[cursor] ?? '')) cursor += 1;
-    if (line[cursor] === '"' || line[cursor] === "'") {
-      const quote = line[cursor++];
-      const end = line.indexOf(quote, cursor);
-      if (end === -1) continue;
+    if (line[cursor] === '"' || line[cursor] === "'" || line[cursor] === '(') {
+      const opening = line[cursor];
+      const closing = opening === '(' ? ')' : opening;
+      cursor += 1;
+      let end = cursor;
+      while (end < line.length && line[end] !== closing) {
+        if (line[end] === '\\') end += 1;
+        end += 1;
+      }
+      if (end >= line.length) continue;
       cursor = end + 1;
       while (/\s/u.test(line[cursor] ?? '')) cursor += 1;
     }

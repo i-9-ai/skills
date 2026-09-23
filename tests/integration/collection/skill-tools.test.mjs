@@ -166,6 +166,23 @@ test('fenced examples, inline code, and remote links are not local dependencies'
     assert.equal(validateSkill(packagePath).local_links, 0);
 });
 
+test('quoted tilde fences hide example links but not following prose', t => {
+    const packagePath = makeSkill(fixture(t));
+    const filename = path.join(packagePath, 'SKILL.md');
+    const original = fs.readFileSync(filename, 'utf8');
+    fs.writeFileSync(filename, `${original}\n> ~~~md\n> [Example](missing.md)\n> ~~~\n`);
+    assert.equal(validateSkill(packagePath).local_links, 0);
+    fs.writeFileSync(filename, `${original}\n> ~~~md\n> [Example](missing.md)\nAfter [Missing](missing.md)\n`);
+    assert.throws(() => validateSkill(packagePath), /invalid local link/);
+});
+
+test('parenthesized Markdown titles retain their destination for validation', t => {
+    const packagePath = makeSkill(fixture(t));
+    const filename = path.join(packagePath, 'SKILL.md');
+    fs.appendFileSync(filename, '\n[Guide](missing.md (caption))\n');
+    assert.throws(() => validateSkill(packagePath), /invalid local link/);
+});
+
 test('nested Markdown list links are checked while indented code remains an example', t => {
     const packagePath = makeSkill(fixture(t));
     const filename = path.join(packagePath, 'SKILL.md');

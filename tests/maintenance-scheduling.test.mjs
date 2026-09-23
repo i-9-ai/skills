@@ -70,6 +70,22 @@ test('unbounded targets and moving revisions are rejected', () => {
   }
 });
 
+test('target exclusions cannot contradict the selected package set', () => {
+  const proposal = example('existing-scheduler.json');
+  proposal.target.exclusions = [proposal.target.packages[0]];
+  assert.throws(() => validateProposal(proposal), /must not overlap/);
+});
+
+test('time designator requires a duration component', () => {
+  const proposal = example('existing-scheduler.json');
+  for (const duration of ['P1YT', 'PT', 'P2DT']) {
+    proposal.recurrence.cadence.minimum_interval = duration;
+    assert.throws(() => validateProposal(proposal), /ISO 8601 duration/);
+  }
+  proposal.recurrence.cadence.minimum_interval = 'P1YT2H';
+  assert.equal(validateProposal(proposal).recurrence.cadence.minimum_interval, 'P1YT2H');
+});
+
 test('cadence never grants approval or maintenance side effects', () => {
   const proposal = example('existing-scheduler.json');
   for (const control of [
