@@ -281,7 +281,7 @@ Decision for this bounded delivery: retain Node 24 DatabaseSync and SkillReadMig
 | `src/domain/session-index-policy.mjs` | `src/repository/SkillDiscoveryRepository.ts` |
 | `src/infrastructure/skill-usage-store.mjs` | `src/repository/SkillReadRepository.ts` |
 | `src/skill-usage-mcp.mjs` | `src/transport/SkillUsageMcpTransport.ts` |
-| `src/Skill Usage MCP.md` | `src/command/mcp/usage.md` |
+| `src/skill-usage-mcp.md` | `src/command/mcp/usage.md` |
 | `src/cli.mjs` | `bin/index.mjs` |
 | `tests/session-index.test.mjs` | `tests/unit/repository/SkillDiscoveryRepository.test.mjs`, `tests/integration/cli/available-skills.test.mjs`, `tests/unit/service/AvailableSkillsService.test.mjs`, `tests/unit/config/ProjectConfiguration.test.mjs` |
 | `tests/official-validator.test.mjs` | `tests/unit/repository/official-validator-process.test.mjs`, `tests/unit/validator/official-validator.test.mjs` |
