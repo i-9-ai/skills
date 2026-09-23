@@ -43,14 +43,14 @@ hooks use an already available executable or the checkout launcher.
 Before an authorized npm release, confirm ownership of the scoped identity, version and
 access, test actual target platforms and installation, inspect the packed files
 again, and deliberately remove private only in that release task. The
-[plugin preparation command](plugin-preparation.md) creates a separate local
+[plugin preparation command](Plugin%20Preparation.md) creates a separate local
 artifact with verified manifest formats and inert packages. Its preview and
 write checks do not establish native plugin ingestion or marketplace acceptance.
 
 Before public visibility, separately inventory GitHub branches, PRs, issues,
 discussions, releases, Actions logs/artifacts, Wiki, Pages, collaborators,
 rulesets and secret names. Local clean-tree checks cannot establish remote
-surface readiness. The [dated readiness audit](public-readiness.md) records the
+surface readiness. The [dated readiness audit](Public%20Readiness.md) records the
 current inventory and evidence gaps; repeat it before an external change. The existing Wiki workflow mirrors docs to the initialized
 Wiki using its separate token; the Pages workflow pushes docs/assets to
 gh-pages. Both select merged main. Their effects must remain part of the

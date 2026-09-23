@@ -1,0 +1,32 @@
+# I-9 Skills documentation
+
+I-9 Skills is an experimental collection and toolset for creating, validating,
+preparing distribution, and evolving focused agent skills.
+
+## Start here
+
+- [Architecture](Architecture.md): collection boundaries, specialist handoffs, and lifecycle.
+- [Collection review](Collection%20Review.md): dated responsibility, overlap and icon decisions for the meta-skill collection.
+- [Authoring standards](Authoring%20Standards.md): package design and contribution requirements.
+- [Compatibility](Compatibility.md): portable contract and host-specific support.
+- [Validation](Validation.md): local checks and the official Agent Skills validator.
+- [Release management](Release%20Management.md): version preparation and Changesets.
+- [Lifecycle policy](Lifecycle%20Policy.md): portable maturity evidence and promotion decisions.
+- [Entry-path map](assets/skill-management-entry-paths.html): an interactive view of the three main ways to start.
+- [Visual guides](assets/index.html): a GitHub Pages-ready landing page for interactive maps.
+
+## Deeper references
+- [Distribution preparation](Distribution%20Readiness.md): explicit JavaScript build, packed CLI verification and remaining publication gates.
+- [Plugin preparation](Plugin%20Preparation.md): preview or create an inert, complete plugin artifact with no host registration.
+- [Public readiness](Public%20Readiness.md): dated source/history and remote-surface audit with explicit evidence gaps.
+
+- [Host hooks](Host%20Hooks.md): host-specific session configuration and context output, with explicit untested runtime boundaries.
+
+- [Positioning](Positioning.md): public communication and demonstrations.
+- [Skill usage MCP](Skill%20Usage%20MCP.md): local observed-read evidence and rankings, with an explicit emitter and dedicated database.
+- [Local skill telemetry](Skill%20Telemetry.md): typed session, attempt and read observations, period trends and bounded diagnostic logs.
+- [Planning protocol](Planning%20Protocol.md): durable planning for material work.
+- [Pilot runbook](Pilot%20Runbook.md): a bounded, evidence-first procedure for the first external collection pilot.
+- [Pilot evaluation](Pilot%20Evaluation.md): current pilot evidence and limitations.
+- [Upstream research](Upstream%20Research.md): reviewed sources, adoption decisions, and provenance.
+- [Security policy](https://github.com/i-9-ai/skills/blob/main/SECURITY.md): disclosure boundaries and security reporting.

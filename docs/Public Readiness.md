@@ -8,7 +8,7 @@ release, branch, host configuration or consumer installation was changed.
 ## Source and artifact boundaries
 
 The current catalog contains 23 packages whose primary responsibilities directly
-concern skills. The [collection review](collection-review.md) records their scope,
+concern skills. The [collection review](Collection%20Review.md) records their scope,
 overlap and icon decisions. General tool/domain skill work remains outside this
 repository and outside this completion's claim.
 

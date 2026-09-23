@@ -80,12 +80,12 @@ Neither command enables or installs a hook.
 `mcp usage` starts a stdio server and applies checksum-verified migrations
 to the caller-owned dedicated SQLite database. Explicit calls record observed
 reads and query period rankings. Standard output contains protocol messages
-only. See the [usage contract](../docs/skill-usage-mcp.md).
+only. See the [usage contract](../docs/Skill%20Usage%20MCP.md).
 
 The explicit `telemetry` commands store typed session starts, read attempts and
 successful reads with occurrence/correlation UUIDs. Queries are read-only;
 optional bounded logs retain categories and IDs. Read the complete
-[telemetry contract](../docs/skill-telemetry.md) before choosing an emitter.
+[telemetry contract](../docs/Skill%20Telemetry.md) before choosing an emitter.
 
 `hook telemetry-config --host claude --db /absolute/local-data/usage.db
 --collection project=/absolute/project/.agents/skills` prints an optional
@@ -93,7 +93,7 @@ observation registration. `hook observe` maps native Claude Read events into
 the shared event store: attempts and successes remain distinct, stable host
 occurrences deduplicate, and first receipt time survives retries. It records
 entrypoint reads only; Bash, implicit loading and reference files are outside
-coverage. The [host contract](../docs/host-hooks.md) explains failure behavior.
+coverage. The [host contract](../docs/Host%20Hooks.md) explains failure behavior.
 No host registration is installed or enabled by these commands.
 
 ## Failures and the single entrypoint
@@ -126,17 +126,17 @@ no aggregate dry-run: inspect/check and a verified backup precede explicit write
 
 Use hook session-config --host codex|claude|copilot|gemini|antigravity|hermes and hook verify
 --host HOST --file FILE for standalone configuration. Use hook session-index
---host HOST for its documented output envelope. Read the [host contract](../docs/host-hooks.md)
+--host HOST for its documented output envelope. Read the [host contract](../docs/Host%20Hooks.md)
 before proposing installation; generation and fixture tests do not enable a host.
 
 Run npm run build and npm run package:check for the allowlisted compiled artifact.
 The same launcher uses source TypeScript in the checkout and JavaScript in the
-packed package. Read [distribution preparation](../docs/distribution-readiness.md)
+packed package. Read [distribution preparation](../docs/Distribution%20Readiness.md)
 for actual coverage and the separate publication gate. The package stays private.
 
 `plugin prepare --output .work/plugin-preview/i9-skills` previews a separate
 inert plugin artifact. Create the staging parent explicitly; add `--write` to
 create its new child. Existing destinations are refused. Read the
-[plugin guide](../docs/plugin-preparation.md) for manifests, integrity receipts,
+[plugin guide](../docs/Plugin%20Preparation.md) for manifests, integrity receipts,
 bounded inputs and retained partial-write recovery. It never registers a
 marketplace, installs a consumer or enables an integration.

@@ -33,7 +33,7 @@ Canonical repository packages live in `.agents/skills/`. Collection validation p
 
 Root `.work/`, `tmp/`, `.beads/`, and `.codex/environments/` are local operational state and are never read or traversed by collection validation. Other `.codex/` files remain in the checked publication corpus. When Git metadata is available, a bounded read-only index check rejects tracked scratch without returning its names or contents. Git is required for that check; exported trees cannot establish what the publication index contains. Nested directories with those names remain part of the checked publication corpus. Root Git metadata is excluded. Cache-like names do not create additional exemptions; keep local environments and generated scratch under the designated root scratch directories.
 
-Lock verification is offline. It checks source identity, immutable revisions, safe file paths, known consumers, digest formatting, and the aggregate hash described in [source research](upstream-research.md). It cannot verify that upstream bytes, licensing, ownership, or adoption claims match the recorded source. The lock is an audit input for future evolution, not an installed runtime dependency.
+Lock verification is offline. It checks source identity, immutable revisions, safe file paths, known consumers, digest formatting, and the aggregate hash described in [source research](Upstream%20Research.md). It cannot verify that upstream bytes, licensing, ownership, or adoption claims match the recorded source. The lock is an audit input for future evolution, not an installed runtime dependency.
 
 ## Detached-package checks
 

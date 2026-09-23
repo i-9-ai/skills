@@ -15,7 +15,7 @@ test('Wiki rewriting preserves balanced destinations, references, titles and cod
         '```',
     ].join('\n');
     const prefix = 'https://github.com/example/skills/blob/main/';
-    const result = new WikiLinkService().rewrite(body, 'docs/index.md', 'example/skills');
+    const result = new WikiLinkService().rewrite(body, 'docs/Home.md', 'example/skills');
     assert.ok(result.includes(`[guide](${prefix}guide(v2).md "Title")`));
     assert.ok(result.includes(`[readme]: ${prefix}README.md#start`));
     assert.ok(result.includes(`[spaced]: <${prefix}guide with spaces.md>`));
@@ -26,7 +26,7 @@ test('Wiki rewriting preserves balanced destinations, references, titles and cod
         () =>
             new WikiLinkService().rewrite(
                 '[bad](../../outside.md)',
-                'docs/index.md',
+                'docs/Home.md',
                 'example/skills',
             ),
         /escapes/,
@@ -36,7 +36,7 @@ test('Wiki rewriting preserves balanced destinations, references, titles and cod
 test('Wiki rewriting preserves offsets after Unicode code spans and follows nested lists', () => {
     const source =
         '`😀` [Repository](../README.md)\n- Parent\n    - Nested paragraph\n      [Nested](../README.md)\n';
-    const result = new WikiLinkService().rewrite(source, 'docs/index.md', 'example/skills');
+    const result = new WikiLinkService().rewrite(source, 'docs/Home.md', 'example/skills');
     const target = 'https://github.com/example/skills/blob/main/README.md';
     assert.equal(
         result,
@@ -46,7 +46,7 @@ test('Wiki rewriting preserves offsets after Unicode code spans and follows nest
 
 test('Wiki rewriting follows indented continuation of an open paragraph', () => {
     const source = 'Read\n    [the guide](../README.md)\n';
-    const result = new WikiLinkService().rewrite(source, 'docs/index.md', 'example/skills');
+    const result = new WikiLinkService().rewrite(source, 'docs/Home.md', 'example/skills');
     assert.equal(
         result,
         'Read\n    [the guide](https://github.com/example/skills/blob/main/README.md)\n',
@@ -55,7 +55,7 @@ test('Wiki rewriting follows indented continuation of an open paragraph', () => 
 
 test('Wiki rewriting follows an indented lazy blockquote continuation', () => {
     const source = '> Read\n    [the guide](../README.md)\n';
-    const result = new WikiLinkService().rewrite(source, 'docs/index.md', 'example/skills');
+    const result = new WikiLinkService().rewrite(source, 'docs/Home.md', 'example/skills');
     assert.equal(
         result,
         '> Read\n    [the guide](https://github.com/example/skills/blob/main/README.md)\n',
@@ -65,7 +65,7 @@ test('Wiki rewriting follows an indented lazy blockquote continuation', () => {
 test('Wiki rewriting preserves a parenthesized link title', () => {
     const result = new WikiLinkService().rewrite(
         '[Guide](../README.md (caption))',
-        'docs/index.md',
+        'docs/Home.md',
         'example/skills',
     );
     assert.equal(

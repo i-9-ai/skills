@@ -49,7 +49,7 @@ Skills CLI `1.5.26` was exercised locally with `skills add . --list` against the
 ## Evidence levels
 
 - Structural checks validate package metadata, license presence, references, source lock consistency, catalog agreement, and basic public hygiene.
-- Official `skills-ref validate` must pass on each new or changed package; the [pinned setup and PR workflow](validation.md) make this a separate required check.
+- Official `skills-ref validate` must pass on each new or changed package; the [pinned setup and PR workflow](Validation.md) make this a separate required check.
 - Run checks validate stage order, source constraints, bounded regular-file reads, and artifact hashes. They do not grade the truth of reports.
 - Synthetic regression tests exercise concrete tool and failure behavior in disposable directories.
 - Behavioral evaluation inspects decisions and artifacts for frozen task cases. The report must state executor, candidate, baseline, independence, limitations, and sample count.
@@ -57,4 +57,4 @@ Skills CLI `1.5.26` was exercised locally with `skills add . --list` against the
 
 Optional reasoning-effort recommendations are explained in each skill body and do not select models or apply host settings. They are not benchmark claims. An execution environment supporting the file format may still differ in model behavior, available tools, context budget, or permissions. Record those differences rather than hiding them behind a compatibility label. The [OpenAI sidecar reference](../.agents/skills/skill-authoring/references/openai-yaml.md) separates verified host fields from collection authoring conventions.
 
-The [initial pilot report](pilot-evaluation.md) records the historical six-stage synthetic creation exercise, actual output observations, official validation, and the limits of its same-session manual baseline. It does not establish readiness for the current version 2 authoring contract, which adds mandatory domain research.
+The [initial pilot report](Pilot%20Evaluation.md) records the historical six-stage synthetic creation exercise, actual output observations, official validation, and the limits of its same-session manual baseline. It does not establish readiness for the current version 2 authoring contract, which adds mandatory domain research.

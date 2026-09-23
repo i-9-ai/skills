@@ -176,6 +176,13 @@ test('quoted tilde fences hide example links but not following prose', t => {
     assert.throws(() => validateSkill(packagePath), /invalid local link/);
 });
 
+test('a nested blockquote marker does not close its outer quoted fence', t => {
+    const packagePath = makeSkill(fixture(t));
+    const filename = path.join(packagePath, 'SKILL.md');
+    fs.appendFileSync(filename, '\n> ```md\n> > ```\n> [Example](missing.md)\n> ```\n');
+    assert.equal(validateSkill(packagePath).local_links, 0);
+});
+
 test('parenthesized Markdown titles retain their destination for validation', t => {
     const packagePath = makeSkill(fixture(t));
     const filename = path.join(packagePath, 'SKILL.md');

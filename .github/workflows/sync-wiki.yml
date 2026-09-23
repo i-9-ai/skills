@@ -45,12 +45,9 @@ jobs:
           import { WikiMirrorRepository } from './src/repository/WikiMirrorRepository.ts';
           new WikiMirrorRepository().rewrite('.wiki', process.env.REPOSITORY);
           NODE
-          if [ -f .wiki/index.md ] && { [ -e .wiki/Home.md ] || [ -L .wiki/Home.md ]; }; then
-            echo "Wiki Home collision: docs contains both index.md and Home.md."
+          if [ ! -f .wiki/Home.md ]; then
+            echo "::error::The documentation mirror must include Home.md."
             exit 1
-          fi
-          if [ -f .wiki/index.md ]; then
-            mv .wiki/index.md .wiki/Home.md
           fi
           cd .wiki
           git config user.name "github-actions[bot]"

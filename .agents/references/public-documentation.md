@@ -16,9 +16,9 @@ Keep shared policy here and task-specific procedure inside its package. Update c
 Run repository link and public-hygiene checks. Verify upstream revisions and scoped licenses before changing reuse decisions.
 
 ## Child DOX index
-- [architecture.md](../../docs/architecture.md): responsibilities, handoffs, failure, and scope.
-- [authoring-standards.md](../../docs/authoring-standards.md): contributor requirements and single responsibility.
-- [upstream-research.md](../../docs/upstream-research.md): pinned source comparison and reuse decisions.
-- [compatibility.md](../../docs/compatibility.md): portable core and actual test coverage.
-- [validation.md](../../docs/validation.md): required official validation, pinned setup, and PR coverage.
-- [pilot-evaluation.md](../../docs/pilot-evaluation.md): actual forward-exercise results and their limitations.
+- [Architecture.md](../../docs/Architecture.md): responsibilities, handoffs, failure, and scope.
+- [Authoring Standards.md](../../docs/Authoring%20Standards.md): contributor requirements and single responsibility.
+- [Upstream Research.md](../../docs/Upstream%20Research.md): pinned source comparison and reuse decisions.
+- [Compatibility.md](../../docs/Compatibility.md): portable core and actual test coverage.
+- [Validation.md](../../docs/Validation.md): required official validation, pinned setup, and PR coverage.
+- [Pilot Evaluation.md](../../docs/Pilot%20Evaluation.md): actual forward-exercise results and their limitations.

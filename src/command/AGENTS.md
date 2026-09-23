@@ -31,7 +31,7 @@ Run command integration tests under `tests/integration/cli/`, strict type checki
 
 - [Hook commands](hook/AGENTS.md): lifecycle ownership, explicit host adapters and registration boundaries.
 - [Usage MCP operator guide](mcp/usage.md): stdio execution, caller-owned SQLite and clean protocol output.
-- [Telemetry operator guide](../../docs/skill-telemetry.md): explicit record, rankings and trend commands with metadata-only diagnostics.
+- [Telemetry operator guide](../../docs/Skill%20Telemetry.md): explicit record, rankings and trend commands with metadata-only diagnostics.
 - [Available skills](context/available-skills.ts): reusable project/global overview with bounded discovery.
 - [Collection validation](validate.ts): local collection validation command.
 - [Plugin preparation](plugin/prepare.ts): preview or create an explicit new staging artifact; never registers or installs it.

@@ -580,7 +580,7 @@ test('documentation publication verifies inputs before staging and publishing ma
     const rewrite = wikiWorkflow.indexOf("new WikiMirrorRepository().rewrite('.wiki', process.env.REPOSITORY)");
     assert.ok(rewrite > wikiWorkflow.indexOf('rsync -a'), 'rewrite the copied Wiki pages');
     assert.ok(rewrite < wikiWorkflow.indexOf('git add --all'), 'rewrite before staging');
-    assert.match(wikiWorkflow, /Wiki Home collision:[\s\S]*exit 1/);
+    assert.match(wikiWorkflow, /documentation mirror must include Home\.md[\s\S]*exit 1/);
     assert.match(wikiWorkflow, /git add --all\n\s+if git diff --quiet --staged; then/);
 });
 

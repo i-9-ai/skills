@@ -8,6 +8,8 @@ Resolve the nine actionable comments on [PR #2](https://github.com/i-9-ai/skills
 
 Change the affected parser, validators, CLI and plugin preparation, aggregate query, tests, Wiki workflow, and the README and architecture diagrams. Preserve the existing routes and package formats unless a review finding requires a documented correction. The interactive entry-path map remains a high-level route selector; update its source and generated artifacts only if its existing claims become false. Do not merge, publish, release, install into a consumer, or change repository visibility.
 
+The user subsequently selected title-cased Markdown filenames with spaces for the public `docs/` pages and `Home.md` as the single documentation/Wiki entrypoint. Rename only those pages, update inbound links and Wiki assertions, and leave the web asset `docs/assets/index.html` and package-local reference filenames unchanged.
+
 ## Implementation and rollback
 
 1. Reproduce each comment in a synthetic fixture and correct the smallest owning component.

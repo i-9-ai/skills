@@ -14,7 +14,7 @@ compatibility.
 The prepared CLI package name is `@i-9-ai/skills` and its executable is
 `i9-skills`. In a trusted checkout, run `npm ci`, then `npm run check` and
 `npm run package:check` on Node.js 24+. Read the
-[distribution preparation](docs/distribution-readiness.md) for the local packed
+[distribution preparation](docs/Distribution%20Readiness.md) for the local packed
 test and the separate future registry/plugin release boundaries.
 
 ## Install
@@ -194,9 +194,9 @@ npm run check
 git diff --check
 ```
 
-The [validation contract](docs/validation.md) explains the layered checks. Every package must also pass the official `skills-ref validate` tool identified by the [Agent Skills specification](https://agentskills.io/specification#validation). GitHub Actions installs the pinned external Python validator in an isolated environment and validates every canonical package at the exact PR revision.
+The [validation contract](docs/Validation.md) explains the layered checks. Every package must also pass the official `skills-ref validate` tool identified by the [Agent Skills specification](https://agentskills.io/specification#validation). GitHub Actions installs the pinned external Python validator in an isolated environment and validates every canonical package at the exact PR revision.
 
-Pending user-visible changes use [Changesets](docs/release-management.md) for version intent and future release notes. The current workflow validates those entries only; it does not publish packages, create tags, or create releases.
+Pending user-visible changes use [Changesets](docs/Release%20Management.md) for version intent and future release notes. The current workflow validates those entries only; it does not publish packages, create tags, or create releases.
 
 Catalog maintenance is automated:
 
@@ -220,10 +220,10 @@ Read [`SECURITY.md`](SECURITY.md) before reviewing external packages. Never comm
 
 ## Contributing
 
-Read [`AGENTS.md`](AGENTS.md), the [authoring standards](docs/authoring-standards.md), and the [architecture](docs/architecture.md). Keep changes in English, prefer small skills with independently testable outputs, use Node.js built-ins for portable deterministic helpers when practical, update the generated catalog, and include exact-revision validation evidence.
+Read [`AGENTS.md`](AGENTS.md), the [authoring standards](docs/Authoring%20Standards.md), and the [architecture](docs/Architecture.md). Keep changes in English, prefer small skills with independently testable outputs, use Node.js built-ins for portable deterministic helpers when practical, update the generated catalog, and include exact-revision validation evidence.
 
-For public-facing messaging and demonstrations, use the [positioning and communication strategy](docs/positioning.md). It explains how to present the framework's modularization and evidence-gated evolution without making unsupported claims.
+For public-facing messaging and demonstrations, use the [positioning and communication strategy](docs/Positioning.md). It explains how to present the framework's modularization and evidence-gated evolution without making unsupported claims.
 
-For material repository changes, use the host's planning mode when available and preserve the [portable planning protocol](docs/planning-protocol.md) in a versioned plan.
+For material repository changes, use the host's planning mode when available and preserve the [portable planning protocol](docs/Planning%20Protocol.md) in a versioned plan.
 
 Original I-9 content is licensed under [Apache-2.0](LICENSE). Each distributed package includes its own `LICENSE`.

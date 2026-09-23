@@ -240,7 +240,7 @@ function visibleMarkdown(text) {
       paragraphOpen = false;
       const run = marker[1];
       if (fence === null) fence = { run, quoteDepth };
-      else if (run[0] === fence.run[0] && run.length >= fence.run.length) fence = null;
+      else if (quoteDepth === fence.quoteDepth && run[0] === fence.run[0] && run.length >= fence.run.length) fence = null;
       lines[index] = ' '.repeat(line.length);
       continue;
     }

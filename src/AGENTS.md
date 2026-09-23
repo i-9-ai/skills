@@ -44,4 +44,4 @@ Run `npm run check` and inspect the required official workflow result for the ex
 - [Skill read repository](repository/SkillReadRepository.ts): transactional observed-read storage and ranking projections.
 - [Usage migration](migration/SkillReadMigration.ts): ordered checksum-verified schema history.
 - [Skill telemetry](service/SkillTelemetryService.ts): explicit typed observations, read-only metrics and optional bounded diagnostics.
-- [Telemetry contract](../docs/skill-telemetry.md): event schema, commands, migration and measurement boundaries.
+- [Telemetry contract](../docs/Skill%20Telemetry.md): event schema, commands, migration and measurement boundaries.

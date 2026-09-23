@@ -41,20 +41,20 @@ Use JavaScript with Node.js built-ins for small zero-dependency skill utilities.
 
 Use Changesets for user-visible release notes and semantic version intent. Add a `.changeset/` entry for a user-visible change, validate it with `npm run changeset:status`, and reserve `npm run release:prepare` for an explicitly authorized dedicated version-preparation task. Before review, reconcile every user-visible delivery in the pull-request diff against its Changeset: the note must state concrete capabilities, commands or interfaces when material, and meaningful limits. Changesets never authorize publishing, tags, releases, or visibility changes.
 
-Before adding a material dependency, workflow, external tool, or release-management mechanism, use the host's planning mode when it exists and write a focused plan in `plans/` that names the objective, scope, exclusions, authority boundaries, validation, and rollback or removal path. The versioned plan remains the durable contract. Follow the [portable planning protocol](docs/planning-protocol.md) before mutating the repository unless the user explicitly directs an immediate emergency fix.
+Before adding a material dependency, workflow, external tool, or release-management mechanism, use the host's planning mode when it exists and write a focused plan in `plans/` that names the objective, scope, exclusions, authority boundaries, validation, and rollback or removal path. The versioned plan remains the durable contract. Follow the [portable planning protocol](docs/Planning%20Protocol.md) before mutating the repository unless the user explicitly directs an immediate emergency fix.
 
 For material changes, obtain independent review on the exact commit. Fix pertinent findings, repeat affected checks, and report the actual distinction between structural validation, behavioral evaluation, provider testing, and publication. Existing authorization persists; request additional input only for an unresolved decision or an action outside scope.
 
 ## Verification
 
-Every new or modified skill must pass the official `skills-ref validate` tool from the Agent Skills specification. Custom or manual checks do not replace this requirement; unavailable official execution leaves readiness blocked. Follow [validation setup](docs/validation.md) for the pinned official source and dependencies.
+Every new or modified skill must pass the official `skills-ref validate` tool from the Agent Skills specification. Custom or manual checks do not replace this requirement; unavailable official execution leaves readiness blocked. Follow [validation setup](docs/Validation.md) for the pinned official source and dependencies.
 
 Run `npm run check` and `git diff --check` with Node.js 24+ after explicit `npm ci`. Repository tooling uses singular N-layer directories under `src/`: command, service, repository, validator, migration and transport. `bin/index.mjs` is the thin launcher and `package.json` owns dependency/command configuration. Local checks require no Python, further installation or network. The GitHub workflow alone supplies Python for the external official validator, and its result must match the PR head. Tests use disposable fixtures and never modify a user's home, installed skills, or production state.
 
 ## Child DOX index
 
 - [.agents/AGENTS.md](.agents/AGENTS.md): canonical agent-facing skill collection.
-- [docs/index.md](docs/index.md): canonical public documentation, mirrored to the GitHub Wiki after documentation changes merge into `main`.
+- [docs/Home.md](docs/Home.md): canonical public documentation, mirrored to the GitHub Wiki after documentation changes merge into `main`.
 - [.agents/references/public-documentation.md](.agents/references/public-documentation.md): agent-facing guidance for the public documentation tree.
 - [plans/AGENTS.md](plans/AGENTS.md): implementation recipe and acceptance mapping.
 - [src/AGENTS.md](src/AGENTS.md): layered Node.js repository validation.

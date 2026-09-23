@@ -111,7 +111,7 @@ labels for one real package select the lexicographically first label.
 
 Raw payloads are limited to 1 MiB, parsed as strict JSON, and discarded. No
 prompt, result body, filename, transcript or original session/tool ID is stored.
-Storage contains only the [typed telemetry envelope](skill-telemetry.md). A
+Storage contains only the [typed telemetry envelope](Skill%20Telemetry.md). A
 successful or ignored hook emits `{}`; a collection/storage/input failure emits
 `{}` plus a fixed diagnostic and exits 1, Claude's nonblocking failure path.
 No decision fields, permissions, tool changes or exit-2 blocks are emitted.

@@ -34,7 +34,7 @@ When a package needs preparation, keep its contract in `SKILL.md`: state prerequ
 
 Repository-owned tooling and the creator helper use Node.js built-ins. Filesystem validation requires an owned, stable workspace: it rejects unsafe entries and detected changes before accepting results, but does not claim confinement against concurrent adversarial mutation. Node's [filesystem API](https://nodejs.org/docs/latest-v24.x/api/fs.html) exposes path-based operations, not portable descriptor-relative directory traversal. Do not execute candidate scripts or allow another writer to alter the selected tree during validation.
 
-Provide optional host metadata and icons when their format and utility are verified. `agents/openai.yaml` is an optional Codex UI surface; other supported hosts may need only `SKILL.md`. Keep adapters consistent with the core, include their assets and license, validate resource paths, and never add a fictional manifest or mandatory vendor integration. Consult the [host matrix](compatibility.md) before adding files.
+Provide optional host metadata and icons when their format and utility are verified. `agents/openai.yaml` is an optional Codex UI surface; other supported hosts may need only `SKILL.md`. Keep adapters consistent with the core, include their assets and license, validate resource paths, and never add a fictional manifest or mandatory vendor integration. Consult the [host matrix](Compatibility.md) before adding files.
 
 ## Optional metadata and runtime guidance
 
@@ -71,7 +71,7 @@ When a skill describes a hook, watcher, daemon, scheduler, or background loop, i
 
 Evaluate positive/negative triggers, real task outputs, error paths, and relevant adversarial cases against frozen criteria. Compare a new skill with a no-skill baseline and a revision with the accepted version. Separate structural checks, behavioral evaluation, named-provider testing, and production evidence. Require no critical correctness, scope, privacy, licensing, or portability blocker before claiming a scoped pass.
 
-Every new or modified package must also pass the official `skills-ref validate` command linked by the [specification's validation section](https://agentskills.io/specification#validation). Record the tool source/version and exact candidate identity. Follow the [pinned repository setup](validation.md); a failed or unavailable official check blocks readiness. Custom validation and manual inspection supplement this requirement.
+Every new or modified package must also pass the official `skills-ref validate` command linked by the [specification's validation section](https://agentskills.io/specification#validation). Record the tool source/version and exact candidate identity. Follow the [pinned repository setup](Validation.md); a failed or unavailable official check blocks readiness. Custom validation and manual inspection supplement this requirement.
 
 ## Contributing and evolution
 

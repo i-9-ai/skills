@@ -10,7 +10,7 @@ Use Node.js 24+ and run `npm ci` explicitly in the checkout first. Create a call
 node bin/index.mjs mcp usage --db /absolute/local-data/skill-usage.db
 ```
 
-The [unified CLI](../bin/index.md) composes the command, service, repository, migration and transport components. Use the complete checkout with its pinned dependencies or the explicitly built package. There is one launcher; copying two old files is not a supported distribution. This is not yet a published NPX package or installed plugin. The [typed telemetry CLI](skill-telemetry.md) shares this dedicated database and adds explicit session/attempt events and trends without changing the MCP request schema.
+The [unified CLI](../bin/index.md) composes the command, service, repository, migration and transport components. Use the complete checkout with its pinned dependencies or the explicitly built package. There is one launcher; copying two old files is not a supported distribution. This is not yet a published NPX package or installed plugin. The [typed telemetry CLI](Skill%20Telemetry.md) shares this dedicated database and adds explicit session/attempt events and trends without changing the MCP request schema.
 
 ## Report a read
 
