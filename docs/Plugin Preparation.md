@@ -24,6 +24,11 @@ and a persistent plugin-data directory. Do not register an MCP that will fail
 on startup. A later adapter may map it after those host contracts and a clean
 installation are verified.
 
+Claude Code can remove the persistent data directory on final plugin uninstall.
+Use its `--keep-data` option when the observed-read history must remain available
+after removal; an external database selected by the CLI's `--db` belongs to its
+caller instead.
+
 Hooks have a different readiness boundary. `.codex/hooks.json` is a *project*
 registration for this checkout. The CLI can generate Claude, Copilot and other
 host-specific project registrations, but those commands currently rely on the
