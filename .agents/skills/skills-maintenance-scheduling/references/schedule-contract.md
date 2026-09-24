@@ -9,7 +9,7 @@ Load this reference when producing or validating the JSON artifact. The contract
 All variants use `schema_version: 1`. A known target uses:
 
 - `collection_id`: a stable lowercase identifier;
-- `revision`: an immutable commit, digest, release, or content-addressed catalog identity;
+- `revision`: a full 40- or 64-character lowercase Git object ID (optionally prefixed `commit-` or `commit:`), or a 64-character lowercase content digest prefixed `sha256:` or `catalog-sha256:`. Resolve a release to its commit or content digest before recording it; a release name alone does not prove immutability;
 - `packages`: one to 256 explicit package slugs, never a wildcard;
 - `exclusions`: explicit package slugs outside the run.
 
@@ -46,7 +46,7 @@ Companion names are recommendations, not dependencies. Verify the actual install
 - The proposal contains no token, password, credential, private key, API key, or secret field.
 - `cadence_grants_authority` and all five `scheduled_run_can_*` fields are exactly `false`.
 - Scheduled actions never exceed `proposal-only` or `read-only-evidence`.
-- A moving revision such as `HEAD`, `latest`, `main`, or `current` cannot identify the target.
+- A branch or unverified release label such as `HEAD`, `latest`, `develop`, `main`, or `release-2026-09` cannot identify the target. The helper validates the explicit commit/digest format; the researcher still verifies that identity against the selected source.
 - Configuration authority does not authorize the maintenance route, and maintenance authority does not authorize configuration.
 - A validator pass confirms contract shape and these invariants. It does not prove scheduler existence, owner approval, route behavior, provider support, or production readiness.
 

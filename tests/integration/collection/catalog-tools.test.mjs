@@ -107,6 +107,15 @@ test('catalog output and collection roots reject symbolic and hard links', (t) =
     assert.throws(() => syncCatalog(linkedRoot, { layout: 'global' }), /collection root must be a real directory/);
 });
 
+test('repository discovery stops at its entry budget before reading package metadata', (t) => {
+    const root = fixture(t);
+    const directory = path.join(root, '.agents', 'skills');
+    fs.mkdirSync(directory, { recursive: true });
+    for (let index = 0; index < 258; index++) fs.mkdirSync(path.join(directory, `package-${index}`));
+    assert.throws(() => syncCatalog(root), /repository discovery exceeds 257 entries/);
+    assert.equal(fs.existsSync(path.join(root, 'skills-catalog.json')), false);
+});
+
 test('global paths validate but traversal and name mismatches do not', () => {
     const entry = {
         name: 'beta', path: 'skills/suite/models/beta',

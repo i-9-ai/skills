@@ -3,7 +3,7 @@
   "decision": "none",
   "target": {
     "collection_id": "example-skills",
-    "revision": "release-2026-09",
+    "revision": "sha256:91d8f59b0191475fd6f582d34b9bb7ac2dbf19a694ef1832c55b970a24102c44",
     "packages": [
       "skill-alpha"
     ],

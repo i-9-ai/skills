@@ -341,8 +341,7 @@ function catalogEntry(scanPath, relativeParts, prefix) {
 }
 
 function discoverRepository(config) {
-  const entries = fs.readdirSync(config.skillsIdentity.resolved, { withFileTypes: true })
-    .sort((left, right) => left.name.localeCompare(right.name));
+  const entries = boundedEntries(config.skillsIdentity.resolved, MAX_PACKAGES + 1, 'repository discovery');
   const packages = [];
   for (const entry of entries) {
     requireCondition(!entry.isSymbolicLink(), `${entry.name} must not be a symbolic link`);
@@ -374,15 +373,15 @@ function directAllowedTarget(config, linkPath, linkName) {
   return { resolved, info, allowed };
 }
 
-function boundedEntries(directory) {
+function boundedEntries(directory, maximum = MAX_DIRECTORY_ENTRIES, label = 'global discovery') {
   const entries = [];
   const handle = fs.opendirSync(directory);
   try {
     let entry;
     while ((entry = handle.readSync()) !== null) {
       entries.push(entry);
-      requireCondition(entries.length <= MAX_DIRECTORY_ENTRIES,
-        `global discovery exceeds ${MAX_DIRECTORY_ENTRIES} entries in one directory`);
+      requireCondition(entries.length <= maximum,
+        `${label} exceeds ${maximum} entries in one directory`);
     }
   } finally {
     handle.closeSync();

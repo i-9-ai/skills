@@ -91,6 +91,20 @@ test('special-file receipt fails promptly without waiting for a writer', t => {
     assert.match(result.stderr, /bounded regular file/);
 });
 
+test('installation bounds unique directory prefixes before staging a Git tree', t => {
+    const f = fixture(t);
+    for (let index = 0; index < 129; index++) {
+        const directory = path.join(f.candidate, `branch-${index}`, ...Array(30).fill('nested'));
+        fs.mkdirSync(directory, { recursive: true });
+        fs.writeFileSync(path.join(directory, 'file.txt'), 'bounded fixture');
+    }
+    const result = f.invoke('install', changedOption(f.defaults, 'revision', f.commit()));
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /Source package exceeds the entry limit including directories/);
+    assert.equal(fs.existsSync(f.destination), false);
+    assert.deepEqual(fs.readdirSync(f.state), []);
+});
+
 test('inherited Git overrides cannot substitute a different repository', t => {
     const approved = fixture(t);
     const other = fixture(t);

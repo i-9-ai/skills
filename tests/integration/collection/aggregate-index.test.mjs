@@ -369,6 +369,14 @@ test("evolution ledger rejects duplicate and invalid events without changing dat
     await assert.rejects(() => recordEvolutionEvent(result.index, repeatedFiles), /file paths must be distinct/);
     assert.deepEqual(fs.readFileSync(result.index), beforeInvalid);
 
+    const extraMapping = structuredClone(valid);
+    extraMapping.event_key = 'unrelated-link-mapping';
+    extraMapping.rollback_proof.link_worktree_map.push({
+        ...extraMapping.rollback_proof.link_worktree_map[0], name: 'unrelated-skill',
+    });
+    await assert.rejects(() => recordEvolutionEvent(result.index, extraMapping), /must match exactly the participating package names/);
+    assert.deepEqual(fs.readFileSync(result.index), beforeInvalid);
+
     const unsafe = evolutionEvent("update", [
         eventPackage("source", "alpha-skill", "a".repeat(64)),
         eventPackage("target", "alpha-skill", "b".repeat(64)),

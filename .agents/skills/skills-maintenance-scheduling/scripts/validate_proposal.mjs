@@ -8,7 +8,7 @@ const MAX_BYTES = 256 * 1024;
 const MAX_PACKAGES = 256;
 const MAX_ROUTE_STEPS = 32;
 const SLUG = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/u;
-const MOVING_REVISION = /^(?:\*|head|latest|current|main|master)$/iu;
+const IMMUTABLE_REVISION = /^(?:(?:commit[:-])?(?:[a-f0-9]{40}|[a-f0-9]{64})|(?:sha256|catalog-sha256):[a-f0-9]{64})$/u;
 const SENSITIVE_FIELD = /(?:apikey|credential|password|privatekey|secret|token)/u;
 const SENSITIVE_VALUE = [
   /-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----/u,
@@ -186,7 +186,7 @@ function validateTarget(value) {
   exactObject(value, ['collection_id', 'revision', 'packages', 'exclusions'], 'target');
   slug(value.collection_id, 'target.collection_id');
   text(value.revision, 'target.revision', 256);
-  requireCondition(!MOVING_REVISION.test(value.revision), 'target.revision must be immutable or content-addressed');
+  requireCondition(IMMUTABLE_REVISION.test(value.revision), 'target.revision must be a full immutable commit or content digest');
   const packages = uniqueStrings(value.packages, 'target.packages', { max: MAX_PACKAGES, slugs: true });
   requireCondition(!packages.includes('*'), 'target.packages must not contain wildcards');
   const exclusions = uniqueStrings(value.exclusions, 'target.exclusions', { max: MAX_PACKAGES, slugs: true, empty: true });

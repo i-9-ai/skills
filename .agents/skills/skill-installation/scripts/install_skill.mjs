@@ -152,6 +152,7 @@ function sourceTree(options) {
             const existing = portablePaths.get(prefix.toLowerCase());
             requireValue(!existing || existing === prefix, 'Source has a portable path collision');
             portablePaths.set(prefix.toLowerCase(), prefix);
+            requireValue(portablePaths.size <= MAX_FILES, 'Source package exceeds the entry limit including directories');
         }
     }
     return { repository, revision, package: packagePath, files, git };

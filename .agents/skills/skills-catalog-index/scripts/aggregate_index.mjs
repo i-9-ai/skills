@@ -923,8 +923,9 @@ function validateRollbackProof(value, packages, label = "rollback_proof") {
   const participatingNames = new Set(packages.map(item => `${item.source_id}\0${item.name}`));
   const mappedNames = linkWorktreeMap.map(item => `${item.source_id}\0${item.name}`);
   requireCondition(new Set(mappedNames).size === mappedNames.length, `${label}.link_worktree_map entries must be distinct`);
-  requireCondition([...participatingNames].every(identity => mappedNames.includes(identity)),
-    `${label}.link_worktree_map must cover every participating package name`);
+  requireCondition(mappedNames.length === participatingNames.size
+    && mappedNames.every(identity => participatingNames.has(identity)),
+    `${label}.link_worktree_map must match exactly the participating package names`);
   return { system_excluded: true, packages: rollbackPackages, link_worktree_map: linkWorktreeMap };
 }
 

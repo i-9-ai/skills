@@ -86,6 +86,18 @@ test('target exclusions cannot contradict the selected package set', () => {
   assert.throws(() => validateProposal(proposal), /must not overlap/);
 });
 
+test('maintenance targets require a positively identified commit or content digest', () => {
+  const proposal = example('existing-scheduler.json');
+  for (const revision of ['develop', 'trunk', 'production', 'release-2026-09', 'v1.0.0', 'sha256:abc', 'commit-develop']) {
+    proposal.target.revision = revision;
+    assert.throws(() => validateProposal(proposal), /full immutable commit or content digest/);
+  }
+  for (const revision of ['a'.repeat(40), 'b'.repeat(64), `commit-${'c'.repeat(40)}`, `commit:${'d'.repeat(64)}`, `sha256:${'e'.repeat(64)}`, `catalog-sha256:${'f'.repeat(64)}`]) {
+    proposal.target.revision = revision;
+    assert.equal(validateProposal(proposal).target.revision, revision);
+  }
+});
+
 test('time designator requires a duration component', () => {
   const proposal = example('existing-scheduler.json');
   for (const duration of ['P1YT', 'PT', 'P2DT']) {
