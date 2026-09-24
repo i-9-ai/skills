@@ -29,8 +29,8 @@ test('HTML resource entities are decoded before scheme checks or rejected explic
 
 test('HTML local bases preserve URL dot-segment, file and empty-reference semantics', () => {
     const document = 'docs/index.html';
-    for (const base of ['sub/..', 'sub//..', 'sub///..', 'sub//%2e%2e', 'sub/.', 'sub/%2e%2e', 'sub/.%2E', './', 'guide.html', 'sub/../guide.html', '../__relative_url_parent__/guide.html']) {
-        for (const href of ['target.html', '', '?view=1', '#section', '.', 'sub/..']) {
+    for (const base of ['sub/..', 'sub//..', 'sub///..', 'sub//%2e%2e', 'sub/.', 'sub/%2e%2e', 'sub/.%2E', './', './https:missing.html', 'guide.html', 'sub/../guide.html', '../__relative_url_parent_0__/guide.html']) {
+        for (const href of ['target.html', '', '?view=1', '#section', '.', 'sub/..', './https:missing.html', './notes:2026.html', '../__relative_url_parent_0__/target.html']) {
             const [[, target]] = htmlLinks(`<base href="${base}"><a href="${href}">Guide</a>`);
             const resolved = new URL(href, new URL(base, `https://example.test/${document}`));
             const expected = path.posix.normalize(decodeURIComponent(resolved.pathname)).replace(/^\/|\/$/gu, '');
@@ -39,6 +39,16 @@ test('HTML local bases preserve URL dot-segment, file and empty-reference semant
     }
     assert.deepEqual(htmlLinks('<base href=""><a href="">Self</a>'), [[1, '']]);
     assert.throws(() => localLinkPath(document, htmlLinks('<base href="sub/../../.."><a href="target.html">Outside</a>')[0][1]), /escapes the root/);
+});
+
+test('HTML base resolution bounds work independently of unrelated external URLs', () => {
+    const external = `https://example.org/__relative_url_parent__${'_'.repeat(24000)}${'/'.repeat(24000)}`;
+    const localLinks = '<a href="target.html">Local</a>'.repeat(1000);
+    const links = htmlLinks(`<base href="./"><a href="${external}">External</a>${localLinks}`);
+
+    assert.equal(links[0][1], external);
+    assert.equal(links.length, 1001);
+    assert.ok(links.slice(1).every(([, target]) => localLinkPath('docs/index.html', target) === 'docs/target.html'));
 });
 
 test('Markdown link discovery preserves balanced destination parentheses', () => {

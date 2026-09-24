@@ -471,23 +471,29 @@ export function htmlLinks(text) {
       return links.map(([line, target]) => [line, new URL(target, base).href]);
     }
     requireCondition(!base.startsWith('/') && !base.includes('\\'), 'HTML base must be a relative local path or public URL');
-    const references = links.map(([line, target]) => [line, urlReference(target)]);
     // Resolve with the native URL algorithm before filesystem normalization.
     // Enough artificial parents prevent URL's origin-root clamping from hiding
-    // traversal; a segment absent from all references preserves relative ancestry.
-    let segment = '__relative_url_parent__';
-    while (base.includes(segment) || references.some(([, target]) => target.includes(segment))) segment += '_';
-    const depth = base.split('/').length + references.reduce((maximum, [, target]) => Math.max(maximum, target.split('/').length), 0) + 1;
-    const anchor = `/${`${segment}/`.repeat(depth)}`;
-    const origin = new URL(`https://relative.invalid${anchor}document.html`);
-    const resolvedBase = new URL(base, origin);
-    return references.map(([line, target]) => {
+    // traversal. Size each local resolution independently of unrelated URLs.
+    const baseDepth = basePath.split('/').length;
+    return links.map(([line, rawTarget]) => {
+      const target = urlReference(rawTarget);
       if (hasScheme(target) || target.startsWith('/')) return [line, target];
       requireCondition(!target.includes('\\'), 'HTML resource paths must not contain backslashes');
       if (!basePath && (!target || /^[?#]/u.test(target))) return [line, target];
+
+      let marker = 0;
+      let segment = `__relative_url_parent_${marker}__`;
+      while (base.includes(segment) || target.includes(segment)) {
+        marker += 1;
+        segment = `__relative_url_parent_${marker}__`;
+      }
+      const depth = baseDepth + target.split(/[?#]/u, 1)[0].split('/').length + 1;
+      const anchor = `/${`${segment}/`.repeat(depth)}`;
+      const origin = new URL(`https://relative.invalid${anchor}document.html`);
+      const resolvedBase = new URL(base, origin);
       const resolved = new URL(target, resolvedBase);
       const relative = path.posix.relative(anchor, resolved.pathname) || '.';
-      return [line, `${relative}${resolved.search}${resolved.hash}`];
+      return [line, `./${relative}${resolved.search}${resolved.hash}`];
     });
   }
   return links;
