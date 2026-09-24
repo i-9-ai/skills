@@ -1,9 +1,0 @@
-{
-  "mcpServers": {
-    "i9-skill-usage": {
-      "type": "stdio",
-      "command": "node",
-      "args": ["${PLUGIN_ROOT}/src/transport/PluginUsageMcpServer.ts"]
-    }
-  }
-}

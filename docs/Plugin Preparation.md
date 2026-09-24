@@ -9,17 +9,20 @@ entries at `.claude-plugin/marketplace.json` and
 `.github/plugin/marketplace.json`. `npm run check` verifies these paths and the
 cataloged packages. There is no checked-in copy under `plugins/`.
 
-The same root plugin also declares the local `i9-skill-usage` MCP. Codex and
-Copilot read `.mcp.json`; Claude Code reads `mcp/claude.json` because its plugin
-root placeholder is host-specific. All three start the same dependency-free
-Node 24 server in `src/transport/PluginUsageMcpServer.ts`. It stores a dedicated
+The Claude Code plugin declares the local `i9-skill-usage` MCP in
+`mcp/claude.json`. It starts the dependency-free Node 24 server in
+`src/transport/PluginUsageMcpServer.ts`. It stores a dedicated
 `skill-usage.db` in the host's persistent plugin data directory, never in the
 installed plugin or the current project. The server exposes
 `skill_read_record` and `skill_read_rankings`; it records only explicit read
 evidence supplied by a caller. Loading the plugin does not observe reads or
 activate skills. The MCP protocol was tested from a clean copy without
-`node_modules`; native plugin ingestion and host subprocess behavior still need
-consumer tests.
+`node_modules`; native Claude plugin ingestion and subprocess behavior still
+need a consumer test. Codex and Copilot retain skills-only root plugin manifests:
+their legacy MCP loading paths do not document both plugin-root substitution
+and a persistent plugin-data directory. Do not register an MCP that will fail
+on startup. A later adapter may map it after those host contracts and a clean
+installation are verified.
 
 Hooks have a different readiness boundary. `.codex/hooks.json` is a *project*
 registration for this checkout. The CLI can generate Claude, Copilot and other
@@ -153,9 +156,9 @@ submission and workspace publication remain separate authorization boundaries.
 Claude Code and Copilot CLI can likewise read their repository marketplace
 files after a consumer explicitly adds this Git repository as a marketplace.
 Both entries select the root plugin, so they distribute the same canonical
-packages and the mapped observed-read MCP. The marketplace entries do not
-install or activate the checkout-only hooks. Validate marketplace loading and
-the MCP subprocess in each intended host before claiming consumer support.
+packages. Claude also maps the observed-read MCP. The marketplace entries do
+not install or activate the checkout-only hooks. Validate marketplace loading
+and the Claude MCP subprocess before claiming consumer support.
 See the [Claude marketplace contract](https://code.claude.com/docs/en/plugin-marketplaces)
 and [Copilot CLI plugin reference](https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-plugin-reference)
 for their host-specific registration and trust steps.

@@ -12,10 +12,6 @@ test('plugin data uses the host-owned persistent directory', () => {
         new PluginDataConfiguration({ CLAUDE_PLUGIN_DATA: '/claude-data' }).usageDatabase(),
         '/claude-data/skill-usage.db',
     );
-    assert.equal(
-        new PluginDataConfiguration({ COPILOT_PLUGIN_DATA: '/copilot-data' }).usageDatabase(),
-        '/copilot-data/skill-usage.db',
-    );
 });
 
 test('plugin data refuses missing and relative locations', () => {

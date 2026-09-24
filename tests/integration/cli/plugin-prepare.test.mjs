@@ -50,13 +50,19 @@ test('repository-root plugin manifests reference the canonical collection', () =
             fs.realpathSync(join(repository, manifest.skills)),
             join(repository, '.agents/skills'),
         );
-        assert.equal(typeof manifest.mcpServers, 'string', relative);
-        const mapping = JSON.parse(fs.readFileSync(join(repository, manifest.mcpServers)));
-        const server = mapping.mcpServers['i9-skill-usage'];
-        assert.equal(server.type, 'stdio');
-        assert.equal(server.command, 'node');
-        assert.match(server.args[0], /PluginUsageMcpServer\.ts$/);
+        if (relative === '.claude-plugin/plugin.json') {
+            assert.equal(manifest.mcpServers, './mcp/claude.json');
+            const mapping = JSON.parse(fs.readFileSync(join(repository, manifest.mcpServers)));
+            const server = mapping.mcpServers['i9-skill-usage'];
+            assert.equal(server.type, 'stdio');
+            assert.equal(server.command, 'node');
+            assert.match(server.args[0], /PluginUsageMcpServer\.ts$/);
+        } else {
+            assert.equal(manifest.mcpServers, undefined, relative);
+        }
     }
+
+    assert.equal(fs.existsSync(join(repository, '.mcp.json')), false);
 
     for (const skill of catalog.skills) {
         assert.equal(fs.existsSync(join(repository, skill.path, 'SKILL.md')), true, skill.name);

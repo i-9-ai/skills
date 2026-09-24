@@ -9,7 +9,6 @@
   "repository": "https://github.com/i-9-ai/skills.git",
   "license": "Apache-2.0",
   "skills": "./.agents/skills/",
-  "mcpServers": "./.mcp.json",
   "interface": {
     "displayName": "I-9 Skills",
     "shortDescription": "Author and maintain portable agent skills",
