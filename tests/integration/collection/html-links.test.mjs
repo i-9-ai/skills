@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import path from 'node:path';
 import { test } from 'node:test';
 import { htmlLinks, markdownLinks, localLinkPath } from '../../../.agents/skills/skill-authoring/scripts/lib/contracts.mjs';
 
@@ -28,11 +29,11 @@ test('HTML resource entities are decoded before scheme checks or rejected explic
 
 test('HTML local bases preserve URL dot-segment, file and empty-reference semantics', () => {
     const document = 'docs/index.html';
-    for (const base of ['sub/..', 'sub/.', 'sub/%2e%2e', 'sub/.%2E', './', 'guide.html', 'sub/../guide.html']) {
-        for (const href of ['target.html', '', '?view=1', '#section']) {
+    for (const base of ['sub/..', 'sub//..', 'sub///..', 'sub//%2e%2e', 'sub/.', 'sub/%2e%2e', 'sub/.%2E', './', 'guide.html', 'sub/../guide.html', '../__relative_url_parent__/guide.html']) {
+        for (const href of ['target.html', '', '?view=1', '#section', '.', 'sub/..']) {
             const [[, target]] = htmlLinks(`<base href="${base}"><a href="${href}">Guide</a>`);
             const resolved = new URL(href, new URL(base, `https://example.test/${document}`));
-            const expected = decodeURIComponent(resolved.pathname).replace(/^\/|\/$/gu, '');
+            const expected = path.posix.normalize(decodeURIComponent(resolved.pathname)).replace(/^\/|\/$/gu, '');
             assert.equal(localLinkPath(document, target), expected, `${base} + ${href}`);
         }
     }

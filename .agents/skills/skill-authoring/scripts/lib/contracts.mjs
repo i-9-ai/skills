@@ -462,6 +462,8 @@ export function htmlLinks(text) {
     }
   }
   if (base !== undefined) {
+    const urlReference = value => value.replace(/^[\u0000-\u0020]+|[\u0000-\u0020]+$/gu, '').replace(/[\t\r\n]/gu, '');
+    base = urlReference(base);
     const basePath = base.split(/[?#]/u, 1)[0];
     const hasScheme = value => /^[A-Za-z][A-Za-z0-9+.-]*:/u.test(value);
     if (hasScheme(base)) {
@@ -469,16 +471,23 @@ export function htmlLinks(text) {
       return links.map(([line, target]) => [line, new URL(target, base).href]);
     }
     requireCondition(!base.startsWith('/') && !base.includes('\\'), 'HTML base must be a relative local path or public URL');
-    // URL dot segments, including percent-encoded dots, name a directory even
-    // without a trailing slash. Preserve relative ancestry for confinement checks.
-    const lastSegment = basePath.split('/').at(-1).replace(/%2e/giu, '.');
-    const isDirectory = basePath.endsWith('/') || ['.', '..'].includes(lastSegment);
-    const directory = isDirectory ? `${basePath}/` : path.posix.dirname(basePath);
-    const baseResource = basePath.endsWith('/') ? `${basePath}.` : basePath;
-    return links.map(([line, target]) => {
+    const references = links.map(([line, target]) => [line, urlReference(target)]);
+    // Resolve with the native URL algorithm before filesystem normalization.
+    // Enough artificial parents prevent URL's origin-root clamping from hiding
+    // traversal; a segment absent from all references preserves relative ancestry.
+    let segment = '__relative_url_parent__';
+    while (base.includes(segment) || references.some(([, target]) => target.includes(segment))) segment += '_';
+    const depth = base.split('/').length + references.reduce((maximum, [, target]) => Math.max(maximum, target.split('/').length), 0) + 1;
+    const anchor = `/${`${segment}/`.repeat(depth)}`;
+    const origin = new URL(`https://relative.invalid${anchor}document.html`);
+    const resolvedBase = new URL(base, origin);
+    return references.map(([line, target]) => {
       if (hasScheme(target) || target.startsWith('/')) return [line, target];
-      if (!target || /^[?#]/u.test(target)) return [line, `${baseResource}${target}`];
-      return [line, `${directory}/${target}`];
+      requireCondition(!target.includes('\\'), 'HTML resource paths must not contain backslashes');
+      if (!basePath && (!target || /^[?#]/u.test(target))) return [line, target];
+      const resolved = new URL(target, resolvedBase);
+      const relative = path.posix.relative(anchor, resolved.pathname) || '.';
+      return [line, `${relative}${resolved.search}${resolved.hash}`];
     });
   }
   return links;
