@@ -1,6 +1,0 @@
-interface:
-  display_name: "Skills Catalog Index"
-  short_description: "Index explicit skill catalogs and retain local history"
-  default_prompt: "Use $skills-catalog-index to index these explicit skill catalogs and inspect their local change history without changing the source collections."
-  icon_small: "./assets/icon.svg"
-  icon_large: "./assets/icon.png"

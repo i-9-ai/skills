@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-labelledby="title">
-  <title id="title">Skills Discovery</title>
-  <!-- Material Icons 'search', google/material-design-icons@40a7a292a79d9394157e1ea24f83d52d5e17c556, Apache-2.0. -->
-  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#4338CA"/><stop offset="1" stop-color="#38BDF8"/></linearGradient></defs>
-  <rect x="1" y="1" width="62" height="62" rx="15" fill="url(#g)"/>
-  <circle cx="32" cy="32" r="22" fill="#fff" fill-opacity=".12"/>
-  <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" fill="#fff" transform="translate(12 12) scale(1.6666667)"/>
-</svg>

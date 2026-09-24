@@ -17,7 +17,7 @@ Verify every requirement has an implementation and a check or an explicit limit.
 
 ## Child DOX index
 
-- [Repository plugin marketplace](2026-09-23-18-07-55-repository-plugin-marketplace.md): generated plugin artifact, repository marketplace entry and drift verification; no consumer installation or publication.
+- [Repository plugin marketplace](2026-09-23-18-07-55-repository-plugin-marketplace.md): root host manifests and marketplace entry point at the canonical collection; no consumer installation or publication.
 - [Local skill telemetry](2026-09-19-18-00-00-local-skill-telemetry.md): typed observations, session/read trends and bounded local logs; no task tracking or automatic host installation.
 - [Meta-skill delivery](2026-09-19-14-34-36-meta-skill-delivery.md): catalog and host adapters, upstream guidance, private packed CLI validation and explicit collection scope.
 - [Unified CLI](2026-09-15-14-37-39-unified-cli-n-layer.md): oclif command migration, dynamic discovery, hook/MCP boundaries and cleanup.

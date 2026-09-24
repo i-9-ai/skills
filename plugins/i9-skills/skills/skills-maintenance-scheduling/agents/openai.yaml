@@ -1,7 +1,0 @@
-interface:
-  display_name: "Skills Maintenance Scheduling"
-  short_description: "Design approval-gated skill maintenance schedules"
-  icon_small: "./assets/icon.svg"
-  icon_large: "./assets/icon.png"
-  brand_color: "#123B4A"
-  default_prompt: "Use $skills-maintenance-scheduling to produce an approval-ready recurring maintenance proposal for this bounded skill collection."

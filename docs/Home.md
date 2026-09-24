@@ -17,7 +17,7 @@ preparing distribution, and evolving focused agent skills.
 
 ## Deeper references
 - [Distribution preparation](Distribution%20Readiness.md): explicit JavaScript build, packed CLI verification and remaining publication gates.
-- [Plugin preparation](Plugin%20Preparation.md): inspect the checked-in plugin and marketplace entry, verify freshness, and learn the post-merge installation path.
+- [Plugin preparation](Plugin%20Preparation.md): inspect the repository-root host manifests and marketplace entry, and learn the post-merge installation path.
 - [Public readiness](Public%20Readiness.md): dated source/history and remote-surface audit with explicit evidence gaps.
 
 - [Host hooks](Host%20Hooks.md): host-specific session configuration and context output, with explicit untested runtime boundaries.

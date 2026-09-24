@@ -1,6 +1,0 @@
-interface:
-  display_name: "Skill Evolution"
-  short_description: "Evolve one skill from new evidence and preserve scope"
-  icon_small: "./assets/icon.svg"
-  icon_large: "./assets/icon.png"
-  default_prompt: "Use $skill-evolution to update this skill from the supplied evidence and return a reviewable evolution record."

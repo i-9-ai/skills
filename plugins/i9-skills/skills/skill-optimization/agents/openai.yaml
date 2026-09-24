@@ -1,6 +1,0 @@
-interface:
-  display_name: "Skill Optimization"
-  short_description: "Improve a skill through measured iterations"
-  default_prompt: "Use $skill-optimization to improve this skill from scored rollouts and held-out validation."
-  icon_small: "./assets/icon.svg"
-  icon_large: "./assets/icon.png"

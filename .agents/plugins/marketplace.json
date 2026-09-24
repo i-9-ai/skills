@@ -8,7 +8,7 @@
       "name": "i9-skills",
       "source": {
         "source": "local",
-        "path": "./plugins/i9-skills"
+        "path": "./"
       },
       "policy": {
         "installation": "AVAILABLE",

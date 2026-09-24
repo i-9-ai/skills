@@ -1,6 +1,0 @@
-interface:
-  display_name: "Skill Lifecycle Review"
-  short_description: "Review one skill lifecycle state and next transition"
-  icon_small: "./assets/icon.svg"
-  icon_large: "./assets/icon.png"
-  default_prompt: "Use $skill-lifecycle-review to assess this skill's current lifecycle evidence and recommend its next justified transition."

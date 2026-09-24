@@ -1,6 +1,0 @@
-interface:
-  display_name: "Skills Audit"
-  short_description: "Audit a skill collection for integrity and policy drift"
-  icon_small: "./assets/icon.svg"
-  icon_large: "./assets/icon.png"
-  default_prompt: "Use $skills-audit to audit this skill collection and produce a prioritized, evidence-linked findings report."

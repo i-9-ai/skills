@@ -1,6 +1,0 @@
-interface:
-  display_name: "Skills Synthesis"
-  short_description: "Synthesize useful contributions into a merge plan"
-  icon_small: "./assets/icon.svg"
-  icon_large: "./assets/icon.png"
-  default_prompt: "Use $skills-synthesis to synthesize reviewed skill sources into a focused, traceable synthesis plan."

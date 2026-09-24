@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-labelledby="title">
-  <title id="title">Skill Installation</title>
-  <!-- Material Icons 'download', google/material-design-icons@40a7a292a79d9394157e1ea24f83d52d5e17c556, Apache-2.0. -->
-  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#166534"/><stop offset="1" stop-color="#84CC16"/></linearGradient></defs>
-  <rect x="1" y="1" width="62" height="62" rx="15" fill="url(#g)"/>
-  <circle cx="32" cy="32" r="22" fill="#fff" fill-opacity=".12"/>
-  <path d="M5,20h14v-2H5V20z M19,9h-4V3H9v6H5l7,7L19,9z" fill="#fff" transform="translate(12 12) scale(1.6666667)"/>
-</svg>

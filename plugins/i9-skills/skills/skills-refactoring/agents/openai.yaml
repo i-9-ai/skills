@@ -1,6 +1,0 @@
-interface:
-  display_name: "Skills Refactoring"
-  short_description: "Plan a focused refactor of an existing skill collection"
-  icon_small: "./assets/icon.svg"
-  icon_large: "./assets/icon.png"
-  default_prompt: "Use $skills-refactoring to decompose this audited skill collection into a focused target architecture and migration plan."

@@ -1,6 +1,0 @@
-interface:
-  display_name: "Skill Migration"
-  short_description: "Migrate one skill between collections with provenance"
-  icon_small: "./assets/icon.svg"
-  icon_large: "./assets/icon.png"
-  default_prompt: "Use $skill-migration to move this skill into the target collection while preserving its contract and provenance."

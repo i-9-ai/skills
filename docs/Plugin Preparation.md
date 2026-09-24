@@ -1,20 +1,24 @@
 # Prepare and verify the repository plugin
 
-The repository includes a complete plugin under `plugins/i9-skills` and a
-repository marketplace manifest at `.agents/plugins/marketplace.json`. The
-plugin is generated from the canonical `.agents/skills` packages; it is not a
-second authoring location. `npm run check` verifies that its receipt and file
-inventory still match those source packages. The npm CLI and plugin remain
-separate distribution units.
+The repository root is the plugin. Its Codex, Claude Code and Copilot manifests
+at `.codex-plugin/plugin.json`, `.claude-plugin/plugin.json` and
+`.github/plugin/plugin.json` all reference the same canonical `.agents/skills`
+tree. The Codex marketplace entry at `.agents/plugins/marketplace.json` points
+to `./`, the repository root. `npm run check` verifies these paths and the
+cataloged packages. There is no checked-in copy under `plugins/`.
 
-To refresh the tracked plugin after changing a skill, remove only the generated
-`plugins/i9-skills` directory after reviewing its diff, then run:
+The manifests use host-specific compatibility formats because the portable
+Agent Plugins 1.0 format fixes skill discovery at a root `skills/` directory.
+A root `plugin.json` would therefore lose the required `.agents/skills` path.
+Codex, Claude Code and Copilot each support an explicit legacy `skills` path.
+Gemini CLI reads project `.agents/skills` in a checkout, but its extension format
+also fixes bundled skills at root `skills/`; this repository does not claim a
+Gemini extension install. Other hosts need their own verified integration.
 
-```sh
-node bin/index.mjs plugin prepare --output plugins/i9-skills --write
-```
-
-To preview without touching tracked files, select a new neutral directory:
+The npm CLI and plugin remain separate distribution surfaces. The optional
+`plugin prepare` command creates a disposable portable staging artifact when a
+consumer requires the fixed `skills/` layout. To preview it without touching
+tracked files, select a new neutral directory:
 
 ```sh
 mkdir -p .work/plugin-preview
@@ -30,7 +34,7 @@ including a link, is an error. Use another parent for a later candidate.
 shared project configuration selects `I9_SKILLS_PROJECT_ROOT` or the CLI's own
 package. Generation also works from the compiled npm artifact.
 
-The generated layout is:
+The optional staging layout is:
 
 ```text
 i9-skills/
@@ -51,10 +55,12 @@ Only actual catalog packages and the root license/optional notice are included.
 Repository instructions, CLI implementation, host configuration and local logs
 are excluded. Package scripts are copied as inert bytes and never executed.
 
-Root `plugin.json` targets Agent Plugins 1.0.0 with discovery through `skills/`.
-The compatibility manifest declares the same identity/version and skills path,
-plus minimal OpenAI presentation metadata. Both derive shared fields from
-package.json. Neither advertises hooks, apps, MCP connections or model gains.
+The staged root `plugin.json` targets Agent Plugins 1.0.0 with discovery through
+`skills/`. Its compatibility manifest declares the same identity/version and
+skills path, plus minimal OpenAI presentation metadata. Both derive shared
+fields from package.json. Neither advertises hooks, apps, MCP connections or
+model gains. These staged manifests are distinct from the tracked root host
+manifests, which reference `.agents/skills` directly.
 The [official packaging contract](https://developers.openai.com/plugins/build/plugins)
 and [portable manifest schema](https://agent-plugins.org/schemas/1.0.0/plugin.schema.json)
 were checked on 2026-09-19; native ingestion and UI rendering remain untested.
@@ -96,19 +102,23 @@ package byte preservation with disposable data. `npm run package:check`
 generates the complete plugin from the actual compiled npm package under
 node_modules, using only already installed production dependencies.
 
-For a release candidate, run the available plugin-creator compatibility
-validator on the generated folder and check root plugin.json against the
-official portable schema. Record the executable/schema identities and results
-outside distributed packages. Run official `skills-ref validate` on every
-bundled skill. These structural checks do not replace an explicitly authorized
+For this repository-root plugin, validate each host manifest against its
+host's current contract and run `npm run check`. The bundled plugin-creator
+helper currently insists that `skills` resolve to root `skills/`, so it rejects
+this deliberate `.agents/skills` compatibility path; that helper cannot certify
+the root layout. Claude Code's own `claude plugin validate .` can check its
+manifest. For an optional staged artifact, check its root `plugin.json` against
+the official portable schema. Record the validator/schema identities and
+results outside distributed packages. Run official `skills-ref validate` on
+each changed skill. Structural checks do not replace an explicitly authorized
 installation test in each intended consumer.
 
 The repository [marketplace manifest](../.agents/plugins/marketplace.json)
-references `./plugins/i9-skills` relative to the repository root. After this
+references `./`, the repository root. After this
 branch is merged, an authorized consumer can import the marketplace with
 `codex plugin marketplace add i-9-ai/skills --ref main` and then install with
 `codex plugin add i9-skills@i9-skills`. A private repository requires Git access
-for that consumer. The checked-in manifest and artifact prepare those steps;
+for that consumer. The checked-in manifests prepare those steps;
 they do not execute them, prove native ingestion or make the repository public.
 Before public marketplace use, verify the exact merged ref, plugin UI rendering,
 package count, and update behavior in a consumer environment. Public directory

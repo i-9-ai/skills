@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-labelledby="title">
-  <title id="title">Skills snapshot archive</title>
-  <rect width="64" height="64" rx="14" fill="#16324F"/>
-  <path d="M16 18h32v10H16z" fill="#7FDBDA"/>
-  <path d="M19 30h26v18H19z" fill="#F4F7FA"/>
-  <path d="M27 35h10v4H27z" fill="#16324F"/>
-  <path d="M25 44h14" fill="none" stroke="#F2A541" stroke-width="4" stroke-linecap="round"/>
-</svg>

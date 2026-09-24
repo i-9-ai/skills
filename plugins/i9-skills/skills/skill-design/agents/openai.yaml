@@ -1,6 +1,0 @@
-interface:
-  display_name: "Skill Design"
-  short_description: "Resolve a skill's scope and design decisions"
-  icon_small: "./assets/icon.svg"
-  icon_large: "./assets/icon.png"
-  default_prompt: "Use $skill-design to define one skill responsibility, compare design tradeoffs, and return a concrete design brief."

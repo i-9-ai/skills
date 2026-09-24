@@ -1,6 +1,0 @@
-interface:
-  display_name: "Skill Domain Research"
-  short_description: "Reconcile domain evidence for skill design"
-  icon_small: "./assets/icon.svg"
-  icon_large: "./assets/icon.png"
-  default_prompt: "Use $skill-domain-research to research this proposed skill's subject and return a bounded, traceable evidence dossier."

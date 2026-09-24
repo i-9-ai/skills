@@ -1,6 +1,0 @@
-interface:
-  display_name: "Skill Publication"
-  short_description: "Publish one approved skill through an authorized channel"
-  icon_small: "./assets/icon.svg"
-  icon_large: "./assets/icon.png"
-  default_prompt: "Use $skill-publication to publish this approved skill revision through the authorized channel and return a publication receipt."

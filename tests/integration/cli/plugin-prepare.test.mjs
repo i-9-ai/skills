@@ -18,45 +18,38 @@ const launcher = fileURLToPath(new URL('../../../bin/index.mjs', import.meta.url
 const repository = fileURLToPath(new URL('../../../', import.meta.url));
 const hash = (bytes) => createHash('sha256').update(bytes).digest('hex');
 
-test('tracked marketplace plugin matches the canonical collection', (t) => {
-    const plugin = join(repository, 'plugins/i9-skills');
-    const outputRoot = fs.mkdtempSync(join(tmpdir(), 'i9-plugin-preview-'));
-    t.after(() => fs.rmSync(outputRoot, { recursive: true, force: true }));
+test('repository-root plugin manifests reference the canonical collection', () => {
     const marketplace = JSON.parse(
         fs.readFileSync(join(repository, '.agents/plugins/marketplace.json')),
     );
     const entry = marketplace.plugins.find((candidate) => candidate.name === 'i9-skills');
-    assert.equal(entry?.source.path, './plugins/i9-skills');
+    assert.equal(entry?.source.path, './');
     assert.deepEqual(entry.policy, {
         installation: 'AVAILABLE',
         authentication: 'ON_INSTALL',
     });
-    const preview = spawnSync(
-        process.execPath,
-        [
-            launcher,
-            'plugin',
-            'prepare',
-            '--root',
-            repository,
-            '--output',
-            join(outputRoot, 'i9-skills'),
-        ],
-        { cwd: repository, encoding: 'utf8', timeout: 10000 },
-    );
-    assert.equal(preview.status, 0, preview.stderr);
-    const receipt = JSON.parse(fs.readFileSync(join(plugin, 'artifact-receipt.json')));
-    assert.equal(receipt.inventory_sha256, JSON.parse(preview.stdout).inventory_sha256);
-    const expected = new Set(['artifact-receipt.json']);
-    for (const file of receipt.files) {
-        expected.add(file.path);
-        assert.equal(hash(fs.readFileSync(join(plugin, file.path))), file.sha256, file.path);
+
+    const catalog = JSON.parse(fs.readFileSync(join(repository, 'skills-catalog.json')));
+    for (const relative of [
+        '.codex-plugin/plugin.json',
+        '.claude-plugin/plugin.json',
+        '.github/plugin/plugin.json',
+    ]) {
+        const manifest = JSON.parse(fs.readFileSync(join(repository, relative)));
+        assert.equal(manifest.name, 'i9-skills', relative);
+        assert.equal(manifest.skills, './.agents/skills/', relative);
+        assert.equal(
+            fs.realpathSync(join(repository, manifest.skills)),
+            join(repository, '.agents/skills'),
+        );
     }
-    const actual = fs
-        .readdirSync(plugin, { recursive: true, withFileTypes: true })
-        .filter((entry) => entry.isFile())
-        .map((entry) => join(entry.parentPath, entry.name).slice(plugin.length + 1));
-    assert.deepEqual(new Set(actual), expected);
+
+    for (const skill of catalog.skills) {
+        assert.equal(fs.existsSync(join(repository, skill.path, 'SKILL.md')), true, skill.name);
+    }
+
+    assert.equal(fs.existsSync(join(repository, 'plugins/i9-skills')), false);
+    assert.equal(fs.existsSync(join(repository, 'plugin.json')), false);
 });
 
 function fixture(t) {
