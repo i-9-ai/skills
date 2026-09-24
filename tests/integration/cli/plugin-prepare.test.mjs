@@ -62,7 +62,12 @@ function fixture(t) {
     const assetSource = fileURLToPath(
         new URL('../../../.agents/skills/skill-design/', import.meta.url),
     );
-    for (const relative of ['agents/openai.yaml', 'assets/icon.svg', 'assets/icon.png']) {
+    for (const relative of [
+        'agents/openai.yaml',
+        'assets/icon.svg',
+        'assets/icon.png',
+        'assets/icon.render.json',
+    ]) {
         const destination = join(skill, relative);
         fs.mkdirSync(join(destination, '..'), { recursive: true });
         fs.copyFileSync(join(assetSource, relative), destination);

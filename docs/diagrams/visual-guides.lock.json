@@ -5,9 +5,9 @@
       "source": "docs/diagrams/skill-management-entry-paths.json",
       "artifact": "docs/assets/skill-management-entry-paths.html",
       "source_sha256": "510c26e7c31be48df0e1a91322de67789c186786125d8f5b80ec22f34f5eca37",
-      "artifact_sha256": "95e8b88e730f7245a36c0cc9d124afce124a35f0c376e7b5144d11f9bc54b703",
+      "artifact_sha256": "5311ce27cf0510c2002395b6c063c6eb5d43a66a8999cc54deaf99ba881cafb9",
       "generator": "archify 2.17.0-dev.1 (artifact metadata)",
-      "reviewed_on": "2026-09-22"
+      "reviewed_on": "2026-09-24"
     }
   ]
 }

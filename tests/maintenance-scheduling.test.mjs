@@ -163,6 +163,22 @@ test('linked proposal files are rejected', (t) => {
   assert.throws(() => readProposal(link), /regular, non-linked file/);
 });
 
+test('the CLI validates through a package alias and supports an unresolved blocked target', (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'maintenance-alias-test-'));
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  const alias = path.join(temporary, 'package alias');
+  fs.symlinkSync(PACKAGE, alias, 'dir');
+  const script = path.join(alias, 'scripts', 'validate_proposal.mjs');
+  const filename = path.join(temporary, 'blocked.json');
+  fs.writeFileSync(filename, JSON.stringify({ schema_version: 1, decision: 'blocked', target: null,
+    reason: 'The collection revision is not frozen.', required_action: 'Supply an immutable revision and package inventory.' }));
+  const result = spawnSync(process.execPath, [script, filename], { encoding: 'utf8', timeout: 10_000 });
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(JSON.parse(result.stdout), { valid: true, decision: 'blocked', proposal_id: null, packages: 0 });
+  fs.writeFileSync(filename, '{}');
+  assert.notEqual(spawnSync(process.execPath, [script, filename], { encoding: 'utf8' }).status, 0);
+});
+
 test('duplicate JSON fields and zero-length cadences are rejected', (t) => {
   const proposal = example('existing-scheduler.json');
   proposal.recurrence.cadence.minimum_interval = 'P0D';

@@ -84,6 +84,19 @@ export class VisualGuideRepository {
                     );
                 }
             }
+            const assets = new SafeRoot(root.inspect('docs/assets').absolute);
+            try {
+                for (const [relative, info] of assets.inventory()) {
+                    if (!info.isFile() || !/\.html?$/iu.test(relative) || relative === 'index.html')
+                        continue;
+                    requireCondition(
+                        artifacts.has(`docs/assets/${relative}`),
+                        'publishable HTML guide is missing from the reviewed receipt',
+                    );
+                }
+            } finally {
+                assets.close();
+            }
             return { guides: receipt.guides.length };
         } finally {
             root.close();

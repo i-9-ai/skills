@@ -43,3 +43,19 @@ test('overview uses the configured project directory and only explicitly supplie
         ],
     ]);
 });
+
+test('overview truncates descriptions at Unicode code-point boundaries', () => {
+    const description = `${'a'.repeat(138)}😀${'b'.repeat(30)}`;
+    const result = new AvailableSkillsService().renderOverview(
+        {
+            skills: [
+                { name: 'example', description, canonicalPath: 'example', sources: ['project'] },
+            ],
+            warnings: [],
+        },
+        1,
+    );
+    assert.equal(result.isWellFormed(), true);
+    assert.ok(result.includes(`${'a'.repeat(138)}😀…`));
+    assert.ok(!result.includes('\ufffd'));
+});

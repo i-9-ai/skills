@@ -165,6 +165,15 @@ test('runs directly when the helper script path contains a space', (t) => {
     assert.deepEqual(JSON.parse(result.stdout), {
         canonical: { path: '.agents/skills', disposition: 'present' }, guidance: null, aliases: [], observed: [],
     });
+    const alias = path.join(root, 'alias');
+    fs.symlinkSync(helperDirectory, alias, 'dir');
+    const linkedResult = spawnSync(process.execPath, [path.join(alias, 'verify aliases.mjs'), contract], { encoding: 'utf8' });
+    assert.equal(linkedResult.status, 0, linkedResult.stderr);
+    assert.deepEqual(JSON.parse(linkedResult.stdout), JSON.parse(result.stdout));
+    fs.writeFileSync(contract, '{}');
+    const rejected = spawnSync(process.execPath, [path.join(alias, 'verify aliases.mjs'), contract], { encoding: 'utf8' });
+    assert.notEqual(rejected.status, 0);
+    assert.equal(rejected.stdout, '');
 });
 
 test('CLI rejects unsafe and oversized contract files without exposing malformed bytes', (t) => {

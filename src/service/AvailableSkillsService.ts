@@ -15,8 +15,9 @@ function inline(value: string, limit: number): string {
         .replace(/[<>`]/g, '')
         .replace(/\s+/g, ' ')
         .trim();
-    if (text.length <= limit) return text;
-    return `${text.slice(0, limit - 1)}…`;
+    const characters = [...text];
+    if (characters.length <= limit) return text;
+    return `${characters.slice(0, limit - 1).join('')}…`;
 }
 
 /** Builds a bounded context overview from selected installed-skill collections. */

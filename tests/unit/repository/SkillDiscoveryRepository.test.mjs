@@ -131,3 +131,17 @@ test('fresh disk metadata is used even when catalog JSON is stale or malformed',
     assert.equal(result.status, 0, result.stderr);
     assert.match(result.stdout, /new-skill \[project\]/);
 });
+
+test('depth-limited discovery reports incomplete coverage while keeping ordinary packages', (t) => {
+    const root = fixture(t);
+    packageAt(join(root, 'visible'), 'visible');
+    packageAt(join(root, ...Array.from({ length: 10 }, () => 'nested'), 'deep'), 'deep');
+    const result = new SkillDiscoveryRepository().read([{ directory: root, label: 'global' }]);
+    assert.deepEqual(
+        result.skills.map((skill) => skill.name),
+        ['visible'],
+    );
+    assert.deepEqual(result.warnings, [
+        'global: discovery incomplete; directory depth limit reached.',
+    ]);
+});

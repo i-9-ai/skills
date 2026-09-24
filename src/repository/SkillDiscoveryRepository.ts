@@ -115,9 +115,13 @@ export class SkillDiscoveryRepository {
                     }
 
                     // Follow explicit package links, but never traverse a linked namespace.
-                    if (!entry.isSymbolicLink() && item.depth < MAX_DEPTH) {
-                        pending.push({ directory: canonical, depth: item.depth + 1 });
+                    if (entry.isSymbolicLink()) continue;
+                    if (item.depth >= MAX_DEPTH) {
+                        const warning = `${source.label}: discovery incomplete; directory depth limit reached.`;
+                        if (!warnings.includes(warning)) warnings.push(warning);
+                        continue;
                     }
+                    pending.push({ directory: canonical, depth: item.depth + 1 });
                 }
             } finally {
                 directory.closeSync();

@@ -43,8 +43,9 @@ function fixture(t) {
     const defaults = ['--repository', source, '--package', 'packages/sample-skill', '--revision', revision,
         '--name', 'sample-skill', '--license', 'Apache-2.0', '--destination', destination,
         '--state-dir', state, '--validator', validator, '--validator-version', '0.1.0'];
-    const invoke = (command, args = []) => spawnSync(process.execPath, [helper, command, ...args], {
+    const invoke = (command, args = [], environment = process.env) => spawnSync(process.execPath, [helper, command, ...args], {
         cwd: caller, encoding: 'utf8', timeout: 20_000, maxBuffer: 128 * 1024,
+        env: environment,
     });
     return { root, source, state, collection, candidate, revision, destination, helper, validator, commit, invoke, defaults };
 }
@@ -88,6 +89,41 @@ test('special-file receipt fails promptly without waiting for a writer', t => {
     assert.notEqual(result.status, 0);
     assert.equal(result.error, undefined);
     assert.match(result.stderr, /bounded regular file/);
+});
+
+test('inherited Git overrides cannot substitute a different repository', t => {
+    const approved = fixture(t);
+    const other = fixture(t);
+    fs.writeFileSync(path.join(other.candidate, 'foreign.txt'), 'unapproved source bytes');
+    const foreignRevision = other.commit();
+    const environment = { ...process.env, GIT_DIR: path.join(other.source, '.git'),
+        GIT_WORK_TREE: approved.source, GIT_COMMON_DIR: path.join(other.source, '.git'),
+        GIT_OBJECT_DIRECTORY: path.join(other.source, '.git', 'objects'),
+        GIT_INDEX_FILE: path.join(other.source, '.git', 'index'),
+        GIT_CONFIG_COUNT: '1', GIT_CONFIG_KEY_0: 'core.worktree', GIT_CONFIG_VALUE_0: approved.source };
+    const rejected = approved.invoke('install', changedOption(approved.defaults, 'revision', foreignRevision), environment);
+    assert.notEqual(rejected.status, 0);
+    assert.equal(fs.existsSync(approved.destination), false);
+    assert.deepEqual(fs.readdirSync(approved.state), []);
+
+    success(approved.invoke('install', approved.defaults, environment));
+    assert.equal(fs.existsSync(path.join(approved.destination, 'foreign.txt')), false);
+});
+
+test('installation rejects cloud, API and fine-grained GitHub credential markers', t => {
+    const f = fixture(t);
+    const markers = [['AK', 'IA', 'A'.repeat(16)], ['sk', '-', 'a'.repeat(48)],
+        ['sk', '-proj-', 'a'.repeat(48)], ['github', '_pat_', 'a'.repeat(40)]];
+    for (const pieces of markers) {
+        const marker = pieces.join('');
+        fs.writeFileSync(path.join(f.candidate, 'resource.txt'), marker);
+        const result = f.invoke('install', changedOption(f.defaults, 'revision', f.commit()));
+        assert.notEqual(result.status, 0);
+        assert.match(result.stderr, /credential signature/);
+        assert.equal(result.stderr.includes(marker), false);
+        assert.equal(fs.existsSync(f.destination), false);
+        assert.deepEqual(fs.readdirSync(f.state), []);
+    }
 });
 
 test('collisions are preserved and explicit replacement has verified reversible prior bytes', t => {

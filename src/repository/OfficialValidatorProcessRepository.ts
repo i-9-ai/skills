@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import type { OfficialRequirements } from '../validator/OfficialValidator.ts';
 import { spawnSync } from 'node:child_process';
 import { strictJson } from '../../.agents/skills/skill-authoring/scripts/lib/contracts.mjs';
+import { initSkill } from '../../.agents/skills/skill-authoring/scripts/skill_tools.mjs';
 
 /** Owns official-tool filesystem discovery and shell-free process execution. */
 export class OfficialValidatorProcessRepository {
@@ -115,15 +116,23 @@ export class OfficialValidatorProcessRepository {
                 'Official validator unavailable or version does not match the reviewed source.',
             );
         }
-        return packages.map(({ name, path }) => {
-            const result = execute(executable, ['validate', path], options);
-            return {
-                name,
-                passed: !result.error && result.status === 0,
-                diagnostic: result.error
-                    ? 'Official validation execution failed.'
-                    : `${result.stdout ?? ''}${result.stderr ?? ''}`.trim(),
-            };
-        });
+        const temporary = mkdtempSync(join(tmpdir(), 'i9-validation-scaffold-'));
+        try {
+            const trial = initSkill('official-scaffold-trial', temporary);
+            return [...packages, { name: 'generated-scaffold', path: trial }].map(
+                ({ name, path }) => {
+                    const result = execute(executable, ['validate', path], options);
+                    return {
+                        name,
+                        passed: !result.error && result.status === 0,
+                        diagnostic: result.error
+                            ? 'Official validation execution failed.'
+                            : `${result.stdout ?? ''}${result.stderr ?? ''}`.trim(),
+                    };
+                },
+            );
+        } finally {
+            rmSync(temporary, { recursive: true, force: true });
+        }
     }
 }

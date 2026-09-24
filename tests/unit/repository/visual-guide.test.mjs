@@ -49,4 +49,15 @@ test('visual guide verification rejects source-only and artifact-only drift befo
         assert.throws(() => new VisualGuideRepository().verify(root), /changed after review/);
         fs.writeFileSync(path.join(root, file), original);
     }
+    fs.writeFileSync(path.join(root, 'docs/assets/index.html'), '<h1>Guide index</h1>');
+    assert.deepEqual(new VisualGuideRepository().verify(root), { guides: 1 });
+    fs.mkdirSync(path.join(root, 'docs/assets/nested'));
+    for (const relative of ['docs/assets/unreviewed.html', 'docs/assets/nested/unreviewed.HTM']) {
+        fs.writeFileSync(path.join(root, relative), '<h1>Unreviewed</h1>');
+        assert.throws(
+            () => new VisualGuideRepository().verify(root),
+            /missing from the reviewed receipt/,
+        );
+        fs.rmSync(path.join(root, relative));
+    }
 });

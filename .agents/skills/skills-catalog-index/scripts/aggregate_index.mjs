@@ -990,6 +990,8 @@ function validateEvolutionEvent(value, { allowLegacy = false } = {}) {
     requireCondition(before !== after, `files[${index}] must change its digest or existence`);
     return { path: filePath, before_sha256: before, after_sha256: after };
   });
+  requireCondition(new Set(files.map(item => item.path)).size === files.length,
+    "evolution event file paths must be distinct after normalization");
 
   requireCondition(Array.isArray(value.evidence) && value.evidence.length >= 1 && value.evidence.length <= 256,
     "evidence must contain between 1 and 256 entries");

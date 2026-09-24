@@ -412,8 +412,12 @@ function lineNumberLookup(text) {
 }
 
 function htmlAttributeValue(value) {
-  return value.replace(/&(?:#(x[0-9a-f]+|[0-9]+)|amp|quot|apos|lt|gt);/giu, (entity, numeric) => {
-    if (!numeric) return { '&amp;': '&', '&quot;': '"', '&apos;': "'", '&lt;': '<', '&gt;': '>' }[entity.toLowerCase()];
+  return value.replace(/&(?:#(x[0-9a-f]+|[0-9]+)|([a-z][a-z0-9]*));/giu, (entity, numeric, named) => {
+    if (named) {
+      const references = { amp: '&', AMP: '&', quot: '"', QUOT: '"', apos: "'", lt: '<', LT: '<', gt: '>', GT: '>', colon: ':', sol: '/', bsol: '\\', Tab: '\t', NewLine: '\n' };
+      requireCondition(Object.hasOwn(references, named), 'unsupported named HTML character reference in resource attribute');
+      return references[named];
+    }
     const code = numeric[0].toLowerCase() === 'x' ? Number.parseInt(numeric.slice(1), 16) : Number(numeric);
     requireCondition(code > 0 && code <= 0x10ffff && !(code >= 0xd800 && code <= 0xdfff), 'invalid HTML character reference');
     return String.fromCodePoint(code);
@@ -439,6 +443,7 @@ function srcsetTargets(value) {
 export function htmlLinks(text) {
   const lineAt = lineNumberLookup(text);
   const links = [];
+  let base;
   for (const tag of htmlTags(text)) {
     const attributes = tag.source.slice(tag.name.length + 1);
     for (const attribute of attributes.matchAll(/([^\s=/>]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/gu)) {
@@ -447,10 +452,29 @@ export function htmlLinks(text) {
       const raw = attribute[2] ?? attribute[3] ?? attribute[4];
       if (raw === undefined) continue;
       const value = htmlAttributeValue(raw);
+      if (tag.name === 'base' && name === 'href') {
+        if (base === undefined) base = value;
+        continue;
+      }
       const targets = name.endsWith('srcset') ? srcsetTargets(value) : [value];
       const line = lineAt(tag.index + tag.name.length + 1 + attribute.index);
       for (const target of targets) links.push([line, target]);
     }
+  }
+  if (base !== undefined) {
+    const basePath = base.split(/[?#]/u, 1)[0];
+    const hasScheme = value => /^[A-Za-z][A-Za-z0-9+.-]*:/u.test(value);
+    if (hasScheme(base)) {
+      requireCondition(/^https?:/iu.test(base), 'unsupported HTML base scheme');
+      return links.map(([line, target]) => [line, new URL(target, base).href]);
+    }
+    requireCondition(!base.startsWith('/') && !base.includes('\\'), 'HTML base must be a relative local path or public URL');
+    const directory = basePath.endsWith('/') ? basePath : path.posix.dirname(basePath);
+    return links.map(([line, target]) => {
+      if (hasScheme(target) || target.startsWith('/')) return [line, target];
+      if (/^[?#]/u.test(target)) return [line, `${basePath}${target}`];
+      return [line, `${directory}/${target}`];
+    });
   }
   return links;
 }

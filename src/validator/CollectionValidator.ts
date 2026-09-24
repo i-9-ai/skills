@@ -47,6 +47,7 @@ const PNG_CRC_TABLE = (() => {
 })();
 
 const LIMIT_PNG_CHUNK = 16 * 1024 * 1024;
+const LIMIT_PNG_DECODED = 16 * 1024 * 1024;
 
 /** Validates catalog identity, source evidence and publication-safe assets. */
 export class CollectionValidator {
@@ -65,6 +66,17 @@ export class CollectionValidator {
 
     checkPublicHygieneBytes(relative: string, payload: Uint8Array) {
         this.checkPublicHygiene(relative, Buffer.from(payload).toString('latin1'));
+
+        // UTF-16 markers otherwise contain NULs in the byte-oriented view. Check
+        // both byte orders and alignments, including embedded text without a BOM.
+        for (const encoding of ['utf-16le', 'utf-16be']) {
+            for (const offset of [0, 1]) {
+                this.checkPublicHygiene(
+                    relative,
+                    new TextDecoder(encoding).decode(payload.subarray(offset)),
+                );
+            }
+        }
     }
 
     validateCatalog(value: unknown, files: ReadonlySet<string>, directories: ReadonlySet<string>) {
@@ -275,6 +287,10 @@ export class CollectionValidator {
         const channels = { 0: 1, 2: 3, 3: 1, 4: 2, 6: 4 }[ihdr.colorType];
         const rowBytes = Math.ceil((ihdr.width * channels * ihdr.bitDepth) / 8);
         const expected = ihdr.height * (rowBytes + 1);
+        this.requireCondition(
+            expected <= LIMIT_PNG_DECODED,
+            `${relative} exceeds the decoded PNG byte limit`,
+        );
         try {
             const decoded = inflateSync(Buffer.concat(idat), { maxOutputLength: expected + 1 });
             this.requireCondition(decoded.length === expected, `${relative} must be a valid PNG`);
@@ -430,6 +446,14 @@ export class CollectionValidator {
                     'locked file sha256 must be a lowercase SHA-256',
                 );
                 hashes.set(file.path, file.sha256);
+            }
+            if (source.license_path.startsWith(`${source.package_path}/`)) {
+                const licenseFile = source.license_path.slice(source.package_path.length + 1);
+                if (hashes.has(licenseFile))
+                    this.requireCondition(
+                        hashes.get(licenseFile) === source.license_sha256,
+                        'locked license digest contradicts the inventoried license file',
+                    );
             }
             const aggregate = createHash('sha256');
             const sorted = [...hashes].sort(([left], [right]) =>
@@ -611,18 +635,43 @@ export class CollectionValidator {
                     stack.at(-1)?.namespaces ?? [['xml', 'http://www.w3.org/XML/1998/namespace']],
                 );
                 for (const [attribute, value] of parsedAttributes) {
+                    if (attribute === 'xmlns' || attribute.startsWith('xmlns:')) {
+                        const prefix = attribute === 'xmlns' ? '' : attribute.slice(6);
+                        const xml = 'http://www.w3.org/XML/1998/namespace';
+                        const xmlns = 'http://www.w3.org/2000/xmlns/';
+                        this.requireCondition(
+                            prefix !== 'xmlns' &&
+                                value !== xmlns &&
+                                (prefix === 'xml' ? value === xml : value !== xml) &&
+                                (!prefix || value.length > 0),
+                            `${relative} has an invalid reserved XML namespace binding`,
+                        );
+                    }
                     if (attribute === 'xmlns') namespaces.set('', value);
                     if (attribute.startsWith('xmlns:'))
                         namespaces.set(attribute.slice('xmlns:'.length), value);
                 }
                 this.assertXmlNameBound(relative, name, namespaces);
+                const expandedNames = new Set<string>();
                 for (const attribute of parsedAttributes.keys()) {
-                    if (attribute !== 'xmlns' && !attribute.startsWith('xmlns:'))
-                        this.assertXmlNameBound(relative, attribute, namespaces);
+                    if (attribute === 'xmlns' || attribute.startsWith('xmlns:')) continue;
+                    this.assertXmlNameBound(relative, attribute, namespaces);
+                    const parts = attribute.split(':');
+                    const expanded =
+                        parts.length === 2
+                            ? `${namespaces.get(parts[0])}\0${parts[1]}`
+                            : `\0${attribute}`;
+                    this.requireCondition(
+                        !expandedNames.has(expanded),
+                        `${relative} duplicates an expanded XML attribute`,
+                    );
+                    expandedNames.add(expanded);
                 }
                 if (stack.length === 0) {
                     this.requireCondition(
-                        name === 'svg' && rootCount === 0,
+                        name === 'svg' &&
+                            rootCount === 0 &&
+                            namespaces.get('') === 'http://www.w3.org/2000/svg',
                         `${relative} must have one SVG root element`,
                     );
                     rootCount += 1;
@@ -654,7 +703,11 @@ export class CollectionValidator {
     ) {
         const separator = name.indexOf(':');
         this.requireCondition(
-            separator === -1 || separator === name.lastIndexOf(':'),
+            separator === -1 ||
+                (separator === name.lastIndexOf(':') &&
+                    separator > 0 &&
+                    separator < name.length - 1 &&
+                    /^[A-Za-z_][A-Za-z0-9_.-]*$/u.test(name.slice(separator + 1))),
             `${relative} is not well-formed XML`,
         );
         if (separator !== -1)
@@ -845,7 +898,10 @@ export class CollectionValidator {
     }
 
     private publicRepositoryHostname(hostname: string) {
-        const host = hostname.replace(/^\[|\]$/gu, '').toLowerCase();
+        const host = hostname
+            .replace(/^\[|\]$/gu, '')
+            .replace(/\.$/u, '')
+            .toLowerCase();
         if (
             host === 'localhost' ||
             host.endsWith('.localhost') ||
@@ -879,6 +935,15 @@ export class CollectionValidator {
                 !/^f[cd][0-9a-f:]*$/u.test(host) &&
                 !/^fe[89ab][0-9a-f:]*$/u.test(host)
             );
-        return host.includes('.');
+        return (
+            parts.length >= 2 &&
+            host.length <= 253 &&
+            parts.every(
+                (label) =>
+                    label.length >= 1 &&
+                    label.length <= 63 &&
+                    /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/u.test(label),
+            )
+        );
     }
 }

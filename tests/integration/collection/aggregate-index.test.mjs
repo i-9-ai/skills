@@ -362,6 +362,13 @@ test("evolution ledger rejects duplicate and invalid events without changing dat
     await assert.rejects(() => recordEvolutionEvent(result.index, repeated), /identities must be distinct/);
     assert.deepEqual(fs.readFileSync(result.index), beforeInvalid);
 
+    const repeatedFiles = { ...valid, event_key: 'repeated-files', files: [
+        { ...valid.files[0], path: 'alpha/SKILL.md' },
+        { ...valid.files[0], path: 'alpha\\SKILL.md', after_sha256: 'c'.repeat(64) },
+    ] };
+    await assert.rejects(() => recordEvolutionEvent(result.index, repeatedFiles), /file paths must be distinct/);
+    assert.deepEqual(fs.readFileSync(result.index), beforeInvalid);
+
     const unsafe = evolutionEvent("update", [
         eventPackage("source", "alpha-skill", "a".repeat(64)),
         eventPackage("target", "alpha-skill", "b".repeat(64)),

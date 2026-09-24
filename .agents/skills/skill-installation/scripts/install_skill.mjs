@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { execFileSync } from 'node:child_process';
+import { devNull } from 'node:os';
 
 const MAX_FILES = 4096;
 const MAX_FILE_BYTES = 8 * 1024 * 1024;
@@ -105,11 +106,11 @@ function treeDigest(root) {
     return { sha256: sha256(Buffer.from(JSON.stringify(records))), entries: records.length, bytes: total };
 }
 
-function run(executable, args, maximum = MAX_OUTPUT_BYTES) {
+function run(executable, args, maximum = MAX_OUTPUT_BYTES, environment = process.env) {
     try {
         return execFileSync(executable, args, {
             encoding: null, timeout: 30_000, maxBuffer: maximum, stdio: ['ignore', 'pipe', 'pipe'],
-            env: { ...process.env, GIT_NO_REPLACE_OBJECTS: '1', GIT_OPTIONAL_LOCKS: '0' },
+            env: environment,
         });
     } catch {
         // Source/tool output can contain private paths, credentials, or candidate text.
@@ -122,8 +123,13 @@ function sourceTree(options) {
     const revision = options.revision;
     requireValue(/^(?:[a-f0-9]{40}|[a-f0-9]{64})$/.test(revision), 'Use a full immutable Git commit ID');
     const packagePath = options.package === '.' ? '.' : relativePath(options.package);
+    // Repository, object-store, index and injected config overrides must not
+    // redirect the approved local source. Validator execution keeps its own env.
+    const gitEnvironment = Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith('GIT_')));
+    Object.assign(gitEnvironment, { GIT_NO_REPLACE_OBJECTS: '1', GIT_OPTIONAL_LOCKS: '0',
+        GIT_CONFIG_GLOBAL: devNull, GIT_CONFIG_NOSYSTEM: '1', GIT_TERMINAL_PROMPT: '0' });
     const git = (...args) => run('git', ['--no-replace-objects', '--literal-pathspecs', '-C', repository, ...args],
-        args[0] === 'cat-file' && args[1] === 'blob' ? MAX_FILE_BYTES : MAX_OUTPUT_BYTES);
+        args[0] === 'cat-file' && args[1] === 'blob' ? MAX_FILE_BYTES : MAX_OUTPUT_BYTES, gitEnvironment);
     requireValue(fs.realpathSync(git('rev-parse', '--show-toplevel').toString('utf8').trim()) === repository,
         'Select the root of a non-bare Git repository');
     requireValue(git('rev-parse', '--verify', `${revision}^{commit}`).toString('utf8').trim() === revision, 'Revision must identify a commit directly');
@@ -156,7 +162,9 @@ function assertPublicMaterial(filename, bytes) {
     const text = bytes.toString('utf8');
     requireValue(!/-----BEGIN (?:[A-Z0-9 ]+ )?PRIVATE KEY-----/.test(text)
         && !/https?:\/\/[^\s/@]+:[^\s/@]+@/i.test(text)
-        && !/\bgh[pousr]_[A-Za-z0-9]{30,}\b/.test(text), 'Package contains a high-confidence credential signature');
+        && !/\bgh[pousr]_[A-Za-z0-9]{30,}\b|\bgithub_pat_[A-Za-z0-9_]{22,255}\b/.test(text)
+        && !/\bAKIA[A-Z0-9]{16}\b/.test(text)
+        && !/\bsk-(?:proj-)?[A-Za-z0-9_-]{40,}\b/.test(text), 'Package contains a high-confidence credential signature');
 }
 
 function stageSource(source, candidate) {

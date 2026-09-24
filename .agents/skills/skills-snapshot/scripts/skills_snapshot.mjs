@@ -4,8 +4,10 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { fileURLToPath } from 'node:url';
 
-import { digest, storeFor, persistTree, verifyTree, materializeTree, readObject, putObject, readRegularFile, MAX_MANIFEST_BYTES } from './snapshot_objects.mjs';
+import { digest, storeFor, persistTree, verifyTree, materializeTree, readObject, putObject, readRegularFile, readLinkText, boundedNames, MAX_MANIFEST_BYTES, MAX_TREE_ENTRIES, MAX_TREE_DEPTH } from './snapshot_objects.mjs';
+import { strictJson } from './strict-json.mjs';
 
 const TOOL_VERSION = '1.1.0';
 
@@ -129,21 +131,23 @@ function modeOf(stat) {
   return stat.mode & 0o777;
 }
 
-function sortedNames(directory) {
-  return fs.readdirSync(directory).sort((a, b) => Buffer.from(a).compare(Buffer.from(b)));
+function sortedNames(directory, budget = { remaining: MAX_TREE_ENTRIES }) {
+  const names = boundedNames(directory, budget.remaining);
+  budget.remaining -= names.length;
+  return names;
 }
 
 function copyNode(source, destination) {
   const stat = fs.lstatSync(source);
   if (stat.isSymbolicLink()) {
     fs.mkdirSync(path.dirname(destination), { recursive: true });
-    fs.symlinkSync(fs.readlinkSync(source), destination);
+    fs.symlinkSync(readLinkText(source), destination);
     return;
   }
   if (stat.isDirectory()) {
-    fs.mkdirSync(destination, { recursive: true, mode: modeOf(stat) });
-    fs.chmodSync(destination, modeOf(stat));
+    fs.mkdirSync(destination, { recursive: true, mode: 0o700 });
     for (const name of sortedNames(source)) copyNode(path.join(source, name), path.join(destination, name));
+    fs.chmodSync(destination, modeOf(stat));
     return;
   }
   if (stat.isFile()) {
@@ -155,13 +159,14 @@ function copyNode(source, destination) {
   throw new UsageError(`Unsupported special file: ${source}`);
 }
 
-function scanContent(root) {
+export function scanContent(root, budget = { remaining: MAX_TREE_ENTRIES }) {
   const entries = [];
   function visit(absolute, relative) {
     const stat = fs.lstatSync(absolute);
     const portable = relative.split(path.sep).join('/');
+    if (relative && portable.split('/').length > MAX_TREE_DEPTH) throw new Error('Snapshot exceeds the depth limit');
     if (stat.isSymbolicLink()) {
-      const target = fs.readlinkSync(absolute);
+      const target = readLinkText(absolute);
       const absoluteTarget = path.isAbsolute(target);
       entries.push({
         path: portable,
@@ -175,7 +180,7 @@ function scanContent(root) {
     }
     if (stat.isDirectory()) {
       if (relative) entries.push({ path: portable, type: 'directory', mode: modeOf(stat) });
-      for (const name of sortedNames(absolute)) visit(path.join(absolute, name), relative ? path.join(relative, name) : name);
+      for (const name of sortedNames(absolute, budget)) visit(path.join(absolute, name), relative ? path.join(relative, name) : name);
       return;
     }
     if (stat.isFile()) {
@@ -197,7 +202,7 @@ function assertNoSensitiveMaterial(root, entries) {
     if (segments.some(segment => forbiddenSegments.has(segment)) || forbiddenNames.test(segments.at(-1))) {
       throw new UsageError(`Sensitive material path is not allowed in a snapshot: ${entry.path}`);
     }
-    if (entry.type === 'file' && entry.size <= 1024 * 1024) {
+    if (entry.type === 'file') {
       const bytes = readRegularFile(path.join(root, ...segments));
       if (privateKeyPattern.test(bytes.toString('utf8'))) {
         throw new UsageError(`Private-key material is not allowed in a snapshot: ${entry.path}`);
@@ -240,7 +245,7 @@ function inspectProjections(values, source) {
     if (stat.isSymbolicLink()) kind = 'symlink';
     else if (stat.isDirectory()) kind = 'directory';
     else if (stat.isFile()) kind = 'file';
-    const lexicalTarget = stat.isSymbolicLink() ? path.resolve(path.dirname(supplied), fs.readlinkSync(supplied)) : supplied;
+    const lexicalTarget = stat.isSymbolicLink() ? path.resolve(path.dirname(supplied), readLinkText(supplied)) : supplied;
     let resolved = lexicalTarget;
     try { resolved = fs.realpathSync(lexicalTarget); } catch {}
     const relative = path.relative(source, resolved);
@@ -253,7 +258,7 @@ function inspectProjections(values, source) {
       relation_to_source: relation,
     };
     if (stat.isSymbolicLink()) {
-      const target = fs.readlinkSync(supplied);
+      const target = readLinkText(supplied);
       result.link_target = path.isAbsolute(target) ? '<absolute-redacted>' : target;
       result.link_target_is_absolute = path.isAbsolute(target);
       result.link_target_sha256 = sha256Bytes(Buffer.from(target));
@@ -292,7 +297,7 @@ function writeJson(file, value) {
 function loadManifest(snapshot) {
   const file = path.join(snapshot, 'manifest.json');
   let value;
-  try { value = JSON.parse(readRegularFile(file, MAX_MANIFEST_BYTES).toString('utf8')); } catch (error) {
+  try { value = strictJson(readRegularFile(file, MAX_MANIFEST_BYTES), MAX_MANIFEST_BYTES); } catch (error) {
     throw new UsageError(`Cannot read snapshot manifest: ${error.message}`);
   }
   if (![1, 2].includes(value?.schema_version) || !['collection', 'package'].includes(value?.selection?.scope)) {
@@ -323,7 +328,9 @@ function verifySnapshot(snapshotPath) {
     const linksMatch = JSON.stringify(manifest.content.entries.filter(entry => entry.type === 'symlink')) === JSON.stringify(manifest.links?.source ?? []);
     return { ok: valid && linksMatch, snapshot, scope: manifest.selection.scope, package: manifest.selection.package ?? null, tree_hash: manifest.content.tree_hash, checks: { content_entries: valid, tree_hash: valid, source_link_inventory: linksMatch }, manifest };
   }
-  const content = normalizeExistingDirectory(path.join(snapshot, 'content'), 'Snapshot content');
+  const contentPath = path.join(snapshot, 'content');
+  if (!fs.lstatSync(contentPath).isDirectory()) throw new UsageError('Snapshot content must be a real directory');
+  const content = normalizeExistingDirectory(contentPath, 'Snapshot content');
   const entries = scanContent(content);
   const treeHash = sha256Bytes(Buffer.from(JSON.stringify(entries)));
   const entriesMatch = JSON.stringify(entries) === JSON.stringify(manifest.content.entries);
@@ -363,13 +370,15 @@ function createSnapshot(options) {
   const staging = path.join(store, `.${name}.staging-${process.pid}-${crypto.randomBytes(6).toString('hex')}`);
   fs.mkdirSync(staging, { mode: 0o700 });
   try {
-    let entries = scanContent(selectedSource);
+    const budget = { remaining: MAX_TREE_ENTRIES };
+    let entries = scanContent(selectedSource, budget);
     if (packageName) {
       entries = entries.map(entry => ({ ...entry, path: `${packageName}/${entry.path}` }));
       let cursor = '';
       for (const part of packageName.split('/')) {
         cursor = cursor ? `${cursor}/${part}` : part;
         entries.push({ path: cursor, type: 'directory', mode: modeOf(fs.lstatSync(path.join(source, cursor))) });
+        if (--budget.remaining < 0) throw new Error('Snapshot exceeds the entry limit');
       }
       entries.sort((a, b) => Buffer.from(a.path).compare(Buffer.from(b.path)));
     }
@@ -393,7 +402,8 @@ function createSnapshot(options) {
       if (!stat.isDirectory() && !stat.isFile()) throw new UsageError('Captured target must be a real file or directory');
       const rootType = stat.isDirectory() ? 'directory' : 'file';
       if (rootType === 'directory') assertNoSensitiveMaterial(path.dirname(target), [{ path: path.basename(target), type: 'directory' }]);
-      const targetEntries = rootType === 'directory' ? scanContent(target) : [{ path: path.basename(target), type: 'file', mode: modeOf(stat), size: stat.size, sha256: sha256File(target) }];
+      if (rootType === 'file' && --budget.remaining < 0) throw new Error('Snapshot exceeds the entry limit');
+      const targetEntries = rootType === 'directory' ? scanContent(target, budget) : [{ path: path.basename(target), type: 'file', mode: modeOf(stat), size: stat.size, sha256: sha256File(target) }];
       assertNoSensitiveMaterial(rootType === 'directory' ? target : path.dirname(target), targetEntries);
       const contentEntries = rootType === 'directory' ? targetEntries : targetEntries.map(entry => ({ ...entry, path: 'value' }));
       const contentTree = { root_mode: modeOf(stat), entries: contentEntries, tree_hash: digest(Buffer.from(JSON.stringify(contentEntries))) };
@@ -444,9 +454,12 @@ function listSnapshots(options) {
     const candidate = path.join(store, name);
     if (!fs.lstatSync(candidate).isDirectory()) continue;
     try {
-      const manifest = loadManifest(candidate);
-      let createdAt = null;
-      try { createdAt = JSON.parse(readRegularFile(path.join(candidate, 'receipt.json'), MAX_MANIFEST_BYTES).toString('utf8')).created_at ?? null; } catch {}
+      const verified = verifySnapshot(candidate);
+      if (!verified.ok) continue;
+      const manifest = verified.manifest;
+      const receipt = strictJson(readRegularFile(path.join(candidate, 'receipt.json'), MAX_MANIFEST_BYTES), MAX_MANIFEST_BYTES);
+      const createdAt = receipt.created_at;
+      if (typeof createdAt !== 'string' || Number.isNaN(Date.parse(createdAt))) continue;
       snapshots.push({ name, path: candidate, scope: manifest.selection.scope, package: manifest.selection.package ?? null, tree_hash: manifest.content.tree_hash, created_at: createdAt });
     } catch {}
   }
@@ -497,6 +510,11 @@ function restoreSnapshot(options) {
     copyNode(snapshotSource, staging);
     const restoredEntries = scanContent(staging);
     const restoredContentTreeHash = sha256Bytes(Buffer.from(JSON.stringify(restoredEntries)));
+    const sourceEntries = packageName
+      ? manifest.content.entries.filter(entry => entry.path.startsWith(`${packageName}/`)).map(entry => ({ ...entry, path: entry.path.slice(packageName.length + 1) }))
+      : manifest.content.entries;
+    const sourceContentTreeHash = sha256Bytes(Buffer.from(JSON.stringify(sourceEntries)));
+    if (sourceContentTreeHash !== restoredContentTreeHash) throw new Error('Materialized restore failed verification');
     if (fs.existsSync(destination)) {
       rollback = uniqueRollbackPath(rollbackRoot, label);
       fs.mkdirSync(path.dirname(rollback), { recursive: true });
@@ -517,6 +535,7 @@ function restoreSnapshot(options) {
       scope,
       package: packageName,
       source_snapshot_tree_hash: manifest.content.tree_hash,
+      source_content_tree_hash: sourceContentTreeHash,
       restored_content_tree_hash: restoredContentTreeHash,
       rollback,
     };
@@ -575,7 +594,7 @@ function restoreObjects(options, verification, packageName) {
     if (JSON.stringify(actual) !== JSON.stringify(tree.entries) || modeOf(fs.lstatSync(staging)) !== tree.root_mode) throw new Error('Materialized restore failed verification');
     return digest(Buffer.from(JSON.stringify(actual)));
   }, path.dirname(target));
-  return { ...result, scope: options.scope, package: packageName, source_snapshot_tree_hash: manifest.content.tree_hash, external_targets_restored: false };
+  return { ...result, scope: options.scope, package: packageName, source_snapshot_tree_hash: manifest.content.tree_hash, source_content_tree_hash: tree.tree_hash, external_targets_restored: false };
 }
 
 function restorePreimage(options) {
@@ -602,11 +621,7 @@ function restorePreimage(options) {
 }
 
 function snapshotRetentionKey(snapshot) {
-  try {
-    const receipt = JSON.parse(readRegularFile(path.join(snapshot.path, 'receipt.json'), MAX_MANIFEST_BYTES).toString('utf8'));
-    if (typeof receipt.created_at === 'string' && !Number.isNaN(Date.parse(receipt.created_at))) return `${receipt.created_at}\0${snapshot.name}`;
-  } catch {}
-  return `0000-00-00T00:00:00.000Z\0${snapshot.name}`;
+  return `${snapshot.created_at}\0${snapshot.name}`;
 }
 
 function pruneSnapshots(options) {
@@ -683,4 +698,4 @@ function main() {
   }
 }
 
-main();
+if (process.argv[1] && fs.realpathSync(fileURLToPath(import.meta.url)) === fs.realpathSync(process.argv[1])) main();

@@ -1,6 +1,6 @@
 # Deterministic manifest contract
 
-`manifest.json` uses schema version `2` for new captures. Existing schema-1 full-copy backups remain readable and restorable without rewriting. JSON object keys are emitted in a fixed order, arrays are sorted, and the file ends with one newline.
+`manifest.json` uses schema version `2` for new captures. Existing schema-1 full-copy backups remain readable and restorable without rewriting. JSON object keys are emitted in a fixed order, arrays are sorted, and the file ends with one newline. Reading rejects duplicate fields, including equivalent escaped names. Source and selected-preimage enumeration shares a 16,384-entry budget and stops at 64 path components; manifests also reject trees beyond these bounds. Symlink text must be valid UTF-8 so restoration never silently replaces undecodable bytes.
 
 ## Content identity
 
@@ -11,6 +11,8 @@
 - A directory has no content digest; empty directories therefore remain observable.
 
 The tree hash is SHA-256 of the UTF-8 JSON serialization of `content.entries`, without whitespace or a trailing newline. Schema-2 verification validates safe sorted unique paths and recorded directory parents, recomputes the hash, and verifies all file and link objects. `content.root_mode` preserves ordinary root permission bits separately from the entries-only tree hash. Schema-1 verification instead rescans its full `content/` copy.
+
+Restore reports `source_content_tree_hash` and `restored_content_tree_hash` on the same selected relative tree shape and verifies equality before replacing the destination. Use this pair for drift detection or the effective ledger, including package-scoped restores. `source_snapshot_tree_hash` identifies the whole saved manifest tree; it includes package ancestry and must not be compared with a rebased package tree. Root permission bits remain separately verified.
 
 ## Shared object storage and complete manifests
 
@@ -40,7 +42,7 @@ Only an explicit `--capture-link-target RELPATH` follows that selected link to c
 
 ## Helper implementation map
 
-`scripts/skills_snapshot.mjs` owns CLI selection, privacy checks, source scans, manifest/receipt publication, retention, and staged restoration. `scripts/snapshot_objects.mjs` owns immutable object publication, strict tree validation, object verification, and independent materialization. Neither module changes installer locks, catalogs, external targets on ordinary restore, or host links automatically.
+`scripts/skills_snapshot.mjs` owns CLI selection, privacy checks, source scans, manifest/receipt publication, retention, and staged restoration. `scripts/snapshot_objects.mjs` owns immutable object publication, strict tree validation, object verification, and independent materialization. `scripts/strict-json.mjs` decodes bounded manifests without ambiguous repeated fields. These modules never change installer locks, catalogs, external targets on ordinary restore, or host links automatically.
 
 ## Scope and links
 
@@ -53,6 +55,8 @@ Only an explicit `--capture-link-target RELPATH` follows that selected link to c
 `receipt.json` is outside deterministic identity. It records the snapshot name, creation time, selected source and store paths, and tool version for local operations. Do not publish receipts when their paths reveal private environment details.
 
 The snapshot name and creation time do not influence `manifest.json`. Two snapshots of the same selected bytes and projection observations therefore have byte-identical manifests.
+
+Listing and retention include only snapshots with a valid manifest, readable verified content or objects, and a valid creation timestamp in their receipt. An incomplete capture cannot displace a recoverable snapshot when `prune --keep` selects older entries. Verification errors leave that incomplete directory untouched for explicit diagnosis.
 
 ## Effective-ledger integration
 

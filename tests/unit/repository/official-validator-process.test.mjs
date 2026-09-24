@@ -78,13 +78,47 @@ test('validates every canonical package using argument arrays and aggregates fai
         [
             { name: 'first-skill', passed: true },
             { name: 'second-skill', passed: false },
+            { name: 'generated-scaffold', passed: true },
         ],
     );
-    assert.equal(calls.length, 3);
+    assert.equal(calls.length, 4);
     assert.equal(calls[0].command, join(root, '.work', 'validation-env', 'bin', 'skills-ref'));
     assert.deepEqual(calls[1].args, ['validate', join(container, 'first-skill')]);
     assert.equal(calls[1].options.shell, false);
     assert.equal(calls[1].options.timeout, 30_000);
+    assert.equal(
+        existsSync(calls[3].args[1]),
+        false,
+        'generated trial is removed after validation',
+    );
+});
+
+test('a generated scaffold rejection is reported and its temporary package is removed', (t) => {
+    const { root } = fixture(t, ['one-skill']);
+    let trial;
+    const result = new OfficialValidatorProcessRepository().runOfficialValidator(
+        root,
+        new OfficialValidatorProcessRepository().canonicalSkills(root),
+        config.version,
+        (_command, args) => {
+            if (args[0] === '--version')
+                return { status: 0, stdout: `skills-ref, version ${config.version}` };
+            if (!args[1].endsWith('official-scaffold-trial')) return { status: 0 };
+            trial = args[1];
+            assert.match(
+                readFileSync(join(trial, 'SKILL.md'), 'utf8'),
+                /name: official-scaffold-trial/,
+            );
+            assert.ok(existsSync(join(trial, 'LICENSE')));
+            return { status: 1, stderr: 'Synthetic scaffold rejection.' };
+        },
+    );
+    assert.deepEqual(result.at(-1), {
+        name: 'generated-scaffold',
+        passed: false,
+        diagnostic: 'Synthetic scaffold rejection.',
+    });
+    assert.equal(existsSync(trial), false);
 });
 
 test('missing official executable or wrong version is a failure, never a silent skip', (t) => {

@@ -9,6 +9,28 @@ const modeValid = value => Number.isInteger(value) && value >= 0 && value <= 0o7
 const exists = file => { try { fs.lstatSync(file); return true; } catch (error) { if (error.code === 'ENOENT') return false; throw error; } };
 export const MAX_OBJECT_BYTES = 64 * 1024 * 1024;
 export const MAX_MANIFEST_BYTES = 8 * 1024 * 1024;
+export const MAX_TREE_ENTRIES = 16384;
+export const MAX_TREE_DEPTH = 64;
+
+/** Collect only a bounded directory listing before deterministic sorting. */
+export function boundedNames(directory, remaining = MAX_TREE_ENTRIES) {
+  const names = [];
+  const handle = fs.opendirSync(directory);
+  try {
+    for (let entry = handle.readSync(); entry; entry = handle.readSync()) {
+      if (names.length >= Math.min(remaining, MAX_TREE_ENTRIES)) throw new Error('Snapshot exceeds the entry limit');
+      names.push(entry.name);
+    }
+  } finally { handle.closeSync(); }
+  return names.sort((a, b) => Buffer.from(a).compare(Buffer.from(b)));
+}
+
+/** JSON manifests store UTF-8 link text; reject lossy POSIX target decoding. */
+export function readLinkText(file) {
+  const bytes = fs.readlinkSync(file, { encoding: 'buffer' });
+  try { return new TextDecoder('utf-8', { fatal: true }).decode(bytes); }
+  catch { throw new Error('Snapshot symlink targets must be valid UTF-8'); }
+}
 
 /** Read only bounded regular files; O_NONBLOCK also prevents FIFO replacement from hanging. */
 export function readRegularFile(file, limit = MAX_OBJECT_BYTES, expectedSize) {
@@ -74,11 +96,13 @@ export function putObject(store, bytes) {
 }
 export function validateTree(tree) {
   if (!Array.isArray(tree?.entries) || !hashPattern.test(tree?.tree_hash) || !modeValid(tree?.root_mode)) throw new Error('Malformed object tree');
+  if (tree.entries.length > MAX_TREE_ENTRIES) throw new Error('Snapshot exceeds the entry limit');
   if (digest(Buffer.from(JSON.stringify(tree.entries))) !== tree.tree_hash) throw new Error('Manifest tree hash mismatch');
   const seen = new Map();
   let previous = null;
   for (const entry of tree.entries) {
     if (typeof entry.path !== 'string' || !entry.path || entry.path === '.' || entry.path.endsWith('/') || /^[A-Za-z]:/.test(entry.path) || entry.path.includes('\\') || entry.path.includes('\0') || path.posix.normalize(entry.path) !== entry.path || entry.path.startsWith('/') || entry.path === '..' || entry.path.startsWith('../')) throw new Error('Unsafe manifest path');
+    if (entry.path.split('/').length > MAX_TREE_DEPTH) throw new Error('Snapshot exceeds the depth limit');
     if (previous !== null && Buffer.from(previous).compare(Buffer.from(entry.path)) >= 0) throw new Error('Manifest paths must be unique and sorted');
     previous = entry.path;
     if (!modeValid(entry.mode) || !['file', 'directory', 'symlink'].includes(entry.type)) throw new Error('Malformed manifest entry');
@@ -108,7 +132,7 @@ export function persistTree(store, tree, source) {
     const file = path.join(source, ...entry.path.split('/'));
     const stat = fs.lstatSync(file);
     if (entry.type === 'file' && !stat.isFile() || entry.type === 'symlink' && !stat.isSymbolicLink()) throw new Error('Source changed during capture');
-    const bytes = entry.type === 'file' ? readRegularFile(file, MAX_OBJECT_BYTES, entry.size) : Buffer.from(fs.readlinkSync(file));
+    const bytes = entry.type === 'file' ? readRegularFile(file, MAX_OBJECT_BYTES, entry.size) : Buffer.from(readLinkText(file));
     if (digest(bytes) !== (entry.type === 'file' ? entry.sha256 : entry.target_sha256) || entry.type === 'file' && bytes.length !== entry.size) throw new Error('Source changed during capture');
     if (/-----BEGIN (?:[A-Z0-9 ]+ )?PRIVATE KEY-----/.test(bytes.toString('utf8'))) throw new Error('Private-key material is not allowed in a snapshot');
     if (putObject(store, bytes)) added += 1;

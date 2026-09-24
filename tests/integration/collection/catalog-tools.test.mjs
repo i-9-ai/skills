@@ -5,7 +5,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
-import { CatalogError, checkCatalog, syncCatalog, validateCatalogData } from '../../../.agents/skills/skills-catalog/scripts/catalog_tools.mjs';
+import { CatalogError, checkCatalog, syncCatalog, validateCatalogData, parseSkillSummary } from '../../../.agents/skills/skills-catalog/scripts/catalog_tools.mjs';
 
 const PACKAGE = fileURLToPath(new URL('../../../.agents/skills/skills-catalog', import.meta.url));
 
@@ -25,8 +25,8 @@ function skill(directory, name, description = `Use ${name} for a synthetic catal
 test('global layout discovers real nested packages and produces an idempotent root catalog', (t) => {
     const root = fixture(t);
     skill(path.join(root, 'skills', 'alpha'), 'alpha');
-    skill(path.join(root, 'skills', 'suite'), 'suite');
     skill(path.join(root, 'skills', 'suite', 'models', 'beta'), 'beta');
+    skill(path.join(root, 'skills', 'alpha', 'examples', 'sample'), 'sample');
     skill(path.join(root, 'skills', '.system', 'ignored'), 'ignored');
 
     const first = syncCatalog(root, { layout: 'global' });
@@ -38,7 +38,7 @@ test('global layout discovers real nested packages and produces an idempotent ro
     assert.equal(fs.existsSync(path.join(path.dirname(root), 'skills-catalog.json')), false);
     const catalog = JSON.parse(bytes);
     assert.deepEqual(catalog.skills.map(({ name, path: packagePath }) => [name, packagePath]), [
-        ['alpha', 'skills/alpha'], ['beta', 'skills/suite/models/beta'], ['suite', 'skills/suite'],
+        ['alpha', 'skills/alpha'], ['beta', 'skills/suite/models/beta'],
     ]);
     assert.equal(checkCatalog(root, { layout: 'global' }).changed, false);
 });
@@ -63,11 +63,22 @@ test('global layout permits only same-name direct children of explicit package l
         /outside the allowed package link roots/);
 });
 
-test('global discovery rejects links inside real package trees', (t) => {
+test('global discovery rejects links in grouping directories before package boundaries', (t) => {
     const root = fixture(t);
-    skill(path.join(root, 'skills', 'alpha'), 'alpha');
-    fs.symlinkSync(path.join(root, 'AGENTS.md'), path.join(root, 'skills', 'alpha', 'linked-reference'));
+    fs.mkdirSync(path.join(root, 'skills', 'suite'));
+    fs.symlinkSync(path.join(root, 'AGENTS.md'), path.join(root, 'skills', 'suite', 'linked-reference'));
     assert.throws(() => syncCatalog(root, { layout: 'global' }), /must not be a symbolic link/);
+});
+
+test('catalog summaries retain equally indented metadata and reject implicit scalar types', () => {
+    for (const indentation of [' ', '  ', '    ']) {
+        const summary = parseSkillSummary(Buffer.from(`---\nname: alpha\ndescription: A synthetic package.\nmetadata:\n${indentation}author: Example\n${indentation}tags: "catalog, tests"\n---\n`), 'alpha');
+        assert.deepEqual(summary.tags, ['catalog', 'tests']);
+    }
+    for (const value of ['true', 'False', 'null', '~', '42', '2.5', '1e3', '.inf', '0xFF']) {
+        assert.throws(() => parseSkillSummary(Buffer.from(`---\nname: alpha\ndescription: ${value}\n---\n`), 'alpha'), /must be a string/);
+        assert.equal(parseSkillSummary(Buffer.from(`---\nname: alpha\ndescription: "${value}"\n---\n`), 'alpha').description, value);
+    }
 });
 
 test('global discovery bounds one directory before sorting its entries', (t) => {

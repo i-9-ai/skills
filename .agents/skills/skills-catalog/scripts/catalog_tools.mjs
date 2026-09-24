@@ -167,6 +167,9 @@ function parseScalar(source, label) {
     `${label} must use a plain or quoted scalar`);
   requireCondition(!/:(?:\s|$)/u.test(value), `${label} contains an unquoted mapping separator`);
   requireCondition(!/[\x00-\x1f\x7f]/u.test(value), `${label} contains a control character`);
+  requireCondition(!/^(?:true|false|null|~|\.nan|[-+]?\.inf)$/iu.test(value)
+    && !/^[-+]?(?:0x[\da-f]+|0o[0-7]+|(?:\d+(?:\.\d*)?|\.\d+)(?:e[-+]?\d+)?)$/iu.test(value),
+    `${label} must be a string, not a YAML boolean, null, or number`);
   return value;
 }
 
@@ -178,7 +181,7 @@ export function parseSkillSummary(bytes, expectedName) {
   requireCondition(lines[0] === '---', `${expectedName}/SKILL.md must start with frontmatter`);
   const end = lines.indexOf('---', 1);
   requireCondition(end > 1, `${expectedName}/SKILL.md has unterminated frontmatter`);
-  let name; let description; let tags = []; let section = '';
+  let name; let description; let tags = []; let section = ''; let metadataIndent;
   const seen = new Set();
   let index = 1;
   while (index < end) {
@@ -186,6 +189,7 @@ export function parseSkillSummary(bytes, expectedName) {
     const top = /^([a-z][a-z0-9_-]*):(?:\s*(.*))?$/u.exec(line);
     if (top) {
       section = top[1];
+      metadataIndent = undefined;
       requireCondition(!seen.has(section), `${expectedName}/SKILL.md has duplicate frontmatter fields`);
       seen.add(section);
       if (section === 'name') name = parseScalar(top[2] ?? '', 'skill name');
@@ -199,11 +203,15 @@ export function parseSkillSummary(bytes, expectedName) {
       }
       continue;
     }
-    const metadata = /^  ([a-z][a-z0-9_-]*):\s*(.*)$/u.exec(line);
-    if (section === 'metadata' && metadata?.[1] === 'tags') {
+    const metadata = /^( +)([a-z][a-z0-9_-]*):\s*(.*)$/u.exec(line);
+    if (section === 'metadata' && metadata) {
+      metadataIndent ??= metadata[1].length;
+      requireCondition(metadata[1].length >= metadataIndent, `${expectedName}/SKILL.md has inconsistent metadata indentation`);
+    }
+    if (section === 'metadata' && metadata?.[2] === 'tags' && metadata[1].length === metadataIndent) {
       requireCondition(!seen.has('metadata.tags'), `${expectedName}/SKILL.md has duplicate metadata tags`);
       seen.add('metadata.tags');
-      const raw = parseScalar(metadata[2], 'skill tags');
+      const raw = parseScalar(metadata[3], 'skill tags');
       tags = [...new Set(raw.split(',').map(tag => validSlug(tag.trim(), 'skill tag', 48)))].sort();
     }
   }
@@ -395,6 +403,10 @@ function discoverGlobal(config) {
       requireCondition(skill.isFile() && !skill.isSymbolicLink(), `${relativeParts.join('/')}/SKILL.md must be a regular file`);
       packages.push(catalogEntry(directory, relativeParts, 'skills'));
       requireCondition(packages.length <= MAX_PACKAGES, `skill directory must contain at most ${MAX_PACKAGES} packages`);
+      const after = fs.lstatSync(directory, { bigint: true });
+      requireCondition(after.dev === before.dev && after.ino === before.ino,
+        `${relativeParts.join('/')} changed during discovery`);
+      return;
     }
     for (const entry of entries) {
       const child = path.join(directory, entry.name);
@@ -444,16 +456,6 @@ function discover(config) {
   return packages;
 }
 
-function checkAgentsReference(config) {
-  const bytes = regularBytes(path.join(config.root, 'AGENTS.md'), 'AGENTS.md', MAX_SKILL_BYTES, { required: false });
-  if (bytes === null) return;
-  let text;
-  try { text = new TextDecoder('utf-8', { fatal: true }).decode(bytes); }
-  catch { throw new CatalogError('AGENTS.md must be UTF-8'); }
-  requireCondition(/(?:^|\n)\s*(?:(?:[-*]|\d+\.)\s+)?(?:Consult|Use)\s+`?skills-catalog\.json`?\s+(?:to\s+(?:discover|find)(?:\s+(?:the\s+)?skills?)?|for\s+(?:(?:skill\s+)?discovery|available\s+skills?))\b/iu.test(text),
-    'AGENTS.md must direct agents to skills-catalog.json for skill discovery');
-}
-
 function desiredCatalog(config) {
   const skills = discover(config).map(entry => ({
     name: entry.name, path: entry.path, description: entry.description, tags: entry.tags,
@@ -483,7 +485,6 @@ export function inspectCatalog(input, options = {}) {
 
 export function checkCatalog(input, options = {}) {
   const config = collectionConfig(input, options);
-  checkAgentsReference(config);
   const current = readCatalog(config);
   const desired = desiredCatalog(config);
   requireCondition(current.bytes.equals(canonicalBytes(desired)),
@@ -494,7 +495,6 @@ export function checkCatalog(input, options = {}) {
 
 export function syncCatalog(input, options = {}) {
   const config = collectionConfig(input, options);
-  checkAgentsReference(config);
   const current = readCatalog(config, { required: false });
   const desired = desiredCatalog(config);
   const next = canonicalBytes(desired);

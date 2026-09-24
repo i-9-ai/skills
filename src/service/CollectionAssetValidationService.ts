@@ -55,5 +55,54 @@ export class CollectionAssetValidationService {
         }
         this.pngDigests.add(digest);
         this.validator.validateCollectionPng(largeIcon, png);
+        this.validateRenderReceipt(root, relative, svg, png);
+    }
+
+    /** Bind the reviewed render to this exact SVG/PNG pair without a runtime renderer. */
+    private validateRenderReceipt(
+        root: CollectionFilesystemRepository,
+        relative: string,
+        svg: string,
+        png: Buffer,
+    ): void {
+        const receipt = root.readJson(`${relative}/assets/icon.render.json`);
+        const keys = [
+            'schema_version',
+            'source',
+            'source_sha256',
+            'artifact',
+            'artifact_sha256',
+            'renderer',
+            'arguments',
+            'width',
+            'height',
+        ];
+        const valid =
+            receipt &&
+            typeof receipt === 'object' &&
+            !Array.isArray(receipt) &&
+            Object.keys(receipt).length === keys.length &&
+            keys.every((key) => Object.hasOwn(receipt, key)) &&
+            receipt.schema_version === 1 &&
+            receipt.source === 'icon.svg' &&
+            receipt.artifact === 'icon.png' &&
+            typeof receipt.renderer === 'string' &&
+            receipt.renderer.trim().length > 0 &&
+            receipt.renderer.length <= 256 &&
+            Number.isInteger(receipt.width) &&
+            Number.isInteger(receipt.height) &&
+            receipt.width === png.readUInt32BE(16) &&
+            receipt.height === png.readUInt32BE(20) &&
+            Array.isArray(receipt.arguments) &&
+            receipt.arguments.length <= 16 &&
+            receipt.arguments.every(
+                (value: unknown) => typeof value === 'string' && value.length <= 256,
+            ) &&
+            receipt.source_sha256 === createHash('sha256').update(svg).digest('hex') &&
+            receipt.artifact_sha256 === createHash('sha256').update(png).digest('hex');
+        if (!valid)
+            throw new CollectionValidationError(
+                `${relative} icon render receipt does not match its reviewed SVG/PNG pair`,
+            );
     }
 }

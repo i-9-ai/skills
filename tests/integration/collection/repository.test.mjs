@@ -89,6 +89,7 @@ function makeRepository(t) {
 </svg>
 `);
     fs.writeFileSync(join(packagePath, 'assets', 'icon.png'), transparentPng());
+    renderReceipt(packagePath);
     writeJson(join(root, 'skills-catalog.json'), {
         schema_version: 1, skills: [
             { name, path: `.agents/skills/${name}`, description, tags: [] },
@@ -103,6 +104,13 @@ function makeRepository(t) {
         fs.symlinkSync('../.agents/skills', join(root, directory, 'skills'), 'dir');
     }
     return { root, packagePath, temporary };
+}
+
+function renderReceipt(packagePath) {
+    const svg = fs.readFileSync(join(packagePath, 'assets/icon.svg'));
+    const png = fs.readFileSync(join(packagePath, 'assets/icon.png'));
+    writeJson(join(packagePath, 'assets/icon.render.json'), { schema_version: 1, source: 'icon.svg', source_sha256: sha256(svg),
+        artifact: 'icon.png', artifact_sha256: sha256(png), renderer: 'synthetic fixture', arguments: [], width: png.readUInt32BE(16), height: png.readUInt32BE(20) });
 }
 
 function guardContentReads(paths, callback) {
@@ -146,7 +154,7 @@ test('collection discovers canonical packages and cross-directory Markdown links
     fs.mkdirSync(join(root, 'docs'));
     fs.writeFileSync(join(root, 'docs', 'guide.md'), '[Readme](../README.md)\n');
     assert.deepEqual(new CollectionValidationService().validateRepository(root), {
-        packages: 1, text_files: 8, local_links: 2, locked_sources: 0, example_runs: 0,
+        packages: 1, text_files: 9, local_links: 2, locked_sources: 0, example_runs: 0,
     });
 });
 
@@ -182,6 +190,46 @@ test('collection validates unquoted local links in published HTML', (t) => {
     assert.equal(new CollectionValidationService().validateRepository(root).local_links, 2);
     fs.unlinkSync(join(assets, 'guide.html'));
     assert.throws(() => new CollectionValidationService().validateRepository(root), /docs\/assets\/index\.html:1: invalid local link/);
+});
+
+test('published HTML links resolve against the first base instead of unrelated root files', (t) => {
+    const { root } = makeRepository(t);
+    const assets = join(root, 'docs', 'assets');
+    fs.mkdirSync(join(assets, 'subdir'), { recursive: true });
+    fs.writeFileSync(join(assets, 'index.html'), '<base href="subdir/"><a href="guide.html">Guide</a>');
+    fs.writeFileSync(join(assets, 'guide.html'), '<p>Wrong location</p>');
+    assert.throws(() => new CollectionValidationService().validateRepository(root), /invalid local link/);
+    fs.writeFileSync(join(assets, 'subdir', 'guide.html'), '<p>Right location</p>');
+    assert.doesNotThrow(() => new CollectionValidationService().validateRepository(root));
+});
+
+test('collection rejects invalid SVG namespace bindings, expanded duplicates and empty local names', (t) => {
+    const { root, packagePath } = makeRepository(t);
+    const icon = join(packagePath, 'assets', 'icon.svg');
+    const original = fs.readFileSync(icon, 'utf8');
+    const invalid = [
+        original.replace(' xmlns="http://www.w3.org/2000/svg"', ''),
+        original.replace('http://www.w3.org/2000/svg', 'urn:not-svg'),
+        original.replace('<path', '<g:/><path').replace('<svg ', '<svg xmlns:g="urn:example" '),
+        ...['xmlns:xml="urn:wrong"', 'xmlns:xmlns="urn:example"', 'xmlns:a="http://www.w3.org/XML/1998/namespace"',
+            'xmlns:a="http://www.w3.org/2000/xmlns/"', 'xmlns:a=""',
+            'xmlns:a="urn:example" xmlns:b="urn:example" a:x="1" b:x="2"'].map(attributes => original.replace('<svg ', `<svg ${attributes} `)),
+    ];
+    for (const content of invalid) {
+        fs.writeFileSync(icon, content);
+        assert.throws(() => new CollectionValidationService().validateRepository(root), /XML|SVG root/);
+    }
+});
+
+test('PNG validation rejects excessive decoded bytes before inflation', () => {
+    const header = Buffer.alloc(13);
+    header.writeUInt32BE(4096, 0);
+    header.writeUInt32BE(4096, 4);
+    header[8] = 16;
+    header[9] = 6;
+    const payload = Buffer.concat([Buffer.from('89504e470d0a1a0a', 'hex'), pngChunk('IHDR', header),
+        pngChunk('IDAT', Buffer.from('not a zlib payload')), pngChunk('IEND', Buffer.alloc(0))]);
+    assert.throws(() => new CollectionValidator().validateCollectionPng('icon.png', payload), /decoded PNG byte limit/);
 });
 
 test('catalog rejects missing packages and uncataloged immediate directories', (t) => {
@@ -252,6 +300,7 @@ test('collection rejects unbound SVG namespace prefixes', (t) => {
     fs.writeFileSync(icon, valid.replace('<path', '<x:g/> <path'));
     assert.throws(() => new CollectionValidationService().validateRepository(root), /not well-formed XML/);
     fs.writeFileSync(icon, valid.replace('<path', '<x:g xmlns:x="urn:example"/> <path'));
+    renderReceipt(packagePath);
     assert.equal(new CollectionValidationService().validateRepository(root).packages, 1);
 });
 
@@ -318,6 +367,7 @@ test('collection rejects external SVG paint references while allowing fragments'
     <title id="title">Example Skill</title><defs><linearGradient id="gradient"/></defs><path fill="url(#gradient)" d="M1 1h62v62H1z"/>
   </svg>`;
     fs.writeFileSync(icon, valid);
+    renderReceipt(packagePath);
     assert.equal(new CollectionValidationService().validateRepository(root).packages, 1);
     for (const reference of ['url(https://example.invalid/paint.svg#gradient)', 'url(paint.svg#gradient)', "url('https://example.invalid/paint.svg#gradient')", 'u\\72l(https://example.invalid/paint.svg#gradient)', 'u&#x72;l(https://example.invalid/paint.svg#gradient)', 'url(https://example.invalid/paint.svg#gradient /* comment */)', 'url(paint.svg#gradient /* comment */)', "url('/*padding*/#gradient')"]) {
         fs.writeFileSync(icon, valid.replace('url(#gradient)', reference));
@@ -363,6 +413,7 @@ test('collection rejects indexed PNG icons without a palette', (t) => {
     const { root, packagePath } = makeRepository(t);
     const icon = join(packagePath, 'assets', 'icon.png');
     fs.writeFileSync(icon, indexedPng());
+    renderReceipt(packagePath);
     assert.equal(new CollectionValidationService().validateRepository(root).packages, 1);
     fs.writeFileSync(icon, indexedPng({ palette: false }));
     assert.throws(() => new CollectionValidationService().validateRepository(root), /valid PNG/);
@@ -374,7 +425,18 @@ test('collection rejects indexed PNG pixels outside the palette', (t) => {
     fs.writeFileSync(icon, indexedPng({ paletteEntries: 1, pixel: 1 }));
     assert.throws(() => new CollectionValidationService().validateRepository(root), /valid PNG/);
     fs.writeFileSync(icon, indexedPng({ bitDepth: 1, paletteEntries: 1, pixel: 0x7f }));
+    renderReceipt(packagePath);
     assert.equal(new CollectionValidationService().validateRepository(root).packages, 1);
+});
+
+test('collection binds each large icon to its recorded SVG render and detects valid-image swaps', (t) => {
+    const { root, packagePath } = makeRepository(t);
+    fs.writeFileSync(join(packagePath, 'assets/icon.png'), indexedPng());
+    assert.throws(() => new CollectionValidationService().validateRepository(root), /render receipt does not match/);
+    renderReceipt(packagePath);
+    assert.doesNotThrow(() => new CollectionValidationService().validateRepository(root));
+    fs.appendFileSync(join(packagePath, 'assets/icon.svg'), '\n');
+    assert.throws(() => new CollectionValidationService().validateRepository(root), /render receipt does not match/);
 });
 
 test('collection rejects indexed PNG palettes that exceed the bit depth or PNG maximum', (t) => {
@@ -560,6 +622,24 @@ test('public hygiene scans binary payloads without requiring UTF-8 decoding', (t
     });
 });
 
+test('public hygiene scans UTF-16 byte orders with or without BOM without echoing markers', (t) => {
+    const { root } = makeRepository(t);
+    const artifact = join(root, 'artifact.bin');
+    for (const marker of ['ghp_' + 'A'.repeat(36), '-----BEGIN ' + 'PRIVATE KEY-----']) {
+        const little = Buffer.from(`Heading\n${marker}`, 'utf16le');
+        const big = Buffer.from(little).swap16();
+        for (const payload of [little, big, Buffer.concat([Buffer.from([0xff, 0xfe]), little]),
+            Buffer.concat([Buffer.from([0xfe, 0xff]), big]), Buffer.concat([Buffer.from([0xff]), little])]) {
+            fs.writeFileSync(artifact, payload);
+            assert.throws(() => new CollectionValidationService().validateRepository(root), error => {
+                assert.match(error.message, /artifact\.bin:2: possible/);
+                assert.ok(!error.message.includes(marker));
+                return true;
+            });
+        }
+    }
+});
+
 test('documentation publication verifies inputs before staging and publishing main', () => {
     const workflow = fs.readFileSync(join(process.cwd(), '.github', 'workflows', 'publish-visual-guides.yml'), 'utf8');
     assert.match(workflow, /concurrency:\n\s+group: publish-visual-guides-\$\{\{ github\.repository \}\}\n\s+cancel-in-progress: false/);
@@ -584,12 +664,12 @@ test('documentation publication verifies inputs before staging and publishing ma
     assert.match(wikiWorkflow, /git add --all\n\s+if git diff --quiet --staged; then/);
 });
 
-test('catalog helper requires affirmative discovery guidance', (t) => {
+test('portable catalog helper does not impose repository-specific AGENTS wording', (t) => {
     const { root } = makeRepository(t);
-    fs.writeFileSync(join(root, 'AGENTS.md'), 'Do not consult skills-catalog.json for skill discovery.\n');
+    fs.writeFileSync(join(root, 'AGENTS.md'), 'Maintain the application using the owner\'s local process.\n');
     const result = spawnSync(process.execPath, [join(process.cwd(), '.agents', 'skills', 'skills-catalog', 'scripts', 'catalog_tools.mjs'), 'check', root], { encoding: 'utf8' });
-    assert.notEqual(result.status, 0);
-    assert.match(result.stderr, /must direct agents to skills-catalog\.json for skill discovery/);
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(syncCatalog(root).changed, false);
 });
 
 test('catalog helper rejects a parallel legacy manifest name', (t) => {
@@ -628,10 +708,15 @@ test('source locks validate package digests and known consumers', (t) => {
         invalid.sources[0][key] = value;
         assert.throws(() => new CollectionValidator().validateLock(invalid, new Set(['example-skill'])), CollectionValidationError);
     }
-    for (const repository of ['https://localhost/private', 'https://127.0.0.1/private', 'https://10.1.2.3/private', 'https://[fd00::1]/private']) {
+    for (const repository of ['https://localhost/private', 'https://127.0.0.1/private', 'https://10.1.2.3/private', 'https://[fd00::1]/private',
+        'https://localhost./repo', 'https://service.local./repo', 'https://service.localhost./repo', 'https://intranet./repo',
+        'https://example..org/repo', 'https://-invalid.example/repo', 'https://invalid_.example/repo']) {
         const invalid = structuredClone(lock); invalid.sources[0].repository = repository;
         assert.throws(() => new CollectionValidator().validateLock(invalid, new Set(['example-skill'])), CollectionValidationError);
     }
+    const absoluteDnsName = structuredClone(lock);
+    absoluteDnsName.sources[0].repository = 'https://example.org./repository';
+    assert.equal(new CollectionValidator().validateLock(absoluteDnsName, new Set(['example-skill'])), 1);
 });
 
 test('source aggregate hashes use sorted relative UTF-8 paths regardless of inventory order', () => {
@@ -645,6 +730,18 @@ test('source aggregate hashes use sorted relative UTF-8 paths regardless of inve
     assert.equal(new CollectionValidator().validateLock(lock, new Set(['example-skill'])), 1);
     files.push({ ...files[0] });
     assert.throws(() => new CollectionValidator().validateLock(lock, new Set(['example-skill'])), /distinct/);
+});
+
+test('source locks reject contradictory hashes for an inventoried license', () => {
+    const lock = makeLock();
+    const source = lock.sources[0];
+    source.license_path = `${source.package_path}/LICENSE`;
+    source.files.push({ path: 'LICENSE', sha256: source.license_sha256 });
+    source.package_sha256 = sha256([...source.files].sort((a, b) => a.path.localeCompare(b.path))
+        .map(({ path, sha256: digest }) => `${path}\0${digest}\n`).join(''));
+    assert.equal(new CollectionValidator().validateLock(lock, new Set(['example-skill'])), 1);
+    source.license_sha256 = 'c'.repeat(64);
+    assert.throws(() => new CollectionValidator().validateLock(lock, new Set(['example-skill'])), /contradicts/);
 });
 
 test('collection routes example run manifests through artifact integrity validation', (t) => {

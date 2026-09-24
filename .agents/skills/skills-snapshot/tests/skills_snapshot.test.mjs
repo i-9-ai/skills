@@ -2,12 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import crypto from 'node:crypto';
-import { materializeTree, readRegularFile, MAX_OBJECT_BYTES } from '../scripts/snapshot_objects.mjs';
+import { materializeTree, readRegularFile, boundedNames, MAX_OBJECT_BYTES, MAX_TREE_ENTRIES, MAX_TREE_DEPTH } from '../scripts/snapshot_objects.mjs';
+import { scanContent } from '../scripts/skills_snapshot.mjs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawnSync, spawn } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
-const helper = new URL('../scripts/skills_snapshot.mjs', import.meta.url).pathname;
+const helper = fileURLToPath(new URL('../scripts/skills_snapshot.mjs', import.meta.url));
 
 function fixture() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'skills-snapshot-test-'));
@@ -89,6 +91,73 @@ test('create rejects conventional credentials and private-key material', t => {
   assert.match(result.stderr, /Private-key material/);
 });
 
+test('large selected files cannot bypass private-key checks before object publication', t => {
+  const f = fixture();
+  t.after(() => fs.rmSync(f.root, { recursive: true, force: true }));
+  fs.writeFileSync(path.join(f.source, 'large.txt'), `${'x'.repeat(1024 * 1024)}\n${['-----BEGIN ', 'PRIVATE KEY-----'].join('')}\nsynthetic`);
+  const result = run(['create', '--source', f.source, '--store', f.store, '--scope', 'collection', '--name', 'large'], 1);
+  assert.match(result.stderr, /Private-key material/);
+  assert.equal(fs.existsSync(path.join(f.store, '.objects')), false);
+});
+
+test('invalid UTF-8 symlink targets are refused instead of silently rewritten', { skip: process.platform === 'win32' }, t => {
+  const f = fixture();
+  t.after(() => fs.rmSync(f.root, { recursive: true, force: true }));
+  fs.symlinkSync(Buffer.from([0xff]), path.join(f.source, 'raw-link'));
+  const result = run(['create', '--source', f.source, '--store', f.store, '--scope', 'collection', '--name', 'raw'], 1);
+  assert.match(result.stderr, /UTF-8/);
+  assert.equal(fs.existsSync(path.join(f.store, 'raw')), false);
+});
+
+test('directory enumeration stops at its entry limit and closes the directory', t => {
+  let reads = 0;
+  let closed = false;
+  t.mock.method(fs, 'opendirSync', () => ({
+    readSync() { reads += 1; return { name: `entry-${reads}` }; },
+    closeSync() { closed = true; },
+  }));
+  assert.throws(() => boundedNames('/synthetic'), /entry limit/);
+  assert.equal(reads, MAX_TREE_ENTRIES + 1);
+  assert.equal(closed, true);
+});
+
+test('tree scanning shares an entry budget across directories and bounds depth', t => {
+  const root = path.resolve('/synthetic');
+  let branching = 2;
+  t.mock.method(fs, 'lstatSync', () => ({ mode: 0o755, isSymbolicLink: () => false, isDirectory: () => true }));
+  t.mock.method(fs, 'opendirSync', directory => {
+    const depth = path.relative(root, directory).split(path.sep).filter(Boolean).length;
+    let reads = 0;
+    return {
+      readSync() {
+        if (depth >= (branching === 2 ? 14 : MAX_TREE_DEPTH + 1) || reads >= branching) return null;
+        reads += 1;
+        return { name: String(reads) };
+      },
+      closeSync() {},
+    };
+  });
+  assert.throws(() => scanContent(root), /entry limit/);
+  branching = 1;
+  assert.throws(() => scanContent(root), /depth limit/);
+});
+
+test('duplicate manifest keys cannot alter verification or restore selection', t => {
+  const f = fixture();
+  t.after(() => fs.rmSync(f.root, { recursive: true, force: true }));
+  create(f, 'duplicate');
+  const snapshot = path.join(f.store, 'duplicate');
+  const manifestFile = path.join(snapshot, 'manifest.json');
+  const manifest = fs.readFileSync(manifestFile, 'utf8');
+  fs.writeFileSync(manifestFile, manifest.replace(/}\s*$/, ',"select\\u0069on":{"scope":"package","package":"beta"}}'));
+  const result = run(['verify', '--snapshot', snapshot], 1);
+  assert.match(result.stderr, /Duplicate snapshot JSON field/);
+  const before = fs.readFileSync(path.join(f.source, 'alpha', 'SKILL.md'));
+  run(['restore', '--snapshot', snapshot, '--target', f.source, '--scope', 'collection', '--replace'], 1);
+  assert.deepEqual(fs.readFileSync(path.join(f.source, 'alpha', 'SKILL.md')), before);
+  assert.equal(fs.existsSync(path.join(f.root, '.skills-snapshot-rollbacks')), false);
+});
+
 test('verify detects changed snapshot content', t => {
   const f = fixture();
   t.after(() => fs.rmSync(f.root, { recursive: true, force: true }));
@@ -132,7 +201,7 @@ test('a special receipt cannot block list or retention preview', t => {
   fs.unlinkSync(receipt);
   assert.equal(spawnSync('mkfifo', [receipt], { timeout: 2000 }).status, 0);
   const listed = json(run(['list', '--store', f.store, '--json']));
-  assert.equal(listed.snapshots[0].created_at, null);
+  assert.deepEqual(listed.snapshots, []);
   run(['prune', '--store', f.store, '--keep', '0']);
   assert.equal(fs.existsSync(path.join(f.store, '.trash')), false);
 });
@@ -161,6 +230,8 @@ test('package restore replaces only the chosen package and retains rollback outs
   assert.equal(fs.readFileSync(path.join(f.source, 'beta', 'SKILL.md'), 'utf8'), '# Changed Beta\n');
   assert.match(result.restored_content_tree_hash, /^[0-9a-f]{64}$/);
   assert.match(result.source_snapshot_tree_hash, /^[0-9a-f]{64}$/);
+  assert.equal(result.source_content_tree_hash, result.restored_content_tree_hash);
+  assert.notEqual(result.source_snapshot_tree_hash, result.source_content_tree_hash, 'snapshot ancestry is not the selected package identity');
   assert.equal(path.dirname(path.dirname(result.rollback)), f.root);
   assert.equal(fs.readFileSync(path.join(result.rollback, 'SKILL.md'), 'utf8'), '# Changed Alpha\n');
 });
@@ -210,6 +281,35 @@ test('list reports only complete snapshots', t => {
   fs.mkdirSync(path.join(f.store, '.partial'));
   const result = json(run(['list', '--store', f.store, '--json']));
   assert.deepEqual(result.snapshots.map(item => item.name), ['listed']);
+});
+
+test('incomplete snapshots cannot consume retention slots or displace a recoverable backup', t => {
+  const f = fixture();
+  t.after(() => fs.rmSync(f.root, { recursive: true, force: true }));
+  for (const name of ['good', 'bad-object', 'bad-receipt']) {
+    fs.writeFileSync(path.join(f.source, 'alpha', 'SKILL.md'), name);
+    create(f, name);
+  }
+  const hash = manifestAt(f, 'bad-object').content.entries.find(entry => entry.path === 'alpha/SKILL.md').sha256;
+  fs.rmSync(path.join(f.store, '.objects', 'sha256', hash));
+  fs.rmSync(path.join(f.store, 'bad-receipt', 'receipt.json'));
+  assert.deepEqual(json(run(['list', '--store', f.store, '--json'])).snapshots.map(item => item.name), ['good']);
+  assert.deepEqual(json(run(['prune', '--store', f.store, '--keep', '1', '--apply'])).moved, []);
+  run(['verify', '--snapshot', path.join(f.store, 'good')]);
+});
+
+test('a linked rollback root cannot move the existing collection outside the selected workspace', t => {
+  const f = fixture();
+  t.after(() => fs.rmSync(f.root, { recursive: true, force: true }));
+  create(f, 'good');
+  const outside = path.join(f.root, 'outside');
+  fs.mkdirSync(outside);
+  fs.symlinkSync(outside, path.join(f.root, '.skills-snapshot-rollbacks'));
+  const before = fs.readFileSync(path.join(f.source, 'alpha', 'SKILL.md'));
+  const result = run(['restore', '--snapshot', path.join(f.store, 'good'), '--target', f.source, '--scope', 'collection', '--replace'], 1);
+  assert.match(result.stderr, /Rollback root must be a real directory/);
+  assert.deepEqual(fs.readdirSync(outside), []);
+  assert.deepEqual(fs.readFileSync(path.join(f.source, 'alpha', 'SKILL.md')), before);
 });
 
 function create(f, name, extra = []) {
@@ -353,6 +453,58 @@ test('schema-1 content backups remain verifiable and restorable without conversi
   run(['verify', '--snapshot', snapshot]);
   run(['restore', '--snapshot', snapshot, '--target', path.join(f.root, 'legacy-restored'), '--scope', 'collection']);
   assert.equal(fs.readFileSync(path.join(f.root, 'legacy-restored', 'alpha', 'SKILL.md'), 'utf8'), '# Alpha\n');
+  const selected = json(run(['restore', '--snapshot', snapshot, '--target', f.source, '--scope', 'package', '--package', 'alpha', '--replace']));
+  assert.equal(selected.source_content_tree_hash, selected.restored_content_tree_hash);
+  assert.notEqual(selected.source_snapshot_tree_hash, selected.source_content_tree_hash);
+});
+
+test('legacy restoration populates read-only directories before restoring their modes', t => {
+  const f = fixture();
+  t.after(() => {
+    for (const directory of [path.join(f.source, 'alpha'), path.join(f.store, 'legacy', 'content', 'alpha'), path.join(f.root, 'restored', 'alpha')]) {
+      if (fs.existsSync(directory)) fs.chmodSync(directory, 0o755);
+    }
+    fs.rmSync(f.root, { recursive: true, force: true });
+  });
+  fs.chmodSync(path.join(f.source, 'alpha'), 0o555);
+  create(f, 'legacy');
+  const snapshot = path.join(f.store, 'legacy');
+  const manifest = manifestAt(f, 'legacy');
+  materializeTree(f.store, manifest.content, path.join(snapshot, 'content'));
+  manifest.schema_version = 1;
+  delete manifest.storage;
+  delete manifest.preimages;
+  delete manifest.content.root_mode;
+  fs.writeFileSync(path.join(snapshot, 'manifest.json'), JSON.stringify(manifest));
+  run(['restore', '--snapshot', snapshot, '--target', path.join(f.root, 'restored'), '--scope', 'collection']);
+  assert.equal(fs.readFileSync(path.join(f.root, 'restored', 'alpha', 'SKILL.md'), 'utf8'), '# Alpha\n');
+  assert.equal(fs.statSync(path.join(f.root, 'restored', 'alpha')).mode & 0o777, 0o555);
+});
+
+test('legacy verification refuses an aliased content root before restoration', t => {
+  const f = fixture();
+  t.after(() => fs.rmSync(f.root, { recursive: true, force: true }));
+  create(f, 'legacy');
+  const snapshot = path.join(f.store, 'legacy');
+  const manifest = manifestAt(f, 'legacy');
+  manifest.schema_version = 1;
+  delete manifest.storage;
+  delete manifest.preimages;
+  delete manifest.content.root_mode;
+  fs.writeFileSync(path.join(snapshot, 'manifest.json'), JSON.stringify(manifest));
+  fs.symlinkSync(f.source, path.join(snapshot, 'content'));
+  run(['verify', '--snapshot', snapshot], 1);
+  run(['restore', '--snapshot', snapshot, '--target', path.join(f.root, 'restored'), '--scope', 'collection'], 1);
+  assert.equal(fs.existsSync(path.join(f.root, 'restored')), false);
+});
+
+test('bundled tests run from installed paths containing spaces and percent characters', t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'snapshot copy '));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const installed = path.join(root, 'skill % package');
+  fs.cpSync(fileURLToPath(new URL('..', import.meta.url)), installed, { recursive: true });
+  const result = spawnSync(process.execPath, ['--test', '--test-name-pattern=collection manifests are deterministic', path.join(installed, 'tests', 'skills_snapshot.test.mjs')], { encoding: 'utf8', timeout: 10000 });
+  assert.equal(result.status, 0, result.stderr + result.stdout);
 });
 
 test('store overlap and package-parent links are refused before restore mutation', t => {

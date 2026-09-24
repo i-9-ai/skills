@@ -4,6 +4,24 @@
 
 Resolve the nine actionable comments on [PR #2](https://github.com/i-9-ai/skills/pull/2) at `4cd2dc0` and make the public diagrams accurately describe the implemented skill pipeline and repository tooling. Track delivery in Beads `i9-skills-2qm.20`.
 
+The final reconciliation also paginates all historical review discussions and
+checks each against the delivered implementation. An outdated line is not proof
+of a fix: retain a concrete code, regression-test, or superseded-interface
+explanation before resolving its discussion. Preserve the repository-root
+plugin layout while correcting any remaining package-helper defects, and refresh
+the PR description from the final capabilities and validation evidence.
+Track this final pass in Beads `i9-skills-2qm.21`.
+
+For icon provenance, compare bundled paths with the existing pinned Material
+Icons revision and retain package-local source receipts. Use the already
+available `rsvg-convert` only to regenerate PNGs from their unchanged SVG
+geometry, recording its version, invocation and paired SHA-256 values. Runtime
+validation checks these receipts without installing a renderer. Replace the
+visual guide's unpinned font payload with the same family's variable font from
+a reviewed immutable Google Fonts revision, retain its OFL notice and refresh
+the source/artifact receipt after review. These are publication-input repairs,
+not changes to plugin manifests or consumer installation.
+
 ## Scope and boundaries
 
 Change the affected parser, validators, CLI and plugin preparation, aggregate query, tests, Wiki workflow, and the README and architecture diagrams. Preserve the existing routes and package formats unless a review finding requires a documented correction. The interactive entry-path map remains a high-level route selector; update its source and generated artifacts only if its existing claims become false. Do not merge, publish, release, install into a consumer, or change repository visibility.

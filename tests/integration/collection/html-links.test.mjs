@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { htmlLinks, markdownLinks } from '../../../.agents/skills/skill-authoring/scripts/lib/contracts.mjs';
+import { htmlLinks, markdownLinks, localLinkPath } from '../../../.agents/skills/skill-authoring/scripts/lib/contracts.mjs';
 
 test('HTML link discovery accepts quoted and unquoted href attributes only inside tags', () => {
     const links = htmlLinks([
@@ -16,6 +16,14 @@ test('HTML link discovery accepts quoted and unquoted href attributes only insid
 
 test('HTML link discovery keeps scanning through quoted greater-than signs', () => {
     assert.deepEqual(htmlLinks('<a title="1 > 0" href="missing.html">Missing</a>'), [[1, 'missing.html']]);
+});
+
+test('HTML resource entities are decoded before scheme checks or rejected explicitly', () => {
+    const [[, target]] = htmlLinks('<a href="javascript&colon;alert(1)">Active</a>');
+    assert.equal(target, 'javascript:alert(1)');
+    assert.throws(() => localLinkPath('SKILL.md', target), /scheme/);
+    assert.deepEqual(htmlLinks('<img src="assets&sol;image.png"><a href="a&amp;b.html">Guide</a>'), [[1, 'assets/image.png'], [1, 'a&b.html']]);
+    assert.throws(() => htmlLinks('<img src="unknown&NotEqual;value.png">'), /unsupported named HTML/);
 });
 
 test('Markdown link discovery preserves balanced destination parentheses', () => {

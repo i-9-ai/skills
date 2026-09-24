@@ -375,11 +375,11 @@ function main(argv) {
     valid: true,
     decision: proposal.decision,
     proposal_id: proposal.decision === 'propose' ? proposal.proposal_id : null,
-    packages: proposal.target.packages.length,
+    packages: proposal.target?.packages.length ?? 0,
   };
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
+if (process.argv[1] && fs.realpathSync(fileURLToPath(import.meta.url)) === fs.realpathSync(process.argv[1])) {
   try {
     process.stdout.write(`${JSON.stringify(main(process.argv.slice(2)))}\n`);
   } catch (error) {
