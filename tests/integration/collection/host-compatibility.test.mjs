@@ -9,6 +9,16 @@ import { verifyAliases } from '../../../.agents/skills/skills-host-compatibility
 
 const helperSource = fileURLToPath(new URL('../../../.agents/skills/skills-host-compatibility/scripts/verify_aliases.mjs', import.meta.url));
 
+test('alias validation remains importable from a stdin module', () => {
+    const url = new URL('../../../.agents/skills/skills-host-compatibility/scripts/verify_aliases.mjs', import.meta.url).href;
+    const result = spawnSync(process.execPath, ['--input-type=module', '-'], {
+        input: `import { verifyAliases } from ${JSON.stringify(url)}; process.stdout.write(typeof verifyAliases);`,
+        encoding: 'utf8', timeout: 5000,
+    });
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(result.stdout, 'function');
+});
+
 function fixture(t) {
     const root = fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), 'host-compatibility-test-')));
     t.after(() => fs.rmSync(root, { recursive: true, force: true }));

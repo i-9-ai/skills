@@ -13,6 +13,16 @@ import {
 const PACKAGE = fileURLToPath(new URL('../.agents/skills/skills-maintenance-scheduling/', import.meta.url));
 const EXAMPLES = path.join(PACKAGE, 'examples');
 
+test('maintenance validation remains importable from a stdin module', () => {
+  const url = new URL('../.agents/skills/skills-maintenance-scheduling/scripts/validate_proposal.mjs', import.meta.url).href;
+  const result = spawnSync(process.execPath, ['--input-type=module', '-'], {
+    input: `import { validateProposal } from ${JSON.stringify(url)}; process.stdout.write(typeof validateProposal);`,
+    encoding: 'utf8', timeout: 5000,
+  });
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stdout, 'function');
+});
+
 function example(name) {
   return JSON.parse(fs.readFileSync(path.join(EXAMPLES, name), 'utf8'));
 }

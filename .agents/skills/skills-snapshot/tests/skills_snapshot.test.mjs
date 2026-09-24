@@ -11,6 +11,16 @@ import { fileURLToPath } from 'node:url';
 
 const helper = fileURLToPath(new URL('../scripts/skills_snapshot.mjs', import.meta.url));
 
+test('snapshot scanning remains importable from a stdin module', () => {
+  const url = new URL('../scripts/skills_snapshot.mjs', import.meta.url).href;
+  const result = spawnSync(process.execPath, ['--input-type=module', '-'], {
+    input: `import { scanContent } from ${JSON.stringify(url)}; process.stdout.write(typeof scanContent);`,
+    encoding: 'utf8', timeout: 5000,
+  });
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stdout, 'function');
+});
+
 function fixture() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'skills-snapshot-test-'));
   const source = path.join(root, 'active-skills');
@@ -107,6 +117,20 @@ test('invalid UTF-8 symlink targets are refused instead of silently rewritten', 
   const result = run(['create', '--source', f.source, '--store', f.store, '--scope', 'collection', '--name', 'raw'], 1);
   assert.match(result.stderr, /UTF-8/);
   assert.equal(fs.existsSync(path.join(f.store, 'raw')), false);
+});
+
+test('snapshot restoration preserves a leading U+FEFF in symlink text', t => {
+  const f = fixture();
+  t.after(() => fs.rmSync(f.root, { recursive: true, force: true }));
+  const target = '\uFEFFtarget';
+  fs.writeFileSync(path.join(f.source, target), 'intended bytes');
+  fs.writeFileSync(path.join(f.source, 'target'), 'different bytes');
+  fs.symlinkSync(target, path.join(f.source, 'selected-link'));
+  run(['create', '--source', f.source, '--store', f.store, '--scope', 'collection', '--name', 'unicode']);
+  const restored = path.join(f.root, 'restored');
+  run(['restore', '--snapshot', path.join(f.store, 'unicode'), '--target', restored, '--scope', 'collection']);
+  assert.deepEqual(fs.readlinkSync(path.join(restored, 'selected-link'), { encoding: 'buffer' }), Buffer.from(target));
+  assert.equal(fs.readFileSync(path.join(restored, 'selected-link'), 'utf8'), 'intended bytes');
 });
 
 test('directory enumeration stops at its entry limit and closes the directory', t => {

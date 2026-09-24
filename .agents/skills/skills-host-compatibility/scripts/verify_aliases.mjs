@@ -202,7 +202,7 @@ function readContract(filename) {
   } finally { if (descriptor !== undefined) fs.closeSync(descriptor); }
 }
 
-if (process.argv[1] && fs.realpathSync(fileURLToPath(import.meta.url)) === fs.realpathSync(process.argv[1])) {
+if (process.argv[1] && fs.existsSync(process.argv[1]) && fs.realpathSync(fileURLToPath(import.meta.url)) === fs.realpathSync(process.argv[1])) {
   if (Number(process.versions.node.split('.')[0]) < 24) fail('Node.js 24+ is required');
   if (process.argv.length !== 3) fail('usage: verify_aliases.mjs <contract.json>');
   const contract = readContract(process.argv[2]);

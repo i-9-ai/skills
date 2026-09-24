@@ -469,10 +469,15 @@ export function htmlLinks(text) {
       return links.map(([line, target]) => [line, new URL(target, base).href]);
     }
     requireCondition(!base.startsWith('/') && !base.includes('\\'), 'HTML base must be a relative local path or public URL');
-    const directory = basePath.endsWith('/') ? basePath : path.posix.dirname(basePath);
+    // URL dot segments, including percent-encoded dots, name a directory even
+    // without a trailing slash. Preserve relative ancestry for confinement checks.
+    const lastSegment = basePath.split('/').at(-1).replace(/%2e/giu, '.');
+    const isDirectory = basePath.endsWith('/') || ['.', '..'].includes(lastSegment);
+    const directory = isDirectory ? `${basePath}/` : path.posix.dirname(basePath);
+    const baseResource = basePath.endsWith('/') ? `${basePath}.` : basePath;
     return links.map(([line, target]) => {
       if (hasScheme(target) || target.startsWith('/')) return [line, target];
-      if (/^[?#]/u.test(target)) return [line, `${basePath}${target}`];
+      if (!target || /^[?#]/u.test(target)) return [line, `${baseResource}${target}`];
       return [line, `${directory}/${target}`];
     });
   }

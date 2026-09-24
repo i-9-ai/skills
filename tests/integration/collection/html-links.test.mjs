@@ -26,6 +26,20 @@ test('HTML resource entities are decoded before scheme checks or rejected explic
     assert.throws(() => htmlLinks('<img src="unknown&NotEqual;value.png">'), /unsupported named HTML/);
 });
 
+test('HTML local bases preserve URL dot-segment, file and empty-reference semantics', () => {
+    const document = 'docs/index.html';
+    for (const base of ['sub/..', 'sub/.', 'sub/%2e%2e', 'sub/.%2E', './', 'guide.html', 'sub/../guide.html']) {
+        for (const href of ['target.html', '', '?view=1', '#section']) {
+            const [[, target]] = htmlLinks(`<base href="${base}"><a href="${href}">Guide</a>`);
+            const resolved = new URL(href, new URL(base, `https://example.test/${document}`));
+            const expected = decodeURIComponent(resolved.pathname).replace(/^\/|\/$/gu, '');
+            assert.equal(localLinkPath(document, target), expected, `${base} + ${href}`);
+        }
+    }
+    assert.deepEqual(htmlLinks('<base href=""><a href="">Self</a>'), [[1, '']]);
+    assert.throws(() => localLinkPath(document, htmlLinks('<base href="sub/../../.."><a href="target.html">Outside</a>')[0][1]), /escapes the root/);
+});
+
 test('Markdown link discovery preserves balanced destination parentheses', () => {
     assert.deepEqual(markdownLinks('[Guide](guide(v2).md)'), [[1, 'guide(v2).md']]);
 });

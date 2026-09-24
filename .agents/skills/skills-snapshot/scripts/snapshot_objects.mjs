@@ -28,7 +28,7 @@ export function boundedNames(directory, remaining = MAX_TREE_ENTRIES) {
 /** JSON manifests store UTF-8 link text; reject lossy POSIX target decoding. */
 export function readLinkText(file) {
   const bytes = fs.readlinkSync(file, { encoding: 'buffer' });
-  try { return new TextDecoder('utf-8', { fatal: true }).decode(bytes); }
+  try { return new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(bytes); }
   catch { throw new Error('Snapshot symlink targets must be valid UTF-8'); }
 }
 
