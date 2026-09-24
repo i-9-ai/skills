@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { Command, Flags } from '@oclif/core';
 import { isAbsolute, resolve } from 'node:path';
+import { PluginDataConfiguration } from '../../config/PluginDataConfiguration.ts';
 import { SkillUsageMcpService } from '../../service/SkillUsageMcpService.ts';
 
 export default class UsageMcpCommand extends Command {
@@ -10,16 +11,18 @@ export default class UsageMcpCommand extends Command {
 
     static flags = {
         db: Flags.string({
-            description: 'Absolute path to a caller-owned dedicated usage database.',
-            required: true,
+            description:
+                'Absolute path to a caller-owned dedicated usage database; defaults to plugin data when supplied by the host.',
         }),
     };
 
     async run() {
         const { flags } = await this.parse(UsageMcpCommand);
 
-        if (!isAbsolute(flags.db)) this.error('The usage database path must be absolute.');
+        const database = flags.db ?? new PluginDataConfiguration().usageDatabase();
 
-        await new SkillUsageMcpService().runUsageMcp(resolve(flags.db));
+        if (!isAbsolute(database)) this.error('The usage database path must be absolute.');
+
+        await new SkillUsageMcpService().runUsageMcp(resolve(database));
     }
 }

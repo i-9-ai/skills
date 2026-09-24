@@ -80,7 +80,10 @@ Neither command enables or installs a hook.
 `mcp usage` starts a stdio server and applies checksum-verified migrations
 to the caller-owned dedicated SQLite database. Explicit calls record observed
 reads and query period rankings. Standard output contains protocol messages
-only. See the [usage contract](../docs/Skill%20Usage%20MCP.md).
+only. A host-provided absolute plugin data directory supplies
+`skill-usage.db` when `--db` is omitted. The installed plugin invokes the same
+service through a dependency-free protocol entrypoint. See the
+[usage contract](../docs/Skill%20Usage%20MCP.md).
 
 The explicit `telemetry` commands store typed session starts, read attempts and
 successful reads with occurrence/correlation UUIDs. Queries are read-only;
@@ -102,8 +105,9 @@ Argument and validation errors return nonzero. Discovery failures return
 partial or empty context with warnings. Database failures preserve existing
 history; stop the MCP process and diagnose its directory/schema.
 
-`bin/index.mjs` is the only executable entrypoint. No legacy launchers or
-command aliases are retained; all integrations use the commands above.
+`bin/index.mjs` is the only CLI launcher. The root plugin additionally has a
+direct stdio MCP entrypoint so it can start without CLI dependencies. No legacy
+CLI launchers or command aliases are retained.
 
 Run `npm run check`, `npm run changeset:status`, and `git diff --check`.
 

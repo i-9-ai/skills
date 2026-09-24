@@ -4,8 +4,34 @@ The repository root is the plugin. Its Codex, Claude Code and Copilot manifests
 at `.codex-plugin/plugin.json`, `.claude-plugin/plugin.json` and
 `.github/plugin/plugin.json` all reference the same canonical `.agents/skills`
 tree. The Codex marketplace entry at `.agents/plugins/marketplace.json` points
-to `./`, the repository root. `npm run check` verifies these paths and the
+to `./`, the repository root. Claude Code and Copilot have matching marketplace
+entries at `.claude-plugin/marketplace.json` and
+`.github/plugin/marketplace.json`. `npm run check` verifies these paths and the
 cataloged packages. There is no checked-in copy under `plugins/`.
+
+The same root plugin also declares the local `i9-skill-usage` MCP. Codex and
+Copilot read `.mcp.json`; Claude Code reads `mcp/claude.json` because its plugin
+root placeholder is host-specific. All three start the same dependency-free
+Node 24 server in `src/transport/PluginUsageMcpServer.ts`. It stores a dedicated
+`skill-usage.db` in the host's persistent plugin data directory, never in the
+installed plugin or the current project. The server exposes
+`skill_read_record` and `skill_read_rankings`; it records only explicit read
+evidence supplied by a caller. Loading the plugin does not observe reads or
+activate skills. The MCP protocol was tested from a clean copy without
+`node_modules`; native plugin ingestion and host subprocess behavior still need
+consumer tests.
+
+Hooks have a different readiness boundary. `.codex/hooks.json` is a *project*
+registration for this checkout. The CLI can generate Claude, Copilot and other
+host-specific project registrations, but those commands currently rely on the
+checkout's oclif/YAML dependencies after explicit `npm ci` and resolve the Git
+root. None is declared as a plugin-bundled hook: an installed plugin may be
+copied elsewhere without those dependencies or a Git checkout. Before adding
+plugin hook paths to the manifests, provide an independently runnable handler
+for each host and test it in a clean installed copy. Keep each host's event
+name, output envelope and trust review separate; a common hook JSON file would
+misrepresent their contracts. Claude's successful `Read` telemetry remains an
+explicit project adapter, not automatic plugin measurement.
 
 The manifests use host-specific compatibility formats because the portable
 Agent Plugins 1.0 format fixes skill discovery at a root `skills/` directory.
@@ -123,3 +149,13 @@ they do not execute them, prove native ingestion or make the repository public.
 Before public marketplace use, verify the exact merged ref, plugin UI rendering,
 package count, and update behavior in a consumer environment. Public directory
 submission and workspace publication remain separate authorization boundaries.
+
+Claude Code and Copilot CLI can likewise read their repository marketplace
+files after a consumer explicitly adds this Git repository as a marketplace.
+Both entries select the root plugin, so they distribute the same canonical
+packages and the mapped observed-read MCP. The marketplace entries do not
+install or activate the checkout-only hooks. Validate marketplace loading and
+the MCP subprocess in each intended host before claiming consumer support.
+See the [Claude marketplace contract](https://code.claude.com/docs/en/plugin-marketplaces)
+and [Copilot CLI plugin reference](https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-plugin-reference)
+for their host-specific registration and trust steps.

@@ -29,6 +29,14 @@ test('repository-root plugin manifests reference the canonical collection', () =
         authentication: 'ON_INSTALL',
     });
 
+    for (const relative of ['.claude-plugin/marketplace.json', '.github/plugin/marketplace.json']) {
+        const hostMarketplace = JSON.parse(fs.readFileSync(join(repository, relative)));
+        const plugin = hostMarketplace.plugins.find((candidate) => candidate.name === 'i9-skills');
+        assert.equal(hostMarketplace.name, 'i9-skills', relative);
+        assert.equal(hostMarketplace.owner.name, 'I-9 AI', relative);
+        assert.equal(plugin?.source, './', relative);
+    }
+
     const catalog = JSON.parse(fs.readFileSync(join(repository, 'skills-catalog.json')));
     for (const relative of [
         '.codex-plugin/plugin.json',
@@ -42,6 +50,12 @@ test('repository-root plugin manifests reference the canonical collection', () =
             fs.realpathSync(join(repository, manifest.skills)),
             join(repository, '.agents/skills'),
         );
+        assert.equal(typeof manifest.mcpServers, 'string', relative);
+        const mapping = JSON.parse(fs.readFileSync(join(repository, manifest.mcpServers)));
+        const server = mapping.mcpServers['i9-skill-usage'];
+        assert.equal(server.type, 'stdio');
+        assert.equal(server.command, 'node');
+        assert.match(server.args[0], /PluginUsageMcpServer\.ts$/);
     }
 
     for (const skill of catalog.skills) {

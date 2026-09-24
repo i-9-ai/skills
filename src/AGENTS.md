@@ -26,6 +26,8 @@ Update affected domain rules, adapters, use cases, tests, and documentation toge
 Run `npm run check` and inspect the required official workflow result for the exact PR head. Test process adapters using fake executors and temporary fixtures.
 
 ## Child DOX index
+- [Plugin data](config/PluginDataConfiguration.ts): select a persistent host-owned usage database without writing into the installed plugin.
+- [Plugin MCP entrypoint](transport/PluginUsageMcpServer.ts): dependency-free Node 24 stdio launch of the existing usage service.
 - [Project configuration](config/ProjectConfiguration.ts): one validated root selection and named project paths without filesystem effects.
 - [Command contracts](command/AGENTS.md): capability grouping, class names, help, failures and noninteractive output.
 - [Skill usage MCP](command/mcp/usage.md): explicit observed-read recording and period rankings; no automatic hooks or activation inference.
