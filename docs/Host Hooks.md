@@ -197,8 +197,10 @@ printf '%s\n' '{"hook_event_name":"SessionStart","source":"startup","session_id"
 
 These calls test runtime envelopes and storage, not native hook delivery. Isolated
 tests additionally launch the checked-in configurations with spaces and shell
-metacharacters in the installed root. Native host loading, trust, update and
-rollback remain separate consumer tests. Do not create `hooks/hooks.json`: Claude
+metacharacters in the installed root. The [native pilot](Native%20Plugin%20Pilot.md)
+separately verifies Codex/Claude loading, SessionStart and local source rollback
+at named revisions; hosted updates and native Read telemetry remain untested.
+Do not create `hooks/hooks.json`: Claude
 can merge that default with an explicit file and invoke the same event twice.
 Do not duplicate an enabled project registration in the plugin layer. Disable
 the selected manifest mapping to roll back, preserving persistent metrics.

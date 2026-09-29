@@ -17,6 +17,7 @@ Verify every requirement has an implementation and a check or an explicit limit.
 
 ## Child DOX index
 
+- [Native plugin pilot](2026-09-29-19-38-34-native-plugin-pilot.md): isolated native Codex/Claude registration, source-pin replacement, hook/MCP execution and data-preserving cleanup, with explicit model and hosted-update limits.
 - [Collection maintenance](2026-09-29-19-43-00-collection-maintenance.md): bounded audit, reviewable remediation and explicit catalog-only evolution with verified preimage recovery and pending semantic handoffs.
 - [Installed catalog MCP](2026-09-29-19-09-50-installed-catalog-mcp.md): bounded bundled-skill search, resource retrieval and overview through the shared MCP/CLI, with lazy usage storage and no installation effects.
 - [Reviewable version preparation](2026-09-29-17-37-32-reviewable-version-preparation.md): manual version-only PR creation, aligned plugin/lock metadata and generated-release verification without publication.

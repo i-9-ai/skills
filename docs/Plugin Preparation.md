@@ -24,7 +24,8 @@ The old `i9-skill-usage` registration and usage-only entrypoint were replaced;
 update manually copied configurations. The [MCP guide](Skill%20MCP.md) provides
 tool calls, CLI equivalents, identity/limit rules and version-pinned invocation.
 Clean-copy protocol tests without `node_modules` are separate from native Claude
-ingestion and subprocess tests. Codex and Copilot do not yet register this MCP;
+ingestion and subprocess tests. The [native pilot](Native%20Plugin%20Pilot.md)
+records successful Claude initialization at pinned revisions. Codex and Copilot do not yet register this MCP;
 their native loading and persistence must be tested before adding mappings.
 
 Claude Code can remove the persistent data directory on final plugin uninstall.
@@ -62,7 +63,11 @@ Avoid enabling both project and plugin session registrations for the same work,
 because hosts can combine them and duplicate context. Removing the plugin's hook
 manifest reference disables that surface without removing stored metrics.
 Direct clean-copy transport tests do not prove native host installation, trust
-acceptance or end-to-end delivery of host events; those are separate pilot steps.
+acceptance or end-to-end delivery of host events. The [isolated native pilot](Native%20Plugin%20Pilot.md)
+passed discovery, SessionStart, local source replacement and rollback in Codex
+0.159.0 and Claude Code 2.1.277. It records the tested trust path, Claude's offline
+dependency warning and Codex's stubbed first turn, without claiming model quality
+or native Read-tool telemetry.
 
 The manifests use host-specific compatibility formats because the portable
 Agent Plugins 1.0 format fixes skill discovery at a root `skills/` directory.
@@ -176,7 +181,8 @@ branch is merged, an authorized consumer can import the marketplace with
 `codex plugin marketplace add i-9-ai/skills --ref main` and then install with
 `codex plugin add i9-skills@i9-skills`. A private repository requires Git access
 for that consumer. The checked-in manifests prepare those steps;
-they do not execute them, prove native ingestion or make the repository public.
+they do not execute them or make the repository public. The local source pilot
+does not establish hosted Git/version-cache update behavior.
 Before public marketplace use, verify the exact merged ref, plugin UI rendering,
 package count, and update behavior in a consumer environment. Public directory
 submission and workspace publication remain separate authorization boundaries.

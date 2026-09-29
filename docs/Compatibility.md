@@ -22,7 +22,7 @@ Primary documentation was inspected on 2026-09-12. This table records documented
 | --- | --- | --- |
 | Codex | Reads repository `.agents/skills`; optional `agents/openai.yaml` supports interface metadata and icon paths. [Official guide](https://learn.chatgpt.com/docs/build-skills) | Native canonical tree; per-skill interface metadata, source-attributed SVG small icon, and PNG large icon |
 | Codex session index | Optional trusted project hook renders bounded project/global package metadata; the manual command renders the same output | Project-local `.codex/hooks.json`; no automatic trust, package loading, installation, or route invocation |
-| Installed Codex/Claude plugins | Root manifests map native hook files to a direct Node 24 TypeScript transport | Bounded plugin/project/global context; Claude native Read telemetry; no Codex read inference, automatic trust or universal native-runtime claim. See [installed hooks](Host%20Hooks.md#installed-plugin-hooks) |
+| Installed Codex/Claude plugins | Root manifests map native hook files to a direct Node 24 TypeScript transport | Native Codex 0.159.0/Claude 2.1.277 discovery, SessionStart and local source rollback passed in the [isolated pilot](Native%20Plugin%20Pilot.md); Claude MCP initialized. Read telemetry remains direct-test evidence, and Codex read inference is absent. |
 | Claude Code | Reads `SKILL.md` and local resources under its skill directories; provider-specific frontmatter includes model and invocation controls. [Official guide](https://code.claude.com/docs/en/skills) | `.claude/skills` alias and `CLAUDE.md` alias; no required Claude-specific fields or hooks |
 | GitHub Copilot | Supports skill directories and resources; VS Code adds invocation/frontmatter and extension-level capabilities. [GitHub overview](https://docs.github.com/en/copilot/concepts/agents/about-agent-skills), [VS Code guide](https://code.visualstudio.com/docs/agent-customization/agent-skills) | `.github/skills` alias; no invented per-skill manifest or extension package |
 | Gemini CLI | `GEMINI.md` is the default context filename; `context.fileName` can select other names. [Official context guide](https://geminicli.com/docs/cli/gemini-md/) | Preserve the legacy `GEMINI.md` alias to canonical `AGENTS.md` without changing host settings; session hooks are described separately |
@@ -40,8 +40,9 @@ uses `AGENTS.md`. [Claude Code](https://code.claude.com/docs/en/memory#share-one
 explicitly supports a `CLAUDE.md` symlink to that file. Its newer native AGENTS.md
 loading is conditional on version and settings; keeping the alias preserves the
 existing repository entrypoint. Gemini's filename adapter remains useful with
-its default settings. These are structural and documented contracts; no native
-host launch or Windows symlink checkout was tested, and no home settings changed.
+its default settings. These instruction-loading claims are structural and
+documented contracts. The later native plugin pilot does not test every project
+instruction alias or Windows symlink checkout; no real home settings changed.
 
 The optional Codex session index remains an adapter, rather than a portable package requirement. Its command discovers project and global `.agents/skills` entrypoints with canonical deduplication and writes bounded context. If a host does not support hooks, or the project is not trusted for them, run `node bin/index.mjs context available-skills` and use the same compact map manually.
 

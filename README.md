@@ -54,8 +54,10 @@ session adapters, runnable without preparing the checkout. They discover plugin,
 project and global skills. Claude additionally records supported native Read
 attempts and successes in its host-provided plugin data directory. These counts
 do not prove skill activation. See [installed plugin hooks](docs/Host%20Hooks.md#installed-plugin-hooks)
-for supported versions, trust, storage, parser limits and the separate native
-consumer-test boundary. Avoid duplicate project/plugin session registrations.
+for supported versions, trust, storage and parser limits. The [native pilot](docs/Native%20Plugin%20Pilot.md)
+records isolated Codex/Claude installation, SessionStart and local source rollback;
+it does not establish real-model behavior or hosted updates. Avoid duplicate
+project/plugin session registrations.
 
 Hosts without hooks, or projects where the user has not enabled hook trust, use the identical manual fallback:
 
