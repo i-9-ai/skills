@@ -7,6 +7,7 @@ export type ReleaseDocuments = {
     lock: ReleaseDocument;
     plugins: Record<string, ReleaseDocument>;
 };
+export type ReleaseExpectation = { version: string; changelog: string };
 
 /** Checks the single-package version contract without filesystem or process access. */
 export class ReleaseVersionValidator {
@@ -46,6 +47,11 @@ export class ReleaseVersionValidator {
         if (config.commit !== false || config.changelog !== '@changesets/cli/changelog') {
             throw new Error(
                 'Release preparation requires the standard Changesets changelog and disabled automatic commits.',
+            );
+        }
+        if (config.format !== false) {
+            throw new Error(
+                'Release preparation requires format: false for deterministic changelog generation without formatter execution.',
             );
         }
         if (typeof pkg.name !== 'string' || !pkg.name) throw new Error('Package name is required.');
@@ -90,11 +96,11 @@ export class ReleaseVersionValidator {
     prepared(
         base: ReleaseDocuments,
         current: ReleaseDocuments,
-        expectedVersion: string,
+        expected: ReleaseExpectation,
         changelog: string,
     ): void {
         const version = this.alignment(current);
-        if (version === this.version(base.package) || version !== expectedVersion) {
+        if (version === this.version(base.package) || version !== expected.version) {
             throw new Error('Prepared version does not match the base Changesets release intent.');
         }
         if (!isDeepStrictEqual(current, this.synchronize(base, version))) {
@@ -102,6 +108,11 @@ export class ReleaseVersionValidator {
         }
         if (!changelog.split(/\r?\n/u).some((line) => line.trim() === `## ${version}`)) {
             throw new Error('Prepared changelog lacks the exact version heading.');
+        }
+        if (changelog !== expected.changelog) {
+            throw new Error(
+                'Prepared changelog must equal the complete output generated from the base notes and history.',
+            );
         }
     }
 }
