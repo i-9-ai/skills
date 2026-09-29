@@ -81,6 +81,14 @@ returns a context summary within 4096 characters. Its final counts disclose
 omitted entries. It covers this bundled collection; project/global session
 discovery belongs to the separate available-skills command and hook.
 
+Overview availability means readable, parsed metadata only. Setup, lifecycle,
+host usability and activation remain unverified, and the selected route is
+`unassessed` until a task is evaluated. Routing-entrypoint names are candidates,
+not proof of package identity. JSON-quoted entrypoint locators are relative to
+this installed collection; use `skill_resource_read` for actual content. See
+[routing guidance](Host%20Hooks.md#availability-and-routing-guidance) for route
+choices and locator limits.
+
 All three tools reject unknown fields and incorrect types. The same operations
 are available without MCP and return JSON:
 

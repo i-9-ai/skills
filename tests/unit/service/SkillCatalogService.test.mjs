@@ -137,6 +137,12 @@ test('installed overview preserves package counts and omissions within the fixed
     assert.match(result.overview, /alpha-guide/u);
     assert.match(result.overview, /Discovered: 3 distinct packages/u);
     assert.match(result.overview, /2 additional packages omitted/u);
+    assert.match(result.overview, /Selected route: unassessed/u);
+    assert.match(result.overview, /Status: available = readable, parsed metadata/u);
+    assert.match(
+        result.overview,
+        /SKILL.md: "\.agents\/skills\/alpha-guide\/SKILL.md" \(collection-relative\)/u,
+    );
     assert.doesNotMatch(result.overview, /decoy-guide/u);
 });
 

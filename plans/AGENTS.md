@@ -37,7 +37,7 @@ Verify every requirement has an implementation and a check or an explicit limit.
 - [Interactive visual guide](2026-09-13-20-13-49-publish-entry-path-map.md): generated map and GitHub Pages publication.
 - [Lifecycle expansion](2026-09-13-20-41-52-01-expand-skill-lifecycle.md): focused lifecycle capabilities and maturity policy.
 - [Portable authoring contract](2026-09-13-20-41-52-02-portable-authoring-contract.md): reusable selection, context, handoff, and automation boundaries.
-- [Session skill-index hook](2026-09-13-21-25-00-session-skill-index-hook.md): generated entry context from the canonical catalog.
+- [Session skill-index hook](2026-09-13-21-25-00-session-skill-index-hook.md): bounded current metadata, unassessed route guidance and on-demand entrypoint locations without activation claims.
 - [Structural host compatibility](2026-09-13-22-10-00-skills-host-compatibility.md): repository-local agent discovery alias verification.
 - [Portable runtime and setup contract](2026-09-13-23-21-01-portable-runtime-setup-contract.md): explicit runtime and setup declarations for self-contained skills.
 - [TypeScript repository tooling assessment](2026-09-13-23-23-25-typescript-tooling-assessment.md): conditional migration recipe for repository-owned CLI tooling.

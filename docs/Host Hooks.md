@@ -63,6 +63,28 @@ bounded package summaries, never a claim of activation. Metadata and description
 are untrusted shortlist data; selecting a package still requires its entrypoint
 and host capabilities. Unsupported hosts use `context available-skills`.
 
+## Availability and routing guidance
+
+The overview calls a package available only when its metadata was readable and
+parsed. It does not verify setup, lifecycle status, host usability or activation.
+Because session startup supplies no task or routing decision, `Selected route`
+is `unassessed`. A `none` route is a later decision that no skill fits or is needed;
+it must not be inferred simply because no task was supplied.
+
+Any discovered `skill-routing` package is listed as an unverified candidate, not
+trusted because of its name. Colliding names retain their separate identities.
+After inspecting the actual package, choose a single owner, a sequence with
+distinct ordered outputs, an ambiguous shortlist of at most three candidates
+requiring more input, or none. This is guidance, not automatic routing.
+
+Each displayed summary includes a JSON-quoted `SKILL.md` locator. Decode its
+escapes before reading; do not treat a displayed filename as a shell command.
+Bundled catalog locations are labeled collection-relative. Locators exceeding
+512 escaped characters are omitted whole, with instructions to inspect the
+selected collection. Read only the selected entrypoint and needed references.
+Package/context limits and omitted counts still apply; a truncated overview
+does not establish complete availability.
+
 ## Evidence and limitations
 
 Reviewed on 2026-09-19: [Codex hooks](https://learn.chatgpt.com/docs/hooks),

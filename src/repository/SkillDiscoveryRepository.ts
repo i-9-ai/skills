@@ -55,11 +55,17 @@ export class SkillDiscoveryRepository {
             skills: [...skills.values()].sort(
                 (left, right) =>
                     left.name.localeCompare(right.name, 'en') ||
-                    left.sources[0].localeCompare(right.sources[0], 'en'),
+                    left.sources[0].localeCompare(right.sources[0], 'en') ||
+                    this.comparePath(left.canonicalPath, right.canonicalPath),
             ),
             warnings,
             sources: [...new Set(sources.map((source) => source.label))],
         };
+    }
+
+    private comparePath(left: string, right: string): number {
+        if (left === right) return 0;
+        return left < right ? -1 : 1;
     }
 
     private readSource(
