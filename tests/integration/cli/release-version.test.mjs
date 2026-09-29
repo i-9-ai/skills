@@ -84,6 +84,7 @@ function fixture(t, { version = '1.2.3', pending = true, changelog } = {}) {
     writeJson(root, '.changeset/config.json', {
         changelog: '@changesets/cli/changelog',
         commit: false,
+        format: false,
         fixed: [],
         linked: [],
         access: 'restricted',
@@ -203,6 +204,42 @@ function preparedFixture(t) {
     successful(cli(target, 'prepare-version'));
     commit(target, 'Prepare synthetic version');
     return { ...target, base };
+}
+
+function historicalPreparedFixture(t) {
+    const history =
+        '# @example/release-fixture\n\n## 1.2.3\n\n### Patch Changes\n\n- Preserve the existing runtime contract.\n\n## 1.2.2\n\n### Patch Changes\n\n- Retain the original diagnostics.\n';
+    const target = fixture(t, { changelog: history });
+    write(
+        target.root,
+        noteFile,
+        '---\n"@example/release-fixture": minor\n---\n\nIntroduce `repo compare` for release review.\n\nPreserve **Markdown** and [usage guidance](https://example.test/usage).\n\n- Verify inputs.\n- Keep existing behavior.\n\n```sh\nexample repo compare --base "$BASE"\n```\n',
+    );
+    git(target, ['init', '--quiet', '--initial-branch=main']);
+    const originalNoteCommit = commit(target, 'Introduce a release note and prior history');
+    write(
+        target.root,
+        noteFile,
+        readFileSync(join(target.root, noteFile), 'utf8') +
+            '\nExplain a refinement recorded after the note was introduced.\n',
+    );
+    write(
+        target.root,
+        '.changeset/synthetic-fix.md',
+        '---\n"@example/release-fixture": patch\n---\n\nRetain patch diagnostics for existing commands.\n\nInclude the actionable recovery procedure.\n',
+    );
+    const base = commit(target, 'Record multiple release notes and previous history');
+    assert.deepEqual(successful(cli(target, 'prepare-version')), {
+        version: '1.3.0',
+        changed: true,
+        notes: 2,
+    });
+    commit(target, 'Prepare a release with complete Markdown notes');
+    const changelog = readFileSync(join(target.root, 'CHANGELOG.md'), 'utf8');
+    assert.match(changelog, /Introduce `repo compare` for release review\./u);
+    assert.match(changelog, /Retain patch diagnostics for existing commands\./u);
+    assert.ok(changelog.includes(history.slice(history.indexOf('## 1.2.3'))));
+    return { ...target, base, history, changelog, originalNoteCommit };
 }
 
 function setVersion(target, version) {
@@ -341,6 +378,14 @@ test('an empty Changeset is consumed without inventing a version or changelog', 
 
 const invalidPreparation = [
     ['workspaces', 'package.json', { workspaces: [] }, /one root package/u],
+    ['missing formatter policy', '.changeset/config.json', { format: undefined }, /format/iu],
+    ['automatic formatter discovery', '.changeset/config.json', { format: 'auto' }, /format/iu],
+    [
+        'external formatter command',
+        '.changeset/config.json',
+        { format: 'npx prettier --write' },
+        /format/iu,
+    ],
     [
         'automatic commits',
         '.changeset/config.json',
@@ -573,6 +618,98 @@ test('prepared release verification recomputes intent from a real Git base witho
     assert.deepEqual(files(target.root), before);
     assert.equal(git(target, ['status', '--porcelain']), '');
 });
+
+test('prepared changelog verification accepts complete Markdown notes and preserves previous history on repeated read-only verification', (t) => {
+    const target = historicalPreparedFixture(t);
+    const before = files(target.root);
+    const head = git(target, ['rev-parse', 'HEAD']);
+    assert.match(target.changelog, /Preserve \*\*Markdown\*\*/u);
+    assert.match(target.changelog, /```sh\n\s+example repo compare --base "\$BASE"\n\s+```/u);
+    assert.ok(target.changelog.includes(target.originalNoteCommit.slice(0, 7)));
+    assert.ok(target.changelog.includes(target.base.slice(0, 7)));
+    assert.match(
+        target.changelog,
+        /Explain a refinement recorded after the note was introduced\./u,
+    );
+    assert.ok(target.changelog.endsWith(target.history.slice(target.history.indexOf('## 1.2.3'))));
+
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+        assert.deepEqual(successful(cli(target, 'verify-release', ['--base', target.base])), {
+            version: '1.3.0',
+            aligned: true,
+            prepared: true,
+            base: target.base,
+            consumedNotes: 2,
+        });
+        assert.deepEqual(files(target.root), before);
+        assert.equal(git(target, ['status', '--porcelain']), '');
+        assert.equal(git(target, ['rev-parse', 'HEAD']), head);
+    }
+});
+
+test('prepared changelog verification rejects shallow source history without fetching or changing files', (t) => {
+    const target = historicalPreparedFixture(t);
+    write(target.root, '.git/shallow', target.base + '\n');
+    assert.equal(git(target, ['rev-parse', '--is-shallow-repository']), 'true');
+    assert.equal(git(target, ['remote']), '', 'the fixture has no remote to fetch');
+    const before = files(target.root);
+    const shallow = readFileSync(join(target.root, '.git/shallow'), 'utf8');
+
+    const result = cli(target, 'verify-release', ['--base', target.base]);
+    assert.notEqual(result.status, 0, result.stdout);
+    assert.match(result.stderr, /shallow|complete local Git history/iu);
+    assert.deepEqual(files(target.root), before);
+    assert.equal(readFileSync(join(target.root, '.git/shallow'), 'utf8'), shallow);
+});
+
+const invalidPreparedChangelogs = [
+    [
+        'removed prior history',
+        ({ changelog }) => changelog.slice(0, changelog.indexOf('\n## 1.2.3\n')).trimEnd() + '\n',
+    ],
+    [
+        'deleted patch note entry',
+        ({ changelog }) =>
+            changelog.slice(0, changelog.indexOf('\n### Patch Changes\n')) +
+            changelog.slice(changelog.indexOf('\n## 1.2.3\n')),
+    ],
+    [
+        'rewritten release text',
+        ({ changelog }) =>
+            changelog.replace(
+                'Introduce `repo compare` for release review.',
+                'Introduce an undocumented deployment capability.',
+            ),
+    ],
+    [
+        'rewritten release commit attribution',
+        ({ changelog, originalNoteCommit, base }) =>
+            changelog.replace(originalNoteCommit.slice(0, 7), base.slice(0, 7)),
+    ],
+    [
+        'all generated entries removed while preserving prior history',
+        ({ history }) =>
+            '# @example/release-fixture\n\n## 1.3.0\n\n' +
+            history.slice(history.indexOf('## 1.2.3')),
+    ],
+    ['fabricated heading-only changelog', () => '# @example/release-fixture\n\n## 1.3.0\n'],
+];
+for (const [label, mutate] of invalidPreparedChangelogs) {
+    test(`prepared changelog verification rejects ${label}`, (t) => {
+        const target = historicalPreparedFixture(t);
+        const invalid = mutate(target);
+        assert.notEqual(invalid, target.changelog, 'the fixture must alter the generated output');
+        assert.match(invalid, /^## 1\.3\.0$/mu, 'the expected heading alone is insufficient');
+        write(target.root, 'CHANGELOG.md', invalid);
+        commit(target, 'Record an invalid prepared changelog');
+        const before = files(target.root);
+        const result = cli(target, 'verify-release', ['--base', target.base]);
+        assert.notEqual(result.status, 0, result.stdout);
+        assert.match(result.stderr, /changelog/iu);
+        assert.deepEqual(files(target.root), before);
+        assert.equal(git(target, ['status', '--porcelain']), '');
+    });
+}
 
 test('release preparation and full-base verification preserve Changesets-ignored documentation', (t) => {
     const target = fixture(t);

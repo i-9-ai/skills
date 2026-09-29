@@ -6,10 +6,10 @@ I-9 Skills is a toolkit for the full life of an agent skill: discover what alrea
 
 **24 focused skills. One responsibility each. One reviewable output each.**
 
-The working package version is `0.1.0-rc.1`. This is an experimental collection
-for explicit pilots; the npm package remains private and unpublished. Structural
-checks and fixture tests do not establish production quality or universal host
-compatibility.
+The working package version is recorded in [package.json](package.json). This is
+an experimental collection for explicit pilots; the npm package remains private
+and unpublished. Structural checks and fixture tests do not establish production
+quality or universal host compatibility.
 
 The prepared CLI package name is `@i-9-ai/skills` and its executable is
 `i9-skills`. In a trusted checkout, run `npm ci`, then `npm run check` and

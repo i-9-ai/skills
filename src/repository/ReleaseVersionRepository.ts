@@ -11,11 +11,15 @@ import {
 } from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { SafeRoot } from '../../.agents/skills/skill-authoring/scripts/lib/filesystem.mjs';
 import { strictJson } from '../../.agents/skills/skill-authoring/scripts/lib/contracts.mjs';
 import { ReleaseVersionValidator } from '../validator/ReleaseVersionValidator.ts';
-import type { ReleaseDocuments, ReleaseDocument } from '../validator/ReleaseVersionValidator.ts';
+import type {
+    ReleaseDocuments,
+    ReleaseDocument,
+    ReleaseExpectation,
+} from '../validator/ReleaseVersionValidator.ts';
 
 type VersionRunner = (root: string) => void;
 
@@ -121,7 +125,7 @@ export class ReleaseVersionRepository {
             writeFileSync(join(this.root, file), JSON.stringify(value, null, 2) + '\n');
     }
 
-    runVersion(root = this.root): void {
+    runVersion(root = this.root, environment = process.env): void {
         if (this.runner) {
             this.runner(root);
             return;
@@ -149,7 +153,14 @@ export class ReleaseVersionRepository {
 
         execFileSync(process.execPath, [cli, 'version'], {
             cwd: root,
-            env: { ...process.env, CI: 'true' },
+            env: {
+                ...environment,
+                CI: 'true',
+                GIT_ALLOW_PROTOCOL: '',
+                GIT_NO_LAZY_FETCH: '1',
+                GIT_NO_REPLACE_OBJECTS: '1',
+                GIT_TERMINAL_PROMPT: '0',
+            },
             timeout: 30000,
             maxBuffer: 1048576,
             stdio: 'pipe',
@@ -201,13 +212,18 @@ export class ReleaseVersionRepository {
             );
     }
 
-    expectedVersion(base: string, pkg: ReleaseDocument, notes: string[]): string {
+    expectedRelease(base: string, pkg: ReleaseDocument, notes: string[]): ReleaseExpectation {
+        this.assertBase(base);
+        if (this.git(['rev-parse', '--is-shallow-repository']).trim() !== 'false')
+            throw new Error('Release verification requires complete local Git history.');
+
         const config = this.validator.document(
             strictJson(Buffer.from(this.git(['show', `${base}:.changeset/config.json`]))),
         );
         this.validator.configuration(pkg, config);
         const temporary = mkdtempSync(join(tmpdir(), 'i9-release-intent-'));
         try {
+            const environment = this.prepareHistoryView(temporary, base);
             mkdirSync(join(temporary, '.changeset'));
             writeFileSync(
                 join(temporary, 'package.json'),
@@ -215,17 +231,62 @@ export class ReleaseVersionRepository {
             );
             writeFileSync(
                 join(temporary, '.changeset/config.json'),
-                JSON.stringify({ ...config, changelog: false, commit: false }),
+                JSON.stringify({
+                    ...config,
+                    changelog: createRequire(import.meta.url).resolve('@changesets/cli/changelog'),
+                }),
             );
             for (const file of notes)
                 writeFileSync(join(temporary, file), this.git(['show', `${base}:${file}`]));
-            this.runVersion(temporary);
-            return this.validator.version(
-                this.validator.document(strictJson(readFileSync(join(temporary, 'package.json')))),
-            );
+            if (this.git(['ls-tree', '--name-only', base, '--', 'CHANGELOG.md']).trim()) {
+                writeFileSync(
+                    join(temporary, 'CHANGELOG.md'),
+                    this.git(['show', `${base}:CHANGELOG.md`]),
+                );
+            }
+
+            this.runVersion(temporary, environment);
+            return {
+                version: this.validator.version(
+                    this.validator.document(
+                        strictJson(readFileSync(join(temporary, 'package.json'))),
+                    ),
+                ),
+                changelog: readFileSync(join(temporary, 'CHANGELOG.md'), 'utf8'),
+            };
         } finally {
             rmSync(temporary, { recursive: true, force: true });
         }
+    }
+
+    /** Give Changesets the base history without sharing refs, config, index or working files. */
+    private prepareHistoryView(temporary: string, base: string): NodeJS.ProcessEnv {
+        const environment: NodeJS.ProcessEnv = Object.fromEntries(
+            Object.entries(process.env).filter(([name]) => !name.startsWith('GIT_')),
+        );
+        Object.assign(environment, {
+            GIT_CONFIG_GLOBAL: '/dev/null',
+            GIT_CONFIG_SYSTEM: '/dev/null',
+            GIT_CONFIG_NOSYSTEM: '1',
+            GIT_ALLOW_PROTOCOL: '',
+            GIT_NO_LAZY_FETCH: '1',
+            GIT_NO_REPLACE_OBJECTS: '1',
+            GIT_TERMINAL_PROMPT: '0',
+        });
+        const objects = realpathSync(
+            resolve(this.root, this.git(['rev-parse', '--git-path', 'objects']).trim()),
+        );
+        if (/[\r\n]/u.test(objects))
+            throw new Error('Git object storage path cannot contain line separators.');
+
+        this.git(
+            ['init', '--quiet', '--template=', '--initial-branch=release-verification'],
+            temporary,
+            environment,
+        );
+        writeFileSync(join(temporary, '.git/objects/info/alternates'), `${objects}\n`);
+        writeFileSync(join(temporary, '.git/HEAD'), `${base}\n`);
+        return environment;
     }
 
     private assertBase(base: string): void {
@@ -235,9 +296,16 @@ export class ReleaseVersionRepository {
             throw new Error('Select the repository root for release verification.');
     }
 
-    private git(args: string[]): string {
+    private git(args: string[], cwd = this.root, environment = process.env): string {
         return execFileSync('git', args, {
-            cwd: this.root,
+            cwd,
+            env: {
+                ...environment,
+                GIT_ALLOW_PROTOCOL: '',
+                GIT_NO_LAZY_FETCH: '1',
+                GIT_NO_REPLACE_OBJECTS: '1',
+                GIT_TERMINAL_PROMPT: '0',
+            },
             encoding: 'utf8',
             timeout: 10000,
             maxBuffer: 1048576,

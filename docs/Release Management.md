@@ -95,6 +95,10 @@ The selected project must be an independent package. Package discovery also
 rejects a child inside an ancestor workspace, so preparation cannot silently
 target files outside the selected project.
 
+Changesets configuration must explicitly set `format: false`. This keeps
+generated changelog content reproducible without auto-detecting or executing a
+local formatter. Source formatting still uses the normal repository check.
+
 If preparation fails, the adapter restores its captured manifests, pending notes
 and changelog. Diagnose the reported error before retrying; do not overwrite
 unrelated changes or manually fabricate generated versions. A missing development
@@ -112,11 +116,16 @@ npm run release:verify -- --base <full-base-commit-sha>
 
 This stronger mode requires a clean tracked worktree and checks that the diff
 contains only the generated package/lock/plugin metadata, changelog and removed
-pending notes. It recomputes the expected version with the pinned Changesets CLI
-from the base commit's notes in a disposable local directory, checks that every
-note was consumed, and requires the matching changelog heading. It also rejects
-unrelated edits hidden inside the allowed manifest files. The selected checkout
-is read-only during verification; the disposable directory is removed afterward.
+pending notes. It recomputes the expected version and complete changelog with the
+pinned Changesets CLI from the base commit's notes and existing release history,
+then requires an exact match. Missing or altered entries and unrelated edits
+hidden inside allowed manifest files fail verification.
+
+Verification requires complete local Git history. A disposable directory reads
+existing Git objects at the immutable base to reproduce note commit references,
+without sharing the selected checkout's refs, index, configuration or hooks.
+Git fetching and formatter execution are disabled. The selected checkout is
+read-only and the disposable directory is removed afterward.
 
 The [release-note workflow](../.github/workflows/changesets.yml) first runs normal
 Changesets status against the PR base or preceding push commit. When a prepared

@@ -18,8 +18,9 @@ submission, consumer installation or merging the generated PR.
   successful no-op when no notes remain. Preserve all other manifest fields.
 - Add `repo verify-release --project PATH [--base SHA]`. Without a base, check
   version alignment. With a base, also verify an exclusive generated-artifact
-  diff, consumed notes, the generated changelog heading, and the version computed
-  by Changesets from the base's pending notes in a disposable fixture. Branch
+  diff, consumed notes, and the complete changelog and version computed by
+  Changesets from the base's pending notes and existing history in a disposable
+  fixture. Branch
   names alone must never bypass pending-note validation.
 - Preparation supports this single-package, standard-changelog configuration.
   Reject workspaces, prerelease-state files and custom commit/changelog hooks
@@ -36,6 +37,19 @@ submission, consumer installation or merging the generated PR.
   same bounded repository preflight in the workflow before computing a plan.
   Match the official reader's exclusions for hidden Markdown, case-insensitive
   README and host instruction files so those files are never treated as notes.
+- Require explicit `format: false` in Changesets configuration. Its default
+  formatter auto-detection can execute a package-manager command and depends on
+  local tooling; generated release artifacts must instead be reproducible with
+  the pinned engine alone. Normal source formatting remains a separate check.
+- Reconstruct the expected changelog with an isolated temporary Git directory,
+  detached at the immutable base and reading the existing object store through
+  an alternate. Copy only bounded package, configuration, notes and changelog
+  inputs. Do not share the working tree, index, refs, configuration or hooks.
+  Disable Git transports and lazy fetching, and reject shallow history rather
+  than letting Changesets deepen it. Compare all generated changelog bytes so
+  altered summaries or removed historical releases cannot pass verification.
+- Link the README to canonical version metadata instead of maintaining a
+  second literal version that could become stale in a generated release PR.
 
 ## Workflow and review
 
