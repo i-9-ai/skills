@@ -30,6 +30,12 @@ submission, consumer installation or merging the generated PR.
   the locked CLI's existing `@manypkg/get-packages` dependency to require the
   exact independent root, without introducing another dependency or duplicating
   workspace-discovery rules.
+- Reject both `.changeset/pre.json` and `.changeset/pre`, including linked state,
+  before running any Changesets operation. The pinned reader consumes nested
+  prerelease notes, and even `status` migrates legacy prerelease state. Reuse the
+  same bounded repository preflight in the workflow before computing a plan.
+  Match the official reader's exclusions for hidden Markdown, case-insensitive
+  README and host instruction files so those files are never treated as notes.
 
 ## Workflow and review
 

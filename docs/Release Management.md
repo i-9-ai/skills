@@ -85,6 +85,12 @@ hooks are rejected. The development Changesets dependency is required for
 preparation and for verification against a base; it is not bundled into the
 consumer CLI's production dependencies.
 
+Both `.changeset/pre.json` and `.changeset/pre` are unsupported, including linked
+state. The CLI and workflow reject them before running Changesets, since even
+the upstream status operation can migrate legacy prerelease state. Hidden
+Markdown, README files and the supported host instruction filenames are left
+untouched rather than interpreted as release notes.
+
 The selected project must be an independent package. Package discovery also
 rejects a child inside an ancestor workspace, so preparation cannot silently
 target files outside the selected project.

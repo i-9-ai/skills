@@ -4,9 +4,11 @@ import { spawnSync } from 'node:child_process';
 import {
     existsSync,
     linkSync,
+    lstatSync,
     mkdirSync,
     mkdtempSync,
     readFileSync,
+    readlinkSync,
     readdirSync,
     rmSync,
     symlinkSync,
@@ -128,6 +130,30 @@ function files(root) {
     );
 }
 
+function entry(root, file) {
+    const path = join(root, file);
+    try {
+        const info = lstatSync(path);
+        if (info.isSymbolicLink()) return { type: 'link', target: readlinkSync(path) };
+        if (info.isDirectory()) return { type: 'directory' };
+        return { type: 'file', content: readFileSync(path, 'utf8') };
+    } catch (error) {
+        if (error.code === 'ENOENT') return { type: 'missing' };
+        throw error;
+    }
+}
+
+function ignoredDocumentation(target) {
+    rmSync(join(target.root, '.changeset/README.md'));
+    const ignored = {};
+    for (const name of ['rEaDmE.md', '.hidden-note.md', 'AGENTS.md', 'CLAUDE.md', 'GEMINI.md']) {
+        const file = `.changeset/${name}`;
+        ignored[file] = `# ${name}\n\nDocumentation without Changesets frontmatter.\n`;
+        write(target.root, file, ignored[file]);
+    }
+    return ignored;
+}
+
 function cli(target, command, extra = []) {
     return spawnSync(
         process.execPath,
@@ -202,8 +228,10 @@ function workflowFixture(t, options) {
     const pkg = json(target.root, 'package.json');
     pkg.scripts['changeset:status'] = 'changeset status';
     writeJson(target.root, 'package.json', pkg);
-    write(target.root, '.gitignore', 'node_modules/\n');
-    symlinkSync(join(repository, 'node_modules'), join(target.root, 'node_modules'), 'dir');
+    write(target.root, '.gitignore', '/node_modules\n/src\n/.agents\n');
+    for (const name of ['node_modules', 'src', '.agents']) {
+        symlinkSync(join(repository, name), join(target.root, name), 'dir');
+    }
     write(target.temporary, 'user.npmrc', '');
     write(target.temporary, 'global.npmrc', '');
     Object.assign(target.environment, {
@@ -361,6 +389,97 @@ test('release preparation rejects explicit prerelease state before executing or 
     assert.deepEqual(files(target.root), before);
 });
 
+const legacyPreState = {
+    mode: 'pre',
+    tag: 'next',
+    initialVersions: { '@example/release-fixture': '1.2.3' },
+    changesets: ['synthetic-feature'],
+};
+const unsupportedPreStates = [
+    [
+        'ordinary pre directory',
+        (target) => write(target.root, '.changeset/pre/historical.md', note),
+    ],
+    [
+        'ordinary pre file',
+        (target) => write(target.root, '.changeset/pre', 'Unexpected state file.\n'),
+    ],
+    [
+        'linked pre directory',
+        (target, outside) => symlinkSync(outside, join(target.root, '.changeset/pre'), 'dir'),
+    ],
+    [
+        'dangling pre link',
+        (target, outside) =>
+            symlinkSync(
+                join(outside, 'missing-directory'),
+                join(target.root, '.changeset/pre'),
+                'dir',
+            ),
+    ],
+    ['legacy pre.json', (target) => writeJson(target.root, '.changeset/pre.json', legacyPreState)],
+    ['legacy pre.json directory', (target) => mkdirSync(join(target.root, '.changeset/pre.json'))],
+    [
+        'linked legacy pre.json',
+        (target, outside) =>
+            symlinkSync(join(outside, 'pre.json'), join(target.root, '.changeset/pre.json')),
+    ],
+    [
+        'hard-linked legacy pre.json',
+        (target, outside) =>
+            linkSync(join(outside, 'pre.json'), join(target.root, '.changeset/pre.json')),
+    ],
+    [
+        'dangling legacy pre.json',
+        (target, outside) =>
+            symlinkSync(join(outside, 'missing.json'), join(target.root, '.changeset/pre.json')),
+    ],
+    [
+        'legacy state with linked prerelease storage',
+        (target, outside) => {
+            writeJson(target.root, '.changeset/pre.json', legacyPreState);
+            symlinkSync(outside, join(target.root, '.changeset/pre'), 'dir');
+        },
+    ],
+];
+for (const [label, configure] of unsupportedPreStates) {
+    for (const consumer of ['CLI', 'workflow']) {
+        test(`${consumer} rejects ${label} before Changesets can mutate owned or external state`, (t) => {
+            const target = consumer === 'CLI' ? fixture(t) : workflowFixture(t);
+            write(target.root, noteFile, note.replace(': minor', ': patch'));
+            const outside = join(target.temporary, 'outside');
+            write(outside, 'synthetic-feature.md', note.replace(': minor', ': major'));
+            write(outside, 'sentinel.txt', 'The external directory is not release state.\n');
+            writeJson(outside, 'pre.json', legacyPreState);
+            configure(target, outside);
+            const before = files(target.root);
+            const external = files(outside);
+            const state = ['.changeset/pre', '.changeset/pre.json'].map((file) => [
+                file,
+                entry(target.root, file),
+            ]);
+
+            const result =
+                consumer === 'CLI' ? cli(target, 'prepare-version') : workflowStep(target, 'notes');
+            assert.notEqual(result.status, 0, result.stdout);
+            assert.match(result.stderr, /prerelease|symlink|hard-linked/iu);
+            if (consumer === 'workflow') assert.notEqual(result.outputs.pending, 'true');
+            assert.deepEqual(
+                files(target.root),
+                before,
+                'owned files must retain their exact bytes',
+            );
+            assert.deepEqual(
+                files(outside),
+                external,
+                'external notes must not be moved, deleted or overwritten',
+            );
+            for (const [file, original] of state)
+                assert.deepEqual(entry(target.root, file), original);
+        });
+    }
+}
+
 test('release preparation rejects a package discovered inside an ancestor npm workspace', (t) => {
     const target = fixture(t);
     writeJson(target.temporary, 'package.json', {
@@ -455,6 +574,27 @@ test('prepared release verification recomputes intent from a real Git base witho
     assert.equal(git(target, ['status', '--porcelain']), '');
 });
 
+test('release preparation and full-base verification preserve Changesets-ignored documentation', (t) => {
+    const target = fixture(t);
+    const ignored = ignoredDocumentation(target);
+    git(target, ['init', '--quiet', '--initial-branch=main']);
+    const base = commit(target, 'Record release intent with non-note documentation');
+
+    assert.deepEqual(successful(cli(target, 'prepare-version')), {
+        version: '1.3.0',
+        changed: true,
+        notes: 1,
+    });
+    for (const [file, content] of Object.entries(ignored)) {
+        assert.equal(readFileSync(join(target.root, file), 'utf8'), content);
+    }
+    commit(target, 'Prepare version without consuming documentation');
+    const verified = successful(cli(target, 'verify-release', ['--base', base]));
+    assert.equal(verified.prepared, true);
+    assert.equal(verified.consumedNotes, 1);
+    assert.equal(git(target, ['status', '--porcelain']), '');
+});
+
 const invalidRelease = [
     [
         'unrelated implementation changes',
@@ -539,6 +679,10 @@ test('version workflow only creates draft PRs from an explicitly selected defaul
     assert.equal(definition.concurrency['cancel-in-progress'], false);
     const job = definition.jobs['prepare-version'];
     assert.match(job.if, /github\.ref.*github\.event\.repository\.default_branch/u);
+    assert.equal(
+        job.steps.find((step) => step.id === 'plan').if,
+        "steps.notes.outputs.pending == 'true'",
+    );
     const changesets = job.steps.filter((step) => step.uses?.startsWith('changesets/action'));
     assert.equal(changesets.length, 1, 'no combined version/publish or registry-selection action');
     assert.match(changesets[0].uses, /^changesets\/action\/version@[a-f0-9]{40}$/u);
@@ -603,7 +747,20 @@ test('version workflow rejects linked notes before invoking the release planner'
     symlinkSync(destination, join(target.root, noteFile));
     const selected = workflowStep(target, 'notes');
     assert.notEqual(selected.status, 0, selected.stdout);
-    assert.match(selected.stderr, /regular Markdown files/u);
+    assert.match(selected.stderr, /symlink is forbidden/u);
     assert.notEqual(selected.outputs.pending, 'true');
     assert.equal(readFileSync(destination, 'utf8'), note);
+});
+
+test('version workflow leaves ignored documentation intact and skips it as release intent', (t) => {
+    const target = workflowFixture(t, { pending: false });
+    const ignored = ignoredDocumentation(target);
+    commit(target, 'Record non-note documentation');
+    const selected = workflowStep(target, 'notes');
+    assert.equal(selected.status, 0, selected.stderr);
+    assert.equal(selected.outputs.pending, 'false');
+    for (const [file, content] of Object.entries(ignored)) {
+        assert.equal(readFileSync(join(target.root, file), 'utf8'), content);
+    }
+    assert.equal(git(target, ['status', '--porcelain']), '');
 });

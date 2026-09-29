@@ -68,13 +68,15 @@ export class ReleaseVersionRepository {
         try {
             if (!safe.info('.changeset')?.isDirectory())
                 throw new Error('Changesets state must be a directory.');
-            if (safe.inspect('.changeset/pre.json', { allowMissingLeaf: true }).info)
-                throw new Error('Explicit prerelease-state preparation is not supported.');
+            for (const state of ['.changeset/pre.json', '.changeset/pre']) {
+                if (safe.inspect(state, { allowMissingLeaf: true }).info)
+                    throw new Error('Explicit prerelease-state preparation is not supported.');
+            }
         } finally {
             safe.close();
         }
         const names = readdirSync(join(this.root, '.changeset'))
-            .filter((name) => name.endsWith('.md') && name !== 'README.md')
+            .filter((name) => this.validator.isNote(name))
             .sort();
         if (names.length > 1024 || names.some((name) => !/^[A-Za-z0-9._-]+\.md$/u.test(name)))
             throw new Error('Changeset note names or count exceed the supported release input.');
@@ -195,7 +197,7 @@ export class ReleaseVersionRepository {
             .filter(
                 (file) =>
                     /^\.changeset\/[A-Za-z0-9._-]+\.md$/u.test(file) &&
-                    file !== '.changeset/README.md',
+                    this.validator.isNote(file.slice('.changeset/'.length)),
             );
     }
 
