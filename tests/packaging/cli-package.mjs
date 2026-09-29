@@ -148,7 +148,11 @@ test('the allowlisted artifact runs from node_modules on Node 24+ without TypeSc
         '.codex-plugin/plugin.json': { name: 'synthetic-plugin', version: '1.0.0' },
         '.claude-plugin/plugin.json': { name: 'synthetic-plugin', version: '1.0.0' },
         '.github/plugin/plugin.json': { name: 'synthetic-plugin', version: '1.0.0' },
-        '.changeset/config.json': { commit: false, changelog: '@changesets/cli/changelog' },
+        '.changeset/config.json': {
+            commit: false,
+            changelog: '@changesets/cli/changelog',
+            format: false,
+        },
     };
     const releaseBytes = new Map();
     for (const [file, document] of Object.entries(releaseFiles)) {

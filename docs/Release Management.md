@@ -119,7 +119,9 @@ contains only the generated package/lock/plugin metadata, changelog and removed
 pending notes. It recomputes the expected version and complete changelog with the
 pinned Changesets CLI from the base commit's notes and existing release history,
 then requires an exact match. Missing or altered entries and unrelated edits
-hidden inside allowed manifest files fail verification.
+hidden inside allowed manifest files fail verification. The comparison uses the
+committed changelog after checking worktree cleanliness and file safety, so a
+normal Git newline conversion in the checkout does not change release evidence.
 
 Verification requires complete local Git history. A disposable directory reads
 existing Git objects at the immutable base to reproduce note commit references,

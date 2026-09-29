@@ -51,7 +51,7 @@ export class ReleaseVersionService {
         const notes = this.repository.baseNotes(base);
         this.repository.verifyChangedFiles(base, notes);
         const expected = this.repository.expectedRelease(base, previous.package, notes);
-        this.validator.prepared(previous, current, expected, this.repository.read('CHANGELOG.md'));
+        this.validator.prepared(previous, current, expected, this.repository.committedChangelog());
         return { version, aligned: true, prepared: true, base, consumedNotes: notes.length };
     }
 }

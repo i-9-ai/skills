@@ -732,6 +732,21 @@ test('release preparation and full-base verification preserve Changesets-ignored
     assert.equal(git(target, ['status', '--porcelain']), '');
 });
 
+test('prepared changelog verification accepts Git-clean checkout newline conversion', (t) => {
+    const target = preparedFixture(t);
+    git(target, ['config', 'core.autocrlf', 'true']);
+    const generated = readFileSync(join(target.root, 'CHANGELOG.md'), 'utf8');
+    write(target.root, 'CHANGELOG.md', generated.replace(/\r?\n/gu, '\r\n'));
+    git(target, ['add', 'CHANGELOG.md']);
+    assert.equal(git(target, ['status', '--porcelain']), '');
+    assert.match(git(target, ['ls-files', '--eol', 'CHANGELOG.md']), /i\/lf\s+w\/crlf/u);
+    const before = files(target.root);
+
+    assert.equal(successful(cli(target, 'verify-release', ['--base', target.base])).prepared, true);
+    assert.deepEqual(files(target.root), before);
+    assert.equal(git(target, ['status', '--porcelain']), '');
+});
+
 const invalidRelease = [
     [
         'unrelated implementation changes',
