@@ -17,6 +17,11 @@ node bin/index.mjs mcp serve
 node bin/index.mjs mcp serve --db /absolute/local-data/skill-usage.db
 ```
 
+The [MCP Inspector walkthrough](MCP%20Inspector.md) shows a pinned client setup,
+tool listing, catalog search and selected Markdown reads against this checkout.
+It includes argument ordering, expected output, diagnostics and cleanup; the
+guide distinguishes source-checked instructions from an actual Inspector run.
+
 The [unified CLI](../bin/index.md) uses the same service and transport as the
 dependency-free `src/transport/PluginMcpServer.ts --host claude|codex|copilot` entrypoint.
 The host registrations are named `i9-skills` in their respective
