@@ -10,6 +10,16 @@ export type ReleaseDocuments = {
 
 /** Checks the single-package version contract without filesystem or process access. */
 export class ReleaseVersionValidator {
+    /** Match the pinned Changesets reader's Markdown exclusions. */
+    isNote(name: string): boolean {
+        return (
+            name.endsWith('.md') &&
+            !name.startsWith('.') &&
+            !/^README\.md$/iu.test(name) &&
+            !['AGENTS.md', 'CLAUDE.md', 'GEMINI.md'].includes(name)
+        );
+    }
+
     document(value: unknown): ReleaseDocument {
         if (!value || typeof value !== 'object' || Array.isArray(value)) {
             throw new Error('Release metadata must be a JSON object.');

@@ -34,22 +34,12 @@ jobs:
         id: notes
         run: |
           node --input-type=module <<'NODE'
-          import { appendFileSync, lstatSync, readdirSync } from 'node:fs';
+          import { appendFileSync } from 'node:fs';
+          import { ReleaseVersionRepository } from './src/repository/ReleaseVersionRepository.ts';
 
-          const directory = lstatSync('.changeset');
-          if (!directory.isDirectory() || directory.isSymbolicLink()) {
-            throw new Error('Expected a regular .changeset directory.');
-          }
-
-          const entries = readdirSync('.changeset', { withFileTypes: true });
-          if (entries.length > 4096) {
-            throw new Error('The pending-note directory exceeds the supported entry limit.');
-          }
-
-          const notes = entries.filter((entry) => entry.name.endsWith('.md') && entry.name !== 'README.md');
-          if (notes.some((entry) => !entry.isFile())) {
-            throw new Error('Pending notes must be regular Markdown files.');
-          }
+          const repository = new ReleaseVersionRepository(process.cwd());
+          const notes = repository.pending();
+          for (const note of notes) repository.read(note);
 
           appendFileSync(process.env.GITHUB_OUTPUT, `pending=${notes.length > 0}\n`);
           if (notes.length === 0) {
