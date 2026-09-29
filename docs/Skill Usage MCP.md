@@ -44,6 +44,16 @@ object keys and nesting beyond 64 levels fail before a storage operation. A
 response finishes writing before the next request runs; a client that stops
 reading stdout therefore pauses processing instead of accumulating responses.
 Closing or failing the output closes storage and terminates the transport.
+Input failure or premature close also cancels a pending response and discards
+buffered requests. On POSIX, the default server owns its stdout pipe for the
+server lifetime: orderly input completion finishes valid responses before closing
+that pipe, and cancellation destroys a stalled write so the process can exit.
+No other code should write protocol stdout during that lifetime. Files, terminals
+and Windows keep Node's usual output semantics; a synchronous OS write cannot be
+interrupted while it blocks the event loop, so an unread Windows pipe has no
+bounded cancellation guarantee. Injected streams must honor Node's writable
+destruction contract. Neither transport shutdown nor cancellation deletes the
+database.
 The root plugin includes this parser in the canonical authoring package; no
 external parser or package installation is needed to start its MCP entrypoint.
 

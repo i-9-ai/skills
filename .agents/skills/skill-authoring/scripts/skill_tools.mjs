@@ -183,12 +183,22 @@ function hasRecognizableApacheSuffix(license) {
   // Allow the standard appendix or its complete application notice, with one
   // identifying copyright line. Additional clauses need a separate review;
   // recognizing this structure does not establish redistribution rights.
-  const normalized = suffix.replace(/^[ \t]*Copyright[^\r\n]{1,256}/mu, 'Copyright [notice]')
+  const notice = /^[ \t]*Copyright[ \t]+([^\r\n]*)/mu.exec(suffix);
+  if (!notice || !copyrightIdentity(notice[1].trim())) return false;
+  const normalized = suffix.replace(notice[0], 'Copyright [notice]')
     .toLowerCase().replace(/\s+/gu, ' ').trim();
   return new Set([
     '1050b0a984f8b51814508c5e822a44b30428fc248babfa0872ea2ebf5e4aeffe',
     'da784bc1e3f72fb0fb76f3369820aeb5cc95c3a548a67a36968a0877752ea419',
   ]).has(digestBytes(normalized));
+}
+
+function copyrightIdentity(value) {
+  if (value === '[yyyy] [name of copyright owner]') return true;
+  // Recognize a bounded date and name, not an arbitrary line of legal prose.
+  // Clause separators and additional sentences must survive suffix comparison.
+  return value.length <= 256
+    && /^(?:(?:\(c\)|©)[ \t]*)?[0-9]{4}(?:[ \t]*[-–][ \t]*[0-9]{4})?[ \t]+[\p{L}\p{N}][\p{L}\p{M}\p{N}'’–-]*(?:[ \t]+(?:&[ \t]+)?[\p{L}\p{N}][\p{L}\p{M}\p{N}'’–-]*)*(?:,[ \t]+(?:Inc|Ltd|LLC|Corp|Co))?\.?$/u.test(value);
 }
 
 function markdownHeadings(text) {
@@ -218,6 +228,7 @@ function sourceIdentity(source) {
     && !parsed.username && !parsed.password && !parsed.search && !parsed.hash;
   const synthetic = parsed.protocol === 'urn:' && parsed.pathname.startsWith('example:') && !parsed.search && !parsed.hash;
   requireCondition(publicHttps || synthetic, 'source uri must be public HTTPS without credentials/query/fragment or a synthetic urn:example');
+  if (publicHttps) parsed.hostname = parsed.hostname.replace(/\.$/u, '');
   parsed.search = ''; parsed.hash = '';
   return parsed.href.replace(/%[0-9a-f]{2}/giu, encoded => {
     const character = String.fromCharCode(Number.parseInt(encoded.slice(1), 16));

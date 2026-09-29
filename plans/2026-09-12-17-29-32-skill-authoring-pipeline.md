@@ -63,6 +63,29 @@ Validate changed packages with the official tool, repository checks, Changeset s
 
 Before the first release, this plan also absorbs mandatory `skill-domain-research` because it completes the same inaugural authoring boundary. The version 2 run contract inserts domain research between discovery and synthesis. It must preserve the user process owner as the source for current practice while reconciling that record with opened current authoritative public sources, recording jurisdiction, date, conflicts, unknowns, and qualified-human gates for any case-specific professional determination. The dossier supports authoring; it is not a substitute for the qualified determination or advice. Synthesis may use one contributing skill package plus the required dossier, or be explicitly skipped only when there is no contributor. Update the run schema, helper, tests, documentation, catalog, and Changeset together; reject historical version 1 manifests as current readiness evidence. Rollback restores the prior six-stage contract and removes the domain-research package, catalog entry, documentation, tests, and Changeset as one reviewed change.
 
+## Helper validation completion
+
+Complete the inaugural helper's remaining review findings without a new runtime
+dependency. Validate a copyright identity before normalizing an Apache application
+notice; retain additional clauses so they cannot match the standard suffix.
+Canonicalize a terminal DNS dot in source identities before duplicate and
+contributor checks. Decode standard named Markdown/HTML references exactly once,
+then retain the existing URL-scheme and package-path checks.
+
+Bundle only `maps/entities.json` from `fb55/entities` v4.5.0 at immutable commit
+`61afd4701eaa736978b13c7351cd3de9a96b04bc` as static standards data. The reviewed
+32,977-byte table is BSD-2-Clause licensed; retain the complete upstream copyright
+and license with its original path, revision and byte hash inside the distributed
+skill. Load it through a package-relative Node 24 JSON import. Do not copy the
+upstream decoder, add an npm dependency, or download anything during validation.
+
+Exercise real Unicode resource filenames, unknown names, named/numeric dangerous
+schemes and traversal, single-pass decoding, appended copyright clauses, and
+equivalent source-host identities with synthetic fixtures. Repeat official skill
+conformance on the final PR head. Reverting this helper correction removes the
+table and its notice with the decoder change; caller packages and run artifacts
+remain untouched.
+
 ## Installation fallback completion
 
 Complete the inaugural installation boundary identified in [PR review comment 4010639762](https://github.com/i-9-ai/skills/pull/2#discussion_r4010639762). Bundle a dependency-free Node helper and a complete usage/recovery reference inside `skill-installation`. Read only committed package bytes from a caller-selected local Git repository at a full commit ID. Stage outside discovery, reject unsafe entries, run the caller's explicitly selected official validator, and bind installation and read-back verification to a deterministic content digest. Refuse collisions by default; explicit replacement must retain the prior bytes and a recovery receipt outside discovery on the same filesystem.

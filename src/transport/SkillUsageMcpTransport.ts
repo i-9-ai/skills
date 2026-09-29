@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
+import { fstatSync } from 'node:fs';
+import { Socket } from 'node:net';
 import type { Readable, Writable } from 'node:stream';
 import type { SkillReadRepository } from '../repository/SkillReadRepository.ts';
 import { strictJson } from '../../.agents/skills/skill-authoring/scripts/lib/contracts.mjs';
@@ -61,8 +63,26 @@ export class SkillUsageMcpTransport {
     async startServer(
         store: Store,
         input: Readable = process.stdin,
-        output: Writable = process.stdout,
+        output?: Writable,
     ): Promise<void> {
+        let stdoutPipe: Socket | undefined;
+        try {
+            if (output === undefined && process.platform !== 'win32') {
+                const descriptor = fstatSync(1);
+                if (descriptor.isFIFO() || descriptor.isSocket()) {
+                    // Node's process.stdout.destroy() leaves fd 1 and pending
+                    // writes open. Own the sole protocol writer for this lifetime.
+                    stdoutPipe = new Socket({ fd: 1, readable: false, writable: true });
+                }
+            }
+            await this.serve(store, input, output ?? stdoutPipe ?? process.stdout);
+        } finally {
+            stdoutPipe?.destroy();
+            store.close();
+        }
+    }
+
+    private async serve(store: Store, input: Readable, output: Writable): Promise<void> {
         let initialized = false;
         let ready = false;
         let buffer = Buffer.alloc(0);
@@ -207,7 +227,6 @@ export class SkillUsageMcpTransport {
             input.off('close', inputClosed);
             output.off('error', outputFailed);
             output.off('close', outputClosed);
-            store.close();
         }
     }
 
@@ -224,7 +243,10 @@ export class SkillUsageMcpTransport {
                 }
                 resolve();
             };
-            const aborted = () => settle(signal.reason);
+            const aborted = () => {
+                output.destroy();
+                settle(signal.reason);
+            };
             const close = () => finish(new Error('MCP output closed'));
             const finish = (error?: Error | null) => {
                 output.off('error', finish);
@@ -232,17 +254,21 @@ export class SkillUsageMcpTransport {
                 settle(error);
             };
 
-            if (signal.aborted) {
-                aborted();
+            if (output.destroyed) {
+                settle(new Error('MCP output closed'));
                 return;
             }
 
-            // Cancellation ends the server immediately, but the in-flight write
-            // still owns its error listener until completion, error or closure.
+            // Cancellation destroys a stalled writer. Keep its error handler
+            // through destruction so late write/close failures stay handled.
             // Writable reports callback errors before emitting its error event.
             output.once('error', finish);
             output.once('close', close);
             signal.addEventListener('abort', aborted, { once: true });
+            if (signal.aborted) {
+                aborted();
+                return;
+            }
 
             try {
                 output.write(`${JSON.stringify(response)}\n`, (error) => {
