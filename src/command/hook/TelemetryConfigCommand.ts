@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import { Command } from '@oclif/core';
-import HookObserveCommand from './observe.ts';
+import HookObserveCommand from './HookObserveCommand.ts';
 import { TelemetryHookConfiguration } from '../../service/TelemetryHookConfiguration.ts';
 
 export default class TelemetryConfigCommand extends Command {

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { Command, Flags } from '@oclif/core';
 import { SkillTelemetryService } from '../../service/SkillTelemetryService.ts';
-import { telemetryPeriodFlags } from './rankings.ts';
+import { telemetryPeriodFlags } from './TelemetryRankingsCommand.ts';
 
 export default class TelemetryTrendsCommand extends Command {
     static description =
