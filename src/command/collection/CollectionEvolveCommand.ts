@@ -38,6 +38,11 @@ export default class CollectionEvolveCommand extends Command {
             { apply: flags.apply, snapshotStore: flags['snapshot-store'] },
         );
         this.log(JSON.stringify(result, null, 2));
-        if (result.status === 'rolled_back' || result.status === 'rollback_failed') this.exit(1);
+        if (
+            result.status === 'rolled_back' ||
+            result.status === 'rollback_failed' ||
+            result.receipt === 'unavailable'
+        )
+            this.exit(1);
     }
 }

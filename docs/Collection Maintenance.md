@@ -43,6 +43,8 @@ Catalog status is `current`, `missing`, `stale`, `malformed` or `unavailable`.
 Coverage and omissions determine what the report can establish. Local structural
 checks do not mean official Agent Skills conformance or behavioral evaluation;
 those remain `not_run` unless separately performed.
+An incomplete inventory stops secondary package/catalog scans; uninspected
+packages report `validation: "not_run"` and catalog freshness remains unavailable.
 
 The plan records the selected audit's digest, baseline, supported `operations`,
 pending `handoffs` and coverage. Generating it rechecks the collection against the
@@ -104,10 +106,19 @@ The JSON result reports `status`, `applied`, before/after digests, operations,
 `remaining_handoffs`, snapshot details and preimage/catalog/rollback verification.
 `applied` establishes the supported write only. `rolled_back` and `rollback_failed`
 return a nonzero exit status and distinguish recovery from successful delivery.
-Invalid or stale input fails before snapshots or collection writes. A terminal
-`maintenance-result.json` is retained beside the snapshot's manifest, receipt
-and content objects. Preserve this recovery state until an explicit retention
-decision; the command does not delete it after success or failure.
+Initially invalid or stale input fails before snapshots or collection writes.
+Drift detected after capture preserves that recovery artifact and prevents the
+write. After an attempted application, terminal `maintenance-result.json` is
+written beside the snapshot's manifest, receipt and content objects.
+
+The stdout-only `receipt` field reports `not_run`, `written` or `unavailable`.
+Receipt persistence failure returns a nonzero CLI exit without rolling back
+otherwise verified content: inspect `status`, `applied` and verification to see
+the actual collection outcome. A file written before confirmation fails retains
+that same terminal outcome. Preserve stdout when persistence is unavailable;
+never retry an already-applied stale plan blindly. Keep recovery state until an
+explicit retention decision; this command does not delete it after success or
+failure.
 
 ## Limits and next checks
 

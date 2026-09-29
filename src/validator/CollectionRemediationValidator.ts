@@ -21,7 +21,7 @@ export type CollectionAudit = {
     schema_version: 1;
     policy: 'collection-maintenance-v1';
     baseline: CollectionBaseline;
-    packages: Array<{ name: string; path: string; validation: 'passed' | 'failed' }>;
+    packages: Array<{ name: string; path: string; validation: 'passed' | 'failed' | 'not_run' }>;
     catalog: {
         status: 'current' | 'missing' | 'stale' | 'malformed' | 'unavailable';
         expected_after_sha256: string | null;

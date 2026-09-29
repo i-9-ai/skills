@@ -43,6 +43,9 @@ collection invalidates the plan. Recompute the expected supported operation and
 after-digest; caller-edited claims are not authority to write arbitrary content.
 Revalidate before simulation and immediately before mutation. Incomplete coverage,
 unsafe files, exceeded shared bounds or unsupported entries block application.
+Incomplete inventory also prevents secondary package/catalog scans from restarting
+with independent budgets. Uninspected packages report `not_run`; catalog
+freshness is unavailable rather than inferred from structural JSON validity.
 Exclude reserved `.system` content in global layouts. Do not follow package links
 or claim hostile-concurrency confinement.
 
@@ -74,7 +77,13 @@ expected bytes, verify freshness and confirm package fingerprints are unchanged.
 On post-write failure, restore only the original catalog bytes/mode or absence and
 verify recovery. Preserve snapshots and an inspectable result; never delete other
 collection files. If rollback itself fails, report it distinctly and retain the
-recovery reference. Invalid/stale plans fail before snapshots or collection writes.
+recovery reference. Initially invalid/stale plans fail before snapshots or writes;
+drift discovered during capture preserves the snapshot and prevents the write.
+Persist terminal receipts outside the application/rollback transaction. Failure
+to confirm the receipt returns a nonzero CLI exit and an explicit persistence
+status, while preserving the verified collection outcome and the same outcome in
+any already-written terminal receipt. Never trigger rollback solely because the
+terminal receipt could not be confirmed.
 
 ## Verification
 

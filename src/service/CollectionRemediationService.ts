@@ -15,6 +15,7 @@ export type CollectionEvolutionResult = {
     operations: CollectionPlan['operations'];
     remaining_handoffs: CollectionPlan['handoffs'];
     snapshot: string | null;
+    receipt: 'not_run' | 'written' | 'unavailable';
     verification: {
         preimage: 'not_run' | 'passed';
         catalog: 'not_run' | 'passed' | 'failed';
@@ -56,7 +57,7 @@ export class CollectionRemediationService {
             throw new Error('Unsupported evolution options.');
         const observation = this.repository.observe(selection);
         const plan = this.validator.planMatches(selected, observation.audit);
-        const result: CollectionEvolutionResult = {
+        const result: Omit<CollectionEvolutionResult, 'receipt'> = {
             status: options.apply ? 'unchanged' : 'preview',
             applied: false,
             before_sha256: plan.baseline.catalog_sha256,
@@ -66,8 +67,8 @@ export class CollectionRemediationService {
             snapshot: null,
             verification: { preimage: 'not_run', catalog: 'not_run', rollback: 'not_run' },
         };
-        if (!options.apply) return result;
-        if (!plan.operations.length) return result;
+        if (!options.apply) return { ...result, receipt: 'not_run' };
+        if (!plan.operations.length) return { ...result, receipt: 'not_run' };
         if (!options.snapshotStore)
             throw new Error('Apply requires an explicit external --snapshot-store.');
         // Every preflight above is read-only, including stale-plan and incomplete-coverage rejection.
@@ -97,8 +98,6 @@ export class CollectionRemediationService {
             result.applied = true;
             result.after_sha256 = after.baseline.catalog_sha256;
             result.verification.catalog = 'passed';
-            this.snapshots.record(recovery, result);
-            return result;
         } catch {
             result.status = 'rolled_back';
             result.applied = false;
@@ -118,12 +117,15 @@ export class CollectionRemediationService {
                 result.after_sha256 = null;
                 result.verification.rollback = 'failed';
             }
-            try {
-                this.snapshots.record(recovery, result);
-            } catch {
-                /* The snapshot and stdout receipt remain available. */
-            }
-            return result;
+        }
+
+        // Receipt failure cannot invalidate verified content and then leave an
+        // already-written receipt claiming the opposite terminal outcome.
+        try {
+            this.snapshots.record(recovery, result);
+            return { ...result, receipt: 'written' };
+        } catch {
+            return { ...result, receipt: 'unavailable' };
         }
     }
 }

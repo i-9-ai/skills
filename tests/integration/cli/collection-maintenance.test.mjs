@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import test from 'node:test';
 import {
     inventory,
@@ -10,10 +11,11 @@ import {
     repository,
 } from '../../unit/fixture/CollectionMaintenanceFixture.mjs';
 
-function cli(target, operation, flags = []) {
+function cli(target, operation, flags = [], nodeArguments = []) {
     return spawnSync(
         process.execPath,
         [
+            ...nodeArguments,
             join(repository, 'bin/index.mjs'),
             'collection',
             operation,
@@ -61,6 +63,44 @@ test('CLI audit and plan can be reviewed before a deliberate catalog-only applic
     assert.equal(JSON.parse(applied.stdout).verification.catalog, 'passed');
     assert.equal(fs.existsSync(target.catalogFile), true);
     assert.deepEqual(fs.readdirSync(target.home), []);
+});
+
+test('CLI reports receipt failure with nonzero exit while preserving the verified applied outcome', (t) => {
+    const target = maintenanceFixture(t);
+    const planFile = join(target.root, 'plan.json');
+    fs.writeFileSync(planFile, JSON.stringify(target.plan()));
+    const fault = join(target.root, 'receipt-fault.mjs');
+    fs.writeFileSync(
+        fault,
+        `import fs from 'node:fs';
+import { basename } from 'node:path';
+const write = fs.writeFileSync;
+fs.writeFileSync = (filename, ...args) => {
+    const result = write(filename, ...args);
+    if (typeof filename === 'string' && basename(filename) === 'maintenance-result.json') {
+        throw new Error('Synthetic receipt confirmation failure');
+    }
+    return result;
+};
+`,
+    );
+    const response = cli(
+        target,
+        'evolve',
+        ['--plan', planFile, '--apply', '--snapshot-store', target.store],
+        ['--import', pathToFileURL(fault).href],
+    );
+    assert.equal(response.status, 1, response.stderr);
+    const { receipt, ...terminal } = JSON.parse(response.stdout);
+    assert.equal(receipt, 'unavailable');
+    assert.equal(terminal.status, 'applied');
+    assert.equal(terminal.applied, true);
+    assert.equal(terminal.verification.catalog, 'passed');
+    assert.equal(fs.existsSync(target.catalogFile), true);
+    assert.deepEqual(
+        JSON.parse(fs.readFileSync(join(terminal.snapshot, 'maintenance-result.json'), 'utf8')),
+        terminal,
+    );
 });
 
 test('CLI documents every operation and rejects incomplete input without writes', (t) => {

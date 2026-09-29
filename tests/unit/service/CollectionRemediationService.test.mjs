@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { join, basename } from 'node:path';
+import { join, basename, relative, sep } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import test from 'node:test';
@@ -57,9 +57,11 @@ for (const catalog of ['missing', 'stale']) {
             inventory(target.collection).filter((item) => item.path !== 'skills-catalog.json'),
             before.filter((item) => item.path !== 'skills-catalog.json'),
         );
+        const { receipt, ...terminal } = result;
+        assert.equal(receipt, 'written');
         assert.deepEqual(
             JSON.parse(fs.readFileSync(join(result.snapshot, 'maintenance-result.json'), 'utf8')),
-            result,
+            terminal,
         );
         assert.throws(() => service.evolve(target.selection, plan), /stale/);
         const after = inventory(target.root);
@@ -297,6 +299,34 @@ test('failed rollback is distinguished and retains the verified recovery artifac
     );
 });
 
+for (const stage of ['before', 'after']) {
+    test(`receipt failure ${stage} persistence cannot roll back verified content or contradict a persisted outcome`, (t) => {
+        const target = maintenanceFixture(t, { catalog: 'stale' });
+        class ReceiptFailureRepository extends CollectionSnapshotRepository {
+            record(recovery, receipt) {
+                if (stage === 'after') super.record(recovery, receipt);
+                throw new Error('injected receipt confirmation failure');
+            }
+        }
+        const result = new CollectionRemediationService(
+            new CollectionMaintenanceRepository(),
+            new ReceiptFailureRepository(),
+        ).evolve(target.selection, target.plan(), { apply: true, snapshotStore: target.store });
+        assert.equal(result.status, 'applied');
+        assert.equal(result.applied, true);
+        assert.equal(result.receipt, 'unavailable');
+        assert.equal(result.verification.catalog, 'passed');
+        assert.equal(result.verification.rollback, 'not_run');
+        assert.equal(checkCatalog(target.collection, { layout: 'repository' }).changed, false);
+        const filename = join(result.snapshot, 'maintenance-result.json');
+        assert.equal(fs.existsSync(filename), stage === 'after');
+        if (stage === 'after') {
+            const { receipt, ...terminal } = result;
+            assert.deepEqual(JSON.parse(fs.readFileSync(filename, 'utf8')), terminal);
+        }
+    });
+}
+
 test('post-write permission drift fails verification and restores the original catalog mode', (t) => {
     const target = maintenanceFixture(t, { catalog: 'stale' });
     fs.chmodSync(target.catalogFile, 0o640);
@@ -473,11 +503,37 @@ test('the shared byte budget makes coverage incomplete before a plan can authori
     }
     const audit = target.audit();
     assert.equal(audit.coverage.complete, false);
+    assert.ok(audit.packages.every((item) => item.validation === 'not_run'));
     assert.ok(audit.findings.some((item) => item.code === 'scope_limit'));
     assert.equal(target.plan().operations.length, 0);
     assert.equal(fs.existsSync(target.catalogFile), false);
     assert.equal(fs.existsSync(target.store), false);
 });
+
+for (const layout of ['repository', 'global']) {
+    test(`incomplete ${layout} inventory cannot start secondary package or catalog scans`, (t) => {
+        const target = maintenanceFixture(t, { layout, catalog: 'current' });
+        const parent = layout === 'global' ? join(target.skills, 'zz-extra') : target.alpha;
+        const deep = join(parent, ...Array.from({ length: 40 }, (_, index) => `level-${index}`));
+        fs.mkdirSync(deep, { recursive: true });
+        const opened = [];
+        const openDirectory = fs.opendirSync;
+        t.mock.method(fs, 'opendirSync', (filename, ...options) => {
+            const path = relative(target.skills, String(filename));
+            if (!path.startsWith('..')) opened.push(path);
+            return openDirectory(filename, ...options);
+        });
+        const audit = target.audit();
+        assert.equal(audit.coverage.complete, false);
+        assert.equal(audit.catalog.status, 'unavailable');
+        assert.equal(audit.catalog.expected_after_sha256, null);
+        assert.ok(audit.packages.length > 0);
+        assert.ok(audit.packages.every((item) => item.validation === 'not_run'));
+        assert.ok(opened.every((path) => !path || path.split(sep).length <= 24));
+        assert.equal(new Set(opened).size, opened.length, 'no independent scanner revisits paths');
+        assert.equal(fs.existsSync(target.store), false);
+    });
+}
 
 test('selected audit and plan documents reject linked, duplicate and excessive JSON inputs', (t) => {
     const target = maintenanceFixture(t);

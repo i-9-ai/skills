@@ -155,6 +155,8 @@ export class CollectionMaintenanceRepository {
             paths.push(directory);
         }
         const packages: CollectionAudit['packages'] = paths.map((path) => {
+            // An incomplete inventory must not trigger a new scanner with its own budget.
+            if (!complete) return { name: basename(path), path, validation: 'not_run' };
             try {
                 validateSkill(join(root.path, path));
                 return { name: basename(path), path, validation: 'passed' };
@@ -193,6 +195,7 @@ export class CollectionMaintenanceRepository {
         }
         let expected: Buffer | null = null;
         try {
+            if (!complete) throw new Error('Incomplete inventory prevents catalog derivation.');
             // The helper remains the only authority for canonical layout and metadata bytes.
             expected = this.validator.encode(deriveCatalog(root.path, { layout: input.layout }));
             if (status === 'current' && !before.bytes!.equals(expected)) status = 'stale';
