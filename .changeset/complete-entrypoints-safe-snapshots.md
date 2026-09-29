@@ -11,6 +11,6 @@ concurrent content deduplication, and run snapshot restoration/corruption tests
 in the required npm check. Reconfirm Codex SessionStart and canonical instruction
 aliases against current official contracts; native host execution remains untested.
 
-Record the responsibility and overlap review for all 23 meta-skills. Distinguish
+Record the responsibility and overlap review for the meta-skill collection. Distinguish
 evidence collection from evaluation with a source-attributed stacked-document
 icon and matching PNG.

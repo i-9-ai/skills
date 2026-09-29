@@ -4,7 +4,7 @@
 
 ## Experimental distribution baseline
 
-Introduce I-9 Skills, a collection of 23 focused, agent-agnostic packages for building and improving reusable agent skills. Each package owns one responsibility, one primary output, a scoped Apache-2.0 license, and an explicit handoff boundary. The package remains private and experimental; local checks do not establish native host compatibility or production quality.
+Introduce I-9 Skills, a collection of 24 focused, agent-agnostic packages for building and improving reusable agent skills. Each package owns one responsibility, one primary output, a scoped Apache-2.0 license, and an explicit handoff boundary. The package remains private and experimental; local checks do not establish native host compatibility or production quality.
 
 ### What the collection provides
 
