@@ -49,6 +49,14 @@ The Skills CLI asks for a supported agent target when it cannot determine one. A
 
 This source checkout includes a project-local Codex `SessionStart` adapter. After explicit `npm ci`, a trusted host can load a compact map from current project and global skill entrypoints at startup, resume, clear and compaction. Discovery reads bounded metadata, deduplicates canonical paths, and never installs packages or invokes a route.
 
+The repository-root Codex and Claude plugins also bundle their own Node 24
+session adapters, runnable without preparing the checkout. They discover plugin,
+project and global skills. Claude additionally records supported native Read
+attempts and successes in its host-provided plugin data directory. These counts
+do not prove skill activation. See [installed plugin hooks](docs/Host%20Hooks.md#installed-plugin-hooks)
+for supported versions, trust, storage, parser limits and the separate native
+consumer-test boundary. Avoid duplicate project/plugin session registrations.
+
 Hosts without hooks, or projects where the user has not enabled hook trust, use the identical manual fallback:
 
 ```sh

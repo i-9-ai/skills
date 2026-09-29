@@ -1,5 +1,9 @@
 # Session hook adapters
 
+Project registrations use the prepared CLI below. [Installed plugin hooks](#installed-plugin-hooks)
+use a dependency-free runtime and explicit host manifests; the two surfaces have
+different launch and state selection rules.
+
 The unified checkout CLI renders available-skill context and adapts its output
 for the selected host. Generation prints JSON only; it never writes settings,
 enables hooks, installs dependencies, or reads incoming prompts/transcripts.
@@ -121,3 +125,80 @@ and Gemini have distinct payload shapes; do not relabel them as Claude events.
 Use the explicit telemetry CLI or the separate MCP interface only when an emitter
 has established the actual observation. Fixture tests prove mapping and storage
 semantics, not native host enablement or complete usage measurement.
+
+## Installed plugin hooks
+
+The root plugin maps `hooks/codex.json` for Codex and `hooks/claude.json` for
+Claude Code. They invoke `src/transport/PluginHookRunner.ts --host HOST` directly
+with Node 24. No Git discovery, build, installed CLI, node_modules or automatic
+setup is required. The portable skills themselves remain independent of hooks.
+
+| Host baseline | Events | Launch form | Persistent metrics |
+| --- | --- | --- | --- |
+| Codex 0.159.0 | SessionStart startup/resume/clear/compact/fork | POSIX `node "$PLUGIN_ROOT/src/transport/PluginHookRunner.ts" --host codex` | No native read metrics claimed |
+| Claude Code 2.1.277 | SessionStart startup/resume/clear/compact; exact Read PreToolUse/PostToolUse | `command: "node"` with separate script-path and `--host`, `claude` arguments | Selected `CLAUDE_PLUGIN_DATA/skill-usage.db` |
+
+These are reviewed source/version baselines, not claims of support on every
+earlier version. [Pinned Codex discovery](https://github.com/openai/codex/blob/687a119f0fcaace47e1f1abcc77cec6c813fd6da/codex-rs/hooks/src/engine/discovery.rs)
+provides plugin root/data variables and requires trust. Claude's
+[executable-argument contract](https://code.claude.com/docs/en/hooks#command-hook-fields)
+substitutes path values as arguments without shell interpretation. Both adapters
+show `Loading available skills overview` during session context generation and
+have a ten-second host timeout. No Windows or remote-executor hook claim is made.
+
+The runner reads at most 1 MiB of strict JSON from stdin. A supported event must
+provide an absolute existing `cwd`; it selects the consumer collection even when
+the process starts elsewhere. The installed module locates the plugin's own
+`.agents/skills`; HOME selects the global `.agents/skills` read-only. No catalog
+is rewritten. Same real package paths merge; equal names at different paths
+remain separate. Context is limited to 24 entries and 4096 UTF-16 characters,
+preserving complete rows and coverage information; serialized output stays within
+16 KiB. Codex receives plain context and Claude the native SessionStart JSON
+envelope. Unknown or malformed events receive neutral output and fixed diagnostics
+where applicable, without permission decisions or payload contents.
+
+Plugin discovery uses the package-owned, dependency-free frontmatter parser.
+It supports canonical packages and common plain, quoted and block-scalar fields.
+Foreign metadata outside its supported grammar is skipped with a coverage warning;
+the ordinary prepared CLI keeps full YAML support. Neither successful discovery
+nor a displayed row means the host activated that skill.
+
+Claude session startup/clear, attempts and successful Read events reuse the
+explicit adapter's occurrence IDs and first-receipt deduplication. Resume/compact
+still provide context but do not fabricate a new session start. Missing successful
+response evidence, failure events, shell commands, other tools and references
+are not successful entrypoint reads. Codex has no mapped Read hook until its tool
+contract supplies reliable read identity. No prompt, transcript, raw result,
+filename or original host ID is stored.
+
+Unsupported metadata in an unrelated package does not prevent the plugin from
+counting a positively identified, safely read entrypoint. It still reports
+incomplete discovery and cannot count unrecognized packages. The explicit CLI
+adapter retains its stricter all-selected-collections validation default.
+
+Storage selects only the current host's DATA variable, with no fallback to the
+other host, the project, plugin bytes or a guessed home path. A validated missing
+host data directory can be created without replacing existing entries. Relative,
+linked, overlapping or unwritable state is rejected. Metrics failure preserves
+session context and emits a fixed diagnostic; it never blocks a tool or modifies
+its result. Missing Node is a host launch failure: prepare Node 24 explicitly or
+disable the hook and use the prepared CLI manually.
+
+For a direct diagnostic from a disposable consumer fixture, pipe a synthetic
+event to a reviewed installed copy. Replace the paths with owned test directories:
+
+```sh
+printf '%s\n' '{"hook_event_name":"SessionStart","source":"startup","session_id":"smoke-1","cwd":"/absolute/test-consumer"}' \
+  | node /absolute/plugin/src/transport/PluginHookRunner.ts --host codex
+
+printf '%s\n' '{"hook_event_name":"SessionStart","source":"startup","session_id":"smoke-1","cwd":"/absolute/test-consumer"}' \
+  | CLAUDE_PLUGIN_DATA=/absolute/test-data node /absolute/plugin/src/transport/PluginHookRunner.ts --host claude
+```
+
+These calls test runtime envelopes and storage, not native hook delivery. Isolated
+tests additionally launch the checked-in configurations with spaces and shell
+metacharacters in the installed root. Native host loading, trust, update and
+rollback remain separate consumer tests. Do not create `hooks/hooks.json`: Claude
+can merge that default with an explicit file and invoke the same event twice.
+Do not duplicate an enabled project registration in the plugin layer. Disable
+the selected manifest mapping to roll back, preserving persistent metrics.

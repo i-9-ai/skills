@@ -6,6 +6,17 @@ import type { CollectionSource } from './SkillDiscoveryRepository.ts';
 
 /** Matches entrypoint reads only within explicitly selected collection roots. */
 export class SkillReadIdentityRepository {
+    private readonly discovery: Pick<SkillDiscoveryRepository, 'read'>;
+    private readonly allowIncompleteDiscovery: boolean;
+
+    constructor(
+        discovery: Pick<SkillDiscoveryRepository, 'read'> = new SkillDiscoveryRepository(),
+        { allowIncompleteDiscovery = false } = {},
+    ) {
+        this.discovery = discovery;
+        this.allowIncompleteDiscovery = allowIncompleteDiscovery;
+    }
+
     sources(values: string[]): CollectionSource[] {
         if (values.length < 1 || values.length > 16) throw new Error('Select 1–16 collections');
         const labels = new Set<string>();
@@ -33,8 +44,10 @@ export class SkillReadIdentityRepository {
             return;
         }
         if (basename(canonical) !== 'SKILL.md') return;
-        const discovery = new SkillDiscoveryRepository().read(sources);
-        if (discovery.warnings.length) throw new Error('Selected collection discovery incomplete');
+        const discovery = this.discovery.read(sources);
+        if (discovery.warnings.length && !this.allowIncompleteDiscovery) {
+            throw new Error('Selected collection discovery incomplete');
+        }
         const skill = discovery.skills.find(
             (candidate) => candidate.canonicalPath === dirname(canonical),
         );

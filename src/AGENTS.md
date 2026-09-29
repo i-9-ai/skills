@@ -28,6 +28,10 @@ Run `npm run check` and inspect the required official workflow result for the ex
 ## Child DOX index
 - [Plugin data](config/PluginDataConfiguration.ts): select a persistent host-owned usage database without writing into the installed plugin.
 - [Plugin MCP entrypoint](transport/PluginUsageMcpServer.ts): dependency-free Node 24 stdio launch of the existing usage service.
+- [Installed plugin hooks](transport/PluginHookRunner.ts): bounded native event ingress and neutral diagnostics without CLI dependencies, Git lookup or automatic setup.
+- [Plugin hook orchestration](service/PluginHookService.ts): shared discovery and host context plus proven Claude observations; storage failure cannot suppress session context.
+- [Plugin hook configuration](config/PluginHookConfiguration.ts): separate installed resources, caller collections and explicit host data selection without installation effects.
+- [Plugin data filesystem](repository/PluginDataRepository.ts): validate external host-owned storage and preserve protected plugin/caller paths before opening a writer.
 - [Project configuration](config/ProjectConfiguration.ts): one validated root selection and named project paths without filesystem effects.
 - [Command contracts](command/AGENTS.md): capability grouping, class names, help, failures and noninteractive output.
 - [Command configuration](config/CommandConfiguration.ts): explicit public route-to-class mapping, independent of source filenames and build location.

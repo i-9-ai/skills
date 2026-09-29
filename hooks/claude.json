@@ -1,0 +1,45 @@
+{
+  "description": "Provide skill context and observe supported native entrypoint reads locally.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/src/transport/PluginHookRunner.ts", "--host", "claude"],
+            "timeout": 10,
+            "statusMessage": "Loading available skills overview"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "^Read$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/src/transport/PluginHookRunner.ts", "--host", "claude"],
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "^Read$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/src/transport/PluginHookRunner.ts", "--host", "claude"],
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

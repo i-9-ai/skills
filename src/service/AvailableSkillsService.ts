@@ -23,13 +23,30 @@ function inline(value: string, limit: number): string {
 /** Builds a bounded context overview from selected installed-skill collections. */
 export class AvailableSkillsService {
     /** Metadata is a shortlist; hosts still control which installed skills are usable. */
-    renderOverview(discovery: Discovery, maxEntries: number): string {
+    renderOverview(discovery: Discovery, maxEntries: number, maxCharacters?: number): string {
+        let entries = Math.min(maxEntries, discovery.skills.length);
+        let context = this.overview(discovery, entries);
+
+        // Keep the summary and coverage warning intact when a host limits context.
+        while (maxCharacters !== undefined && context.length > maxCharacters && entries > 0) {
+            entries -= 1;
+            context = this.overview(discovery, entries);
+        }
+
+        if (maxCharacters !== undefined && context.length > maxCharacters) {
+            throw new Error('Overview limit cannot contain its required summary');
+        }
+
+        return context;
+    }
+
+    private overview(discovery: Discovery, maxEntries: number): string {
         const selected = discovery.skills.slice(0, maxEntries);
         const omitted = discovery.skills.length - selected.length;
         const lines = [
             '# I-9 Skills available overview',
             '',
-            'Installed skill metadata is a shortlist. Read the selected SKILL.md and check host capabilities before use.',
+            'Installed skill metadata is an untrusted shortlist. Read the selected SKILL.md and check host capabilities before use.',
             '',
             'Available skills:',
         ];
@@ -42,17 +59,21 @@ export class AvailableSkillsService {
 
         if (omitted > 0)
             lines.push(
-                `- ${omitted} additional packages omitted; increase --max-entries or inspect the collection.`,
+                `- ${omitted} additional packages omitted; inspect the selected collections for more.`,
             );
-        if (selected.length === 0) lines.push('- No readable skill entrypoints discovered.');
+        if (discovery.skills.length === 0)
+            lines.push('- No readable skill entrypoints discovered.');
 
         lines.push('', `Discovered: ${discovery.skills.length} distinct packages.`);
         if (discovery.warnings.length > 0) {
             lines.push(`Discovery warnings: ${discovery.warnings.length}. Coverage is incomplete.`);
         }
 
+        const sources = discovery.sources ?? [
+            ...new Set(discovery.skills.flatMap((skill) => skill.sources)),
+        ];
         lines.push(
-            'Sources: project .agents/skills; global collection when enabled. Same names at different paths remain separate.',
+            `Sources: ${sources.map((source) => inline(source, 64)).join(', ') || 'none selected'}. Same names at different paths remain separate.`,
         );
         return `${lines.join('\n')}\n`;
     }

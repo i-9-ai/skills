@@ -60,6 +60,29 @@ One agent reading the relevant packages in sequence is the reference execution. 
 
 No runtime adapter is required for a distributed package. Optional Codex UI metadata and local icons accompany the packages; they do not execute a workflow or change the core. The project-local session-index adapter is separate: it renders bounded entry context from current project/global package metadata when a trusted host runs it, using `context available-skills` through `hook session-index`. It neither loads package bodies nor changes selection, installation, or execution authority. Resolve companion skills by the selected package set and identity; installed name collisions require explicit resolution. If a required package is missing, preserve completed work and name the missing capability rather than pretending that its stage ran.
 
+The repository-root plugin has a dependency-free Node 24 hook transport. Host
+manifests select native adapters; the common discovery repository receives a
+metadata parser appropriate to the runtime. The prepared CLI uses full YAML;
+the installed plugin uses the package-owned subset and reports incomplete
+coverage. Context and observed-read persistence have independent failure paths.
+
+```mermaid
+flowchart LR
+    Codex[Codex SessionStart] --> Runner[PluginHookRunner]
+    Claude[Claude session / native Read] --> Runner
+    Runner --> Discovery[Shared skill discovery]
+    Collections[Plugin / project / global packages] --> Discovery
+    Discovery --> Overview[Bounded host context]
+    Runner -->|verified Claude observations| Telemetry[Shared telemetry service]
+    Telemetry --> Data[Host-owned plugin data]
+```
+
+Data stays outside installed bytes and the consumer project. A storage failure
+does not suppress the available-skills overview. Read observations are counts,
+not evidence of activation or a separate source of skill instructions. Native
+host trust and event delivery require their own consumer tests; direct transport
+tests and manifest validation establish a narrower boundary.
+
 ## Provenance and evolution
 
 [upstreams.lock.json](../upstreams.lock.json) contains benchmark source identity and digests; [the research ledger](Upstream%20Research.md) connects sources to retained and rejected ideas. The source commit locates a revision; the package digest identifies the captured file set, and per-file digests locate changes. Applicable license bytes are recorded separately when the license lives outside the package.
