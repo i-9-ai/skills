@@ -60,3 +60,11 @@ Skills CLI `1.5.26` was exercised locally with `skills add . --list` against the
 Optional reasoning-effort recommendations are explained in each skill body and do not select models or apply host settings. They are not benchmark claims. An execution environment supporting the file format may still differ in model behavior, available tools, context budget, or permissions. Record those differences rather than hiding them behind a compatibility label. The [OpenAI sidecar reference](../.agents/skills/skill-authoring/references/openai-yaml.md) separates verified host fields from collection authoring conventions.
 
 The [initial pilot report](Pilot%20Evaluation.md) records the historical six-stage synthetic creation exercise, actual output observations, official validation, and the limits of its same-session manual baseline. It does not establish readiness for the current version 2 authoring contract, which adds mandatory domain research.
+
+The [current research pilot](Research%20Pipeline%20Pilot.md) exercises version 2
+on two frozen synthetic tasks with a separate task-only baseline and independent
+grading. Both arms met the visible task cases and passed official package
+validation. Overall pipeline readiness failed: the executor recorded research
+depth after retrieval despite the prior-planning requirement. The report retains
+that deviation, exact identities and the follow-up; no universal improvement or
+successful multi-contributor synthesis is claimed.

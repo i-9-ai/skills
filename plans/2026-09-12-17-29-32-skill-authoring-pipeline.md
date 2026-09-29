@@ -59,6 +59,25 @@ Illustrative code-facing acceptance: a Symfony Console route explains prerequisi
 
 Validate changed packages with the official tool, repository checks, Changeset status, and whitespace checks. Inspect ordinary and conditional routes for missing steps and misleading evaluation claims. A benchmark requires recorded executions and observations; cases, scaffolds, and structural validation alone are not benchmark results. Obtain independent review on the exact commit. This refinement does not change parsers, provider integrations, recovery storage, host links, or publication authority. Rollback consists of reverting only this focused contract change while preserving concurrent work.
 
+## Current seven-stage evaluation evidence
+
+Issue #24 completes the evaluation boundary of this inaugural plan. Preserve the
+two pre-frozen synthetic tasks and rubric, actual relocated-package executions,
+task-only fresh-context baseline, source identities, rights decisions and exact
+official-validator receipts. The independent evaluator grades concrete outputs
+and execution fidelity separately. Failed critical fidelity remains failed even
+when generated outputs and structural checks pass.
+
+Publish a sanitized report, synthetic protocol and compact hash/result ledger;
+keep domain packages, raw external snapshots, restricted source publications and
+local command paths outside this repository. Link compatibility statements to the
+actual verdict, and track demonstrated gaps with focused issues. No installation,
+publication or general model-quality claim is authorized by this evidence work.
+Verify retained artifact hashes, source attribution, report-to-rubric coverage,
+public-hygiene/link checks and the Changeset before independent review. Removal
+can revert the evidence documents and links while preserving the original local
+round; never rewrite a failed run into a successful one.
+
 ## Domain-research consolidation
 
 Before the first release, this plan also absorbs mandatory `skill-domain-research` because it completes the same inaugural authoring boundary. The version 2 run contract inserts domain research between discovery and synthesis. It must preserve the user process owner as the source for current practice while reconciling that record with opened current authoritative public sources, recording jurisdiction, date, conflicts, unknowns, and qualified-human gates for any case-specific professional determination. The dossier supports authoring; it is not a substitute for the qualified determination or advice. Synthesis may use one contributing skill package plus the required dossier, or be explicitly skipped only when there is no contributor. Update the run schema, helper, tests, documentation, catalog, and Changeset together; reject historical version 1 manifests as current readiness evidence. Rollback restores the prior six-stage contract and removes the domain-research package, catalog entry, documentation, tests, and Changeset as one reviewed change.

@@ -30,6 +30,7 @@ preparing distribution, and evolving focused agent skills.
 - [Lifecycle evidence](Lifecycle%20Evidence.md): explicit route, activation and outcome events, catalog history, cohort denominators and coverage-aware inactivity through CLI/MCP.
 - [Planning protocol](Planning%20Protocol.md): durable planning for material work.
 - [Pilot runbook](Pilot%20Runbook.md): a bounded, evidence-first procedure for the first external collection pilot.
-- [Pilot evaluation](Pilot%20Evaluation.md): current pilot evidence and limitations.
+- [Pilot evaluation](Pilot%20Evaluation.md): historical six-stage pilot evidence and limitations.
+- [Research pipeline pilot](Research%20Pipeline%20Pilot.md): current seven-stage task comparison, exact evidence and the failed process-fidelity criterion.
 - [Upstream research](Upstream%20Research.md): reviewed sources, adoption decisions, and provenance.
 - [Security policy](https://github.com/i-9-ai/skills/blob/main/SECURITY.md): disclosure boundaries and security reporting.
