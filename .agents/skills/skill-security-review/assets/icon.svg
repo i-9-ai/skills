@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-labelledby="title">
+  <title id="title">Skill Security Review</title>
+  <!-- Material Icons 'security', google/material-design-icons@40a7a292a79d9394157e1ea24f83d52d5e17c556, Apache-2.0. -->
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#991B1B"/><stop offset="1" stop-color="#EF4444"/></linearGradient></defs>
+  <rect x="1" y="1" width="62" height="62" rx="15" fill="url(#g)"/>
+  <circle cx="32" cy="32" r="22" fill="#fff" fill-opacity=".12"/>
+  <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z" fill="#fff" transform="translate(12 12) scale(1.6666667)"/>
+</svg>

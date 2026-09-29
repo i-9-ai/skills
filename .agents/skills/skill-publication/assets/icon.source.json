@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "source": {
+    "repository": "https://github.com/google/material-design-icons",
+    "revision": "40a7a292a79d9394157e1ea24f83d52d5e17c556",
+    "path": "src/editor/publish/materialicons/24px.svg",
+    "url": "https://raw.githubusercontent.com/google/material-design-icons/40a7a292a79d9394157e1ea24f83d52d5e17c556/src/editor/publish/materialicons/24px.svg",
+    "sha256": "d2abdf4c5ffc2d25f974c166e0b3f718ec95d05d79b4a67daaddf75f45f4ab5c",
+    "license": "Apache-2.0",
+    "license_path": "LICENSE"
+  },
+  "reuse": "adapt",
+  "comparison": "exact path text",
+  "changes": "Recolored and scaled the Material geometry; added a package title, gradient background and decorative circle. Equivalent curve shorthand is retained where present.",
+  "notice": "Material Icons by Google, licensed under Apache-2.0. The full license is bundled in the package LICENSE."
+}

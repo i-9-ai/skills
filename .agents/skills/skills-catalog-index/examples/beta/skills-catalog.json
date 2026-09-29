@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "skills": [
+    {
+      "name": "catalog-example",
+      "path": "skills/catalog-example",
+      "description": "Use for the synthetic beta catalog example.",
+      "tags": ["example"]
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+interface:
+  display_name: "Skill Installation"
+  short_description: "Install one approved skill with a verified receipt"
+  icon_small: "./assets/icon.svg"
+  icon_large: "./assets/icon.png"
+  default_prompt: "Use $skill-installation to install this approved skill package at its pinned revision and return a verification receipt."

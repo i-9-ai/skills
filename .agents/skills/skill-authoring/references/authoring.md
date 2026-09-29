@@ -1,0 +1,82 @@
+# Authoring a portable package
+
+## Responsibility first
+
+Write a one-sentence contract: given these inputs, produce this output for this recurring task. List near-miss requests belonging elsewhere. If two outputs can be requested, verified, and maintained independently, split them into companion skills. An orchestrator describes routing and shared handoffs, not a second copy of every procedure.
+
+Choose a domain-first name that reveals the responsibility. Use `skill` for one target skill and `skills` when several source skills or a candidate set are central. For another domain, use its own affinity prefix, such as `github-issue`; the examples are not a mandatory taxonomy. A naming decision supplied by the caller or `skill-naming` should record relevant collisions and constraints. Preserve external benchmark names during a local rename.
+
+## Package contents
+
+When a collection exposes a machine-readable domain inventory, give it an explicit name such as `skills-catalog.json` instead of a generic `catalog.json`. The catalog may declare package identity, discovery metadata, lifecycle state, and compatibility, but catalog presence never installs or activates a package, grants permissions, runs setup, or authorizes side effects. Keep those actions explicit in their own contracts.
+
+## Self-sufficient core, progressive detail
+
+Write enough of the recurring workflow into the `SKILL.md` and bundled references that a capable agent can select the skill, make its ordinary decisions, and produce the primary output without first browsing external documentation. This does not mean copying a platform manual. Keep the core focused on decisions, procedures, defaults, representative examples, boundaries, and likely failure cases.
+
+For a skill that teaches or changes code, a disconnected fragment is not enough. Keep the normal minimal complete example in the entrypoint when it enables immediate implementation. Include one complete, generic implementation reference that a junior developer could adapt: file layout, the relevant code, inputs and options, configuration or state location, invocation, and tests or verification. Keep it synthetic and narrow. A reader may use external documentation for unusual or version-specific work, never to discover how the ordinary implementation fits together.
+
+Use focused bundled `references/` for independently needed topics, provider adapters, advanced branches, version-sensitive interfaces, and deeper examples. State when each topic is needed; the reader selects relevant resources rather than loading all files. Keep tightly coupled information together when ordinary tasks almost always use it together. References are ordinary package resources, not an optional offline mode. Keep authoritative external links with those references when they help confirm a changing API, diagnose an unusual case, or extend beyond the package's scope. A link must never be the only explanation of a routine step. Remove a reference that does not change a decision, prevent a likely mistake, or support a documented ordinary or conditional case.
+
+Use a Markdown link for a bundled file only when the procedure asks the reader to load that resource or relies on it as a navigable dependency. Use an inline code path such as `references/setup.md` when merely naming, citing, reporting, or locating a file. This distinction lets link validation protect real resource dependencies without turning every filename into visual noise.
+
+Suggested body length and token budgets are advisory and never justify omitting or relocating essential procedures, complete ordinary examples, exceptions, or quality-critical detail. The 220-character description is a collection metadata profile, not the specification's universal limit. The helper has bounded file reads, but no entrypoint line gate. Respect verified schema/specification constraints separately. Preserve useful reviewed source content independently of template shape and record justified removals; split references by independent need rather than a size target.
+
+- `SKILL.md`: required YAML `name` matching the directory, a discriminating `description` of at most 220 characters, and clear English instructions. Describe both what the skill does and when it applies. Include the self-sufficient ordinary workflow and complete ordinary examples regardless of an advisory line count.
+- `LICENSE`: required full license text for the original work; include third-party licenses and notices at their required scopes. Do not treat the root repository license as a substitute when a skill is distributed alone.
+- `references/`: decision-changing detail, schemas, and documented provenance loaded only for relevant cases. Link the resources from the entrypoint or another reachable reference.
+- `scripts/`: deterministic helpers only when they remove repeated, fragile work. Describe inputs, dependencies, outputs, side effects, failure codes, and safe invocation. Test them on disposable fixtures.
+- `assets/`: templates or files consumed by the output. Remove unused scaffold placeholders from the final package.
+- `examples/`: a small number of complete synthetic examples showing observable behavior, boundary handling, or a real output contract.
+
+Avoid mandatory provider-specific folders, runtime configuration, absolute local paths, and implicit platform commands in the core. A skill may require a domain capability such as reading an issue or editing a file; state that capability and its fallback. Explain unavailable execution honestly instead of fabricating a tool call.
+
+## Installed use and resource boundaries
+
+Treat the installed package, the caller's project, and the output/run workspace as separate locations. Resolve bundled references, templates, and helper modules from the loaded `SKILL.md` or script location. Select writable outputs from the caller's task; never assume the current directory is the skill directory or write scratch into an installation by default.
+
+Bundle every local dependency needed by the skill. Do not require the source collection's root instructions, catalog, scripts, package-manager commands, benchmark lock, or CI configuration. If the task needs a command from the caller's project, first verify that project's actual configuration and the command's role. Companion skills are separate dependencies: declare the needed capability, locate a trusted installed package, and report an unavailable handoff without assuming a sibling directory.
+
+Before accepting a package, copy it alone outside its source checkout. Check its resources and exercise documented helpers from an unrelated working directory with separate writable outputs. Cover installed directory aliases when supported and verify that the installation remains unchanged. Keep collection maintenance rules in the collection's documentation, outside the distributed skill.
+
+## Script language and optional host metadata
+
+Use JavaScript with Node.js built-ins for small zero-dependency utilities: declare the supported version and provide deterministic tests. Choose TypeScript or another language only for a specific maintenance, library, interoperability, correctness, or security advantage; document that reason, runtime verification, and runnable distribution path. Do not require a consumer to infer a compiler bootstrap or add a Node wrapper solely to conceal another dependency.
+
+When preparation is required, add `metadata.setup` pointing to an existing bundled `scripts/` file and state the prerequisites in `compatibility`. The `SKILL.md` must include `Prerequisites and setup` subsections for explicit setup, idempotence and side effects, and fallback. Setup is never automatic on installation or activation. Keep lengthy setup rationale in `references/setup.md`; do not add a top-level installation guide.
+
+## Caller configuration and secrets
+
+Add configuration only when a recurring task cannot be completed from the package, caller inputs, and existing project conventions. Do not impose a universal hidden directory, a global home location, a `.env` file, or a package-local mutable configuration store.
+
+- Define non-secret configuration as a caller-owned contract: field names, types, defaults, validation, precedence, writable location, migration behavior, and manual fallback. Bundle a JSON Schema or equivalent validation resource when it prevents recurring mistakes.
+- Let the consumer select and explicitly pass the configuration location. A documented project-local path may be a recommended convention, but the portable procedure must not require a particular host directory.
+- Keep secrets out of JSON/YAML examples, package metadata, generated files, logs, and version control. Name the consumer's existing secret manager or an explicitly documented environment-variable interface; do not require an `.env` loader or scan environment variables beyond the declared names.
+- Treat configuration as untrusted input. Validate before use, redact values in output, and never create, overwrite, migrate, or upload configuration without authorization.
+- State what happens when configuration or a required secret is unavailable. Return a bounded missing-prerequisite result rather than guessing, prompting for secret values in a persistent artifact, or silently changing the host.
+
+This package's helper uses Node.js built-ins. It operates on owned workspaces that remain stable during validation, rejects unsafe entries and detected changes, and never executes candidate scripts. Its checks are not a sandbox against concurrent adversarial filesystem mutation. See the tooling guide for supported inputs and bounds.
+
+An optional `agents/openai.yaml` may provide documented host `interface` fields. It is host UI data, not the procedural source of truth. Keep prompt and description consistent with `SKILL.md`. For collections that declare this interface profile, include `assets/icon.svg` for `icon_small` and a matching `assets/icon.png` for `icon_large`; both assets must be responsibility-specific. A copied scaffold icon is only a draft and must be replaced before acceptance. For portable packages outside such a collection, this adapter and both assets remain optional: do not make another host or a standalone installation depend on them. Use the helper's opt-in adapter flag when available, or the host's current documented format. For other hosts, verify their primary documentation before adding files; many consume `SKILL.md` directly and need no additional per-skill manifest. Do not invent adapters from product names or duplicate the core into multiple editable copies.
+
+Metadata is optional. Use string-valued `author`, comma-separated `tags`, `source`, and `source_url` when they accurately describe the package. Keep discovery methods and multi-source contributions in provenance records; do not confuse a catalog uploader with the original author. Never invent authorship, populate placeholder source URLs in final packages, or duplicate a catalog's `title` and `slug` as unsupported top-level skill fields.
+
+If a task benefits from an effort recommendation, optional `metadata.reasoning-effort` may be `low`, `medium`, or `high`. Explain its meaning and rationale in the body; it neither chooses a model nor changes runtime effort. Do not require evidence-status metadata. Use the [runtime reference](runtime-guidance.md) for native model/effort fields, ordered model fallback, and tool authorization. Use the [OpenAI interface reference](openai-yaml.md) for verified sidecar fields and limits. Keep defaults provider-free and preserve existing user choices.
+
+## Provenance and evolution
+
+For each reused source, retain its repository, package path, immutable revision, scoped license, reviewed inventory, and useful contribution. Preserve per-file SHA-256 and an aggregate package hash when benchmarking for future comparison. A newer upstream hash means content changed; it does not mean an improvement should be adopted.
+
+Record the decision for each meaningful component: retain, adapt, replace, reject, or reference. When copying or adapting protected text, code, or assets, preserve their required attribution, licenses, and change notices. Independently written implementations should say they reuse ideas rather than claiming to vendor the upstream package.
+
+## Required validation and supplemental manual checks
+
+Validate every new or modified package with the official `skills-ref validate` tool. Follow the [official validation contract](validation.md), record the candidate and tool identities, and repeat after package changes. If official execution is unavailable or fails, preserve the draft and block readiness. The following manual checks supplement official validation and can replace only the optional custom helper.
+
+1. Verify the directory/name, required fields, `LICENSE`, and every resource link.
+2. Inspect the package tree for symlinks, hidden state, unsafe paths, credentials, private data, and unrelated files before reading or copying resources.
+3. Check the one-responsibility boundary and that instructions preserve scope, permission, known user choices, stopping behavior, and rollback.
+4. Exercise each safe documented helper or record why it was not run. Inspect returned artifacts rather than trusting exit status alone.
+5. Obtain behavioral evaluation of positive, negative, functional, and adversarial cases. Report the tested environment and any untested runtime.
+
+Structural validation cannot establish that English prose is useful, license rights are compatible, an example is anonymized, or an agent made the correct decision. Those checks remain explicit review responsibilities.

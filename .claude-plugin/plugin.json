@@ -1,0 +1,13 @@
+{
+  "name": "i9-skills",
+  "version": "0.1.0-rc.1",
+  "description": "A portable collection of focused skills and its validation tooling.",
+  "author": {
+    "name": "I-9 AI"
+  },
+  "homepage": "https://github.com/i-9-ai/skills",
+  "repository": "https://github.com/i-9-ai/skills.git",
+  "license": "Apache-2.0",
+  "skills": "./.agents/skills/",
+  "mcpServers": "./mcp/claude.json"
+}

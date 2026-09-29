@@ -1,0 +1,54 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "I-9 Skills: choose and improve a path",
+    "quality_profile": "showcase",
+    "views": [
+      {"id": "use", "label": "Start with a task", "focus": ["task", "session_index", "routing", "route"], "note": "Begin with the compact session index, then let routing select the smallest valid path or report that no skill applies."},
+      {"id": "create", "label": "Create a capability", "focus": ["gap", "authoring", "quality"], "note": "Turn one concrete gap into a focused, self-sufficient and validated package."},
+      {"id": "evolve", "label": "Improve with evidence", "focus": ["signal", "evidence", "evolution", "quality"], "note": "Collect bounded signals before proposing a reviewable evolution."},
+      {"id": "maintain", "label": "Maintain the collection", "focus": ["catalog", "compatibility", "quality"], "note": "Keep the canonical catalog and declared host aliases consistent without treating a host adapter as the source of truth."}
+    ]
+  },
+  "lanes": [
+    {"id": "use", "label": "Use a skill"},
+    {"id": "build", "label": "Build and maintain"},
+    {"id": "evolve", "label": "Evolve with evidence"},
+    {"id": "assure", "label": "Quality and approval"}
+  ],
+  "phases": [
+    {"id": "enter", "label": "Enter with context", "fromCol": 0, "toCol": 1, "variant": "emphasis"},
+    {"id": "decide", "label": "Choose a bounded path", "fromCol": 2, "toCol": 3},
+    {"id": "prove", "label": "Prove before delivery", "fromCol": 4, "toCol": 5, "variant": "dashed"}
+  ],
+  "mainPath": ["task", "session_index", "routing", "route", "quality"],
+  "nodes": [
+    {"id": "task", "lane": "use", "col": 0, "type": "external", "label": "Task", "sublabel": "user need", "tag": "primary entry point", "width": 118},
+    {"id": "session_index", "lane": "use", "col": 1, "type": "database", "label": "Session index", "sublabel": "catalog summary", "width": 124},
+    {"id": "routing", "lane": "use", "col": 2, "type": "backend", "label": "Skill routing", "sublabel": "skill, sequence, or none", "tag": "global entry point", "width": 132},
+    {"id": "route", "lane": "use", "col": 3, "type": "cloud", "label": "Approved route", "sublabel": "authority required", "width": 124},
+    {"id": "gap", "lane": "build", "col": 0, "type": "external", "label": "Capability gap", "sublabel": "missing outcome", "tag": "entry point", "width": 118},
+    {"id": "authoring", "lane": "build", "col": 2, "type": "backend", "label": "Design and authoring", "sublabel": "focused package", "width": 132},
+    {"id": "signal", "lane": "evolve", "col": 0, "type": "external", "label": "Usage signal", "sublabel": "feedback or audit", "tag": "entry point", "width": 118},
+    {"id": "evidence", "lane": "evolve", "col": 1, "type": "database", "label": "Evidence collection", "sublabel": "attributable facts", "width": 124},
+    {"id": "evolution", "lane": "evolve", "col": 2, "type": "backend", "label": "Skill evolution", "sublabel": "justified proposal", "width": 132},
+    {"id": "catalog", "lane": "build", "col": 3, "type": "database", "label": "Canonical catalog", "sublabel": "packages and metadata", "tag": "maintenance entry point", "width": 124},
+    {"id": "compatibility", "lane": "build", "col": 4, "type": "security", "label": "Host compatibility", "sublabel": "declared aliases", "width": 132},
+    {"id": "quality", "lane": "assure", "col": 4, "type": "security", "label": "Quality gate", "sublabel": "evidence before delivery", "tag": "required gate", "width": 132}
+  ],
+  "edges": [
+    {"id": "task-index", "from": "task", "to": "session_index", "label": "start session", "variant": "emphasis"},
+    {"id": "index-routing", "from": "session_index", "to": "routing", "label": "shortlist", "variant": "default"},
+    {"id": "routing-route", "from": "routing", "to": "route", "label": "smallest valid path", "variant": "emphasis"},
+    {"id": "gap-authoring", "from": "gap", "to": "authoring", "label": "design one responsibility", "variant": "default"},
+    {"id": "signal-evidence", "from": "signal", "to": "evidence", "label": "preserve facts", "variant": "dashed"},
+    {"id": "evidence-evolution", "from": "evidence", "to": "evolution", "label": "evidence packet", "variant": "default"},
+    {"id": "catalog-compatibility", "from": "catalog", "to": "compatibility", "label": "declared aliases", "variant": "dashed"},
+    {"id": "authoring-quality", "from": "authoring", "to": "quality", "label": "candidate package", "variant": "emphasis"},
+    {"id": "evolution-quality", "from": "evolution", "to": "quality", "label": "proposed change", "variant": "emphasis"},
+    {"id": "compatibility-quality", "from": "compatibility", "to": "quality", "label": "compatibility report", "variant": "default"},
+    {"id": "route-quality", "from": "route", "to": "quality", "label": "delivery changes", "variant": "dashed"}
+  ],
+  "cards": []
+}

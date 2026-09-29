@@ -1,0 +1,8 @@
+# Distributed packages, generated data and collection fixtures have separate contracts.
+.agents/
+.skills/
+.work/
+node_modules/
+dist/
+package-lock.json
+tests/integration/collection/

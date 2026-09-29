@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "skills": [
+    {
+      "name": "catalog-example",
+      "path": ".agents/skills/catalog-example",
+      "description": "Use for the synthetic alpha catalog example.",
+      "tags": ["example"]
+    }
+  ]
+}

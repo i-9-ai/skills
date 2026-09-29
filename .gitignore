@@ -1,0 +1,11 @@
+# Local run evidence and source snapshots may contain private input.
+.work/
+tmp/
+node_modules/
+.beads/
+.codex/environments/
+dist/
+.DS_Store
+.env
+.env.*
+!.env.example

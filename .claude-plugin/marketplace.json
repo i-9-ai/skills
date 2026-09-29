@@ -1,0 +1,15 @@
+{
+  "name": "i9-skills",
+  "description": "Portable workflows for creating and maintaining agent skills.",
+  "owner": {
+    "name": "I-9 AI",
+    "url": "https://github.com/i-9-ai"
+  },
+  "plugins": [
+    {
+      "name": "i9-skills",
+      "source": "./",
+      "description": "Focused skills and tooling for the skill lifecycle."
+    }
+  ]
+}

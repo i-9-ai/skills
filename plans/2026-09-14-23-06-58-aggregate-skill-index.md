@@ -1,0 +1,69 @@
+# Aggregate skill index
+
+## Objective
+
+Provide a bounded local index that combines canonical `skills-catalog.json` files for cross-collection lookup and retains local audit history as those source manifests change. Each collection retains its own manifest as the authoritative, versioned inventory.
+
+## Scope
+
+- Migrate the pre-release canonical repository manifest from the generic `catalog.json` name to `skills-catalog.json` across validation, session hooks, documentation, examples, and tests, without an alias or duplicate.
+- Own rebuilding, synchronization, lookup and local history in the self-contained `skills-catalog-index` package. `skills-catalog` owns only one collection's canonical inventory and hands off cross-collection work.
+- Establish the first public catalog and aggregate-index format as version `1`, with no compatibility branch for unpublished draft formats.
+- Prefer SQLite through the Node.js built-in `node:sqlite` module, with a deterministic JSON index fallback when that module is unavailable.
+- Store current source identifiers, stable catalog references, catalog digests, and validated skill records.
+- On SQLite sync, retain source observations and normalized added, changed, and removed skill states with timestamps and before/after metadata.
+- Provide list and query commands for current discovery plus history and change-detail commands for SQLite.
+- Add bounded parsing, regular-file checks, malformed-input rejection, tests, documentation, catalog synchronization, and a Changeset.
+
+## Exclusions
+
+- Do not replace `skills-catalog.json` with the derived database, add a database dependency, scan directories implicitly, install skills, mutate source collections, or access installed skills, user homes, links, or host configuration.
+- Do not store absolute local paths in a tracked artifact.
+- Do not add a background indexer, telemetry, network access, publication workflow, or MCP server.
+
+## Authority boundaries
+
+This change may read only explicitly supplied source catalogs and write an index only to the caller-selected local output directory. Catalog inventory never installs or activates a skill, grants permissions, or runs setup. Rebuilding an index does not authorize modifying source collections, installing packages, publishing packages, or merging or releasing this repository.
+
+## Implementation sequence
+
+1. Migrate every current repository consumer to the explicit `skills-catalog.json` path and remove the old generic path.
+2. Validate explicit source identifiers and read bounded regular `skills-catalog.json` files.
+3. Validate each catalog against schema version `1` with exactly `name`, `path`, `description`, and `tags` per package, then derive a deterministic current aggregate plus its SHA-256 source digest. Lifecycle evidence remains outside this inventory format.
+4. Write `skills-catalog.db` through Node.js built-in SQLite. `sync` preserves prior observations and skill changes transactionally; `rebuild` establishes a baseline and requires an explicit reset before discarding existing history.
+5. Write `skills-catalog.index.json` as the deterministic current-state fallback when SQLite is unavailable, and reject history commands rather than implying equivalent retention.
+6. Read generated index files for current list and exact-name or tag query operations; expose bounded SQLite history summaries and normalized skill change detail.
+7. Add isolated fixtures for valid, malformed, oversized, unsafe, duplicate, fallback, lookup, unchanged sync, source removal, skill addition/change/removal, and reset protection.
+8. Document invocation, output schema, storage boundary, retention bounds, privacy exclusions, and fallback limitation.
+
+## Validation and acceptance
+
+- `npm run check`
+- `git diff --check`
+- `npm run changeset:status`
+- `npm run ci:official`
+- The helper rejects unsafe or malformed sources, writes no source catalog, produces stable current output ordering, and returns the same current lookup result from SQLite and JSON indexes.
+- SQLite `sync` retains distinct observations and exact normalized skill changes without absolute source paths, prompts, package bodies, secrets, or telemetry.
+- The JSON fallback stays byte-deterministic for unchanged current state and refuses historical queries.
+- Repository validation and the session index consume only `skills-catalog.json`; no `catalog.json` alias remains.
+- The catalog and aggregate index both report format version `1`, reject other versions, and contain no manual lifecycle-status field.
+- SQLite synchronization retains `sync_runs`, `source_observations`, and `skill_changes`, including timestamps, retention limits, and explicit reset protection.
+
+## Rollback
+
+Remove the helper and its documentation in a subsequent reviewed change. Generated aggregate indexes live outside source repositories and can be deleted without changing any canonical catalog; deleting SQLite also deletes its local audit history. Restore the pre-release manifest name only by reverting the complete consumer migration.
+
+## Evidence
+
+Retain the implementation diff, isolated test results, catalog synchronization result, Changeset status, and official validator result for the exact review commit.
+
+## Package-boundary reconciliation
+
+PR #2 review comment 4010639758 identified two independently requested outcomes in `skills-catalog`: maintaining one canonical inventory and managing an aggregate projection with history. This refinement completes the original aggregate-index acceptance boundary before the first release; it introduces no new runtime, dependency, command route, format or storage migration.
+
+- Name: `skills-catalog-index`. It operates across skills from explicit catalogs. `skills-index` is ambiguous with session-context discovery; `skills-catalog-history` omits current lookup. The repository inventory and the caller-provided global inventory had no exact `skills-catalog-index` collision; this is a scoped observation, not global uniqueness.
+- Retain `skills-catalog` for inventory generation, checking and synchronization. Move the aggregate helper and its operational reference to the new package. Bundle only read-only catalog decoding and schema validation with the new helper; do not bundle a second catalog writer or depend on an installed sibling. Compare both catalog readers against valid and invalid synthetic inputs to guard their shared format boundary.
+- Keep `catalog aggregate` CLI routes and the existing index filenames, schemas, migrations, history, evolution ledger and rollback safeguards. Update the repository adapter's import rather than retain an obsolete executable alias.
+- Current instruction route: root `AGENTS.md` → `.agents/AGENTS.md` → `.agents/skills/AGENTS.md` → package `SKILL.md`. Target route retains those boundaries and adds the new package entrypoint to the collection index. Also index the existing `skills-host-compatibility` and `skills-snapshot` packages that were missing. No package-specific `AGENTS.md` is needed.
+- Validation: execute the aggregate helper from an isolated, read-only copy without siblings, observe identical source bytes, exercise SQLite history and JSON lookup, run existing aggregate regressions and catalog checks, and validate both affected packages with the official validator.
+- Rollback: move the helper and reference back, revert the adapter and catalog/DOX links together, and remove the new package. Local databases stay untouched because the runtime formats and storage paths are unchanged.

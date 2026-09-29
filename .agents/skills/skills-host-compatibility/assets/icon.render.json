@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "source": "icon.svg",
+  "source_sha256": "7d493d794b3220ac97bb9bf45de90da34d329586d25a9f8ff2521853186ffc5f",
+  "artifact": "icon.png",
+  "artifact_sha256": "9c06168868d77c105424762972a2cde90de51180772251b7f89410c35c443ce6",
+  "renderer": "rsvg-convert 2.63.2; cairo 1.18.6",
+  "arguments": [
+    "--width",
+    "100",
+    "--height",
+    "100"
+  ],
+  "width": 100,
+  "height": 100
+}

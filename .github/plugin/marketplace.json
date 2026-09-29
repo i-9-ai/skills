@@ -1,0 +1,16 @@
+{
+  "name": "i9-skills",
+  "owner": {
+    "name": "I-9 AI"
+  },
+  "metadata": {
+    "description": "Portable workflows for creating and maintaining agent skills."
+  },
+  "plugins": [
+    {
+      "name": "i9-skills",
+      "source": "./",
+      "description": "Focused skills and tooling for the skill lifecycle."
+    }
+  ]
+}
