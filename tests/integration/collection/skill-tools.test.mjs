@@ -273,6 +273,41 @@ test('standard named references resolve genuine Unicode Markdown resources exact
     assert.throws(() => validateSkill(packagePath), /invalid local link/u, 'unknown references stay literal and still require a real target');
 });
 
+test('numeric references apply HTML C1 and invalid-scalar replacements in resource links', t => {
+    const packagePath = makeSkill(fixture(t));
+    const references = path.join(packagePath, 'references');
+    fs.mkdirSync(references);
+    const replacements = [
+        [128, '€'], [130, '‚'], [131, 'ƒ'], [132, '„'], [133, '…'], [134, '†'],
+        [135, '‡'], [136, 'ˆ'], [137, '‰'], [138, 'Š'], [139, '‹'], [140, 'Œ'],
+        [142, 'Ž'], [145, '‘'], [146, '’'], [147, '“'], [148, '”'], [149, '•'],
+        [150, '–'], [151, '—'], [152, '˜'], [153, '™'], [154, 'š'], [155, '›'],
+        [156, 'œ'], [158, 'ž'], [159, 'Ÿ'],
+    ];
+    const invalidScalars = [0, 0xd800, 0xdfff, 0x110000, 9999999];
+    const cases = [...replacements, ...invalidScalars.map(code => [code, '\ufffd'])];
+    for (const [code, character] of cases) {
+        fs.writeFileSync(path.join(references, `${character}.md`), 'Synthetic local resource.\n');
+        for (const encoded of [`&#${code};`, `&#x${code.toString(16)};`]) {
+            const target = `references/${encoded}.md`;
+            const decoded = `references/${character}.md`;
+            assert.deepEqual(markdownLinks(`[Resource](${target})`), [[1, decoded]], encoded);
+            assert.deepEqual(htmlLinks(`<a href="${target}">Resource</a>`), [[1, decoded]], encoded);
+            fs.appendFileSync(path.join(packagePath, 'SKILL.md'), `\n[Resource](${target})\n`);
+        }
+    }
+    assert.equal(validateSkill(packagePath).local_links, cases.length * 2);
+
+    // HTML keeps unlisted controls and noncharacters; XML has different rules.
+    for (const code of [0x81, 0x8d, 0x8f, 0x90, 0x9d, 0xffff, 0x10ffff]) {
+        assert.deepEqual(markdownLinks(`[Resource](&#x${code.toString(16)};.md)`), [[1, `${String.fromCodePoint(code)}.md`]]);
+    }
+    assert.deepEqual(markdownLinks('[Once](&amp;#128;.md)'), [[1, '&#128;.md']]);
+    assert.deepEqual(markdownLinks('[Resource]: references/&#128;.md\n[Resource]'), [[1, 'references/€.md']]);
+    fs.rmSync(path.join(references, '€.md'));
+    assert.throws(() => validateSkill(packagePath), /invalid local link/u);
+});
+
 test('named and numeric references cannot conceal prohibited schemes or root traversal', t => {
     const packagePath = makeSkill(fixture(t));
     const filename = path.join(packagePath, 'SKILL.md');
@@ -386,8 +421,11 @@ test('Apache copyright lines cannot absorb restrictions or joined prose', t => {
 });
 
 test('portable package paths reject reserved filenames and Windows alternate streams', t => {
-    for (const component of ['con.txt', 'PRN', 'aux.json', 'NUL.md', 'COM1.log', 'lpt9', 'COM¹.txt', 'name.', 'name ', 'a:b', 'a<b', 'a>b', 'a"b', 'a|b', 'a?b', 'a*b']) {
+    for (const component of ['con.txt', 'CONIN$', 'conout$', 'ConIn$.md', 'cOnOuT$.txt', 'PRN', 'aux.json', 'NUL.md', 'COM1.log', 'lpt9', 'COM¹.txt', 'name.', 'name ', 'a:b', 'a<b', 'a>b', 'a"b', 'a|b', 'a?b', 'a*b']) {
         assert.throws(() => relativeParts(`references/${component}`), /nonportable/, component);
+    }
+    for (const component of ['coninput$', 'CONOUT$-notes.md', 'my-CONIN$.md']) {
+        assert.deepEqual(relativeParts(`references/${component}`), ['references', component]);
     }
     assert.deepEqual(relativeParts('references/Console Guide.md'), ['references', 'Console Guide.md']);
     const packagePath = makeSkill(fixture(t));

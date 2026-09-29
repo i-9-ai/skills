@@ -50,6 +50,17 @@ const PNG_CRC_TABLE = (() => {
 
 const LIMIT_PNG_CHUNK = 16 * 1024 * 1024;
 const LIMIT_PNG_DECODED = 16 * 1024 * 1024;
+// These PNG 3 chunks change color interpretation or tone mapping. Comparing
+// stored samples cannot establish equivalence across their color spaces.
+const UNSUPPORTED_PNG_COLOR_CHUNKS = new Set([
+    'cHRM',
+    'gAMA',
+    'iCCP',
+    'sRGB',
+    'cICP',
+    'mDCV',
+    'cLLI',
+]);
 
 /** Validates catalog identity, source evidence and publication-safe assets. */
 export class CollectionValidator {
@@ -223,6 +234,11 @@ export class CollectionValidator {
                 offset = end;
                 continue;
             }
+
+            this.requireCondition(
+                !UNSUPPORTED_PNG_COLOR_CHUNKS.has(type),
+                `${relative} uses unsupported PNG color-management chunk ${type}; normalize with a color-aware renderer to untagged sRGB pixels and refresh the render receipt`,
+            );
 
             switch (type) {
                 case 'IHDR':
