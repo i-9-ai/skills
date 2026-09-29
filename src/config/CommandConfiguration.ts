@@ -38,6 +38,8 @@ import TelemetryCatalogObserveCommand from '../command/telemetry/TelemetryCatalo
 import SkillsObserveCommand from '../command/skill/SkillsObserveCommand.ts';
 import SkillsReportBumpCommand from '../command/skill/SkillsReportBumpCommand.ts';
 import SkillsOnboardingCommand from '../command/skill/SkillsOnboardingCommand.ts';
+import SkillsMemorySummarizeCommand from '../command/skill/SkillsMemorySummarizeCommand.ts';
+import SkillsMemoryRetentionCommand from '../command/skill/SkillsMemoryRetentionCommand.ts';
 
 /** Owns public command routes independently of class names and source layout. */
 export class CommandConfiguration {
@@ -45,6 +47,8 @@ export class CommandConfiguration {
         'skills:observe': SkillsObserveCommand,
         'skills:report:bump': SkillsReportBumpCommand,
         'skills:onboarding': SkillsOnboardingCommand,
+        'skills:memory:summarize': SkillsMemorySummarizeCommand,
+        'skills:memory:retention': SkillsMemoryRetentionCommand,
         'catalog:aggregate:check': AggregateCheckCommand,
         'catalog:aggregate:inspect': AggregateInspectCommand,
         'catalog:aggregate:rebuild': AggregateRebuildCommand,

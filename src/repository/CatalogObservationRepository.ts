@@ -143,130 +143,137 @@ export class CatalogObservationRepository {
     }
 
     history(value: unknown) {
+        new SkillEvidenceValidator().query(value, 'history');
+        return this.connection.snapshot(() => this.projectHistory(value));
+    }
+
+    /** Validated bounded projection; a composing caller owns the read snapshot. */
+    projectHistory(value: unknown) {
         const query = new SkillEvidenceValidator().query(value, 'history');
-        return this.connection.snapshot(() => {
-            const args: SQLInputValue[] = [query.from, query.until];
-            const where = ['occurred_at>=?', 'occurred_at<?'];
-            if (query.collection) {
-                where.push('collection=?');
-                args.push(query.collection);
+        const args: SQLInputValue[] = [query.from, query.until];
+        const where = ['occurred_at>=?', 'occurred_at<?'];
+        if (query.collection) {
+            where.push('collection=?');
+            args.push(query.collection);
+        }
+        if (query.observation_sequence !== undefined) {
+            where.push('sequence=?');
+            args.push(query.observation_sequence);
+            const header = this.connection.database
+                .prepare(`SELECT * FROM catalog_observations WHERE ${where.join(' AND ')}`)
+                .get(...args) as Header | undefined;
+            if (!header) throw new SkillOperationError('catalog_unobserved');
+            const conditions = ['sequence=?', 'skill>?'];
+            const selected: SQLInputValue[] = [header.sequence, query.after_skill ?? ''];
+            if (query.skill) {
+                conditions.push('skill=?');
+                selected.push(query.skill);
             }
-            if (query.observation_sequence !== undefined) {
-                where.push('sequence=?');
-                args.push(query.observation_sequence);
-                const header = this.connection.database
-                    .prepare(`SELECT * FROM catalog_observations WHERE ${where.join(' AND ')}`)
-                    .get(...args) as Header | undefined;
-                if (!header) throw new SkillOperationError('catalog_unobserved');
-                const conditions = ['sequence=?', 'skill>?'];
-                const selected: SQLInputValue[] = [header.sequence, query.after_skill ?? ''];
-                if (query.skill) {
-                    conditions.push('skill=?');
-                    selected.push(query.skill);
-                }
-                const rows = this.connection.database
-                    .prepare(
-                        `SELECT skill,change_type,before_json,after_json FROM catalog_changes WHERE ${conditions.join(' AND ')} ORDER BY skill LIMIT ?`,
-                    )
-                    .all(...selected, query.limit + 1);
-                return {
-                    from: query.from,
-                    until: query.until,
-                    observation: this.header(header),
-                    truncated: rows.length > query.limit,
-                    next_skill: rows.length > query.limit ? rows[query.limit - 1].skill : null,
-                    changes: rows.slice(0, query.limit).map((row) => ({
-                        skill: row.skill,
-                        change_type: row.change_type,
-                        before: row.before_json ? JSON.parse(String(row.before_json)) : null,
-                        after: row.after_json ? JSON.parse(String(row.after_json)) : null,
-                    })),
-                };
-            }
-            const index = query.collection
-                ? 'catalog_observation_collection'
-                : 'catalog_observation_period';
-            const candidates = this.connection.database
+            const rows = this.connection.database
                 .prepare(
-                    `SELECT * FROM catalog_observations INDEXED BY ${index} WHERE ${where.join(' AND ')} ORDER BY occurred_at LIMIT 5001`,
+                    `SELECT skill,change_type,before_json,after_json FROM catalog_changes WHERE ${conditions.join(' AND ')} ORDER BY skill LIMIT ?`,
                 )
-                .all(...args) as unknown as Header[];
-            if (candidates.length > 5000) throw new SkillOperationError('query_limit_exceeded');
-            const changed = this.connection.database.prepare(
-                'SELECT 1 FROM catalog_changes WHERE sequence=? AND skill=?',
-            );
-            const rows = candidates
-                .filter(
-                    (row) =>
-                        row.sequence > query.after_sequence &&
-                        (!query.skill || changed.get(row.sequence, query.skill)),
-                )
-                .sort((a, b) => a.sequence - b.sequence);
+                .all(...selected, query.limit + 1);
             return {
                 from: query.from,
                 until: query.until,
+                observation: this.header(header),
                 truncated: rows.length > query.limit,
-                next_sequence: rows.length > query.limit ? rows[query.limit - 1].sequence : null,
-                observations: rows.slice(0, query.limit).map((row) => this.header(row)),
+                next_skill: rows.length > query.limit ? rows[query.limit - 1].skill : null,
+                changes: rows.slice(0, query.limit).map((row) => ({
+                    skill: row.skill,
+                    change_type: row.change_type,
+                    before: row.before_json ? JSON.parse(String(row.before_json)) : null,
+                    after: row.after_json ? JSON.parse(String(row.after_json)) : null,
+                })),
             };
-        });
+        }
+        const index = query.collection
+            ? 'catalog_observation_collection'
+            : 'catalog_observation_period';
+        const candidates = this.connection.database
+            .prepare(
+                `SELECT * FROM catalog_observations INDEXED BY ${index} WHERE ${where.join(' AND ')} ORDER BY occurred_at LIMIT 5001`,
+            )
+            .all(...args) as unknown as Header[];
+        if (candidates.length > 5000) throw new SkillOperationError('query_limit_exceeded');
+        const changed = this.connection.database.prepare(
+            'SELECT 1 FROM catalog_changes WHERE sequence=? AND skill=?',
+        );
+        const rows = candidates
+            .filter(
+                (row) =>
+                    row.sequence > query.after_sequence &&
+                    (!query.skill || changed.get(row.sequence, query.skill)),
+            )
+            .sort((a, b) => a.sequence - b.sequence);
+        return {
+            from: query.from,
+            until: query.until,
+            truncated: rows.length > query.limit,
+            next_sequence: rows.length > query.limit ? rows[query.limit - 1].sequence : null,
+            observations: rows.slice(0, query.limit).map((row) => this.header(row)),
+        };
     }
 
     inactivity(value: unknown) {
+        new SkillEvidenceValidator().query(value, 'inactivity');
+        return this.connection.snapshot(() => this.projectInactivity(value));
+    }
+
+    /** Validated bounded projection; a composing caller owns the read snapshot. */
+    projectInactivity(value: unknown) {
         const query = new SkillEvidenceValidator().query(value, 'inactivity');
-        return this.connection.snapshot(() => {
-            const headers = this.latest(query);
-            if (!headers.length) throw new SkillOperationError('catalog_unobserved');
-            const rows = [];
-            for (const header of headers) {
-                const source: EvidenceSource = JSON.parse(header.source_json);
-                for (const member of this.members(header.sequence)) {
-                    if (query.skill && member.skill !== query.skill) continue;
-                    const selected = {
-                        ...source,
-                        package_path: member.package_path,
-                        package_sha256: member.package_sha256,
-                    };
-                    const active = this.connection.database
-                        .prepare(
-                            "SELECT event_id FROM lifecycle_events WHERE collection=? AND skill=? AND source_key=? AND event_type='skill.activated' AND occurred_at>=? AND occurred_at<? LIMIT 1",
-                        )
-                        .get(
-                            header.collection,
-                            member.skill,
-                            sourceKey(selected),
-                            query.from,
-                            query.until,
-                        );
-                    if (active) continue;
-                    rows.push({
-                        collection: header.collection,
-                        skill: member.skill,
-                        source_key: sourceKey(selected),
-                        active_identity_key: identityKey(selected),
-                        source: selected,
-                        observation_sequence: header.sequence,
-                        observation_id: header.event_id,
-                        observed_at: header.occurred_at,
-                        first_seen_at: member.first_seen_at,
-                        observed_entire_period: member.first_seen_at <= query.from,
-                        activations: 0,
-                    });
-                }
+        const headers = this.latest(query);
+        if (!headers.length) throw new SkillOperationError('catalog_unobserved');
+        const rows = [];
+        for (const header of headers) {
+            const source: EvidenceSource = JSON.parse(header.source_json);
+            for (const member of this.members(header.sequence)) {
+                if (query.skill && member.skill !== query.skill) continue;
+                const selected = {
+                    ...source,
+                    package_path: member.package_path,
+                    package_sha256: member.package_sha256,
+                };
+                const active = this.connection.database
+                    .prepare(
+                        "SELECT event_id FROM lifecycle_events WHERE collection=? AND skill=? AND source_key=? AND event_type='skill.activated' AND occurred_at>=? AND occurred_at<? LIMIT 1",
+                    )
+                    .get(
+                        header.collection,
+                        member.skill,
+                        sourceKey(selected),
+                        query.from,
+                        query.until,
+                    );
+                if (active) continue;
+                rows.push({
+                    collection: header.collection,
+                    skill: member.skill,
+                    source_key: sourceKey(selected),
+                    active_identity_key: identityKey(selected),
+                    source: selected,
+                    observation_sequence: header.sequence,
+                    observation_id: header.event_id,
+                    observed_at: header.occurred_at,
+                    first_seen_at: member.first_seen_at,
+                    observed_entire_period: member.first_seen_at <= query.from,
+                    activations: 0,
+                });
             }
-            rows.sort(
-                (a, b) =>
-                    a.collection.localeCompare(b.collection) || a.skill.localeCompare(b.skill),
-            );
-            return {
-                from: query.from,
-                until: query.until,
-                basis: 'catalog_members_without_reported_activations',
-                observed_collections: headers.length,
-                truncated: rows.length > query.limit,
-                rows: rows.slice(0, query.limit),
-            };
-        });
+        }
+        rows.sort(
+            (a, b) => a.collection.localeCompare(b.collection) || a.skill.localeCompare(b.skill),
+        );
+        return {
+            from: query.from,
+            until: query.until,
+            basis: 'catalog_members_without_reported_activations',
+            observed_collections: headers.length,
+            truncated: rows.length > query.limit,
+            rows: rows.slice(0, query.limit),
+        };
     }
 
     private latest(query: EvidenceQuery): Header[] {

@@ -26,6 +26,10 @@ Update affected domain rules, adapters, use cases, tests, and documentation toge
 Run `npm run check` and inspect the required official workflow result for the exact PR head. Test process adapters using fake executors and temporary fixtures.
 
 ## Child DOX index
+- [Skill memory inspection](../docs/Skill%20Memory.md): bounded summaries and retention-cutoff counts from the existing evidence store; no policy choice, mutation or deletion.
+- [Memory service](service/SkillMemoryService.ts): validates and composes compact read-only evidence reports while retaining source identity and coverage limits.
+- [Memory repository](repository/SkillMemoryRepository.ts): bounded lifecycle, catalog and read projections in one consistent snapshot; existing evidence stays unchanged.
+- [Memory validator](validator/SkillMemoryValidator.ts): closed query schemas, explicit collection and period, cutoff rules and bounded output.
 - [Skill change reports](../docs/Skill%20Change%20Reports.md): verified snapshot observations, evidence-based bump recommendations and inert installed onboarding through CLI/MCP.
 - [Snapshot observation repository](repository/SkillSnapshotObservationRepository.ts): bounded schema-2 snapshot verification and portable inventory export without capture or restore.
 - [Bump report service](service/SkillBumpReportService.ts): pure comparison and explicit-evidence classification, preserving uncertainty and paged display.

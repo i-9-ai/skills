@@ -246,6 +246,13 @@ read-only cohort, overlap, inactivity and history queries through the same
 CLI/MCP. These are caller-reported signals with visible denominators and coverage;
 catalog retrieval and file reads do not manufacture activation evidence.
 
+[Skill memory inspection](docs/Skill%20Memory.md) combines bounded summaries of
+those records through `skills memory summarize`. `skills memory retention`
+inspects a caller-supplied cutoff within the selected period; it does not delete
+history or decide what is safe to remove. Both commands use the existing evidence
+store in read-only mode and distinguish source-qualified lifecycle assertions
+from name/revision-only read receipts.
+
 ### Cross-collection lookup
 
 Each repository keeps its own `skills-catalog.json` as its canonical, versioned inventory. When a local workstation needs to compare explicitly selected collections, the separate `skills-catalog-index` package can derive `skills-catalog.db` outside every source repository. SQLite `sync` retains source observations and normalized added, changed, and removed skill history; `history` and `changes` inspect it. The deterministic `skills-catalog.index.json` fallback provides current lookup only. Neither index alters a source catalog, installs or activates a skill, grants permissions, or runs setup. The repository's `catalog aggregate` CLI routes reuse that standalone package. See the [aggregate-index contract](.agents/skills/skills-catalog-index/references/aggregate-index.md) for commands, bounds, retention, and storage rules.

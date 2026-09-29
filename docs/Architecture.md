@@ -133,6 +133,8 @@ flowchart LR
     Queries[Explicit metric queries] --> Reader[Read-only compatible-schema access]
     Store --> Reader
     Reader --> Reports[Rankings / outcomes / overlap / inactivity / history]
+    Memory[Explicit skill memory inspection] --> Reader
+    Reader --> Inspection[Compact summaries / cutoff counts]
 ```
 
 A valid explicit record may initialize or upgrade the selected store. Queries
@@ -147,6 +149,12 @@ successful execution or semantic quality. Metrics expose their denominators,
 periods and missing coverage. No reported activity does not prove non-use. See
 [lifecycle evidence](Lifecycle%20Evidence.md) for event ordering, query budgets
 and recovery, and [telemetry](Skill%20Telemetry.md) for observed-read handling.
+
+[Skill memory inspection](Skill%20Memory.md) composes these projections in one
+read snapshot. Summaries retain evidence identity and missing coverage; retention
+inspection counts records around an optional caller cutoff within the queried
+period. Neither operation establishes a retention policy, evaluates historical
+dependencies for deletion, or writes to the database.
 
 ## Skill observations and version decisions
 
