@@ -17,6 +17,8 @@ Verify every requirement has an implementation and a check or an explicit limit.
 
 ## Child DOX index
 
+- [Federated collections pilot](2026-09-29-21-40-26-federated-collections-pilot.md): deterministic two-owner consumer verification of discovery, identity, bounded handoff and refusal, without a new router or real installation.
+
 - [Bump reports and onboarding](2026-09-29-20-48-39-bump-reports-and-onboarding.md): pinned snapshot observations, explicit semantic review and installed walkthroughs without version or evidence-store mutation.
 
 - [Public distribution readiness](2026-09-29-20-16-50-public-distribution-readiness.md): source/history and remote-surface reconciliation plus pinned distribution rehearsal and owner actions, without publication or visibility changes.

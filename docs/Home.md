@@ -34,5 +34,6 @@ preparing distribution, and evolving focused agent skills.
 - [Pilot runbook](Pilot%20Runbook.md): a bounded, evidence-first procedure for the first external collection pilot.
 - [Pilot evaluation](Pilot%20Evaluation.md): historical six-stage pilot evidence and limitations.
 - [Research pipeline pilot](Research%20Pipeline%20Pilot.md): current seven-stage task comparison, exact evidence and the failed process-fidelity criterion.
+- [Federated collections pilot](Federated%20Collections%20Pilot.md): two-owner synthetic discovery, qualified identity and bounded artifact handoff, including explicit refusal cases.
 - [Upstream research](Upstream%20Research.md): reviewed sources, adoption decisions, and provenance.
 - [Security policy](https://github.com/i-9-ai/skills/blob/main/SECURITY.md): disclosure boundaries and security reporting.
