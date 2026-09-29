@@ -17,6 +17,8 @@ Verify every requirement has an implementation and a check or an explicit limit.
 
 ## Child DOX index
 
+- [Copilot legacy MCP](2026-09-29-22-12-35-copilot-legacy-mcp.md): native legacy-plugin registration and explicit isolated evidence storage, with disposable CLI verification and no persistent consumer installation.
+
 - [Federated collections pilot](2026-09-29-21-40-26-federated-collections-pilot.md): deterministic two-owner consumer verification of discovery, identity, bounded handoff and refusal, without a new router or real installation.
 
 - [Bump reports and onboarding](2026-09-29-20-48-39-bump-reports-and-onboarding.md): pinned snapshot observations, explicit semantic review and installed walkthroughs without version or evidence-store mutation.

@@ -163,9 +163,11 @@ catalog calls require no data directory and create no state. A valid record open
 the selected dedicated SQLite database and applies migrations; evidence queries open
 existing valid storage read-only. A missing database is unavailable, not zero
 history. The CLI accepts an absolute `--db`; the installed plugin selects its
-host data outside installed files and the caller's project. Codex's legacy MCP
-mapping instead forwards explicitly configured `PLUGIN_DATA`; its plugin cwd
-cannot identify the consuming thread's project, so the caller owns that exclusion.
+host data outside installed files and the caller's project. The legacy Codex and
+Copilot MCP mappings forward explicitly configured `PLUGIN_DATA` and
+`COPILOT_PLUGIN_DATA`, respectively. Their plugin cwd cannot identify the
+consuming project, so the caller owns that exclusion. Neither mapping provisions
+data automatically or falls back to another host's storage variable.
 Standard output contains protocol messages only. Read the
 [MCP contract](../docs/Skill%20MCP.md) for all tools, bounds and provenance.
 The former `mcp usage` route is removed before the first release; manually copied

@@ -9,12 +9,12 @@ entries at `.claude-plugin/marketplace.json` and
 `.github/plugin/marketplace.json`. `npm run check` verifies these paths and the
 cataloged packages. There is no checked-in copy under `plugins/`.
 
-The Codex and Claude Code plugins declare the local `i9-skills` MCP in
-`mcp/codex.json` and `mcp/claude.json`. They start the dependency-free Node 24 server
-in `src/transport/PluginMcpServer.ts --host codex|claude`. It provides read-only bundled
+The Codex, Claude Code and Copilot plugins declare the local `i9-skills` MCP in
+`mcp/codex.json`, `mcp/claude.json` and `mcp/copilot.json`. They start the dependency-free Node 24 server
+in `src/transport/PluginMcpServer.ts --host codex|claude|copilot`. It provides read-only bundled
 catalog search, selected Markdown resources and bounded overview without a data
 directory. Explicit `skill_read_record` and `skill_read_rankings` calls use a
-dedicated `skill-usage.db` in the host's persistent plugin data directory, outside
+dedicated `skill-usage.db` in the selected host data directory, outside
 installed files and the caller's project. Initialization and catalog access never
 create it; rankings require existing valid state. Reading instructions through
 the MCP does not record evidence, infer activation or monitor tools. The plugin's
@@ -27,7 +27,9 @@ Clean-copy protocol tests without `node_modules` are separate from native Claude
 ingestion and subprocess tests. The [native pilot](Native%20Plugin%20Pilot.md)
 records successful Claude initialization at pinned revisions. The
 [Codex MCP pilot](Codex%20MCP%20Pilot.md) separately proves native registration and
-explicit tool calls. Copilot does not yet register this MCP.
+explicit tool calls. The [Copilot MCP pilot](Copilot%20MCP%20Pilot.md) records
+native session discovery and direct calls through an ephemeral plugin mount;
+it does not establish a persistent marketplace installation.
 
 Codex's legacy mapping resolves `cwd: "."` against the installed plugin and
 explicitly forwards a caller-provided `PLUGIN_DATA`. It does not inherit automatic
@@ -36,6 +38,13 @@ and storage operations report unavailable. Choose an absolute data directory
 outside both installed files and consumer projects. The runtime rejects relative,
 linked and plugin-contained locations, but cannot infer the original consumer
 cwd from this legacy server process; that exclusion remains the operator's duty.
+
+Copilot's legacy mapping expands `${PLUGIN_ROOT}` for the server path and passes
+an explicitly supplied `COPILOT_PLUGIN_DATA` through its environment mapping.
+It does not provide automatic data storage or a consumer cwd. The same external
+path selection duty applies; an unset or invalid value leaves storage unavailable
+while bundled catalog/report/guide calls continue working. Host data variables
+are isolated: the Copilot adapter does not fall back to Codex or Claude values.
 
 Claude Code can remove the persistent data directory on final plugin uninstall.
 Use its `--keep-data` option when the observed-read history must remain available

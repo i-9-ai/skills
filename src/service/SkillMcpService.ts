@@ -14,7 +14,7 @@ import { SkillOnboardingService } from './SkillOnboardingService.ts';
 
 export type SkillMcpOptions = {
     database?: string;
-    host?: 'codex' | 'claude';
+    host?: 'codex' | 'claude' | 'copilot';
     environment?: NodeJS.ProcessEnv;
     callerRoot?: string;
 };

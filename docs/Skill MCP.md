@@ -18,9 +18,9 @@ node bin/index.mjs mcp serve --db /absolute/local-data/skill-usage.db
 ```
 
 The [unified CLI](../bin/index.md) uses the same service and transport as the
-dependency-free `src/transport/PluginMcpServer.ts --host claude|codex` entrypoint.
-Both host registrations are named `i9-skills` in their respective
-`mcp/claude.json` and `mcp/codex.json` files. The former `mcp usage`
+dependency-free `src/transport/PluginMcpServer.ts --host claude|codex|copilot` entrypoint.
+The host registrations are named `i9-skills` in their respective
+`mcp/claude.json`, `mcp/codex.json` and `mcp/copilot.json` files. The former `mcp usage`
 route, usage-only class names and `i9-skill-usage` registration were replaced
 before the first release; update manually copied client configurations.
 
@@ -37,7 +37,12 @@ is the installed plugin, so it cannot infer the consuming thread's project cwd.
 The operator must select data outside that consumer; the runtime still rejects
 relative, linked and plugin-contained locations. See the
 [native Codex MCP pilot](Codex%20MCP%20Pilot.md) for source and runtime proof.
-Copilot has no bundled MCP mapping and may use the explicit CLI configuration.
+Copilot's legacy mapping similarly requires an explicitly supplied
+`COPILOT_PLUGIN_DATA` for evidence storage. It ignores the other hosts' data
+variables, provisions no directory automatically and cannot identify the
+consumer cwd from its plugin-root process. Its native session RPC loading and
+tool calls are recorded in the [Copilot MCP pilot](Copilot%20MCP%20Pilot.md).
+Both legacy adapters retain the explicit CLI configuration as a fallback.
 
 The npm package is not published yet. After an authorized publication, replace
 `<released-version>` with the verified version in the client configuration:

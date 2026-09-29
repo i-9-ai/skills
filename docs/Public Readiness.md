@@ -46,6 +46,12 @@ caller-selected external `PLUGIN_DATA` for storage and cannot infer the original
 consumer cwd. This does not establish a hosted marketplace update or a public
 directory's remote-MCP acceptance.
 
+The [Copilot MCP pilot](Copilot%20MCP%20Pilot.md) adds native session discovery and
+direct catalog/read-evidence calls through an ephemeral legacy plugin mount.
+It requires explicit external `COPILOT_PLUGIN_DATA` for storage and likewise
+cannot infer the consumer cwd. Persistent marketplace installation, hosted
+update and model-selected tool use remain untested.
+
 ## Read-only GitHub exposure inventory
 
 The remote/Actions inventory cutoff was **2026-09-29 20:28:57 UTC**. Discussion
@@ -91,7 +97,7 @@ audit neither dispatches them nor changes their permissions.
 
 | Channel | Prepared here | Still required before that external action |
 | --- | --- | --- |
-| Local repository plugin | Root Codex/Claude/Copilot manifests and marketplace entries; Codex/Claude native pilot | Select the reviewed merged commit and authorize real-consumer installation. Copilot native execution, hosted updates and additional MCP mappings remain [issue #12](https://github.com/i-9-ai/skills/issues/12) boundaries. |
+| Local repository plugin | Root Codex/Claude/Copilot manifests and marketplace entries; Codex/Claude installation pilot and native Codex/Copilot MCP calls | Select the reviewed merged commit and authorize real-consumer installation. Persistent Copilot marketplace installation and hosted updates remain separate untested distribution steps; see [issue #12](https://github.com/i-9-ai/skills/issues/12). |
 | Repository-hosted marketplace | Canonical root path, identity and explicit source pinning | Private consumers need Git access. Confirm hosted fetching/update behavior at the selected revision; public visibility remains a separate owner decision. |
 | npm executable | Scoped identity @i-9-ai/skills, i9-skills bin, compiled allowlist and packed-runtime tests | Verify registry scope/access and final tarball; authorize version preparation and publication separately. Keep private:true until that release task. See [issue #17](https://github.com/i-9-ai/skills/issues/17). |
 | Public OpenAI directory | Optional skills-only staging and provider-neutral package cores | Owner chooses submission mode, verifies publisher/access and listing/support/privacy details, runs required scans/review and explicitly publishes after acceptance. No listing or identity is fabricated here. |
