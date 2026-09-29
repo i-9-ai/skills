@@ -1,5 +1,6 @@
 /** Pure structural contracts. No filesystem, process execution, or network access. */
 import path from 'node:path';
+import htmlNamedReferences from './html-entities.json' with { type: 'json' };
 
 export const LIMITS = Object.freeze({
   textBytes: 262_144, jsonBytes: 1_048_576, artifactBytes: 4_194_304,
@@ -417,9 +418,9 @@ function lineNumberLookup(text) {
 function htmlAttributeValue(value) {
   return value.replace(/&(?:#(x[0-9a-f]+|[0-9]+)|([a-z][a-z0-9]*));/giu, (entity, numeric, named) => {
     if (named) {
-      const references = { amp: '&', AMP: '&', quot: '"', QUOT: '"', apos: "'", lt: '<', LT: '<', gt: '>', GT: '>', colon: ':', sol: '/', bsol: '\\', Tab: '\t', NewLine: '\n' };
-      requireCondition(Object.hasOwn(references, named), 'unsupported named HTML character reference in resource attribute');
-      return references[named];
+      // Unknown names are literal text; recognized references are decoded once.
+      // The complete static table and its BSD notice travel with this package.
+      return Object.hasOwn(htmlNamedReferences, named) ? htmlNamedReferences[named] : entity;
     }
     const code = numeric[0].toLowerCase() === 'x' ? Number.parseInt(numeric.slice(1), 16) : Number(numeric);
     requireCondition(code > 0 && code <= 0x10ffff && !(code >= 0xd800 && code <= 0xdfff), 'invalid HTML character reference');

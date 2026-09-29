@@ -19,12 +19,14 @@ test('HTML link discovery keeps scanning through quoted greater-than signs', () 
     assert.deepEqual(htmlLinks('<a title="1 > 0" href="missing.html">Missing</a>'), [[1, 'missing.html']]);
 });
 
-test('HTML resource entities are decoded before scheme checks or rejected explicitly', () => {
+test('HTML resource entities are decoded once before scheme checks and unknown names stay literal', () => {
     const [[, target]] = htmlLinks('<a href="javascript&colon;alert(1)">Active</a>');
     assert.equal(target, 'javascript:alert(1)');
     assert.throws(() => localLinkPath('SKILL.md', target), /scheme/);
     assert.deepEqual(htmlLinks('<img src="assets&sol;image.png"><a href="a&amp;b.html">Guide</a>'), [[1, 'assets/image.png'], [1, 'a&b.html']]);
-    assert.throws(() => htmlLinks('<img src="unknown&NotEqual;value.png">'), /unsupported named HTML/);
+    assert.deepEqual(htmlLinks('<img src="known&NotEqual;value.png">'), [[1, 'known≠value.png']]);
+    assert.deepEqual(htmlLinks('<img src="unknown&NotAReference;value.png">'), [[1, 'unknown&NotAReference;value.png']]);
+    assert.deepEqual(htmlLinks('<img src="literal&amp;copy;value.png">'), [[1, 'literal&copy;value.png']]);
 });
 
 test('HTML local bases preserve URL dot-segment, file and empty-reference semantics', () => {
