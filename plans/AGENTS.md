@@ -17,6 +17,8 @@ Verify every requirement has an implementation and a check or an explicit limit.
 
 ## Child DOX index
 
+- [Skill memory inspection](2026-09-29-22-49-00-skill-memory-inspection.md): bounded summaries and cutoff inspection in one read-only evidence snapshot, without new storage or deletion authority.
+
 - [Copilot legacy MCP](2026-09-29-22-12-35-copilot-legacy-mcp.md): native legacy-plugin registration and explicit isolated evidence storage, with disposable CLI verification and no persistent consumer installation.
 
 - [Federated collections pilot](2026-09-29-21-40-26-federated-collections-pilot.md): deterministic two-owner consumer verification of discovery, identity, bounded handoff and refusal, without a new router or real installation.

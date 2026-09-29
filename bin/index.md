@@ -43,6 +43,8 @@ node bin/index.mjs collection audit --collection ./example-skills --layout repos
 node bin/index.mjs skills onboarding
 node bin/index.mjs skills observe --snapshot ./snapshots/before --subject ./subject.json
 node bin/index.mjs skills report bump --file ./comparison.json --limit 20
+node bin/index.mjs skills memory summarize --db /absolute/local-data/skill-usage.db --collection demo --from 2026-09-01T00:00:00.000Z --until 2026-10-01T00:00:00.000Z
+node bin/index.mjs skills memory retention --db /absolute/local-data/skill-usage.db --collection demo --from 2026-09-01T00:00:00.000Z --until 2026-10-01T00:00:00.000Z --cutoff 2026-09-15T00:00:00.000Z
 node bin/index.mjs collection plan --collection ./example-skills --layout repository --audit ./audit.json
 node bin/index.mjs collection evolve --collection ./example-skills --layout repository --plan ./plan.json
 node bin/index.mjs context available-skills --project ./example-project --no-global
@@ -186,6 +188,15 @@ same services. Queries never create or upgrade storage. Read the
 [lifecycle guide](../docs/Lifecycle%20Evidence.md) for full event examples, source
 identity, ratio denominators, missing coverage and history paging. File reads
 never imply activation or completion.
+
+`skills memory summarize` composes bounded lifecycle, catalog and read summaries
+from that same existing store. `skills memory retention` reports evidence before
+and after an optional cutoff inside the requested period. Both require an explicit
+collection and UTC period, open storage read-only, and make no retention decision
+for the caller. Missing approval, validation or migration receipts remain
+unrecorded rather than inferred from events. See the
+[skill memory guide](../docs/Skill%20Memory.md) for complete examples, identity
+tiers, limits and the distinction between inspection and deletion.
 
 `hook telemetry-config --host claude --db /absolute/local-data/usage.db
 --collection project=/absolute/project/.agents/skills` prints an optional

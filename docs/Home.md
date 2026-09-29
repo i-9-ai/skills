@@ -32,6 +32,7 @@ preparing distribution, and evolving focused agent skills.
 - [MCP Inspector](MCP%20Inspector.md): a pinned checkout walkthrough for tool discovery, catalog search and selected Markdown reads, with expected output and cleanup.
 - [Local skill telemetry](Skill%20Telemetry.md): typed session, attempt and read observations, period trends and bounded diagnostic logs.
 - [Lifecycle evidence](Lifecycle%20Evidence.md): explicit route, activation and outcome events, catalog history, cohort denominators and coverage-aware inactivity through CLI/MCP.
+- [Skill memory inspection](Skill%20Memory.md): compact evidence summaries and optional cutoff counts from the same read-only store, with explicit identity and retention limits.
 - [Planning protocol](Planning%20Protocol.md): durable planning for material work.
 - [Pilot runbook](Pilot%20Runbook.md): a bounded, evidence-first procedure for the first external collection pilot.
 - [Pilot evaluation](Pilot%20Evaluation.md): historical six-stage pilot evidence and limitations.

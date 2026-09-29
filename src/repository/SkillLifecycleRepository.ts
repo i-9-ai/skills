@@ -106,8 +106,8 @@ export class SkillLifecycleRepository {
     }
 
     metrics(value: unknown) {
-        const query = new SkillEvidenceValidator().query(value, 'lifecycle');
-        return this.connection.snapshot(() => this.projectMetrics(query));
+        new SkillEvidenceValidator().query(value, 'lifecycle');
+        return this.connection.snapshot(() => this.projectMetrics(value));
     }
 
     overlap(value: unknown) {
@@ -218,7 +218,9 @@ export class SkillLifecycleRepository {
         return type ? rows.filter((row) => row.event_type === type) : rows;
     }
 
-    private projectMetrics(query: EvidenceQuery) {
+    /** Validated bounded projection; a composing caller owns the read snapshot. */
+    projectMetrics(value: unknown) {
+        const query = new SkillEvidenceValidator().query(value, 'lifecycle');
         const database = this.connection.database;
         const period = this.periodRows(query);
         const attempts = new Map<string, LifecycleRow[]>();
