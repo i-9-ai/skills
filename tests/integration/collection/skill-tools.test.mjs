@@ -309,16 +309,18 @@ test('package symlinks and hard links are rejected before reading outside conten
     fs.linkSync(outside, path.join(packagePath, 'hard-link.md')); assert.throws(() => validateSkill(packagePath));
 });
 
-test('Apache terms reject extra clauses but allow the unchanged appendix and application notice', t => {
+test('Apache terms allow the stock appendix and application template with normalized whitespace', t => {
     const packagePath = makeSkill(fixture(t));
     const filename = path.join(packagePath, 'LICENSE');
     const license = fs.readFileSync(filename, 'utf8');
     const end = license.indexOf('END OF TERMS AND CONDITIONS') + 'END OF TERMS AND CONDITIONS'.length;
     const terms = license.slice(0, end);
     const notice = license.slice(license.lastIndexOf('Copyright'));
-    for (const accepted of [terms, license, license.replace('[yyyy] [name of copyright owner]', '2026 Example Contributors'), `${terms}\n${notice}`]) {
-        fs.writeFileSync(filename, accepted);
-        assert.equal(validateSkill(packagePath).name, 'example-skill');
+    for (const accepted of [terms, license, `${terms}\n${notice}`]) {
+        for (const whitespace of [accepted, accepted.replace(/\s+/gu, ' ')]) {
+            fs.writeFileSync(filename, whitespace);
+            assert.equal(validateSkill(packagePath).name, 'example-skill');
+        }
     }
     for (const base of [terms, license, `${terms}\n${notice}`]) {
         fs.writeFileSync(filename, `${base}\nRedistribution is prohibited.\n`);
@@ -341,7 +343,7 @@ test('Apache marker whitespace remains valid while altered terms and extra claus
     assert.throws(() => validateSkill(packagePath), { name: 'ValidationError', message: /declared package license/ });
 });
 
-test('Apache application copyright identities cannot erase appended restrictions', t => {
+test('Apache custom copyright notices remain unsupported and untouched', t => {
     const packagePath = makeSkill(fixture(t));
     const filename = path.join(packagePath, 'LICENSE');
     const license = fs.readFileSync(filename, 'utf8');
@@ -349,10 +351,24 @@ test('Apache application copyright identities cannot erase appended restrictions
     const notice = license.slice(license.lastIndexOf('Copyright'));
     for (const base of [license, `${license.slice(0, end)}\n${notice}`]) {
         for (const identity of ['2026 Example Contributors', '(c) 2020-2026 Example & Partners', '© 2026 Émilie O’Connor', '2026 Example, Inc.']) {
-            fs.writeFileSync(filename, base.replace('[yyyy] [name of copyright owner]', identity));
-            assert.equal(validateSkill(packagePath).name, 'example-skill', identity);
+            const customized = base.replace('[yyyy] [name of copyright owner]', identity);
+            fs.writeFileSync(filename, customized);
+            assert.throws(() => validateSkill(packagePath), /declared package license/u, identity);
+            assert.equal(fs.readFileSync(filename, 'utf8'), customized, 'validation must preserve the attribution for explicit review');
         }
+    }
+});
+
+test('Apache copyright lines cannot absorb restrictions or joined prose', t => {
+    const packagePath = makeSkill(fixture(t));
+    const filename = path.join(packagePath, 'LICENSE');
+    const license = fs.readFileSync(filename, 'utf8');
+    const end = license.indexOf('END OF TERMS AND CONDITIONS') + 'END OF TERMS AND CONDITIONS'.length;
+    const notice = license.slice(license.lastIndexOf('Copyright'));
+    for (const base of [license, `${license.slice(0, end)}\n${notice}`]) {
         for (const identity of [
+            '2026 Example Contributors and redistribution is prohibited.',
+            '2026 Example Contributors for noncommercial use only',
             '2026 Example; Redistribution is prohibited.',
             '2026 Example. Redistribution is prohibited.',
             '2026 Example, redistribution is prohibited.',
@@ -361,8 +377,10 @@ test('Apache application copyright identities cannot erase appended restrictions
             '2026 Example - Redistribution is prohibited',
             'Additional terms prohibit redistribution.',
         ]) {
-            fs.writeFileSync(filename, base.replace('[yyyy] [name of copyright owner]', identity));
+            const customized = base.replace('[yyyy] [name of copyright owner]', identity);
+            fs.writeFileSync(filename, customized);
             assert.throws(() => validateSkill(packagePath), /declared package license/u, identity);
+            assert.equal(fs.readFileSync(filename, 'utf8'), customized);
         }
     }
 });

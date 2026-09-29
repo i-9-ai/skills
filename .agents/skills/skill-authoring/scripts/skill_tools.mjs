@@ -123,7 +123,7 @@ export function validateSkill(input) {
     nonblank(metadata.license, 'license', 256);
     const license = root.readText('LICENSE').trim();
     requireCondition(license.length >= 500 && hasRecognizableLicenseText(metadata.license, license),
-      'LICENSE must contain the full text for the declared package license');
+      'LICENSE does not match the supported full-text profile for the declared package license; preserve custom notices and obtain explicit license/provenance review');
     validateSetupContract(root, metadata, text);
     let links = 0;
     for (const [relative, info] of inventory) if (info.isFile() && relative.endsWith('.md')) {
@@ -153,8 +153,8 @@ function hasRecognizableLicenseText(declared, license) {
   const value = license.toLowerCase().replace(/\s+/gu, ' ');
   const normalized = declared.trim().toLowerCase();
   if (normalized === 'apache-2.0') {
-    // The standard terms are invariant; whitespace and the optional application
-    // appendix/copyright notice may differ without truncating a license clause.
+    // Only case and whitespace vary in the standard terms and stock suffixes.
+    // Custom notices remain intact and require explicit license/provenance review.
     const end = 'end of terms and conditions';
     const index = value.indexOf(end);
     const terms = value.slice(0, index + end.length).trim();
@@ -180,25 +180,13 @@ function hasRecognizableApacheSuffix(license) {
   if (!marker) return false;
   const suffix = license.slice(marker.index + marker[0].length).trim();
   if (!suffix) return true;
-  // Allow the standard appendix or its complete application notice, with one
-  // identifying copyright line. Additional clauses need a separate review;
-  // recognizing this structure does not establish redistribution rights.
-  const notice = /^[ \t]*Copyright[ \t]+([^\r\n]*)/mu.exec(suffix);
-  if (!notice || !copyrightIdentity(notice[1].trim())) return false;
-  const normalized = suffix.replace(notice[0], 'Copyright [notice]')
-    .toLowerCase().replace(/\s+/gu, ' ').trim();
+  // Compare the stock appendix/application template without erasing any text.
+  // Unsupported custom notices are preserved, not judged legally invalid.
+  const normalized = suffix.toLowerCase().replace(/\s+/gu, ' ').trim();
   return new Set([
-    '1050b0a984f8b51814508c5e822a44b30428fc248babfa0872ea2ebf5e4aeffe',
-    'da784bc1e3f72fb0fb76f3369820aeb5cc95c3a548a67a36968a0877752ea419',
+    'fa8253f85b3b2b8280de9d0ee20bb8e1cac67d8b73ebbd902c273bb24529d8b2',
+    '5472baaf5010dcbf4055b636f9f165abe61ee07deb6ed43eec174bb5e44e747e',
   ]).has(digestBytes(normalized));
-}
-
-function copyrightIdentity(value) {
-  if (value === '[yyyy] [name of copyright owner]') return true;
-  // Recognize a bounded date and name, not an arbitrary line of legal prose.
-  // Clause separators and additional sentences must survive suffix comparison.
-  return value.length <= 256
-    && /^(?:(?:\(c\)|©)[ \t]*)?[0-9]{4}(?:[ \t]*[-–][ \t]*[0-9]{4})?[ \t]+[\p{L}\p{N}][\p{L}\p{M}\p{N}'’–-]*(?:[ \t]+(?:&[ \t]+)?[\p{L}\p{N}][\p{L}\p{M}\p{N}'’–-]*)*(?:,[ \t]+(?:Inc|Ltd|LLC|Corp|Co))?\.?$/u.test(value);
 }
 
 function markdownHeadings(text) {
