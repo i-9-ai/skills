@@ -48,6 +48,8 @@ submission, consumer installation or merging the generated PR.
   Disable Git transports and lazy fetching, and reject shallow history rather
   than letting Changesets deepen it. Compare all generated changelog bytes so
   altered summaries or removed historical releases cannot pass verification.
+  Validate the worktree file but compare the committed artifact to permit normal
+  Git checkout newline conversion without relaxing content integrity.
 - Link the README to canonical version metadata instead of maintaining a
   second literal version that could become stale in a generated release PR.
 
