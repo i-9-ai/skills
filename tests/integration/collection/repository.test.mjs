@@ -373,7 +373,11 @@ test('icon deduplication ignores SVG comments and decoded PNG metadata, compress
     // still match. This verifies the artifact check independently of SVG text.
     fs.writeFileSync(join(copy, 'assets/icon.svg'), svg.replace('Example Skill', 'Another Skill'));
     const original = transparentPng();
-    const png = Buffer.concat([original.subarray(0, 33), pngChunk('tEXt', Buffer.from('Comment\0Changed metadata')),
+    const density = Buffer.alloc(9);
+    density.writeUInt32BE(3780); density.writeUInt32BE(3780, 4); density[8] = 1;
+    const png = Buffer.concat([original.subarray(0, 33),
+        pngChunk('bKGD', Buffer.from([0, 255, 0, 255, 0, 255])),
+        pngChunk('pHYs', density), pngChunk('tEXt', Buffer.from('Comment\0Changed metadata')),
         pngChunk('IDAT', deflateSync(Buffer.from([1, 0, 0, 0, 0]), { level: 0 })), pngChunk('IEND', Buffer.alloc(0))]);
     assert.notDeepEqual(png, original);
     fs.writeFileSync(join(copy, 'assets/icon.png'), png);
@@ -451,6 +455,42 @@ test('decoded icon identity is independent of PNG color format, unused palette e
         pixelPng(8, 2, [1, 2, 3], [pngChunk('tRNS', Buffer.from([0, 1, 0, 2, 0, 3]))]),
         pixelPng(8, 6, [100, 150, 200, 0])]) {
         assert.equal(validator.validateCollectionPng('transparent.png', png), transparent);
+    }
+});
+
+test('collection rejects color-managed PNGs with normalization guidance before comparing samples', () => {
+    const validator = new CollectionValidator();
+    const header = transparentPng().subarray(0, 33);
+    const integers = values => {
+        const bytes = Buffer.alloc(values.length * 4);
+        values.forEach((value, index) => bytes.writeUInt32BE(value, index * 4));
+        return bytes;
+    };
+    const managed = [
+        ['gAMA', integers([45455])],
+        ['gAMA', integers([100000])],
+        ['cHRM', integers([31270, 32900, 64000, 33000, 30000, 60000, 15000, 6000])],
+        ['sRGB', Buffer.from([0])],
+        ['sRGB', Buffer.from([1])],
+        ['cICP', Buffer.from([1, 13, 0, 1])],
+        ['cICP', Buffer.from([9, 16, 0, 1])],
+        // ICC decoding and HDR mastering validation are deliberately unsupported.
+        // Their presence must fail before interpreting or inflating profile data.
+        ['iCCP', Buffer.concat([Buffer.from('Synthetic profile\0\0'), deflateSync(Buffer.alloc(132))])],
+        ['mDCV', Buffer.alloc(24)],
+        ['cLLI', integers([10000000, 4000000])],
+    ];
+    const idat = pngChunk('IDAT', deflateSync(Buffer.from([0, 128, 128, 128, 255])));
+    const iend = pngChunk('IEND', Buffer.alloc(0));
+    assert.doesNotThrow(() => validator.validateCollectionPng('plain.png', Buffer.concat([header, idat, iend])));
+    for (const [type, content] of managed) {
+        const payload = Buffer.concat([header, pngChunk(type, content), idat, iend]);
+        assert.throws(() => validator.validateCollectionPng('managed.png', payload), error => {
+            assert.ok(error instanceof CollectionValidationError);
+            assert.match(error.message, new RegExp(`unsupported PNG color-management chunk ${type}`));
+            assert.match(error.message, /color-aware renderer.*untagged sRGB.*render receipt/);
+            return true;
+        }, type);
     }
 });
 
