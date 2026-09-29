@@ -44,7 +44,8 @@ function snapshot(root) {
 }
 
 function fixture(t) {
-    const root = fs.realpathSync(fs.mkdtempSync(join(tmpdir(), 'i9-installed-hooks-')));
+    const createdRoot = fs.mkdtempSync(join(tmpdir(), 'i9-installed-hooks-'));
+    const root = fs.realpathSync(createdRoot);
     t.after(() => fs.rmSync(root, { recursive: true, force: true }));
     const plugin = join(root, 'plugin with spaces $(touch injected) ; \'single\' "double"');
     const project = join(root, 'consumer workspace');
@@ -86,6 +87,7 @@ function fixture(t) {
     };
     return {
         root,
+        createdRoot,
         plugin,
         project,
         decoy,
@@ -221,6 +223,41 @@ function nativeRead(target, event = 'PostToolUse', changes = {}) {
 }
 
 for (const host of ['codex', 'claude']) {
+    for (const spelling of ['linked installed root', 'native temporary ancestor']) {
+        test(`${host} hook configuration launches through a ${spelling}`, (t) => {
+            const target = fixture(t);
+            const alias =
+                spelling === 'linked installed root'
+                    ? join(target.root, 'linked plugin root')
+                    : join(target.createdRoot, basename(target.plugin));
+            if (spelling === 'linked installed root') fs.symlinkSync(target.plugin, alias, 'dir');
+            else if (alias === target.plugin)
+                return t.skip('The temporary directory has no native ancestor alias.');
+
+            const aliased = {
+                ...target,
+                plugin: alias,
+                environment: {
+                    ...target.environment,
+                    PLUGIN_ROOT: alias,
+                    CLAUDE_PLUGIN_ROOT: alias,
+                },
+            };
+            const configuration = JSON.parse(
+                fs.readFileSync(join(alias, `hooks/${host}.json`), 'utf8'),
+            );
+            const handler = configuration.hooks.SessionStart[0].hooks[0];
+            const pluginBefore = snapshot(target.plugin);
+            const projectBefore = snapshot(target.project);
+            const result = registeredHook(aliased, host, handler, session(target));
+
+            assert.match(context(result, host), /plugin-guide/u);
+            assert.deepEqual(snapshot(target.plugin), pluginBefore);
+            assert.deepEqual(snapshot(target.project), projectBefore);
+            assert.equal(events(target).length, host === 'claude' ? 1 : 0);
+        });
+    }
+
     test(`${host} installed hooks discover event-cwd, global and bundled skills without build or dependencies`, (t) => {
         const target = fixture(t);
         fs.symlinkSync(
@@ -293,6 +330,30 @@ for (const host of ['codex', 'claude']) {
         assert.equal(fs.existsSync(join(target.plugin, 'skill-usage.db')), false);
     });
 }
+
+test('importing the installed hook runner does not consume events or write state', (t) => {
+    const target = fixture(t);
+    const script = join(target.plugin, 'src/transport/PluginHookRunner.ts');
+    const importer = join(target.decoy, 'import-hook.mjs');
+    write(
+        target.decoy,
+        'import-hook.mjs',
+        `import { pathToFileURL } from 'node:url';\nawait import(pathToFileURL(${JSON.stringify(script)}));\nconsole.log('import-only');\n`,
+    );
+    const before = snapshot(target.root);
+    const result = spawnSync(process.execPath, [importer, '--host', 'claude'], {
+        cwd: target.decoy,
+        env: environment(target, 'claude'),
+        input: JSON.stringify(session(target)),
+        encoding: 'utf8',
+        timeout: 10000,
+    });
+
+    assert.equal(result.status, 0, result.stderr || String(result.error));
+    assert.equal(result.stdout, 'import-only\n');
+    assert.equal(result.stderr, '');
+    assert.deepEqual(snapshot(target.root), before);
+});
 
 test('plugin metadata warnings survive bounded rendering and hostile multiline summaries cannot create control output', (t) => {
     const target = fixture(t);

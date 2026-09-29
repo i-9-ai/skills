@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-import { resolve } from 'node:path';
+import { realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { PluginHookConfiguration } from '../config/PluginHookConfiguration.ts';
 import { TelemetryInputRepository } from '../repository/TelemetryInputRepository.ts';
@@ -36,6 +36,20 @@ export class PluginHookRunner {
     }
 }
 
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+/** Resolve filesystem aliases without executing the hook on ordinary imports. */
+function isEntrypoint(): boolean {
+    const entrypoint = process.argv[1];
+    if (!entrypoint) return false;
+
+    try {
+        return (
+            realpathSync.native(entrypoint) === realpathSync.native(fileURLToPath(import.meta.url))
+        );
+    } catch {
+        return false;
+    }
+}
+
+if (isEntrypoint()) {
     await new PluginHookRunner().run();
 }
