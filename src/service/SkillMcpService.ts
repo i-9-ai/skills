@@ -9,6 +9,8 @@ import { SkillOperationError } from '../validator/SkillOperationError.ts';
 import { SkillReadValidator } from '../validator/SkillReadValidator.ts';
 import { SkillCatalogService } from './SkillCatalogService.ts';
 import { SkillEvidenceService } from './SkillEvidenceService.ts';
+import { SkillBumpReportService } from './SkillBumpReportService.ts';
+import { SkillOnboardingService } from './SkillOnboardingService.ts';
 
 export type SkillMcpOptions = {
     database?: string;
@@ -48,6 +50,14 @@ export class SkillMcpService {
 
     overview(value: unknown) {
         return this.catalog.overview(value);
+    }
+
+    reportBump(value: unknown) {
+        return new SkillBumpReportService().report(value);
+    }
+
+    onboarding(value: unknown) {
+        return new SkillOnboardingService(this.configuration).guide(value);
     }
 
     record(value: unknown) {

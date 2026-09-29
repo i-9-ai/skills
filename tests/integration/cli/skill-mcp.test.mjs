@@ -62,7 +62,7 @@ test('the unified CLI MCP supports explicit read recording and rankings with bou
     assert.equal(result.status, 0, result.stderr);
     const rows = result.stdout.trim().split('\n').map(JSON.parse);
     assert.equal(rows.length, 5);
-    assert.equal(rows[1].result.tools.length, 11);
+    assert.equal(rows[1].result.tools.length, 13);
     assert.equal(rows[2].result.structuredContent.recorded, true);
     assert.equal(rows[3].result.structuredContent.rows[0].reads, 1);
     assert.equal(rows[4].result.structuredContent.error.code, 'invalid_input');

@@ -5,6 +5,8 @@ import type { Readable, Writable } from 'node:stream';
 import { SkillOperationError } from '../validator/SkillOperationError.ts';
 import { strictJson } from '../../.agents/skills/skill-authoring/scripts/lib/contracts.mjs';
 import { SkillEvidenceToolConfiguration } from '../config/SkillEvidenceToolConfiguration.ts';
+import { SkillBumpToolConfiguration } from '../config/SkillBumpToolConfiguration.ts';
+import { SkillBumpReportError } from '../validator/SkillBumpReportError.ts';
 
 export type SkillMcpOperations = {
     record(value: unknown): unknown;
@@ -18,6 +20,8 @@ export type SkillMcpOperations = {
     overlap(value: unknown): unknown;
     inactivity(value: unknown): unknown;
     catalogHistory(value: unknown): unknown;
+    reportBump(value: unknown): unknown;
+    onboarding(value: unknown): unknown;
     close(): void;
 };
 export const MAX_MCP_REQUEST_BYTES = 1_048_576;
@@ -32,6 +36,7 @@ type Request = {
 
 const eventFields = ['event_id', 'collection', 'skill', 'revision', 'session', 'occurred_at'];
 const tools = [
+    ...SkillBumpToolConfiguration.tools,
     ...SkillEvidenceToolConfiguration.tools,
     {
         name: 'skill_read_record',
@@ -108,7 +113,7 @@ const tools = [
     },
 ];
 
-function toolError(error: SkillOperationError) {
+function toolError(error: SkillOperationError | SkillBumpReportError) {
     return {
         isError: true,
         content: [{ type: 'text', text: error.message }],
@@ -179,6 +184,8 @@ export class SkillMcpTransport {
                     skill_routing_overlap: (value) => store.overlap(value),
                     skill_catalog_inactivity: (value) => store.inactivity(value),
                     skill_catalog_history: (value) => store.catalogHistory(value),
+                    skill_bump_report: (value) => store.reportBump(value),
+                    skill_onboarding: (value) => store.onboarding(value),
                 };
                 const handler =
                     typeof name === 'string' && Object.hasOwn(handlers, name)
@@ -193,7 +200,7 @@ export class SkillMcpTransport {
                 };
             } catch (error) {
                 return toolError(
-                    error instanceof SkillOperationError
+                    error instanceof SkillOperationError || error instanceof SkillBumpReportError
                         ? error
                         : new SkillOperationError('invalid_input'),
                 );

@@ -1,5 +1,11 @@
 # Skill MCP entrypoint
 
+`skill_bump_report` returns a bounded evidence-based comparison;
+`skill_onboarding` returns an inert versioned guide and complete synthetic examples.
+Both are read-only and need no evidence database. See
+[skill change reports](../../../docs/Skill%20Change%20Reports.md) for the matching
+CLI commands, observation production, review inputs and classification limits.
+
 Run `node bin/index.mjs mcp serve` with Node.js 24+ after explicit `npm ci` in a checkout, or use the prepared npm artifact. The root plugin starts the same service directly without CLI dependencies. Initialization and catalog search/read/overview need no data directory and create no state. Standard output contains MCP JSON-RPC only.
 
 For explicit usage events, add `--db /absolute/local-data/skill-usage.db` or provide the supported host's persistent plugin data directory. Input is validated before a record opens storage and applies migrations; rankings open existing valid storage read-only. Missing storage is unavailable, not empty history. Catalog reads never record usage or activation.

@@ -16,6 +16,7 @@ import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { COMMANDS } from '../../src/index.ts';
+import { treeBytes } from '../unit/fixture/SkillBumpFixture.mjs';
 import {
     catalog as evidenceCatalog,
     follow,
@@ -365,6 +366,110 @@ test('the allowlisted artifact runs from node_modules on Node 24+ without TypeSc
     assert.equal(maintained.verification.preimage, 'passed');
     assert.equal(existsSync(join(maintained.snapshot, 'maintenance-result.json')), true);
     assert.equal(maintenanceCall('audit').catalog.status, 'current');
+
+    // Exercise the installed guide itself, not a checkout-only approximation.
+    const onboardingRoot = join(root, 'onboarding-workspace');
+    mkdirSync(onboardingRoot);
+    const installedBefore = treeBytes(installed);
+    const homeBefore = treeBytes(home);
+    const guide = JSON.parse(run(process.execPath, [launcher, 'skills', 'onboarding'], root));
+    assert.equal(guide.guide_version, 'onboarding-v1');
+    assert.equal(guide.fixture.synthetic, true);
+    for (const file of guide.fixture.files) {
+        const target = resolve(onboardingRoot, file.path);
+        assert.ok(target.startsWith(onboardingRoot + sep));
+        mkdirSync(dirname(target), { recursive: true });
+        writeFileSync(target, file.content, { flag: 'wx' });
+    }
+    const expand = (value) =>
+        value.replaceAll('<installed-root>', installed).replaceAll('<workspace>', onboardingRoot);
+    const observedStages = [];
+    for (const section of guide.sections) {
+        if (section.id === 'bump') {
+            writeFileSync(
+                join(onboardingRoot, 'comparison.json'),
+                JSON.stringify({
+                    schema_version: 1,
+                    before: JSON.parse(readFileSync(join(onboardingRoot, 'before.json'))),
+                    after: JSON.parse(readFileSync(join(onboardingRoot, 'after.json'))),
+                    assessment: null,
+                }),
+            );
+        }
+        for (const command of section.commands) {
+            if (command.effect === 'prepared_ci_only') continue;
+            assert.equal(command.argv[0], 'node');
+            const output = run(process.execPath, command.argv.slice(1).map(expand), home);
+            const result = JSON.parse(output);
+            if (command.stdout_file) writeFileSync(expand(command.stdout_file), output);
+            if (section.id === 'evolve') assert.equal(result.status, 'applied');
+            if (section.id === 'bump') {
+                assert.equal(result.recommendation, 'undetermined');
+                assert.equal(result.changes[0].key, 'skills-catalog.json');
+                assert.ok(result.insufficiencies.includes('candidate_official_not_passed'));
+            }
+        }
+        observedStages.push(section.id);
+    }
+    assert.deepEqual(observedStages, [
+        'inspect',
+        'snapshot',
+        'audit',
+        'plan',
+        'evolve',
+        'verify',
+        'bump',
+    ]);
+    const examples = guide.examples.map((example) => {
+        assert.equal(example.synthetic, true);
+        const request = join(onboardingRoot, `${example.name}.json`);
+        writeFileSync(request, JSON.stringify(example.request));
+        const result = JSON.parse(
+            run(process.execPath, [launcher, 'skills', 'report', 'bump', '--file', request], home),
+        );
+        assert.equal(result.recommendation, example.name);
+        return result;
+    });
+    const unusedDatabase = join(onboardingRoot, 'never-created.db');
+    const onboardingMcp = spawnSync(
+        process.execPath,
+        [launcher, 'mcp', 'serve', '--db', unusedDatabase],
+        {
+            cwd: home,
+            env: environment,
+            encoding: 'utf8',
+            timeout: 30000,
+            input:
+                [
+                    { jsonrpc: '2.0', id: 1, method: 'initialize' },
+                    { jsonrpc: '2.0', method: 'notifications/initialized' },
+                    {
+                        jsonrpc: '2.0',
+                        id: 2,
+                        method: 'tools/call',
+                        params: { name: 'skill_onboarding', arguments: {} },
+                    },
+                    ...guide.examples.map((example, index) => ({
+                        jsonrpc: '2.0',
+                        id: index + 3,
+                        method: 'tools/call',
+                        params: { name: 'skill_bump_report', arguments: example.request },
+                    })),
+                ]
+                    .map((request) => JSON.stringify(request))
+                    .join('\n') + '\n',
+        },
+    );
+    assert.equal(onboardingMcp.status, 0, onboardingMcp.stderr);
+    const onboardingResponses = onboardingMcp.stdout.trim().split('\n').map(JSON.parse);
+    assert.deepEqual(onboardingResponses[1].result.structuredContent, guide);
+    assert.deepEqual(
+        onboardingResponses.slice(2).map((item) => item.result.structuredContent),
+        examples,
+    );
+    assert.equal(existsSync(unusedDatabase), false);
+    assert.deepEqual(treeBytes(installed), installedBefore);
+    assert.deepEqual(treeBytes(home), homeBefore);
 
     const releaseRoot = join(root, 'release-fixture');
     const releasePackage = { name: '@example/release-fixture', version: '1.0.0', private: true };

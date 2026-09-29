@@ -29,6 +29,8 @@ Run command integration tests under `tests/integration/cli/`, strict type checki
 
 ## Child DOX index
 
+- [Skill change reports](../../docs/Skill%20Change%20Reports.md): `skills observe`, `skills report bump` and `skills onboarding`, with explicit snapshots, review evidence and no automatic mutations.
+
 - [Hook commands](hook/AGENTS.md): lifecycle ownership, explicit host adapters and registration boundaries.
 - [MCP operator guide](mcp/ServeMcpCommand.md): bundled catalog access, lazy caller-owned usage storage and clean protocol output.
 - [Catalog access](../../docs/Skill%20MCP.md): installed `catalog search/read/overview` contracts shared with MCP; read-only and independent of project/global discovery.

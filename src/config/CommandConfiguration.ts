@@ -35,10 +35,16 @@ import TelemetryOverlapCommand from '../command/telemetry/TelemetryOverlapComman
 import TelemetryInactivityCommand from '../command/telemetry/TelemetryInactivityCommand.ts';
 import TelemetryCatalogHistoryCommand from '../command/telemetry/TelemetryCatalogHistoryCommand.ts';
 import TelemetryCatalogObserveCommand from '../command/telemetry/TelemetryCatalogObserveCommand.ts';
+import SkillsObserveCommand from '../command/skill/SkillsObserveCommand.ts';
+import SkillsReportBumpCommand from '../command/skill/SkillsReportBumpCommand.ts';
+import SkillsOnboardingCommand from '../command/skill/SkillsOnboardingCommand.ts';
 
 /** Owns public command routes independently of class names and source layout. */
 export class CommandConfiguration {
     static readonly commands = {
+        'skills:observe': SkillsObserveCommand,
+        'skills:report:bump': SkillsReportBumpCommand,
+        'skills:onboarding': SkillsOnboardingCommand,
         'catalog:aggregate:check': AggregateCheckCommand,
         'catalog:aggregate:inspect': AggregateInspectCommand,
         'catalog:aggregate:rebuild': AggregateRebuildCommand,

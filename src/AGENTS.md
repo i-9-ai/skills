@@ -26,6 +26,10 @@ Update affected domain rules, adapters, use cases, tests, and documentation toge
 Run `npm run check` and inspect the required official workflow result for the exact PR head. Test process adapters using fake executors and temporary fixtures.
 
 ## Child DOX index
+- [Skill change reports](../docs/Skill%20Change%20Reports.md): verified snapshot observations, evidence-based bump recommendations and inert installed onboarding through CLI/MCP.
+- [Snapshot observation repository](repository/SkillSnapshotObservationRepository.ts): bounded schema-2 snapshot verification and portable inventory export without capture or restore.
+- [Bump report service](service/SkillBumpReportService.ts): pure comparison and explicit-evidence classification, preserving uncertainty and paged display.
+- [Onboarding service](service/SkillOnboardingService.ts): versioned installed command data, complete synthetic fixtures and examples; no automatic execution.
 - [Plugin data](config/PluginDataConfiguration.ts): select a persistent host-owned usage database without writing into the installed plugin.
 - [Plugin MCP entrypoint](transport/PluginMcpServer.ts): dependency-free Node 24 launch of catalog access and explicit usage operations; no state on initialization.
 - [Installed plugin hooks](transport/PluginHookRunner.ts): bounded native event ingress and neutral diagnostics without CLI dependencies, Git lookup or automatic setup.

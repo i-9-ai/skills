@@ -13,6 +13,7 @@ import {
 } from '../../unit/fixture/InstalledCatalogFixture.mjs';
 
 const tools = [
+    'skill_bump_report',
     'skill_catalog_history',
     'skill_catalog_inactivity',
     'skill_catalog_observe',
@@ -20,6 +21,7 @@ const tools = [
     'skill_catalog_search',
     'skill_lifecycle_metrics',
     'skill_lifecycle_record',
+    'skill_onboarding',
     'skill_read_rankings',
     'skill_read_record',
     'skill_resource_read',

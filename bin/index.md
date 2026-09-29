@@ -40,6 +40,9 @@ node bin/index.mjs repo validate --project .
 node bin/index.mjs repo validate-official --project .
 node bin/index.mjs repo verify-release --project .
 node bin/index.mjs collection audit --collection ./example-skills --layout repository
+node bin/index.mjs skills onboarding
+node bin/index.mjs skills observe --snapshot ./snapshots/before --subject ./subject.json
+node bin/index.mjs skills report bump --file ./comparison.json --limit 20
 node bin/index.mjs collection plan --collection ./example-skills --layout repository --audit ./audit.json
 node bin/index.mjs collection evolve --collection ./example-skills --layout repository --plan ./plan.json
 node bin/index.mjs context available-skills --project ./example-project --no-global
@@ -108,6 +111,18 @@ The npm equivalents are `npm run release:prepare` and `npm run release:verify`.
 Read [release management](../docs/Release%20Management.md) for the manual draft-PR
 workflow, bot-run approval, review and recovery. These commands support repository
 maintenance, not consumer installation or automatic publication.
+
+## Skill observations and change reports
+
+`skills observe` verifies an existing schema-2 snapshot and exports a pinned
+inventory, optional source assertions and caller-supplied validation/review.
+`skills report bump` compares two observations and a complete assessment;
+insufficient or contradictory evidence returns `undetermined`. Neither operation
+changes versions or evidence databases. `skills onboarding` returns a versioned
+installed guide with complete synthetic examples, without executing them.
+See [skill change reports](../docs/Skill%20Change%20Reports.md) for fields, limits
+and the inspect-through-report walkthrough. Report and guide data are also
+available through `skill_bump_report` and `skill_onboarding` in the shared MCP.
 
 ## Collection maintenance
 

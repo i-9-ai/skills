@@ -142,6 +142,17 @@ distinct from reading this installed collection's metadata. Reads, hooks and
 catalog retrieval never manufacture lifecycle outcomes. The guide includes
 complete event examples, retries, reason codes, query budgets and history paging.
 
+## Change reports and onboarding
+
+`skill_bump_report` compares two caller-supplied pinned observations and an explicit
+assessment; `skill_onboarding` returns a versioned inert guide with complete
+synthetic examples. Both work without data storage. See
+[skill change reports](Skill%20Change%20Reports.md) for observation production,
+review evidence, classification and the runnable installed walkthrough. Reports
+do not rerun submitted validation, infer compatibility from hashes, change versions
+or execute the guide. Requests are limited to 768 KiB; report output to 480 KiB
+before the MCP envelope and guide output to 64 KiB.
+
 ## Storage and limits
 
 On the first explicit record, ordered checksum-verified migrations run in SQLite transactions. Inserts use `BEGIN IMMEDIATE` and a five-second busy timeout, preserving events from cooperating processes. No database replacement, history pruning, remote telemetry or prompt storage occurs. Database failures require operator diagnosis; there is no reset fallback. Use a stable, trusted local directory; path inspection does not promise race-proof filesystem confinement. A new database has mode 0600; pre-existing modes remain caller-owned. The [typed telemetry CLI](Skill%20Telemetry.md) shares this evidence store and adds explicit session/attempt events and trends.
