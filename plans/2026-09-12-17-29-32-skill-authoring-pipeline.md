@@ -66,8 +66,13 @@ Before the first release, this plan also absorbs mandatory `skill-domain-researc
 ## Helper validation completion
 
 Complete the inaugural helper's remaining review findings without a new runtime
-dependency. Validate a copyright identity before normalizing an Apache application
-notice; retain additional clauses so they cannot match the standard suffix.
+dependency. Automatically recognize only canonical Apache terms alone or with
+the stock appendix/application template, comparing whitespace-normalized text
+without replacing copyright identities. Custom notices, including valid owner
+names, remain unsupported and require explicit license/provenance review; this
+does not determine their legal validity. Preserve their attribution: never remove
+or replace a custom notice merely to pass validation. Do not add a name grammar,
+word denylist or author-input interface for this correction.
 Canonicalize a terminal DNS dot in source identities before duplicate and
 contributor checks. Decode standard named Markdown/HTML references exactly once,
 then retain the existing URL-scheme and package-path checks.
@@ -80,8 +85,9 @@ skill. Load it through a package-relative Node 24 JSON import. Do not copy the
 upstream decoder, add an npm dependency, or download anything during validation.
 
 Exercise real Unicode resource filenames, unknown names, named/numeric dangerous
-schemes and traversal, single-pass decoding, appended copyright clauses, and
-equivalent source-host identities with synthetic fixtures. Repeat official skill
+schemes and traversal, single-pass decoding, stock Apache forms, customized
+copyright notices, joined restriction prose, preserved attribution, and equivalent
+source-host identities with synthetic fixtures. Repeat official skill
 conformance on the final PR head. Reverting this helper correction removes the
 table and its notice with the decoder change; caller packages and run artifacts
 remain untouched.
