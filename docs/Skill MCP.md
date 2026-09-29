@@ -155,7 +155,10 @@ storage. There is no shared transactional writer for derived catalog databases.
 
 The adapter implements newline-delimited JSON-RPC stdio initialization, ping,
 tool discovery and calls. Input messages are bounded to 1 MiB and serialized
-responses to 1 MiB. Oversized tool output produces a bounded error and the server
+responses to 1 MiB. String request IDs are limited to 1 KiB in their serialized
+JSON form (including escapes); numeric IDs must be safe integers. Invalid IDs
+return an invalid-request error with a null ID before any operation runs.
+Oversized tool output produces a bounded error and the server
 can process a later valid request. Errors contain categories, not host paths,
 raw requests or documents. Individual lifecycle events are at most 8 KiB and
 catalog observations at most 256 KiB. No HTTP, MCP resource protocol, subscriptions

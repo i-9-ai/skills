@@ -6,9 +6,82 @@ import { randomUUID } from 'node:crypto';
 import { SkillEvidenceService } from '../../../src/service/SkillEvidenceService.ts';
 import { SkillReadRepository } from '../../../src/repository/SkillReadRepository.ts';
 import { SkillEvidenceDatabaseRepository } from '../../../src/repository/SkillEvidenceDatabaseRepository.ts';
+import { SkillLifecycleRepository } from '../../../src/repository/SkillLifecycleRepository.ts';
 import { fixture, lifecycle, follow, period, reversed } from '../fixture/SkillEvidenceFixture.mjs';
 const service = new SkillEvidenceService();
 const conflict = (error) => error.code === 'evidence_conflict';
+
+test('historical cohort lookups seek by attempt and activation keys instead of scanning older routes', (t) => {
+    const { database } = fixture(t);
+    const old = lifecycle('skill.routed', { occurred_at: '2026-08-01T00:00:00.000Z' });
+    service.recordLifecycle(database, old);
+    service.recordLifecycle(database, follow(old, 'skill.activated', period.from));
+    const store = new SkillEvidenceDatabaseRepository(database);
+    t.after(() => store.close());
+    const seed = store.database.prepare('SELECT * FROM lifecycle_events LIMIT 1').get();
+    store.database.exec('PRAGMA foreign_keys=OFF');
+    const insert = store.database.prepare(
+        'INSERT INTO lifecycle_events VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',
+    );
+    store.transaction(() => {
+        for (let index = 0; index < 2000; index += 1)
+            insert.run(
+                `older-route-${index}`,
+                randomUUID(),
+                seed.collection,
+                seed.skill,
+                seed.source_key,
+                seed.identity_key,
+                seed.source_json,
+                seed.session,
+                old.occurred_at,
+                seed.recorded_at,
+                'skill.routed',
+                null,
+            );
+    });
+
+    const prepare = store.database.prepare.bind(store.database);
+    const plans = [];
+    store.database.prepare = (sql) => {
+        const statement = prepare(sql);
+        if (!sql.startsWith('SELECT')) return statement;
+        return new Proxy(statement, {
+            get(target, name) {
+                if (name !== 'get' && name !== 'all') return Reflect.get(target, name);
+                return (...args) => {
+                    plans.push({
+                        sql,
+                        details: prepare(`EXPLAIN QUERY PLAN ${sql}`)
+                            .all(...args)
+                            .map((row) => row.detail)
+                            .join('\n'),
+                    });
+                    return target[name](...args);
+                };
+            },
+        });
+    };
+    const rows = new SkillLifecycleRepository(store).metrics({
+        ...period,
+        collection: seed.collection,
+        skill: seed.skill,
+    }).rows;
+    assert.equal(rows[0].activated_attempts, 1);
+    assert.equal(rows[0].unmatched_activations, 0);
+    assert.equal(rows[0].reactivations, 0);
+    const attempt = plans.find((plan) => plan.sql.includes('correlation_id=?'));
+    const activation = plans.find((plan) => plan.sql.includes('SELECT identity_key'));
+    assert.match(
+        attempt.details,
+        /SEARCH lifecycle_events USING INDEX lifecycle_attempt \(correlation_id=\? AND collection=\? AND skill=\?\)/,
+    );
+    assert.match(
+        activation.details,
+        /SEARCH lifecycle_events USING INDEX lifecycle_activation \(collection=\? AND skill=\? AND source_key=\? AND event_type=\? AND occurred_at<\?\)/,
+    );
+    assert.doesNotMatch(`${attempt.details}\n${activation.details}`, /SCAN|TEMP B-TREE/);
+});
 
 test('canonical replay, unordered coherent stages, and source/session/terminal conflicts are atomic', (t) => {
     const { database } = fixture(t);

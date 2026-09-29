@@ -22,6 +22,7 @@ export type SkillMcpOperations = {
 };
 export const MAX_MCP_REQUEST_BYTES = 1_048_576;
 export const MAX_MCP_RESPONSE_BYTES = 1_048_576;
+export const MAX_MCP_ID_BYTES = 1024;
 type Request = {
     jsonrpc: '2.0';
     method: string;
@@ -120,7 +121,11 @@ function isRequest(value: unknown): value is Request {
     const request = value as Request;
     if (request.jsonrpc !== '2.0' || typeof request.method !== 'string') return false;
     if (!Object.hasOwn(request, 'id')) return true;
-    return typeof request.id === 'string' || Number.isSafeInteger(request.id);
+    // IDs are echoed even in errors. Bound their serialized form, including
+    // escaping, before dispatch so the size-error response always fits.
+    if (typeof request.id === 'string')
+        return Buffer.byteLength(JSON.stringify(request.id), 'utf8') <= MAX_MCP_ID_BYTES;
+    return Number.isSafeInteger(request.id);
 }
 
 /** Adapts one bounded MCP lifetime to installed catalog and explicit usage operations. */

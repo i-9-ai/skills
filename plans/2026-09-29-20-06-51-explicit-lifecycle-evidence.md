@@ -104,6 +104,10 @@ catalog envelope. Raise the bounded MCP ingress line to 1 MiB while retaining
 each tool's smaller validated input cap and the 1 MiB response limit. Verify a
 real catalog observation above 64 KiB, identical retry, oversize ingress rejection
 before storage and bounded paged recovery for oversized response bodies.
+Bound serialized string request IDs to 1 KiB before dispatch so even the fallback
+error fits; retain safe-integer IDs. Pin historical attempt/activation lookups to
+their equality-prefixed indexes, because LIMIT alone bounds returned rows rather
+than scanned history. Verify the actual SQLite access plans against old history.
 
 ## Metric semantics
 

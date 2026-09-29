@@ -8,7 +8,12 @@ import path from 'node:path';
 import { PassThrough, Readable, Writable } from 'node:stream';
 import { setImmediate as nextTurn } from 'node:timers/promises';
 import test from 'node:test';
-import { SkillMcpTransport } from '../../../src/transport/SkillMcpTransport.ts';
+import {
+    SkillMcpTransport,
+    MAX_MCP_REQUEST_BYTES,
+    MAX_MCP_RESPONSE_BYTES,
+    MAX_MCP_ID_BYTES,
+} from '../../../src/transport/SkillMcpTransport.ts';
 
 function transport() {
     const input = new PassThrough();
@@ -77,11 +82,52 @@ test('invalid JSON and notification-shaped payloads cannot record read evidence'
     assert.equal(running.responses()[0].error.code, -32700);
 });
 
+test('request IDs cannot overflow error responses or dispatch storage operations', async () => {
+    const running = transport();
+    const envelope = { jsonrpc: '2.0', id: '', method: 'tools/list' };
+    const maximumIngressId = 'x'.repeat(
+        MAX_MCP_REQUEST_BYTES - Buffer.byteLength(JSON.stringify(envelope)),
+    );
+    const accepted = ['x'.repeat(MAX_MCP_ID_BYTES - 2), '\u0000'.repeat(170) + 'ab'];
+    const rejected = ['x'.repeat(MAX_MCP_ID_BYTES - 1), '\u0000'.repeat(171), 'é'.repeat(512)];
+    const requests = [
+        { jsonrpc: '2.0', id: 1, method: 'initialize' },
+        { jsonrpc: '2.0', method: 'notifications/initialized' },
+        ...rejected.map((id) => ({
+            jsonrpc: '2.0',
+            id,
+            method: 'tools/call',
+            params: { name: 'skill_read_record' },
+        })),
+        { ...envelope, id: maximumIngressId },
+        ...accepted.map((id) => ({ jsonrpc: '2.0', id, method: 'ping' })),
+        { jsonrpc: '2.0', id: 2, method: 'ping' },
+    ];
+    // The tools/list request itself is exactly at the ingress boundary.
+    running.input.end(requests.map((request) => JSON.stringify(request)).join('\n') + '\n');
+    await running.done;
+
+    const responses = running.responses();
+    assert.deepEqual(running.calls, [['close']]);
+    assert.equal(responses.length, 8);
+    for (const response of responses.slice(1, 5)) {
+        assert.equal(response.id, null);
+        assert.equal(response.error.code, -32600);
+    }
+    assert.deepEqual(
+        responses.slice(5).map((response) => response.id),
+        [...accepted, 2],
+    );
+    for (const response of responses)
+        assert.ok(Buffer.byteLength(JSON.stringify(response) + '\n') <= MAX_MCP_RESPONSE_BYTES);
+});
+
 test('oversized tool output becomes a bounded error without losing the following request', async () => {
     const input = new PassThrough();
     const output = new PassThrough();
     let text = '';
     let closed = 0;
+    const maximumEscapedId = '\u0000'.repeat(170) + 'ab';
     output.on('data', (chunk) => {
         text += chunk;
     });
@@ -106,7 +152,7 @@ test('oversized tool output becomes a bounded error without losing the following
             { jsonrpc: '2.0', method: 'notifications/initialized' },
             {
                 jsonrpc: '2.0',
-                id: 2,
+                id: maximumEscapedId,
                 method: 'tools/call',
                 params: { name: 'skill_read_rankings' },
             },
@@ -119,7 +165,7 @@ test('oversized tool output becomes a bounded error without losing the following
     const responses = text.trim().split('\n').map(JSON.parse);
     assert.deepEqual(
         responses.map((response) => response.id),
-        [1, 2, 3],
+        [1, maximumEscapedId, 3],
     );
     assert.equal(responses[1].result.isError, true);
     assert.equal(responses[1].result.structuredContent.error.code, 'response_too_large');

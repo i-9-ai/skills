@@ -55,12 +55,14 @@ export class SkillLifecycleRepository {
             if (!recorded)
                 return { recorded, event_id: event.event_id, event_type: event.event_type };
             const session = database
-                .prepare('SELECT session FROM lifecycle_events WHERE correlation_id=? LIMIT 1')
+                .prepare(
+                    'SELECT session FROM lifecycle_events INDEXED BY lifecycle_attempt WHERE correlation_id=? LIMIT 1',
+                )
                 .get(event.correlation_id);
             if (session && session.session !== event.session) this.conflict();
             const previous = database
                 .prepare(
-                    'SELECT * FROM lifecycle_events WHERE correlation_id=? AND collection=? AND skill=? LIMIT 4',
+                    'SELECT * FROM lifecycle_events INDEXED BY lifecycle_attempt WHERE correlation_id=? AND collection=? AND skill=? LIMIT 4',
                 )
                 .all(
                     event.correlation_id,
@@ -220,6 +222,8 @@ export class SkillLifecycleRepository {
         const database = this.connection.database;
         const period = this.periodRows(query);
         const attempts = new Map<string, LifecycleRow[]>();
+        // LIMIT bounds returned rows, not work. Seek by the full attempt key;
+        // a period index could otherwise scan all older events for this skill.
         for (const row of period) {
             const key = attemptKey(row);
             if (!attempts.has(key))
@@ -227,7 +231,7 @@ export class SkillLifecycleRepository {
                     key,
                     database
                         .prepare(
-                            'SELECT * FROM lifecycle_events WHERE correlation_id=? AND collection=? AND skill=? AND occurred_at<? LIMIT 4',
+                            'SELECT * FROM lifecycle_events INDEXED BY lifecycle_attempt WHERE correlation_id=? AND collection=? AND skill=? AND occurred_at<? LIMIT 4',
                         )
                         .all(
                             row.correlation_id,
@@ -314,7 +318,7 @@ export class SkillLifecycleRepository {
                 if (terminal?.event_type === 'skill.blocked') metric.blocked_activations += 1;
                 const previous = database
                     .prepare(
-                        "SELECT identity_key FROM lifecycle_events WHERE collection=? AND skill=? AND source_key=? AND event_type='skill.activated' AND occurred_at<? ORDER BY occurred_at DESC, event_id DESC LIMIT 1",
+                        "SELECT identity_key FROM lifecycle_events INDEXED BY lifecycle_activation WHERE collection=? AND skill=? AND source_key=? AND event_type='skill.activated' AND occurred_at<? ORDER BY occurred_at DESC, event_id DESC LIMIT 1",
                     )
                     .get(row.collection, row.skill, row.source_key, row.occurred_at);
                 if (previous) {
