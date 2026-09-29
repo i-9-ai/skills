@@ -44,13 +44,28 @@ decision and notice in `assets/icon.source.json`.
 Duplicate-icon checks ignore SVG comments and compare PNG dimensions and decoded
 RGBA16 pixels. Palette, grayscale, RGB, alpha and bit-depth representations are
 normalized, including padding bits and fully transparent samples. Compression,
-row filters and ancillary metadata cannot make the same pixels distinct. This
-is not a renderer or a perceptual similarity assessment; distinct rasterizations
-of similar artwork still require visual review.
+row filters, background hints (`bKGD`), text and pixel density (`pHYs`) cannot
+make identical stored pixels distinct. This is not a renderer or a perceptual
+similarity assessment; distinct rasterizations of similar artwork still require
+visual review.
+
+Color-managed PNGs are outside this bounded comparison profile. Validation
+rejects `cHRM`, `gAMA`, `iCCP`, `sRGB`, `cICP`, `mDCV` and `cLLI` with an explicit
+normalization diagnostic. These chunks can affect color interpretation or tone
+mapping, as defined by the [PNG color-space and mastering rules](https://www.w3.org/TR/png-3/#4Concepts.ColourSpaces).
+Rerender the reviewed SVG, or use a color-aware renderer to convert the image
+to the collection's untagged sRGB pixel convention before exporting without
+these chunks. Do not merely strip a profile from unchanged samples. Review the
+result and refresh the paired render receipt. No ICC conversion or profile
+decompression runs during validation.
 
 Markdown character references and HTML URL whitespace are normalized before
-scheme and path checks. Package paths reject Windows device names, forbidden
-punctuation and trailing dots/spaces even on Unix hosts. Apache recognition
+scheme and path checks. Numeric references follow the [HTML replacement rules](https://html.spec.whatwg.org/multipage/parsing.html#numeric-character-reference-end-state):
+for example, `&#128;` resolves to `€`, while zero, surrogate and out-of-range
+values resolve to `U+FFFD`. SVG remains subject to separate XML rules.
+Package paths reject Windows device names, including the
+[console names `CONIN$` and `CONOUT$`](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilea#consoles),
+forbidden punctuation and trailing dots/spaces even on Unix hosts. Apache recognition
 accepts the canonical terms plus only the recognized optional appendix or
 application notice; extra clauses require review instead of silently passing.
 This structural check does not establish legal rights.
