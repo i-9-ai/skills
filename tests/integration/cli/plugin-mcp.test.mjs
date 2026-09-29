@@ -6,8 +6,10 @@ import { join } from 'node:path';
 import test from 'node:test';
 import {
     catalogFixture,
+    digest,
     repository,
     snapshot,
+    write,
 } from '../../unit/fixture/InstalledCatalogFixture.mjs';
 
 const tools = [
@@ -86,6 +88,23 @@ function error(row, code) {
     assert.equal(row.result.structuredContent.error.code, code);
     assert.ok(row.result.structuredContent.error.message.length < 512);
 }
+
+test('installed MCP preserves a leading UTF-8 BOM in returned resource provenance', (t) => {
+    const target = catalogFixture(t, { runtime: true });
+    const bytes = Buffer.from('\ufeff# BOM reference\r\n\nExact source bytes.\n', 'utf8');
+    write(target.installed, '.agents/skills/alpha-guide/references/bom.md', bytes);
+    const before = snapshot(target.root);
+    const result = successful(
+        run(target, [
+            call('skill_resource_read', { skill: 'alpha-guide', resource: 'references/bom.md' }),
+        ])[1],
+    );
+    const returned = Buffer.from(result.content, 'utf8');
+    assert.deepEqual(returned, bytes);
+    assert.equal(result.byte_length, returned.length);
+    assert.equal(result.content_sha256, digest(returned));
+    assert.deepEqual(snapshot(target.root), before);
+});
 
 test('a clean installed MCP discovers and reads only its bundled catalog without DATA or state writes', (t) => {
     const target = catalogFixture(t, { runtime: true });

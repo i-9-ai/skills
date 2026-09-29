@@ -50,7 +50,10 @@ export class InstalledSkillRepository {
 
             try {
                 const bytes = root.readBytes(`${selected.path}/${query.resource}`, 65_536);
-                const content = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+                // Preserve a leading BOM so returned text and byte provenance agree.
+                const content = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(
+                    bytes,
+                );
                 return {
                     provenance: catalog.provenance,
                     skill: selected.name,
