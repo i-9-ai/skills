@@ -200,7 +200,11 @@ git diff --check
 
 The [validation contract](docs/Validation.md) explains the layered checks. Every package must also pass the official `skills-ref validate` tool identified by the [Agent Skills specification](https://agentskills.io/specification#validation). GitHub Actions installs the pinned external Python validator in an isolated environment and validates every canonical package at the exact PR revision.
 
-Pending user-visible changes use [Changesets](docs/Release%20Management.md) for version intent and future release notes. The current workflow validates those entries only; it does not publish packages, create tags, or create releases.
+Pending user-visible changes use [Changesets](docs/Release%20Management.md) for
+version intent and future release notes. A manual workflow can prepare a draft
+version PR with an aligned package, lockfile and plugin manifests. Normal PR
+checks still apply; preparation does not publish packages, create tags or create
+releases. The release guide also covers local preparation and no-note retries.
 
 Catalog maintenance is automated:
 
