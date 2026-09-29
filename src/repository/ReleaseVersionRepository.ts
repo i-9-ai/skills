@@ -212,6 +212,13 @@ export class ReleaseVersionRepository {
             );
     }
 
+    committedChangelog(): string {
+        // Validate the selected file before comparing Git bytes, which are not
+        // affected by the consumer's clean-checkout newline conversion.
+        this.read('CHANGELOG.md');
+        return this.git(['show', 'HEAD:CHANGELOG.md']);
+    }
+
     expectedRelease(base: string, pkg: ReleaseDocument, notes: string[]): ReleaseExpectation {
         this.assertBase(base);
         if (this.git(['rev-parse', '--is-shallow-repository']).trim() !== 'false')
