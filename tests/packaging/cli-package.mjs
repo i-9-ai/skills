@@ -15,6 +15,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
+import { COMMANDS } from '../../src/index.ts';
 
 const repository = fileURLToPath(new URL('../../', import.meta.url));
 
@@ -93,7 +94,12 @@ test('the allowlisted artifact runs from node_modules on Node 24+ without TypeSc
     assert.equal(JSON.parse(readFileSync(join(installed, 'package.json'))).private, true);
     const launcher = join(installed, 'bin/index.mjs');
     assert.match(run(process.execPath, [launcher, '--help'], root), /TOPICS/);
-    const implicitValidation = spawnSync(process.execPath, [launcher, 'validate'], {
+    for (const route of Object.keys(COMMANDS)) {
+        const help = run(process.execPath, [launcher, ...route.split(':'), '--help'], root);
+        assert.match(help, /USAGE/u, route);
+        assert.ok(help.includes(`i9-skills ${route.replaceAll(':', ' ')}`), route);
+    }
+    const implicitValidation = spawnSync(process.execPath, [launcher, 'repo', 'validate'], {
         cwd: root,
         env: environment,
         encoding: 'utf8',

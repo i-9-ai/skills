@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-import AvailableSkillsCommand from '../context/available-skills.ts';
+import AvailableSkillsCommand from '../context/AvailableSkillsCommand.ts';
 import { Flags } from '@oclif/core';
 import { HostHookConfiguration, sessionHosts } from '../../service/HostHookConfiguration.ts';
 import type { SessionHost } from '../../service/HostHookConfiguration.ts';

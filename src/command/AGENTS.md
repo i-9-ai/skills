@@ -13,7 +13,7 @@ Commands adapt user input to services. Parent source instructions own implementa
 - `bin/index.mjs` is the sole executable launcher; do not add parallel clients or undocumented compatibility aliases.
 - Use one command per independently useful operation. Group by stable capability, then operation: `context available-skills`, `hook verify --host codex`, `mcp usage`.
 - A reusable operation belongs to its user-facing domain. Lifecycle hooks call that operation; they do not determine its reusable name.
-- Class names end in `Command`. Files below this tree use oclif command-ID spelling, an intentional exception to class-matching filenames elsewhere.
+- Class names end in `Command`, and filenames match their class exactly. Register the public route in `CommandConfiguration`; do not derive it from the filename or add a second route registry.
 - Commands parse flags, invoke a service and render the result. Filesystem lookup, validation rules, migrations and protocol handling belong to their named components.
 - Provide descriptions, meaningful parameter help and representative examples. Invalid input returns a nonzero status. Separate machine-readable output from human diagnostics.
 - Keep ordinary commands usable without a TTY. Never prompt, install dependencies, launch a daemon or enable integrations implicitly.
@@ -30,9 +30,9 @@ Run command integration tests under `tests/integration/cli/`, strict type checki
 ## Child DOX index
 
 - [Hook commands](hook/AGENTS.md): lifecycle ownership, explicit host adapters and registration boundaries.
-- [Usage MCP operator guide](mcp/usage.md): stdio execution, caller-owned SQLite and clean protocol output.
+- [Usage MCP operator guide](mcp/UsageMcpCommand.md): stdio execution, caller-owned SQLite and clean protocol output.
 - [Telemetry operator guide](../../docs/Skill%20Telemetry.md): explicit record, rankings and trend commands with metadata-only diagnostics.
-- [Available skills](context/available-skills.ts): reusable project/global overview with bounded discovery.
-- [Collection validation](validate.ts): local collection validation command.
-- [Plugin preparation](plugin/prepare.ts): preview or create an explicit new staging artifact; never registers or installs it.
-- [Official validation](ci-official.ts): CI-only external conformance orchestration.
+- [Available skills](context/AvailableSkillsCommand.ts): reusable project/global overview with bounded discovery.
+- [Repository validation](repo/RepositoryValidateCommand.ts): local collection validation through `repo validate`.
+- [Plugin preparation](plugin/PluginPrepareCommand.ts): preview or create an explicit new staging artifact; never registers or installs it.
+- [Official skills validation](repo/OfficialSkillsValidateCommand.ts): pinned Agent Skills conformance through `repo validate-official` in prepared CI.

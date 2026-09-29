@@ -17,7 +17,7 @@ Keep commands and dependency pins in root `package.json`. After explicit `npm ci
 
 Filesystem checks require an owned workspace that remains stable during the run. Reject unsafe entries and detected changes, bound reads, and preserve unrelated data; do not claim race-proof confinement. The standalone helper remains inside its distributable skill, and repository adapters reuse its behavior without making the skill depend on this directory.
 
-Use classes for cohesive pattern responsibilities: class and import names carry the pattern (`CollectionValidator`, `SkillReadRepository`, `SkillReadMigration`), and filenames match the class. Entities use domain names without an Entity suffix. Oclif command filenames are the documented command-ID exception. Keep state/dependencies on the responsible instance and make process/storage seams injectable where useful. Reserve session/lifecycle names for hook adapters; reusable discovery is SkillDiscoveryRepository and rendering is AvailableSkillsService. Small private pure helpers need no ceremonial class. ProjectConfiguration owns cohesive named project paths and excludes global-home discovery configuration. Never retain a second functional entrypoint merely for hypothetical compatibility.
+Use classes for cohesive pattern responsibilities: class and import names carry the pattern (`CollectionValidator`, `SkillReadRepository`, `SkillReadMigration`), and filenames match the class, including every `Command`. Entities use domain names without an Entity suffix. CommandConfiguration owns route IDs through oclif explicit discovery; filenames never define public routes. Keep state/dependencies on the responsible instance and make process/storage seams injectable where useful. Reserve session/lifecycle names for hook adapters; reusable discovery is SkillDiscoveryRepository and rendering is AvailableSkillsService. Small private pure helpers need no ceremonial class. ProjectConfiguration owns cohesive named project paths and excludes global-home discovery configuration. Never retain a second functional entrypoint merely for hypothetical compatibility.
 
 ## Work guidance
 Update affected domain rules, adapters, use cases, tests, and documentation together. Distinguish format conformance, integrity, behavioral evaluation, and publication readiness.
@@ -30,7 +30,8 @@ Run `npm run check` and inspect the required official workflow result for the ex
 - [Plugin MCP entrypoint](transport/PluginUsageMcpServer.ts): dependency-free Node 24 stdio launch of the existing usage service.
 - [Project configuration](config/ProjectConfiguration.ts): one validated root selection and named project paths without filesystem effects.
 - [Command contracts](command/AGENTS.md): capability grouping, class names, help, failures and noninteractive output.
-- [Skill usage MCP](command/mcp/usage.md): explicit observed-read recording and period rankings; no automatic hooks or activation inference.
+- [Command configuration](config/CommandConfiguration.ts): explicit public route-to-class mapping, independent of source filenames and build location.
+- [Skill usage MCP](command/mcp/UsageMcpCommand.md): explicit observed-read recording and period rankings; no automatic hooks or activation inference.
 - [CLI operator guide](../bin/index.md): command input, effects, failures and the single launcher.
 - [Repository validation](service/CollectionValidationService.ts): coordinates collection checks.
 - [Collection validator](validator/CollectionValidator.ts): catalog, upstream-lock, and public-hygiene rules.

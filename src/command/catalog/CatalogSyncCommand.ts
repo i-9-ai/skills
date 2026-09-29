@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import { Command, Flags } from '@oclif/core';
-import { catalogFlags, catalogInput } from './inspect.ts';
+import { catalogFlags, catalogInput } from './CatalogInspectCommand.ts';
 import { CollectionCatalogService } from '../../service/CollectionCatalogService.ts';
 
 export default class CatalogSyncCommand extends Command {
