@@ -1,85 +1,140 @@
-# Local public-readiness audit
+# Public distribution readiness
 
-Reviewed on 2026-09-19 for the repository-only completion. This is a dated
-preparation record, not authorization to publish or evidence of a public release.
-The repository and npm package remain private. No remote setting, issue/comment,
-release, branch, host configuration or consumer installation was changed.
+This assessment was refreshed on 2026-09-29. Source and native-plugin preparation
+have reviewable evidence; public distribution still requires the owner actions
+below. A scanner pass, private marketplace entry or green CI does not publish the
+project or certify every possible disclosure. The repository remains experimental.
+No visibility, billing, registry, release or directory setting was changed by this
+assessment.
 
-## Source and artifact boundaries
+## Source, licenses and distribution inventory
 
-The current catalog contains 23 packages whose primary responsibilities directly
-concern skills. The [collection review](Collection%20Review.md) records their scope,
-overlap and icon decisions. General tool/domain skill work remains outside this
-repository and outside this completion's claim.
+The catalog contains 24 meta-skills. All have their entrypoint, full license,
+OpenAI interface metadata and SVG/PNG icons. The repository license, scoped
+notices, source revisions and reuse decisions remain separate records: see
+[upstream research](Upstream%20Research.md), upstreams.lock.json, and package
+notices. The derived HTML entity table retains its BSD license beside the data.
+Presence and consistency checks do not replace a legal review of every possible
+redistribution claim. General domain/tool packages are outside this collection.
 
-The Node 24.19.0 exact-archive validation of commit
-`3a7a5c94c2cc2a59633a59f4cceb4766e458e71d` passed all 224 required tests,
-strict type/format/collection checks, Changesets status, catalog synchronization,
-committed whitespace and the actual packed CLI check. Official skills-ref 0.1.0
-passed all 23 packages using the immutable source recorded in package.json.
-Later plugin preparation is covered by its additional CLI and packed-artifact
-tests; final exact-commit validation and independent review belong in the
-delivery record rather than being inferred from this earlier check.
+At local source commit d3f40a5f3d10e9d897c4c22ed58a6c96bba78f5f, Gitleaks 8.30.1
+scanned all locally reachable Git refs: 144 commits and approximately 5.37 MB,
+with zero alerts. It ignored inline allow comments, used the default detectors
+and fully redacted report values. Later uncommitted implementation, inaccessible
+history and subsequent commits are outside that scan. Pattern detection cannot
+prove absence of encoded or unrecognized sensitive material. No history rewrite
+was performed.
 
-The package allowlist retains compiled CLI code, its launcher, canonical skill
-resources and public documentation. It excludes repository source/tests, scratch,
-host configuration and development dependencies. The plugin builder independently
-selects only catalog packages, manifests, license/notice files and its integrity
-receipt. Neither build installs into a consumer or enables an integration.
+The npm allowlist contains the compiled CLI, thin launcher, canonical packages,
+catalog, public docs and applicable root license/notice. It excludes source/tests,
+local logs, host configuration and development dependencies. The root plugin
+instead uses the single .agents/skills tree and source transports through its
+host manifests. Optional portable staging copies validated packages, manifests,
+license material and an integrity receipt into a disposable artifact. These are
+different distribution surfaces; neither creates a registry release.
 
-The existing public-hygiene categories were also applied to 947 unique Git blobs
-(9,120,509 bytes) reachable from that local commit, the observed remote main and
-the open PR head. Four historical matches were inspected: three relative example
-paths and one synthetic shell-quoting fixture. They did not identify private
-source material or a credential; the current fixture already avoids the ambiguous
-path. No history rewrite was performed. A pattern scan is not comprehensive
-secret detection or a legal review of every possible disclosure.
+The [native pilot](Native%20Plugin%20Pilot.md) records immutable A/B/A source pins,
+24-skill discovery, actual Codex/Claude SessionStart delivery, Claude MCP
+initialization and data-preserving cleanup. It limits the offline dependency
+warning, stubbed Codex model transport and local update mechanism. Repository
+checks, official skills-ref results and packed-runtime acceptance apply to their
+exact PR heads; obtain fresh results for the final release commit.
 
-## Read-only GitHub inventory
+## Read-only GitHub exposure inventory
 
-The API reported a private repository, main as the default branch, two branches
-and one open PR. The remote PR head was
-`1756c9aefa77db6ac046669b44f578912d2381b4`; it does not include the later local
-completion commits. Existing remote checks cannot verify those unpushed commits.
+The remote/Actions inventory cutoff was **2026-09-29 20:28:57 UTC**. Discussion
+capture finished at 20:31:56; the last already-selected run was confirmed complete
+at 20:32:42, and scanning finished at 20:32:55. This is a bounded observation,
+not an atomic snapshot or continuing monitor. The observed default branch was
+main at 49049ab3dd9e191bb6fe071dfdc9a17cceab94ba.
 
-| Surface | Observed result | Readiness implication |
+| Surface | Observed coverage | Disposition |
 | --- | --- | --- |
-| Issues and PR text | 16 issues, one PR, six issue comments and 215 review comments inspected with the current public-hygiene categories | One matched review comment uses illustrative root/workspace paths to explain a validator defect; no credential or private-data finding was established. |
-| Actions | Two registered workflows; 96 completed runs, 82 successful and 14 failed | All 96 accessible log archives were scanned after excluding ordinary hosted-runner paths. No remaining pattern finding. Success applies only to each historical run's head. |
-| Artifacts, releases and deployments | Zero visible entries in each paginated inventory | No artifact/release content required review in this inventory. Deleted or inaccessible historical content is not certified. |
-| Pages, Wiki and Discussions | All three features reported disabled; Pages API returned 404 | No current site, Wiki or discussion content was asserted available. Future enablement remains a separate action. |
-| Collaborators | One visible collaborator | Identity details are retained only in the local audit evidence. |
-| Repository Actions secrets, variables and environments | Zero visible entries | No values were returned. Organization-level configuration is outside this repository-scoped inventory. |
-| Rulesets | API returned 403 | Ruleset configuration remains unverified; the response is an evidence gap, not proof of no rules. |
-| Private vulnerability reporting | API returned 404 | Availability is unconfirmed. SECURITY.md already directs reporters to an existing private maintainer channel or a requested safe route when no reporting channel is available. |
+| Issues and PRs | 27 issues, 7 PRs, 25 issue comments, 415 review comments, 245 review records | Zero Gitleaks alerts in extracted discussion content. Two illustrative paths in [an existing review comment](https://github.com/i-9-ai/skills/pull/2#discussion_r4002059581) were reviewed; no private-source or credential finding established. |
+| Actions | 140 selected archives; 364 files, 6,061,670 bytes; 125 successful and 15 failed runs | All selected archives downloaded and scanned. Zero log alerts; no unavailable, expired or skipped selected archive. Historical success is not current-head CI evidence. |
+| Refs and workflows | Eight remote branches; zero tags; four registered workflows | gh-pages exists, but branch existence does not prove an active site. Later commits and workflows need a new cutoff. |
+| Artifacts, releases and deployments | Zero visible entries | No content required inspection; deleted or inaccessible historical content is not certified. |
+| Repository secrets, variables and environments | Zero visible entries | No secret values requested. Organization/enterprise configuration was outside scope. |
+| Collaborators | One visible collaborator | Identity details retained only in protected local evidence. |
+| Wiki | REST has_wiki:false; GraphQL hasWikiEnabled:true; authenticated ref lookup returned repository-not-found | Enablement and initialization remain unverified. No Wiki content could be audited; do not claim synchronization succeeded. |
+| Pages and private vulnerability reporting | Both APIs returned 404 | Availability unconfirmed. Existing [security guidance](../SECURITY.md) remains the reporting fallback. |
+| Main protection and rulesets | Provider returned 403 requiring a different account plan or public repository | Protection was not applied. [Issue #32](https://github.com/i-9-ai/skills/issues/32) records the requested policy and blocked configuration. |
 
-The audit used paginated read-only GitHub API requests. Raw API bodies and log
-archives remain in ignored local evidence, not in the package or repository
-history. Counts and remote states must be refreshed before any publication or
-visibility decision; this dated inventory is not a live monitor.
+Raw administrative API snapshots contained generated clone-token fields. Those
+were not published source/discussion/log findings and were never copied into
+tracked evidence. Reports, API bodies and log archives stay outside the checkout,
+with private directory/file permissions. Ordinary hosted-runner paths were
+excluded from hygiene candidates. Scanner limitations, unavailable surfaces
+and future changes remain explicit rather than being counted as clean.
 
-## Publication triggers and remaining gates
+## Existing publication triggers
 
-The source now contains five workflows (updated 2026-09-29). Validation and
-Changesets checks have read-only repository permissions. The manual
-[version-preparation workflow](Release%20Management.md) can create or update a
-draft PR from the default branch with aligned package, lockfile and plugin
-versions. It grants only contents/PR write access and has no registry, tag,
-release or marketplace publication step. Its fixture checks do not establish
-that live bot PR creation is permitted by repository policy.
+Source includes five workflows. Validation and Changesets are read-only. The
+manual [version-preparation workflow](Release%20Management.md) prepares a draft
+version PR; it does not publish npm packages, tags, GitHub releases or listings.
+Its tests do not establish whether live bot PR creation is enabled by policy.
 
-The visual-guide workflow can push the generated guide tree to gh-pages on a
-matching main push or explicit dispatch. The Wiki workflow can write documentation
-to the initialized Wiki with `GITHUB_TOKEN` on a matching main push or dispatch.
-Preparing a version does not dispatch either publication workflow or change their configuration.
-Their effects remain subject to the existing publication boundaries. The dated
-remote inventory above does not establish which later workflows have run.
+The Wiki workflow selects main, verifies Wiki enablement and mirrors docs with
+GITHUB_TOKEN after matching merges or an explicit dispatch. It excludes agent
+instruction files and rewrites links through the tested mirror implementation.
+The visual-guide workflow can push its verified assets to gh-pages. Those
+existing triggers must be considered when choosing a publication commit; this
+audit neither dispatches them nor changes their permissions.
 
-Before any external release, repeat the source/history and remote audit, resolve
-the ruleset/reporting evidence gaps as relevant to that release, verify scoped
-registry ownership/access, select an immutable reviewed version, and test the
-intended consumer platforms. Native host execution, plugin UI/ingestion,
-cross-platform runtime behavior, skill activation benchmarks and public directory
-acceptance remain distinct from local structural and fixture checks. Keep
-package.json private until a separately authorized release-preparation task
-deliberately changes that boundary.
+## Distribution channels and owner actions
+
+| Channel | Prepared here | Still required before that external action |
+| --- | --- | --- |
+| Local repository plugin | Root Codex/Claude/Copilot manifests and marketplace entries; Codex/Claude native pilot | Select the reviewed merged commit and authorize real-consumer installation. Copilot native execution, hosted updates and additional MCP mappings remain [issue #12](https://github.com/i-9-ai/skills/issues/12) boundaries. |
+| Repository-hosted marketplace | Canonical root path, identity and explicit source pinning | Private consumers need Git access. Confirm hosted fetching/update behavior at the selected revision; public visibility remains a separate owner decision. |
+| npm executable | Scoped identity @i-9-ai/skills, i9-skills bin, compiled allowlist and packed-runtime tests | Verify registry scope/access and final tarball; authorize version preparation and publication separately. Keep private:true until that release task. See [issue #17](https://github.com/i-9-ai/skills/issues/17). |
+| Public OpenAI directory | Optional skills-only staging and provider-neutral package cores | Owner chooses submission mode, verifies publisher/access and listing/support/privacy details, runs required scans/review and explicitly publishes after acceptance. No listing or identity is fabricated here. |
+| Public Claude/Copilot listing | Repository marketplace manifests | Follow each host's current listing/review process; repository access or local validation does not imply directory acceptance. |
+| Public repository governance | Experimental notice, security policy, sanitized audit and requested main policy | Resolve [main protection](https://github.com/i-9-ai/skills/issues/32), refresh exposure evidence, verify Wiki/Pages/reporting settings and deliberately approve the visibility change. |
+
+For OpenAI directory submission, the documented ordinary paths are skills-only
+or an accessible remote MCP service. This project's local stdio MCP is not a
+public HTTPS service. Submit the skills-only artifact or make a separate hosting
+decision; do not claim the full local runtime is directory-ready. The
+[Claude-plugin conversion guide](https://developers.openai.com/plugins/guides/submit-claude-plugin)
+describes those paths and the local-MCP limitation.
+
+OpenAI's [submission process](https://developers.openai.com/plugins/deploy/submission)
+separates upload, automated findings, review and explicit publication. MCP review
+requires five positive cases, three negative cases and a demonstration; the
+skills-only path does not require those MCP review artifacts. Recheck current
+portal requirements when preparing an authorized submission. These requirements
+were inspected on 2026-09-29, not satisfied by this repository audit.
+
+Claude distinguishes local source loading from hosted plugin caches and documents
+Git ref/SHA selection in its [marketplace guide](https://code.claude.com/docs/en/plugin-marketplaces).
+Copilot supports explicit legacy component paths according to its
+[plugin reference](https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-plugin-reference);
+that format evidence is separate from a native installation test.
+
+## Repeatable sequence
+
+1. Choose the reviewed commit to distribute. Reconcile changes and pending
+   Changesets, then run npm ci, npm run check, npm run changeset:status,
+   npm run package:check and git diff --check on Node 24. Require official
+   package-validator CI on that same commit. An older branch or native pilot
+   source pin is not a substitute.
+2. Re-run the history scan and paginated remote inventory, inspect findings,
+   and record exact cutoffs. Keep raw reports outside tracked files. Inventory
+   new refs, comments, logs, Wiki/Pages and artifacts before changing visibility.
+3. Rehearse the selected commit in a fresh isolated consumer using the
+   [native pilot procedure](Native%20Plugin%20Pilot.md#repeat-the-bounded-pilot).
+   Use a detached source at the full SHA, verify actual loaded bytes, then test
+   the intended hosted source separately. Preserve data through rollback and
+   unregister. A moving main name does not substitute for source identity.
+4. Resolve the relevant owner/account actions above. Public Git hosting, npm
+   publication, workspace import and public directory submission are separate
+   decisions; completing one does not perform the others.
+5. For an authorized release, inspect the generated version PR and final packed
+   inventory, approve the selected channel and publish explicitly. Recheck the
+   installed version, package count and recovery path in a real consumer after
+   publication. Retain failures rather than broad compatibility claims.
+
+This refresh supersedes the 2026-09-19 current-state assessment, preserved in Git
+history. It does not invalidate that earlier run's scoped evidence or extend
+either audit to unseen data.

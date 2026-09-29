@@ -1,7 +1,7 @@
 # Local package distribution preparation
 
 The prepared npm identity is `@i-9-ai/skills`, with the executable `i9-skills`.
-The npm package remains private. No release, registry upload, marketplace
+The manifest currently sets `private:true`. No release, registry upload, marketplace
 registration or global installation is authorized by a build or package test.
 The currently usable executable is the single bin/index.mjs launcher.
 
@@ -54,15 +54,21 @@ syntax. Package preparation never installs a host plugin or changes a marketplac
 Before an authorized npm release, confirm ownership of the scoped identity, version and
 access, test actual target platforms and installation, inspect the packed files
 again, and deliberately remove private only in that release task. The
-[plugin preparation command](Plugin%20Preparation.md) creates a separate local
-artifact with verified manifest formats and inert packages. Its preview and
-write checks do not establish native plugin ingestion or marketplace acceptance.
+[plugin preparation command](Plugin%20Preparation.md) creates an optional local
+skills-only artifact with verified manifest formats and inert packages. The
+repository itself remains the root plugin, with one canonical package tree.
+Preview/write checks and the [isolated native pilot](Native%20Plugin%20Pilot.md)
+are separate evidence; neither establishes marketplace acceptance or hosted updates.
 
 Before public visibility, separately inventory GitHub branches, PRs, issues,
 discussions, releases, Actions logs/artifacts, Wiki, Pages, collaborators,
 rulesets and secret names. Local clean-tree checks cannot establish remote
 surface readiness. The [dated readiness audit](Public%20Readiness.md) records the
-current inventory and evidence gaps; repeat it before an external change. The existing Wiki workflow mirrors docs to the initialized
-Wiki using its separate token; the Pages workflow pushes docs/assets to
-gh-pages. Both select merged main. Their effects must remain part of the
-explicit publication decision; this task does not run or enable them.
+dated inventory and evidence gaps; repeat it before an external change. The
+existing Wiki workflow requires an initialized Wiki and uses `GITHUB_TOKEN`;
+the visual-guide workflow pushes docs/assets to gh-pages. Both select merged
+main. The audit could not establish Wiki initialization or active Pages hosting.
+Their triggers must remain part of the explicit publication decision; this
+assessment does not dispatch or enable them. The readiness guide separates
+repository marketplaces, workspace installation and public directory submission,
+including the local stdio MCP's public-submission limit.
