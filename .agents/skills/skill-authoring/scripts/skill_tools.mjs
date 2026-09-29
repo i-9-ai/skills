@@ -176,7 +176,8 @@ function hasRecognizableLicenseText(declared, license) {
 }
 
 function hasRecognizableApacheSuffix(license) {
-  const marker = /end of terms and conditions/iu.exec(license);
+  const marker = /end\s+of\s+terms\s+and\s+conditions/iu.exec(license);
+  if (!marker) return false;
   const suffix = license.slice(marker.index + marker[0].length).trim();
   if (!suffix) return true;
   // Allow the standard appendix or its complete application notice, with one

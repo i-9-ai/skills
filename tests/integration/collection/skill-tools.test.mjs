@@ -288,6 +288,21 @@ test('Apache terms reject extra clauses but allow the unchanged appendix and app
     }
 });
 
+test('Apache marker whitespace remains valid while altered terms and extra clauses fail cleanly', t => {
+    const packagePath = makeSkill(fixture(t));
+    const filename = path.join(packagePath, 'LICENSE');
+    const license = fs.readFileSync(filename, 'utf8');
+    for (const marker of ['END OF TERMS AND\nCONDITIONS', 'END  OF\tTERMS AND CONDITIONS', 'end\r\nof terms\r\nand conditions']) {
+        const wrapped = license.replace('END OF TERMS AND CONDITIONS', marker);
+        fs.writeFileSync(filename, wrapped);
+        assert.equal(validateSkill(packagePath).name, 'example-skill');
+        fs.writeFileSync(filename, `${wrapped}\nRedistribution is prohibited.\n`);
+        assert.throws(() => validateSkill(packagePath), { name: 'ValidationError', message: /declared package license/ });
+    }
+    fs.writeFileSync(filename, license.replace('END OF TERMS AND CONDITIONS', 'END OF ALTERED TERMS'));
+    assert.throws(() => validateSkill(packagePath), { name: 'ValidationError', message: /declared package license/ });
+});
+
 test('portable package paths reject reserved filenames and Windows alternate streams', t => {
     for (const component of ['con.txt', 'PRN', 'aux.json', 'NUL.md', 'COM1.log', 'lpt9', 'COM¹.txt', 'name.', 'name ', 'a:b', 'a<b', 'a>b', 'a"b', 'a|b', 'a?b', 'a*b']) {
         assert.throws(() => relativeParts(`references/${component}`), /nonportable/, component);

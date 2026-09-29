@@ -163,8 +163,18 @@ export class SkillUsageMcpTransport {
             }
         }
 
-        const outputFailed = (error: Error) => input.destroy(error);
-        const outputClosed = () => input.destroy(new Error('MCP output closed'));
+        const cancellation = new AbortController();
+        const inputFailed = (error: Error) => cancellation.abort(error);
+        const inputClosed = () => {
+            if (!input.readableEnded) cancellation.abort(new Error('MCP input closed'));
+        };
+        const outputFailed = (error: Error) => {
+            cancellation.abort(error);
+            input.destroy(error);
+        };
+        const outputClosed = () => outputFailed(new Error('MCP output closed'));
+        input.once('error', inputFailed);
+        input.once('close', inputClosed);
         output.once('error', outputFailed);
         output.once('close', outputClosed);
 
@@ -174,6 +184,7 @@ export class SkillUsageMcpTransport {
                 let offset = 0;
 
                 while (offset < bytes.length) {
+                    cancellation.signal.throwIfAborted();
                     const newline = bytes.indexOf(10, offset);
                     const end = newline === -1 ? bytes.length : newline;
                     if (buffer.length + end - offset > 65536) return;
@@ -186,32 +197,60 @@ export class SkillUsageMcpTransport {
                     offset = newline + 1;
                     // One response at a time. A stalled peer cannot cause an
                     // unbounded output queue or additional storage operations.
-                    if (response !== undefined) await this.send(output, response);
+                    if (response !== undefined) {
+                        await this.send(output, response, cancellation.signal);
+                    }
                 }
             }
         } finally {
+            input.off('error', inputFailed);
+            input.off('close', inputClosed);
             output.off('error', outputFailed);
             output.off('close', outputClosed);
             store.close();
         }
     }
 
-    private send(output: Writable, response: unknown): Promise<void> {
+    private send(output: Writable, response: unknown, signal: AbortSignal): Promise<void> {
         return new Promise((resolve, reject) => {
-            const close = () => finish(new Error('MCP output closed'));
-            const finish = (error?: Error | null) => {
-                output.off('error', finish);
-                output.off('close', close);
+            let settled = false;
+            const settle = (error?: Error | null) => {
+                if (settled) return;
+                settled = true;
+                signal.removeEventListener('abort', aborted);
                 if (error) {
                     reject(error);
                     return;
                 }
                 resolve();
             };
+            const aborted = () => settle(signal.reason);
+            const close = () => finish(new Error('MCP output closed'));
+            const finish = (error?: Error | null) => {
+                output.off('error', finish);
+                output.off('close', close);
+                settle(error);
+            };
 
+            if (signal.aborted) {
+                aborted();
+                return;
+            }
+
+            // Cancellation ends the server immediately, but the in-flight write
+            // still owns its error listener until completion, error or closure.
+            // Writable reports callback errors before emitting its error event.
             output.once('error', finish);
             output.once('close', close);
-            output.write(`${JSON.stringify(response)}\n`, finish);
+            signal.addEventListener('abort', aborted, { once: true });
+
+            try {
+                output.write(`${JSON.stringify(response)}\n`, (error) => {
+                    if (!error) finish();
+                });
+            } catch (error) {
+                finish(error as Error);
+            }
         });
     }
 }

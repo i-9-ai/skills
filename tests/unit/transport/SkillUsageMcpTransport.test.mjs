@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 import assert from 'node:assert/strict';
 import { once } from 'node:events';
-import { PassThrough } from 'node:stream';
+import { PassThrough, Writable } from 'node:stream';
+import { setImmediate as nextTurn } from 'node:timers/promises';
 import test from 'node:test';
 import { SkillUsageMcpTransport } from '../../../src/transport/SkillUsageMcpTransport.ts';
 
@@ -190,3 +191,140 @@ test('closing a stalled output rejects the server and closes storage exactly onc
     assert.equal(closed, 1);
     assert.equal(input.destroyed, true);
 });
+
+for (const failure of ['error', 'premature close']) {
+    test(
+        `input ${failure} cancels a stalled response and discards buffered requests`,
+        { timeout: 2000 },
+        async (t) => {
+            const input = new PassThrough();
+            const output = new PassThrough({ highWaterMark: 1 });
+            const calls = [];
+            const ready = once(output, 'readable');
+            t.after(() => output.destroy());
+            const done = new SkillUsageMcpTransport().startServer(
+                {
+                    record() {
+                        calls.push('record');
+                    },
+                    rank() {
+                        calls.push('rank');
+                    },
+                    close() {
+                        calls.push('close');
+                    },
+                },
+                input,
+                output,
+            );
+            input.write(
+                [
+                    { jsonrpc: '2.0', id: 1, method: 'initialize' },
+                    { jsonrpc: '2.0', method: 'notifications/initialized' },
+                    {
+                        jsonrpc: '2.0',
+                        id: 2,
+                        method: 'tools/call',
+                        params: { name: 'skill_read_record' },
+                    },
+                ]
+                    .map((request) => JSON.stringify(request) + '\n')
+                    .join(''),
+            );
+            await ready;
+            input.destroy(failure === 'error' ? new Error('Synthetic input failure') : undefined);
+
+            await assert.rejects(done, /Synthetic input failure|MCP input closed/);
+            assert.deepEqual(calls, ['close']);
+            output.resume();
+            await nextTurn();
+            assert.deepEqual(
+                calls,
+                ['close'],
+                'draining after cancellation must not dispatch queued requests',
+            );
+            assert.equal(output.listenerCount('error'), 0);
+            assert.equal(output.listenerCount('close'), 0);
+        },
+    );
+}
+
+for (const timing of ['synchronous', 'microtask', 'immediate']) {
+    test(
+        `a ${timing} write callback failure rejects without an unhandled error`,
+        { timeout: 2000 },
+        async () => {
+            const input = new PassThrough();
+            let closed = 0;
+            const output = new Writable({
+                write(chunk, encoding, callback) {
+                    const fail = () => callback(new Error('Synthetic output failure'));
+                    if (timing === 'microtask') return queueMicrotask(fail);
+                    if (timing === 'immediate') return setImmediate(fail);
+                    fail();
+                },
+            });
+            const done = new SkillUsageMcpTransport().startServer(
+                {
+                    record() {
+                        assert.fail('unexpected record');
+                    },
+                    rank() {
+                        assert.fail('unexpected ranking');
+                    },
+                    close() {
+                        closed += 1;
+                    },
+                },
+                input,
+                output,
+            );
+            input.end('{"jsonrpc":"2.0","id":1,"method":"initialize"}\n');
+            await assert.rejects(done, /Synthetic output failure/);
+            await nextTurn();
+            assert.equal(closed, 1);
+            assert.equal(input.destroyed, true);
+            assert.equal(output.listenerCount('error'), 0);
+        },
+    );
+}
+
+test(
+    'an in-flight write still handles a late error after input cancellation',
+    { timeout: 2000 },
+    async () => {
+        const input = new PassThrough();
+        let failWrite;
+        let closed = 0;
+        const started = Promise.withResolvers();
+        const output = new Writable({
+            write(chunk, encoding, callback) {
+                failWrite = callback;
+                started.resolve();
+            },
+        });
+        const done = new SkillUsageMcpTransport().startServer(
+            {
+                record() {
+                    assert.fail('unexpected record');
+                },
+                rank() {
+                    assert.fail('unexpected ranking');
+                },
+                close() {
+                    closed += 1;
+                },
+            },
+            input,
+            output,
+        );
+        input.write('{"jsonrpc":"2.0","id":1,"method":"initialize"}\n');
+        await started.promise;
+        input.destroy(new Error('Synthetic input failure'));
+        await assert.rejects(done, /Synthetic input failure/);
+        queueMicrotask(() => failWrite(new Error('Late output failure')));
+        await nextTurn();
+        assert.equal(closed, 1);
+        assert.equal(output.listenerCount('error'), 0);
+    },
+);
