@@ -30,6 +30,14 @@ The schema allows 1–256 entries. Names and tags use the collection's conservat
 
 ## Ownership and drift
 
+Repository adapters may import `deriveCatalog(root, { layout })` from the bundled
+`scripts/catalog_tools.mjs` to obtain the same validated metadata value used by
+`syncCatalog`. This read-only API derives entrypoints independently of an existing
+catalog and creates no files. Canonical output is two-space JSON followed by one
+newline. Derivation alone neither approves an existing output file for replacement
+nor checks its safety; use `syncCatalog` for the explicit write and `checkCatalog`
+for freshness verification.
+
 Every entry field is derived. Edit its source in `SKILL.md`, then synchronize the catalog. Removal of a canonical package directory makes its entry orphaned and eligible for removal during an authorized sync. Lifecycle observations and decisions are separate evidence records; the catalog does not store a manual maturity state.
 
 Do not add full instructions, provider-specific display data, prompts, tool permissions, secrets, execution state, or generated timestamps. Git identifies the revision. Add a new field only with a schema-version decision, validation, migration behavior, and a real catalog or routing consumer.

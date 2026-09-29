@@ -10,6 +10,7 @@ preparing distribution, and evolving focused agent skills.
 - [Authoring standards](Authoring%20Standards.md): package design and contribution requirements.
 - [Compatibility](Compatibility.md): portable contract and host-specific support.
 - [Validation](Validation.md): local checks and the official Agent Skills validator.
+- [Collection maintenance](Collection%20Maintenance.md): audit, reviewable plans and explicit catalog synchronization with verified recovery.
 - [Release management](Release%20Management.md): version preparation and Changesets.
 - [Lifecycle policy](Lifecycle%20Policy.md): portable maturity evidence and promotion decisions.
 - [Entry-path map](assets/skill-management-entry-paths.html): an interactive view of the three main ways to start.

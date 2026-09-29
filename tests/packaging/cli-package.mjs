@@ -207,6 +207,53 @@ test('the allowlisted artifact runs from node_modules on Node 24+ without TypeSc
     for (const directory of [installed, root, home])
         assert.equal(existsSync(join(directory, 'skill-usage.db')), false);
 
+    const maintenanceRoot = join(root, 'maintenance-collection');
+    const maintenanceSkills = join(maintenanceRoot, '.agents/skills');
+    mkdirSync(maintenanceSkills, { recursive: true });
+    cpSync(
+        join(installed, '.agents/skills/skills-catalog'),
+        join(maintenanceSkills, 'skills-catalog'),
+        { recursive: true },
+    );
+    const maintenanceCall = (operation, flags = []) =>
+        JSON.parse(
+            run(
+                process.execPath,
+                [
+                    launcher,
+                    'collection',
+                    operation,
+                    '--collection',
+                    maintenanceRoot,
+                    '--layout',
+                    'repository',
+                    ...flags,
+                ],
+                root,
+            ),
+        );
+    const audit = maintenanceCall('audit');
+    assert.equal(audit.catalog.status, 'missing');
+    assert.equal(audit.coverage.complete, true);
+    const auditFile = join(root, 'maintenance-audit.json');
+    writeFileSync(auditFile, JSON.stringify(audit));
+    const maintenancePlan = maintenanceCall('plan', ['--audit', auditFile]);
+    const planFile = join(root, 'maintenance-plan.json');
+    writeFileSync(planFile, JSON.stringify(maintenancePlan));
+    assert.equal(maintenanceCall('evolve', ['--plan', planFile]).status, 'preview');
+    assert.equal(existsSync(join(maintenanceRoot, 'skills-catalog.json')), false);
+    const maintained = maintenanceCall('evolve', [
+        '--plan',
+        planFile,
+        '--apply',
+        '--snapshot-store',
+        join(root, 'maintenance-recovery'),
+    ]);
+    assert.equal(maintained.status, 'applied');
+    assert.equal(maintained.verification.preimage, 'passed');
+    assert.equal(existsSync(join(maintained.snapshot, 'maintenance-result.json')), true);
+    assert.equal(maintenanceCall('audit').catalog.status, 'current');
+
     const releaseRoot = join(root, 'release-fixture');
     const releasePackage = { name: '@example/release-fixture', version: '1.0.0', private: true };
     const releaseFiles = {

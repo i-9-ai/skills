@@ -39,6 +39,11 @@ Run `npm run check` and inspect the required official workflow result for the ex
 - [Installed collection configuration](config/InstalledCollectionConfiguration.ts): select resources relative to the running package independently of the caller's project or home.
 - [Installed skill repository](repository/InstalledSkillRepository.ts): validate bundled catalog identity/freshness and read confined Markdown resources with content provenance.
 - [Catalog queries](service/SkillCatalogService.ts): read-only metadata search, resource retrieval and overview using the existing collection contracts.
+- [Collection audit](service/CollectionAuditService.ts): bounded structural findings and baseline evidence for an explicitly selected collection, separate from official or behavioral validation.
+- [Collection remediation](service/CollectionRemediationService.ts): reviewable plans and explicit catalog-only application, preserving unresolved semantic handoffs and recovery evidence.
+- [Maintenance filesystem](repository/CollectionMaintenanceRepository.ts): collection fingerprints and confined catalog preimage/publication checks without scanning unrelated repository state.
+- [Maintenance snapshots](repository/CollectionSnapshotRepository.ts): bounded package-helper snapshots and restore proof for the selected catalog preimage only.
+- [Remediation input](validator/CollectionRemediationValidator.ts): closed audit/plan contracts, supported operation identity and stale-state rejection.
 - [CLI operator guide](../bin/index.md): command input, effects, failures and the single launcher.
 - [Repository validation](service/CollectionValidationService.ts): coordinates collection checks.
 - [Collection validator](validator/CollectionValidator.ts): catalog, upstream-lock, and public-hygiene rules.

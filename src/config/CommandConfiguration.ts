@@ -11,6 +11,9 @@ import CatalogReadCommand from '../command/catalog/CatalogReadCommand.ts';
 import CatalogSearchCommand from '../command/catalog/CatalogSearchCommand.ts';
 import CatalogSyncCommand from '../command/catalog/CatalogSyncCommand.ts';
 import AvailableSkillsCommand from '../command/context/AvailableSkillsCommand.ts';
+import CollectionAuditCommand from '../command/collection/CollectionAuditCommand.ts';
+import CollectionPlanCommand from '../command/collection/CollectionPlanCommand.ts';
+import CollectionEvolveCommand from '../command/collection/CollectionEvolveCommand.ts';
 import HookListCommand from '../command/hook/HookListCommand.ts';
 import HookObserveCommand from '../command/hook/HookObserveCommand.ts';
 import HookVerifyCommand from '../command/hook/HookVerifyCommand.ts';
@@ -41,6 +44,9 @@ export class CommandConfiguration {
         'catalog:search': CatalogSearchCommand,
         'catalog:sync': CatalogSyncCommand,
         'context:available-skills': AvailableSkillsCommand,
+        'collection:audit': CollectionAuditCommand,
+        'collection:plan': CollectionPlanCommand,
+        'collection:evolve': CollectionEvolveCommand,
         'hook:list': HookListCommand,
         'hook:observe': HookObserveCommand,
         'hook:verify': HookVerifyCommand,

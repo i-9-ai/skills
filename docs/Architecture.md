@@ -111,6 +111,32 @@ Catalog access never implies a read observation or activation. Responses disting
 package version, catalog/content digests and unavailable Git provenance; none is
 silently substituted for another. See the [MCP contract](Skill%20MCP.md).
 
+## Explicit collection maintenance
+
+The optional CLI composes package-owned validation, catalog derivation and
+snapshots into a deterministic audit/plan/application workflow. It does not run
+a model or transform semantic instructions. Plans bind to the selected collection
+and its exact inspected state; application previews unless explicitly requested.
+
+```mermaid
+flowchart LR
+    Audit[collection audit] --> Findings[Bounded findings and baseline]
+    Findings --> Plan[collection plan]
+    Plan --> Handoffs[Pending semantic handoffs]
+    Plan --> Preview[collection evolve preview]
+    Preview -->|explicit apply and current baseline| Recovery[Snapshot and restore proof]
+    Recovery --> Sync[Atomic catalog sync]
+    Sync --> Verify[Verify catalog and unchanged packages]
+    Verify -->|failure| Rollback[Restore catalog preimage]
+    Verify -->|success| Receipt[Result and remaining handoffs]
+    Rollback --> Receipt
+```
+
+Only catalog synchronization is supported automatically. Malformed catalogs and
+package content changes retain their own handoffs. Recovery captures only the
+catalog preimage, not an entire repository. See [collection maintenance](Collection%20Maintenance.md)
+for explicit selections, limits and receipt semantics.
+
 ## Provenance and evolution
 
 [upstreams.lock.json](../upstreams.lock.json) contains benchmark source identity and digests; [the research ledger](Upstream%20Research.md) connects sources to retained and rejected ideas. The source commit locates a revision; the package digest identifies the captured file set, and per-file digests locate changes. Applicable license bytes are recorded separately when the license lives outside the package.

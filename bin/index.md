@@ -39,6 +39,9 @@ node bin/index.mjs --help
 node bin/index.mjs repo validate --project .
 node bin/index.mjs repo validate-official --project .
 node bin/index.mjs repo verify-release --project .
+node bin/index.mjs collection audit --collection ./example-skills --layout repository
+node bin/index.mjs collection plan --collection ./example-skills --layout repository --audit ./audit.json
+node bin/index.mjs collection evolve --collection ./example-skills --layout repository --plan ./plan.json
 node bin/index.mjs context available-skills --project ./example-project --no-global
 node bin/index.mjs context available-skills --global-root ./installed-skills --max-entries 50
 node bin/index.mjs hook list
@@ -103,6 +106,17 @@ The npm equivalents are `npm run release:prepare` and `npm run release:verify`.
 Read [release management](../docs/Release%20Management.md) for the manual draft-PR
 workflow, bot-run approval, review and recovery. These commands support repository
 maintenance, not consumer installation or automatic publication.
+
+## Collection maintenance
+
+`collection audit` inspects an explicitly selected collection and reports bounded
+structural findings. `collection plan --audit FILE` rechecks that evidence and
+produces supported operations plus semantic handoffs. `collection evolve --plan
+FILE` previews without writes; adding `--apply --snapshot-store ABSOLUTE_PATH`
+applies supported catalog synchronization after stale-state and recovery checks.
+No home/default collection is selected. Malformed catalogs and content changes
+remain explicit handoffs. Read [collection maintenance](../docs/Collection%20Maintenance.md)
+for complete commands, limits, snapshot receipts and failure recovery.
 
 ## Discovery
 
