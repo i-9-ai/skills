@@ -39,6 +39,9 @@ Run `npm run check` and inspect the required official workflow result for the ex
 - [Official validation](service/OfficialValidationService.ts): local precheck, pinned installation and conformance.
 - [Official validator](validator/OfficialValidator.ts): trusted source and dependency-pin rules.
 - [Official process repository](repository/OfficialValidatorProcessRepository.ts): temporary build inputs and shell-free execution.
+- [Version preparation](service/ReleaseVersionService.ts): prepare aligned package, lockfile and plugin release artifacts or verify them; no commits or publication.
+- [Release artifact repository](repository/ReleaseVersionRepository.ts): bounded release-file I/O, rollback snapshots, Git evidence and pinned Changesets process execution.
+- [Release version validator](validator/ReleaseVersionValidator.ts): enforce supported configuration, version alignment and generated-only manifest changes.
 - [Skill discovery](repository/SkillDiscoveryRepository.ts): bounded project/global metadata discovery and canonical deduplication.
 - [Collection catalog](repository/CollectionCatalogRepository.ts): explicit collection inspection, checking and synchronization through the self-contained package helper.
 - [Plugin preparation](service/PluginPreparationService.ts): deterministic manifests and integrity receipt for a new inert local artifact, without installation or registration.

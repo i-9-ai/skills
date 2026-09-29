@@ -24,10 +24,18 @@ test('the allowlisted artifact runs from node_modules on Node 24+ without TypeSc
     t.after(() => rmSync(root, { recursive: true, force: true }));
     const config = join(root, 'user.npmrc');
     const globalConfig = join(root, 'global.npmrc');
+    const home = join(root, 'home');
+    mkdirSync(home);
     writeFileSync(config, '');
     writeFileSync(globalConfig, '');
     const environment = {
         ...process.env,
+        HOME: home,
+        XDG_CONFIG_HOME: home,
+        GIT_CONFIG_GLOBAL: '/dev/null',
+        GIT_CONFIG_NOSYSTEM: '1',
+        GIT_CONFIG_SYSTEM: '/dev/null',
+        NODE_DISABLE_COMPILE_CACHE: '1',
         npm_config_cache: join(root, 'npm-cache'),
         npm_config_userconfig: config,
         npm_config_globalconfig: globalConfig,
@@ -127,6 +135,56 @@ test('the allowlisted artifact runs from node_modules on Node 24+ without TypeSc
         ),
     );
     assert.equal(catalog.packages, sourceCatalog.skills.length);
+
+    const releaseRoot = join(root, 'release-fixture');
+    const releasePackage = { name: '@example/release-fixture', version: '1.0.0', private: true };
+    const releaseFiles = {
+        'package.json': releasePackage,
+        'package-lock.json': {
+            ...releasePackage,
+            lockfileVersion: 3,
+            packages: { '': releasePackage },
+        },
+        '.codex-plugin/plugin.json': { name: 'synthetic-plugin', version: '1.0.0' },
+        '.claude-plugin/plugin.json': { name: 'synthetic-plugin', version: '1.0.0' },
+        '.github/plugin/plugin.json': { name: 'synthetic-plugin', version: '1.0.0' },
+        '.changeset/config.json': { commit: false, changelog: '@changesets/cli/changelog' },
+    };
+    const releaseBytes = new Map();
+    for (const [file, document] of Object.entries(releaseFiles)) {
+        const content = JSON.stringify(document, null, 2) + '\n';
+        mkdirSync(dirname(join(releaseRoot, file)), { recursive: true });
+        writeFileSync(join(releaseRoot, file), content);
+        releaseBytes.set(file, content);
+    }
+    const releaseNote = '---\n"@example/release-fixture": patch\n---\n\nSynthetic fix.\n';
+    writeFileSync(join(releaseRoot, '.changeset/synthetic.md'), releaseNote);
+    releaseBytes.set('.changeset/synthetic.md', releaseNote);
+    assert.equal(existsSync(join(modules, '@changesets/cli')), false);
+    assert.equal(
+        JSON.parse(
+            run(
+                process.execPath,
+                [launcher, 'repo', 'verify-release', '--project', releaseRoot],
+                root,
+            ),
+        ).aligned,
+        true,
+    );
+    const missingDevelopmentDependencies = spawnSync(
+        process.execPath,
+        [launcher, 'repo', 'prepare-version', '--project', releaseRoot],
+        { cwd: root, env: environment, encoding: 'utf8', timeout: 30000 },
+    );
+    assert.notEqual(missingDevelopmentDependencies.status, 0);
+    assert.match(
+        missingDevelopmentDependencies.stderr,
+        /requires the pinned development dependencies/u,
+    );
+    for (const [file, content] of releaseBytes) {
+        assert.equal(readFileSync(join(releaseRoot, file), 'utf8'), content);
+    }
+    assert.equal(existsSync(join(releaseRoot, 'CHANGELOG.md')), false);
 
     const plugin = join(root, 'i9-skills');
     const preparation = JSON.parse(

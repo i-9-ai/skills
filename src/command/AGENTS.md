@@ -36,3 +36,6 @@ Run command integration tests under `tests/integration/cli/`, strict type checki
 - [Repository validation](repo/RepositoryValidateCommand.ts): local collection validation through `repo validate`.
 - [Plugin preparation](plugin/PluginPrepareCommand.ts): preview or create an explicit new staging artifact; never registers or installs it.
 - [Official skills validation](repo/OfficialSkillsValidateCommand.ts): pinned Agent Skills conformance through `repo validate-official` in prepared CI.
+- [Version preparation](repo/PrepareVersionCommand.ts): `repo prepare-version` writes local release artifacts and returns a no-note no-op; never commits or publishes.
+- [Release verification](repo/VerifyReleaseCommand.ts): `repo verify-release` checks version alignment and optional base-commit release evidence without changing the selected checkout.
+- [Release operator guide](../../docs/Release%20Management.md): manual draft-PR and local preparation paths, required review, recovery and separate publication boundaries.

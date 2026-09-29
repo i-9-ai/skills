@@ -26,7 +26,12 @@ jobs:
           cache: npm
       - name: Install locked dependencies
         run: npm ci
-      - name: Validate pending Changesets state
+      - name: Validate pending notes or a complete prepared version
         env:
           CHANGESET_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
-        run: npm run changeset:status -- --since="$CHANGESET_BASE"
+        run: |
+          if npm run changeset:status -- --since="$CHANGESET_BASE"; then
+            exit 0
+          fi
+
+          npm run release:verify -- --base "$CHANGESET_BASE"

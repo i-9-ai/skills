@@ -17,7 +17,9 @@ import TelemetryConfigCommand from '../command/hook/TelemetryConfigCommand.ts';
 import UsageMcpCommand from '../command/mcp/UsageMcpCommand.ts';
 import PluginPrepareCommand from '../command/plugin/PluginPrepareCommand.ts';
 import OfficialSkillsValidateCommand from '../command/repo/OfficialSkillsValidateCommand.ts';
+import PrepareVersionCommand from '../command/repo/PrepareVersionCommand.ts';
 import RepositoryValidateCommand from '../command/repo/RepositoryValidateCommand.ts';
+import VerifyReleaseCommand from '../command/repo/VerifyReleaseCommand.ts';
 import TelemetryRankingsCommand from '../command/telemetry/TelemetryRankingsCommand.ts';
 import TelemetryRecordCommand from '../command/telemetry/TelemetryRecordCommand.ts';
 import TelemetryTrendsCommand from '../command/telemetry/TelemetryTrendsCommand.ts';
@@ -43,6 +45,8 @@ export class CommandConfiguration {
         'plugin:prepare': PluginPrepareCommand,
         'repo:validate-official': OfficialSkillsValidateCommand,
         'repo:validate': RepositoryValidateCommand,
+        'repo:prepare-version': PrepareVersionCommand,
+        'repo:verify-release': VerifyReleaseCommand,
         'telemetry:rankings': TelemetryRankingsCommand,
         'telemetry:record': TelemetryRecordCommand,
         'telemetry:trends': TelemetryTrendsCommand,
