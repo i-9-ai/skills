@@ -8,6 +8,8 @@ import { join } from 'node:path';
 import test from 'node:test';
 import { deflateSync } from 'node:zlib';
 import { CollectionValidationService } from '../../../src/service/CollectionValidationService.ts';
+import { CollectionAssetValidationService } from '../../../src/service/CollectionAssetValidationService.ts';
+import { CollectionFilesystemRepository } from '../../../src/repository/CollectionFilesystemRepository.ts';
 import { CollectionValidator } from '../../../src/validator/CollectionValidator.ts';
 import { CollectionValidationError } from '../../../src/validator/CollectionValidationError.ts';
 import { parseSkillSummary, syncCatalog } from '../../../.agents/skills/skills-catalog/scripts/catalog_tools.mjs';
@@ -211,7 +213,8 @@ test('collection rejects invalid SVG namespace bindings, expanded duplicates and
         original.replace(' xmlns="http://www.w3.org/2000/svg"', ''),
         original.replace('http://www.w3.org/2000/svg', 'urn:not-svg'),
         original.replace('<path', '<g:/><path').replace('<svg ', '<svg xmlns:g="urn:example" '),
-        ...['xmlns:xml="urn:wrong"', 'xmlns:xmlns="urn:example"', 'xmlns:a="http://www.w3.org/XML/1998/namespace"',
+        ...['xmlns:a:b="urn:example"', 'xmlns:="urn:example"', 'xmlns:1a="urn:example"',
+            'xmlns:xml="urn:wrong"', 'xmlns:xmlns="urn:example"', 'xmlns:a="http://www.w3.org/XML/1998/namespace"',
             'xmlns:a="http://www.w3.org/2000/xmlns/"', 'xmlns:a=""',
             'xmlns:a="urn:example" xmlns:b="urn:example" a:x="1" b:x="2"'].map(attributes => original.replace('<svg ', `<svg ${attributes} `)),
     ];
@@ -340,10 +343,51 @@ test('collection rejects SVG icons with invalid numeric XML character references
     const { root, packagePath } = makeRepository(t);
     const icon = join(packagePath, 'assets', 'icon.svg');
     const valid = fs.readFileSync(icon, 'utf8');
-    for (const reference of ['&#0;', '&#xD800;']) {
-        fs.writeFileSync(icon, valid.replace('Example Skill', reference));
-        assert.throws(() => new CollectionValidationService().validateRepository(root), /not well-formed XML/);
+    for (const reference of ['&#0;', '&#xD800;', '&#x110000;', '&#xFFFF;']) {
+        for (const content of [valid.replace('Example Skill', reference), valid.replace('</svg>', `<desc>${reference}</desc></svg>`), valid.replace('</svg>', `<g><text>${reference}</text></g></svg>`)]) {
+            fs.writeFileSync(icon, content);
+            assert.throws(() => new CollectionValidationService().validateRepository(root), /not well-formed XML/);
+        }
     }
+    fs.writeFileSync(icon, valid.replace('</svg>', '<desc>&#9;&#x1F4D6;</desc></svg>'));
+    renderReceipt(packagePath);
+    assert.doesNotThrow(() => new CollectionValidationService().validateRepository(root));
+});
+
+test('icon deduplication ignores SVG comments and decoded PNG metadata, compression and filters', (t) => {
+    const { root, packagePath } = makeRepository(t);
+    const relative = '.agents/skills/example-skill';
+    const copy = join(root, '.agents/skills/another-skill');
+    fs.cpSync(packagePath, copy, { recursive: true });
+    const svg = fs.readFileSync(join(copy, 'assets/icon.svg'), 'utf8');
+    fs.writeFileSync(join(copy, 'assets/icon.svg'), svg.replace('</svg>', '<!-- metadata only --></svg>'));
+    renderReceipt(copy);
+    const files = new CollectionFilesystemRepository(root);
+    t.after(() => files.close());
+    const metadata = { icon_small: './assets/icon.svg', icon_large: './assets/icon.png' };
+    const comments = new CollectionAssetValidationService();
+    comments.validatePackage(files, relative, metadata);
+    assert.throws(() => comments.validatePackage(files, '.agents/skills/another-skill', metadata), /icon.svg duplicates/);
+
+    // A different SVG title evades the source check, but the rendered samples
+    // still match. This verifies the artifact check independently of SVG text.
+    fs.writeFileSync(join(copy, 'assets/icon.svg'), svg.replace('Example Skill', 'Another Skill'));
+    const original = transparentPng();
+    const png = Buffer.concat([original.subarray(0, 33), pngChunk('tEXt', Buffer.from('Comment\0Changed metadata')),
+        pngChunk('IDAT', deflateSync(Buffer.from([1, 0, 0, 0, 0]), { level: 0 })), pngChunk('IEND', Buffer.alloc(0))]);
+    assert.notDeepEqual(png, original);
+    fs.writeFileSync(join(copy, 'assets/icon.png'), png);
+    renderReceipt(copy);
+    const artifacts = new CollectionAssetValidationService();
+    artifacts.validatePackage(files, relative, metadata);
+    assert.throws(() => artifacts.validatePackage(files, '.agents/skills/another-skill', metadata), /icon.png duplicates/);
+
+    const distinct = Buffer.concat([original.subarray(0, 33), pngChunk('IDAT', deflateSync(Buffer.from([0, 1, 2, 3, 255]))), pngChunk('IEND', Buffer.alloc(0))]);
+    fs.writeFileSync(join(copy, 'assets/icon.png'), distinct);
+    renderReceipt(copy);
+    const different = new CollectionAssetValidationService();
+    different.validatePackage(files, relative, metadata);
+    assert.doesNotThrow(() => different.validatePackage(files, '.agents/skills/another-skill', metadata));
 });
 
 test('collection rejects external SVG paint URLs in style blocks', (t) => {
@@ -379,6 +423,45 @@ test('collection rejects malformed PNG icons', (t) => {
     const { root, packagePath } = makeRepository(t);
     fs.writeFileSync(join(packagePath, 'assets', 'icon.png'), Buffer.from('not a png'));
     assert.throws(() => new CollectionValidationService().validateRepository(root), /valid PNG/);
+});
+
+test('decoded icon identity is independent of PNG color format, unused palette entries and padding bits', () => {
+    const validator = new CollectionValidator();
+    function pixelPng(bitDepth, colorType, samples, extra = []) {
+        const header = Buffer.alloc(13);
+        header.writeUInt32BE(1); header.writeUInt32BE(1, 4);
+        header[8] = bitDepth; header[9] = colorType;
+        return Buffer.concat([Buffer.from('89504e470d0a1a0a', 'hex'), pngChunk('IHDR', header), ...extra,
+            pngChunk('IDAT', deflateSync(Buffer.from([0, ...samples]))), pngChunk('IEND', Buffer.alloc(0))]);
+    }
+    const white = [
+        pixelPng(1, 0, [0xff]), pixelPng(1, 0, [0x80]), pixelPng(2, 0, [0xc0]),
+        pixelPng(4, 0, [0xf0]), pixelPng(8, 0, [255]), pixelPng(16, 0, [255, 255]),
+        pixelPng(8, 2, [255, 255, 255]), pixelPng(16, 2, Array(6).fill(255)),
+        pixelPng(8, 4, [255, 255]), pixelPng(16, 4, Array(4).fill(255)),
+        pixelPng(8, 6, Array(4).fill(255)), pixelPng(16, 6, Array(8).fill(255)),
+        pixelPng(1, 3, [0], [pngChunk('PLTE', Buffer.from([255, 255, 255, 1, 2, 3])), pngChunk('tRNS', Buffer.from([255]))]),
+    ];
+    const expected = validator.validateCollectionPng('white.png', white[0]);
+    for (const png of white) assert.equal(validator.validateCollectionPng('white.png', png), expected);
+    assert.notEqual(validator.validateCollectionPng('black.png', pixelPng(8, 0, [0])), expected);
+
+    const transparent = validator.validateCollectionPng('transparent.png', transparentPng());
+    for (const png of [pixelPng(8, 0, [255], [pngChunk('tRNS', Buffer.from([0, 255]))]),
+        pixelPng(8, 2, [1, 2, 3], [pngChunk('tRNS', Buffer.from([0, 1, 0, 2, 0, 3]))]),
+        pixelPng(8, 6, [100, 150, 200, 0])]) {
+        assert.equal(validator.validateCollectionPng('transparent.png', png), transparent);
+    }
+});
+
+test('PNG decoding preserves the specified tolerance for unused trailing final-IDAT bytes', () => {
+    const valid = transparentPng();
+    const size = valid.readUInt32BE(33);
+    const payload = Buffer.concat([valid.subarray(0, 33),
+        pngChunk('IDAT', Buffer.concat([valid.subarray(41, 41 + size), Buffer.from('unused')])),
+        pngChunk('IEND', Buffer.alloc(0))]);
+    const validator = new CollectionValidator();
+    assert.equal(validator.validateCollectionPng('trailing.png', payload), validator.validateCollectionPng('original.png', valid));
 });
 
 test('collection rejects PNG icons with duplicate IHDR chunks', (t) => {
@@ -709,6 +792,8 @@ test('source locks validate package digests and known consumers', (t) => {
         assert.throws(() => new CollectionValidator().validateLock(invalid, new Set(['example-skill'])), CollectionValidationError);
     }
     for (const repository of ['https://localhost/private', 'https://127.0.0.1/private', 'https://10.1.2.3/private', 'https://[fd00::1]/private',
+        'https://192.0.2.1/repo', 'https://198.51.100.1/repo', 'https://203.0.113.1/repo',
+        'https://[2001:db8::1]/repo', 'https://[3fff::1]/repo',
         'https://localhost./repo', 'https://service.local./repo', 'https://service.localhost./repo', 'https://intranet./repo',
         'https://example..org/repo', 'https://-invalid.example/repo', 'https://invalid_.example/repo']) {
         const invalid = structuredClone(lock); invalid.sources[0].repository = repository;
@@ -716,6 +801,8 @@ test('source locks validate package digests and known consumers', (t) => {
     }
     const absoluteDnsName = structuredClone(lock);
     absoluteDnsName.sources[0].repository = 'https://example.org./repository';
+    assert.equal(new CollectionValidator().validateLock(absoluteDnsName, new Set(['example-skill'])), 1);
+    absoluteDnsName.sources[0].repository = 'https://8.8.8.8/repository';
     assert.equal(new CollectionValidator().validateLock(absoluteDnsName, new Set(['example-skill'])), 1);
 });
 

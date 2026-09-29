@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import type { Readable, Writable } from 'node:stream';
 import type { SkillReadRepository } from '../repository/SkillReadRepository.ts';
+import { strictJson } from '../../.agents/skills/skill-authoring/scripts/lib/contracts.mjs';
 
 type Store = Pick<SkillReadRepository, 'record' | 'rank' | 'close'>;
 type Request = {
@@ -57,15 +58,14 @@ function isRequest(value: unknown): value is Request {
 /** Adapts bounded MCP requests to explicit read storage and ranking operations. */
 export class SkillUsageMcpTransport {
     /** Bounded newline-delimited JSON-RPC. The returned promise owns server lifetime. */
-    startServer(
+    async startServer(
         store: Store,
         input: Readable = process.stdin,
         output: Writable = process.stdout,
     ): Promise<void> {
         let initialized = false;
         let ready = false;
-        let buffer = '';
-        const send = (value: unknown) => output.write(`${JSON.stringify(value)}\n`);
+        let buffer = Buffer.alloc(0);
 
         function callTool(params: Request['params']) {
             const name = params?.name;
@@ -118,23 +118,25 @@ export class SkillUsageMcpTransport {
             return undefined;
         }
 
-        function handle(line: string): void {
+        function handle(line: Buffer): unknown {
             let value: unknown;
 
             try {
-                value = JSON.parse(line);
+                value = strictJson(line);
             } catch {
-                send({ jsonrpc: '2.0', id: null, error: { code: -32700, message: 'Parse error' } });
-                return;
+                return {
+                    jsonrpc: '2.0',
+                    id: null,
+                    error: { code: -32700, message: 'Parse error' },
+                };
             }
 
             if (!isRequest(value)) {
-                send({
+                return {
                     jsonrpc: '2.0',
                     id: null,
                     error: { code: -32600, message: 'Invalid request' },
-                });
-                return;
+                };
             }
 
             if (!Object.hasOwn(value, 'id')) {
@@ -145,63 +147,71 @@ export class SkillUsageMcpTransport {
             try {
                 const result = dispatch(value);
                 if (result === undefined) {
-                    send({
+                    return {
                         jsonrpc: '2.0',
                         id: value.id,
                         error: { code: -32601, message: 'Method not found' },
-                    });
-                    return;
+                    };
                 }
-                send({ jsonrpc: '2.0', id: value.id, result });
+                return { jsonrpc: '2.0', id: value.id, result };
             } catch {
-                send({
+                return {
                     jsonrpc: '2.0',
                     id: value.id,
                     error: { code: -32602, message: 'Invalid protocol state or parameters' },
-                });
+                };
             }
         }
 
-        return new Promise((resolve, reject) => {
-            let closed = false;
+        const outputFailed = (error: Error) => input.destroy(error);
+        const outputClosed = () => input.destroy(new Error('MCP output closed'));
+        output.once('error', outputFailed);
+        output.once('close', outputClosed);
 
-            function close(error?: Error): void {
-                if (closed) return;
-                closed = true;
-                store.close();
+        try {
+            for await (const chunk of input) {
+                const bytes = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+                let offset = 0;
+
+                while (offset < bytes.length) {
+                    const newline = bytes.indexOf(10, offset);
+                    const end = newline === -1 ? bytes.length : newline;
+                    if (buffer.length + end - offset > 65536) return;
+
+                    buffer = Buffer.concat([buffer, bytes.subarray(offset, end)]);
+                    if (newline === -1) break;
+
+                    const response = handle(buffer);
+                    buffer = Buffer.alloc(0);
+                    offset = newline + 1;
+                    // One response at a time. A stalled peer cannot cause an
+                    // unbounded output queue or additional storage operations.
+                    if (response !== undefined) await this.send(output, response);
+                }
+            }
+        } finally {
+            output.off('error', outputFailed);
+            output.off('close', outputClosed);
+            store.close();
+        }
+    }
+
+    private send(output: Writable, response: unknown): Promise<void> {
+        return new Promise((resolve, reject) => {
+            const close = () => finish(new Error('MCP output closed'));
+            const finish = (error?: Error | null) => {
+                output.off('error', finish);
+                output.off('close', close);
                 if (error) {
                     reject(error);
                     return;
                 }
                 resolve();
-            }
+            };
 
-            input.setEncoding('utf8');
-            input.on('data', (chunk: string) => {
-                buffer += chunk;
-
-                while (buffer.includes('\n')) {
-                    const end = buffer.indexOf('\n');
-                    const line = buffer.slice(0, end);
-                    buffer = buffer.slice(end + 1);
-
-                    if (Buffer.byteLength(line) > 65536) {
-                        input.destroy();
-                        close();
-                        return;
-                    }
-                    handle(line);
-                }
-
-                if (Buffer.byteLength(buffer) > 65536) {
-                    input.destroy();
-                    close();
-                }
-            });
-
-            input.once('end', () => close());
-            input.once('close', () => close());
-            input.once('error', (error) => close(error));
+            output.once('error', finish);
+            output.once('close', close);
+            output.write(`${JSON.stringify(response)}\n`, finish);
         });
     }
 }

@@ -431,6 +431,7 @@ function discoverGlobal(config) {
         `${entry.name} link target changed during discovery`);
       assertDirectoryIdentity(target.allowed, `allowed package root for ${entry.name}`);
       packages.push(value);
+      requireCondition(packages.length <= MAX_PACKAGES, `skill directory must contain at most ${MAX_PACKAGES} packages`);
       continue;
     }
     requireCondition(info.isDirectory(), `${entry.name} must be a package directory or documented host entry`);

@@ -70,6 +70,30 @@ test('global discovery rejects links in grouping directories before package boun
     assert.throws(() => syncCatalog(root, { layout: 'global' }), /must not be a symbolic link/);
 });
 
+test('linked global discovery stops at the package budget before opening further packages', (t) => {
+    const root = fixture(t);
+    const sources = fs.mkdtempSync(path.join(os.tmpdir(), 'skills-catalog-linked-budget-'));
+    t.after(() => fs.rmSync(sources, { recursive: true, force: true }));
+    for (let index = 0; index < 260; index += 1) {
+        const name = `skill-${String(index).padStart(3, '0')}`;
+        skill(path.join(sources, name), name);
+        fs.symlinkSync(path.join(sources, name), path.join(root, 'skills', name));
+    }
+    const prefix = fs.realpathSync(sources) + path.sep;
+    const open = fs.openSync;
+    let packagesOpened = 0;
+    t.mock.method(fs, 'openSync', (filename, ...args) => {
+        if (typeof filename === 'string' && filename.startsWith(prefix) && filename.endsWith('/SKILL.md')) {
+            packagesOpened += 1;
+            assert.ok(packagesOpened <= 257, 'package contents read after the 256-package limit failed');
+        }
+        return open(filename, ...args);
+    });
+    assert.throws(() => syncCatalog(root, { layout: 'global', allowPackageLinkRoots: [sources] }), /at most 256 packages/);
+    assert.equal(packagesOpened, 257);
+    assert.equal(fs.existsSync(path.join(root, 'skills-catalog.json')), false);
+});
+
 test('catalog summaries retain equally indented metadata and reject implicit scalar types', () => {
     for (const indentation of [' ', '  ', '    ']) {
         const summary = parseSkillSummary(Buffer.from(`---\nname: alpha\ndescription: A synthetic package.\nmetadata:\n${indentation}author: Example\n${indentation}tags: "catalog, tests"\n---\n`), 'alpha');

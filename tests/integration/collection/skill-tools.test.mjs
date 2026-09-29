@@ -8,7 +8,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 import { DEFAULT_ICON_PATH, DEFAULT_LARGE_ICON_PATH, DEFAULT_LICENSE_PATH, LIMITS, REVISION, SHA256, STAGES, SafeRoot, ValidationError, initSkill, parseFrontmatter, strictJson, validSlug, validateMetadata, validateRun, validateSkill } from '../../../.agents/skills/skill-authoring/scripts/skill_tools.mjs';
-import { htmlLinks, markdownLinks } from '../../../.agents/skills/skill-authoring/scripts/lib/contracts.mjs';
+import { htmlLinks, markdownLinks, relativeParts } from '../../../.agents/skills/skill-authoring/scripts/lib/contracts.mjs';
 
 const HELPER = fileURLToPath(new URL('../../../.agents/skills/skill-authoring/scripts/skill_tools.mjs', import.meta.url));
 const EFFORT_METADATA = `metadata:
@@ -269,6 +269,33 @@ test('package symlinks and hard links are rejected before reading outside conten
     guardReadsOf(t, [outside]); fs.symlinkSync(outside, path.join(packagePath, 'linked.md'));
     assert.throws(() => validateSkill(packagePath)); fs.unlinkSync(path.join(packagePath, 'linked.md'));
     fs.linkSync(outside, path.join(packagePath, 'hard-link.md')); assert.throws(() => validateSkill(packagePath));
+});
+
+test('Apache terms reject extra clauses but allow the unchanged appendix and application notice', t => {
+    const packagePath = makeSkill(fixture(t));
+    const filename = path.join(packagePath, 'LICENSE');
+    const license = fs.readFileSync(filename, 'utf8');
+    const end = license.indexOf('END OF TERMS AND CONDITIONS') + 'END OF TERMS AND CONDITIONS'.length;
+    const terms = license.slice(0, end);
+    const notice = license.slice(license.lastIndexOf('Copyright'));
+    for (const accepted of [terms, license, license.replace('[yyyy] [name of copyright owner]', '2026 Example Contributors'), `${terms}\n${notice}`]) {
+        fs.writeFileSync(filename, accepted);
+        assert.equal(validateSkill(packagePath).name, 'example-skill');
+    }
+    for (const base of [terms, license, `${terms}\n${notice}`]) {
+        fs.writeFileSync(filename, `${base}\nRedistribution is prohibited.\n`);
+        assert.throws(() => validateSkill(packagePath), /declared package license/);
+    }
+});
+
+test('portable package paths reject reserved filenames and Windows alternate streams', t => {
+    for (const component of ['con.txt', 'PRN', 'aux.json', 'NUL.md', 'COM1.log', 'lpt9', 'COM¹.txt', 'name.', 'name ', 'a:b', 'a<b', 'a>b', 'a"b', 'a|b', 'a?b', 'a*b']) {
+        assert.throws(() => relativeParts(`references/${component}`), /nonportable/, component);
+    }
+    assert.deepEqual(relativeParts('references/Console Guide.md'), ['references', 'Console Guide.md']);
+    const packagePath = makeSkill(fixture(t));
+    fs.writeFileSync(path.join(packagePath, 'con.txt'), 'Invalid portable resource');
+    assert.throws(() => validateSkill(packagePath), /nonportable/);
 });
 
 test('a symlink used as the selected package root is rejected', t => {

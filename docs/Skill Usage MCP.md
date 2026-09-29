@@ -39,4 +39,12 @@ Ordered checksum-verified migrations run in SQLite transactions. Inserts use `BE
 
 The adapter implements newline-delimited JSON-RPC stdio initialization, ping, tool discovery and calls; input messages are bounded to 64 KiB. No HTTP, resources, subscriptions or activation inference is implemented. Test with `node --test tests/integration/cli/skill-usage-mcp.test.mjs`.
 
+Each line uses the bundled duplicate-aware JSON parser: invalid UTF-8, repeated
+object keys and nesting beyond 64 levels fail before a storage operation. A
+response finishes writing before the next request runs; a client that stops
+reading stdout therefore pauses processing instead of accumulating responses.
+Closing or failing the output closes storage and terminates the transport.
+The root plugin includes this parser in the canonical authoring package; no
+external parser or package installation is needed to start its MCP entrypoint.
+
 Protocol sources: [MCP stdio transport](https://modelcontextprotocol.io/specification/2025-11-25/basic/transports) and [MCP tools](https://modelcontextprotocol.io/specification/2025-11-25/server/tools), consulted September 15, 2026. The adapter is original code, not vendored upstream implementation.

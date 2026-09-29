@@ -11,6 +11,7 @@ import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { SafeRoot } from './lib/filesystem.mjs';
+import { publicSourceHostname } from './lib/public-host.mjs';
 import {
   LIMITS, STAGES, SHA256, REVISION, ValidationError, requireCondition,
   validSlug, nonblank, relativeParts, fields, strictJson, scalar,
@@ -157,7 +158,8 @@ function hasRecognizableLicenseText(declared, license) {
     const end = 'end of terms and conditions';
     const index = value.indexOf(end);
     const terms = value.slice(0, index + end.length).trim();
-    return index !== -1 && digestBytes(terms) === '95cef6332b35354c12f9d666ab9ff47002e6f7ef937924896882b2e0cdb7a0d6';
+    return index !== -1 && digestBytes(terms) === '95cef6332b35354c12f9d666ab9ff47002e6f7ef937924896882b2e0cdb7a0d6'
+      && hasRecognizableApacheSuffix(license);
   }
   if (normalized === 'mit') return /mit license/u.test(value)
     && /permission is hereby granted, free of charge, to any person obtaining a copy/u.test(value)
@@ -171,6 +173,21 @@ function hasRecognizableLicenseText(declared, license) {
     && /(?:additional )?restrictions/u.test(value)
     && /does not convey or imply any license or right/u.test(value);
   return false;
+}
+
+function hasRecognizableApacheSuffix(license) {
+  const marker = /end of terms and conditions/iu.exec(license);
+  const suffix = license.slice(marker.index + marker[0].length).trim();
+  if (!suffix) return true;
+  // Allow the standard appendix or its complete application notice, with one
+  // identifying copyright line. Additional clauses need a separate review;
+  // recognizing this structure does not establish redistribution rights.
+  const normalized = suffix.replace(/^[ \t]*Copyright[^\r\n]{1,256}/mu, 'Copyright [notice]')
+    .toLowerCase().replace(/\s+/gu, ' ').trim();
+  return new Set([
+    '1050b0a984f8b51814508c5e822a44b30428fc248babfa0872ea2ebf5e4aeffe',
+    'da784bc1e3f72fb0fb76f3369820aeb5cc95c3a548a67a36968a0877752ea419',
+  ]).has(digestBytes(normalized));
 }
 
 function markdownHeadings(text) {
@@ -189,25 +206,6 @@ function markdownHeadings(text) {
     if (heading) headings.add(`${heading[1]} ${heading[2].trim()}`);
   }
   return headings;
-}
-
-function publicSourceHostname(hostname) {
-  const host = hostname.replace(/^\[|\]$/gu, '').toLowerCase();
-  if (host === 'localhost' || host.endsWith('.localhost') || host === 'local' || host.endsWith('.local')) return false;
-  const parts = host.split('.');
-  if (parts.length === 4 && parts.every(part => /^(?:0|[1-9][0-9]{0,2})$/u.test(part) && Number(part) <= 255)) {
-    const [first, second] = parts.map(Number);
-    return first !== 0 && first !== 10 && first !== 127 && first < 224
-      && !(first === 100 && second >= 64 && second <= 127)
-      && !(first === 169 && second === 254)
-      && !(first === 172 && second >= 16 && second <= 31)
-      && !(first === 192 && second === 168)
-      && !(first === 198 && (second === 18 || second === 19));
-  }
-  if (host.includes(':')) return host !== '::' && host !== '::1' && !host.startsWith('::ffff:')
-    && !/^f[cd][0-9a-f:]*$/u.test(host) && !/^fe[89ab][0-9a-f:]*$/u.test(host)
-    && !/^::ffff:(?:127|10|192\.168|169\.254|172\.(?:1[6-9]|2[0-9]|3[0-1]))\./u.test(host);
-  return parts.length >= 2 && parts.every(part => /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/u.test(part));
 }
 
 function sourceIdentity(source) {

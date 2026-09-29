@@ -49,12 +49,11 @@ export class CollectionAssetValidationService {
         this.validator.validateCollectionIcon(smallIcon, svg, this.svgDigests);
 
         const png = root.readBytes(largeIcon, LIMITS.artifactBytes);
-        const digest = createHash('sha256').update(png).digest('hex');
+        const digest = this.validator.validateCollectionPng(largeIcon, png);
         if (this.pngDigests.has(digest)) {
             throw new CollectionValidationError(`${largeIcon} duplicates another skill icon`);
         }
         this.pngDigests.add(digest);
-        this.validator.validateCollectionPng(largeIcon, png);
         this.validateRenderReceipt(root, relative, svg, png);
     }
 

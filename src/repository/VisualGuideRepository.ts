@@ -61,10 +61,15 @@ export class VisualGuideRepository {
                         guide.generator.length <= 128,
                     'guide generator identity is required',
                 );
-                requireCondition(
+                const reviewedOn =
                     typeof guide.reviewed_on === 'string' &&
-                        /^\d{4}-\d{2}-\d{2}$/.test(guide.reviewed_on),
-                    'guide review date is required',
+                    /^\d{4}-\d{2}-\d{2}$/.test(guide.reviewed_on)
+                        ? new Date(`${guide.reviewed_on}T00:00:00Z`)
+                        : new Date(NaN);
+                requireCondition(
+                    !Number.isNaN(reviewedOn.valueOf()) &&
+                        reviewedOn.toISOString().slice(0, 10) === guide.reviewed_on,
+                    'guide review date must be a valid calendar date in YYYY-MM-DD form',
                 );
 
                 for (const [name, limit] of [

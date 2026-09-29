@@ -37,6 +37,9 @@ export function relativeParts(value) {
   const parts = value.split('/');
   requireCondition(parts.every(part => !['', '.', '..'].includes(part)),
     'path contains an empty, current-directory, or parent-directory component');
+  requireCondition(parts.every(part => !/[<>:"|?*]/u.test(part) && !/[. ]$/u.test(part)
+    && !/^(?:con|prn|aux|nul|com[1-9¹²³]|lpt[1-9¹²³])(?:\.|$)/iu.test(part)),
+    'path contains a nonportable filename component');
   requireCondition(parts.length <= LIMITS.depth, 'path nesting exceeds the limit');
   return parts;
 }
@@ -285,7 +288,7 @@ function visibleMarkdown(text) {
 export function markdownLinks(text) {
   const visible = visibleMarkdown(text);
   const lineAt = lineNumberLookup(visible);
-  const links = markdownLinkRanges(text).map(({ start, target }) => [lineAt(start), target]);
+  const links = markdownLinkRanges(text).map(({ start, target }) => [lineAt(start), urlReference(htmlAttributeValue(target))]);
   return links.concat(htmlLinks(visible)).sort(([left], [right]) => left - right);
 }
 
@@ -424,6 +427,11 @@ function htmlAttributeValue(value) {
   });
 }
 
+/** URL parsers trim surrounding ASCII whitespace and ignore embedded tab/CR/LF. */
+function urlReference(value) {
+  return value.replace(/^[\u0000-\u0020]+|[\u0000-\u0020]+$/gu, '').replace(/[\t\r\n]/gu, '');
+}
+
 function srcsetTargets(value) {
   const targets = [];
   let cursor = 0;
@@ -453,17 +461,15 @@ export function htmlLinks(text) {
       if (raw === undefined) continue;
       const value = htmlAttributeValue(raw);
       if (tag.name === 'base' && name === 'href') {
-        if (base === undefined) base = value;
+        if (base === undefined) base = urlReference(value);
         continue;
       }
       const targets = name.endsWith('srcset') ? srcsetTargets(value) : [value];
       const line = lineAt(tag.index + tag.name.length + 1 + attribute.index);
-      for (const target of targets) links.push([line, target]);
+      for (const target of targets) links.push([line, urlReference(target)]);
     }
   }
   if (base !== undefined) {
-    const urlReference = value => value.replace(/^[\u0000-\u0020]+|[\u0000-\u0020]+$/gu, '').replace(/[\t\r\n]/gu, '');
-    base = urlReference(base);
     const basePath = base.split(/[?#]/u, 1)[0];
     const hasScheme = value => /^[A-Za-z][A-Za-z0-9+.-]*:/u.test(value);
     if (hasScheme(base)) {
@@ -475,8 +481,7 @@ export function htmlLinks(text) {
     // Enough artificial parents prevent URL's origin-root clamping from hiding
     // traversal. Size each local resolution independently of unrelated URLs.
     const baseDepth = basePath.split('/').length;
-    return links.map(([line, rawTarget]) => {
-      const target = urlReference(rawTarget);
+    return links.map(([line, target]) => {
       if (hasScheme(target) || target.startsWith('/')) return [line, target];
       requireCondition(!target.includes('\\'), 'HTML resource paths must not contain backslashes');
       if (!basePath && (!target || /^[?#]/u.test(target))) return [line, target];
