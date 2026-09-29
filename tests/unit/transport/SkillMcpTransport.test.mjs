@@ -8,7 +8,7 @@ import path from 'node:path';
 import { PassThrough, Readable, Writable } from 'node:stream';
 import { setImmediate as nextTurn } from 'node:timers/promises';
 import test from 'node:test';
-import { SkillUsageMcpTransport } from '../../../src/transport/SkillUsageMcpTransport.ts';
+import { SkillMcpTransport } from '../../../src/transport/SkillMcpTransport.ts';
 
 function transport() {
     const input = new PassThrough();
@@ -31,7 +31,7 @@ function transport() {
             calls.push(['close']);
         },
     };
-    const done = new SkillUsageMcpTransport().startServer(store, input, output);
+    const done = new SkillMcpTransport().startServer(store, input, output);
     return {
         input,
         done,
@@ -77,6 +77,57 @@ test('invalid JSON and notification-shaped payloads cannot record read evidence'
     assert.equal(running.responses()[0].error.code, -32700);
 });
 
+test('oversized tool output becomes a bounded error without losing the following request', async () => {
+    const input = new PassThrough();
+    const output = new PassThrough();
+    let text = '';
+    let closed = 0;
+    output.on('data', (chunk) => {
+        text += chunk;
+    });
+    const done = new SkillMcpTransport().startServer(
+        {
+            record() {
+                assert.fail('unexpected recording');
+            },
+            rank() {
+                return { rows: ['private-result-sentinel'.repeat(65536)] };
+            },
+            close() {
+                closed += 1;
+            },
+        },
+        input,
+        output,
+    );
+    input.end(
+        [
+            { jsonrpc: '2.0', id: 1, method: 'initialize' },
+            { jsonrpc: '2.0', method: 'notifications/initialized' },
+            {
+                jsonrpc: '2.0',
+                id: 2,
+                method: 'tools/call',
+                params: { name: 'skill_read_rankings' },
+            },
+            { jsonrpc: '2.0', id: 3, method: 'ping' },
+        ]
+            .map((request) => JSON.stringify(request))
+            .join('\n') + '\n',
+    );
+    await done;
+    const responses = text.trim().split('\n').map(JSON.parse);
+    assert.deepEqual(
+        responses.map((response) => response.id),
+        [1, 2, 3],
+    );
+    assert.equal(responses[1].result.isError, true);
+    assert.equal(responses[1].result.structuredContent.error.code, 'response_too_large');
+    assert.deepEqual(responses[2].result, {});
+    assert.equal(text.includes('private-result-sentinel'), false);
+    assert.ok(Buffer.byteLength(text) < 4096);
+    assert.equal(closed, 1);
+});
 test('duplicate JSON fields and deeply nested or invalid UTF-8 requests never reach storage', async () => {
     const running = transport();
     const requests = [
@@ -116,7 +167,7 @@ test('a stalled output peer pauses requests and resumes in order when it drains'
     let rankings = 0;
     let closed = 0;
     const ready = once(output, 'readable');
-    const done = new SkillUsageMcpTransport().startServer(
+    const done = new SkillMcpTransport().startServer(
         {
             record() {
                 assert.fail('unexpected record');
@@ -173,7 +224,7 @@ test('closing a stalled output rejects the server and closes storage exactly onc
     const output = new PassThrough({ highWaterMark: 1 });
     let closed = 0;
     const ready = once(output, 'readable');
-    const done = new SkillUsageMcpTransport().startServer(
+    const done = new SkillMcpTransport().startServer(
         {
             record() {
                 assert.fail('unexpected record');
@@ -206,7 +257,7 @@ for (const failure of ['error', 'premature close']) {
             const calls = [];
             const ready = once(output, 'readable');
             t.after(() => output.destroy());
-            const done = new SkillUsageMcpTransport().startServer(
+            const done = new SkillMcpTransport().startServer(
                 {
                     record() {
                         calls.push('record');
@@ -267,7 +318,7 @@ for (const failure of ['error', 'premature close']) {
             });
             t.after(() => output.destroy());
             let closed = 0;
-            const done = new SkillUsageMcpTransport().startServer(
+            const done = new SkillMcpTransport().startServer(
                 {
                     record() {
                         assert.fail('unexpected record');
@@ -315,7 +366,7 @@ for (const timing of ['synchronous', 'microtask', 'immediate']) {
                     fail();
                 },
             });
-            const done = new SkillUsageMcpTransport().startServer(
+            const done = new SkillMcpTransport().startServer(
                 {
                     record() {
                         assert.fail('unexpected record');
@@ -354,7 +405,7 @@ test(
                 started.resolve();
             },
         });
-        const done = new SkillUsageMcpTransport().startServer(
+        const done = new SkillMcpTransport().startServer(
             {
                 record() {
                     assert.fail('unexpected record');
@@ -398,7 +449,7 @@ test(
             },
         });
         let closed = 0;
-        const done = new SkillUsageMcpTransport().startServer(
+        const done = new SkillMcpTransport().startServer(
             {
                 record() {
                     assert.fail('unexpected record');
@@ -436,7 +487,7 @@ test(
         for (let attempt = 0; attempt < 3; attempt += 1) {
             const input = Readable.from(['{"jsonrpc":"2.0","id":1,"method":"ping"}\n']);
             await assert.rejects(
-                new SkillUsageMcpTransport().startServer(
+                new SkillMcpTransport().startServer(
                     {
                         record() {
                             assert.fail('unexpected record');
@@ -462,7 +513,7 @@ test(
 
 async function stdioFixture(t, { cancel, initializeStdout, windowsFallback = false }) {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'mcp-stdout-test-'));
-    const source = new URL('../../../src/transport/SkillUsageMcpTransport.ts', import.meta.url);
+    const source = new URL('../../../src/transport/SkillMcpTransport.ts', import.meta.url);
     const child = spawn(
         process.execPath,
         [
@@ -471,7 +522,7 @@ async function stdioFixture(t, { cancel, initializeStdout, windowsFallback = fal
             `
                 import assert from 'node:assert/strict';
                 import { setImmediate as nextTurn } from 'node:timers/promises';
-                import { SkillUsageMcpTransport } from ${JSON.stringify(source.href)};
+                import { SkillMcpTransport } from ${JSON.stringify(source.href)};
                 ${windowsFallback ? "Object.defineProperty(process, 'platform', { value: 'win32' });" : ''}
                 let stdoutWrites = 0;
                 ${
@@ -491,11 +542,11 @@ async function stdioFixture(t, { cancel, initializeStdout, windowsFallback = fal
                     rank() {
                         rankings += 1;
                         ${cancel ? "setImmediate(() => process.stdin.destroy(new Error('Synthetic input failure')));" : ''}
-                        return { rows: ['x'.repeat(${cancel ? 8 : 1} * 1024 * 1024)] };
+                        return { rows: ['x'.repeat(256 * 1024)] };
                     },
                     close() { closed += 1; }
                 };
-                const done = new SkillUsageMcpTransport().startServer(store);
+                const done = new SkillMcpTransport().startServer(store);
                 ${cancel ? 'await assert.rejects(done, /Synthetic input failure/);' : 'await done;'}
                 await nextTurn();
                 assert.equal(closed, 1);
@@ -573,7 +624,7 @@ for (const initializeStdout of [false, true]) {
                 responses.map((response) => response.id),
                 [1, 2, 3],
             );
-            assert.equal(responses[1].result.structuredContent.rows[0], 'x'.repeat(1024 * 1024));
+            assert.equal(responses[1].result.structuredContent.rows[0], 'x'.repeat(256 * 1024));
             assert.equal(summary.closed, 1);
             if (process.platform !== 'win32') assert.equal(summary.stdoutWrites, 0);
         },

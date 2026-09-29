@@ -43,6 +43,8 @@ test('the allowlisted artifact runs from node_modules on Node 24+ without TypeSc
         npm_config_audit: 'false',
         npm_config_fund: 'false',
     };
+    delete environment.PLUGIN_DATA;
+    delete environment.CLAUDE_PLUGIN_DATA;
     const run = (command, args, cwd = repository) => {
         const result = spawnSync(command, args, {
             cwd,
@@ -135,6 +137,75 @@ test('the allowlisted artifact runs from node_modules on Node 24+ without TypeSc
         ),
     );
     assert.equal(catalog.packages, sourceCatalog.skills.length);
+
+    const search = JSON.parse(
+        run(
+            process.execPath,
+            [launcher, 'catalog', 'search', '--query', 'skill-authoring', '--limit', '1'],
+            root,
+        ),
+    );
+    assert.deepEqual(
+        search.skills.map((skill) => skill.name),
+        ['skill-authoring'],
+    );
+    assert.equal(search.provenance.resolved_git_sha, null);
+    const resource = JSON.parse(
+        run(process.execPath, [launcher, 'catalog', 'read', '--skill', 'skill-authoring'], root),
+    );
+    assert.equal(
+        resource.content,
+        readFileSync(join(installed, '.agents/skills/skill-authoring/SKILL.md'), 'utf8'),
+    );
+    const overview = JSON.parse(
+        run(process.execPath, [launcher, 'catalog', 'overview', '--max-entries', '1'], root),
+    );
+    assert.ok(overview.overview.length <= 4096);
+    assert.match(overview.overview, /additional packages omitted/u);
+    const mcp = spawnSync(process.execPath, [launcher, 'mcp', 'serve'], {
+        cwd: root,
+        env: environment,
+        encoding: 'utf8',
+        timeout: 30000,
+        input:
+            [
+                { jsonrpc: '2.0', id: 1, method: 'initialize' },
+                { jsonrpc: '2.0', method: 'notifications/initialized' },
+                {
+                    jsonrpc: '2.0',
+                    id: 2,
+                    method: 'tools/call',
+                    params: {
+                        name: 'skill_catalog_search',
+                        arguments: { query: 'skill-authoring' },
+                    },
+                },
+                {
+                    jsonrpc: '2.0',
+                    id: 3,
+                    method: 'tools/call',
+                    params: {
+                        name: 'skill_resource_read',
+                        arguments: { skill: 'skill-authoring' },
+                    },
+                },
+                {
+                    jsonrpc: '2.0',
+                    id: 4,
+                    method: 'tools/call',
+                    params: { name: 'skill_read_rankings' },
+                },
+            ]
+                .map((request) => JSON.stringify(request))
+                .join('\n') + '\n',
+    });
+    assert.equal(mcp.status, 0, mcp.stderr);
+    const responses = mcp.stdout.trim().split('\n').map(JSON.parse);
+    assert.equal(responses[1].result.structuredContent.skills[0].name, 'skill-authoring');
+    assert.equal(responses[2].result.structuredContent.content, resource.content);
+    assert.equal(responses[3].result.structuredContent.error.code, 'storage_unavailable');
+    for (const directory of [installed, root, home])
+        assert.equal(existsSync(join(directory, 'skill-usage.db')), false);
 
     const releaseRoot = join(root, 'release-fixture');
     const releasePackage = { name: '@example/release-fixture', version: '1.0.0', private: true };

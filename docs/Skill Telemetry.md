@@ -110,5 +110,5 @@ A successful database commit with a failed diagnostic write returns
 `log: "unavailable"`; retrying with a new event ID would double count. Malformed
 events and storage failures return nonzero. Logs never contain exception text,
 input payloads, file paths or skill bodies. Native host coverage and registration
-are separate from [host contracts](Host%20Hooks.md); the [MCP interface](Skill%20Usage%20MCP.md)
-retains its explicit legacy read protocol.
+are separate from [host contracts](Host%20Hooks.md); the [MCP interface](Skill%20MCP.md)
+retains its explicit read protocol alongside read-only bundled catalog access.

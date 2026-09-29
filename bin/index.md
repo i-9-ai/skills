@@ -45,7 +45,11 @@ node bin/index.mjs hook list
 node bin/index.mjs hook session-config --host codex
 node bin/index.mjs hook verify --host codex --file .codex/hooks.json
 node bin/index.mjs hook session-index
-node bin/index.mjs mcp usage --db /absolute/local-data/skill-usage.db
+node bin/index.mjs catalog search --query authoring --limit 10
+node bin/index.mjs catalog read --skill skill-authoring
+node bin/index.mjs catalog overview --max-entries 12
+node bin/index.mjs mcp serve
+node bin/index.mjs mcp serve --db /absolute/local-data/skill-usage.db
 node bin/index.mjs telemetry record --db /absolute/local-data/skill-usage.db --file event.json
 node bin/index.mjs telemetry rankings --db /absolute/local-data/skill-usage.db
 node bin/index.mjs telemetry trends --db /absolute/local-data/skill-usage.db --interval month
@@ -56,7 +60,9 @@ Use each command's `--help`. Project resolution: the command's explicit root fla
 (`--project` for context, `--root` for plugin preparation), then
 `I9_SKILLS_PROJECT_ROOT`, then this CLI's checkout. `ProjectConfiguration`
 resolves that selection once and derives its local skill, Codex hook and catalog
-paths without reading or creating them. Filesystem validation remains in repositories. Global discovery defaults
+paths without reading or creating them. Bundled `catalog search/read/overview` and
+MCP access instead select the running installed package, ignoring that project
+override and cwd. Filesystem validation remains in repositories. Global discovery defaults
 to the current user's `.agents/skills`; `--global-root` overrides it and
 `--no-global` disables it. Tests use synthetic paths only.
 
@@ -120,13 +126,17 @@ also a manual fallback and writes context only. `hook session-config --host code
 prints the Codex configuration; `hook verify --host codex` only compares its contents.
 Neither command enables or installs a hook.
 
-`mcp usage` starts a stdio server and applies checksum-verified migrations
-to the caller-owned dedicated SQLite database. Explicit calls record observed
-reads and query period rankings. Standard output contains protocol messages
-only. A host-provided absolute plugin data directory supplies
-`skill-usage.db` when `--db` is omitted. The installed plugin invokes the same
-service through a dependency-free protocol entrypoint. See the
-[usage contract](../docs/Skill%20Usage%20MCP.md).
+`mcp serve` starts the single stdio server for bundled skill search, Markdown
+retrieval and overview plus explicit observed-read metrics. Initialization and
+catalog calls require no data directory and create no state. A valid record opens
+the selected dedicated SQLite database and applies migrations; rankings open
+existing valid storage read-only. A missing database is unavailable, not zero
+history. The CLI accepts an absolute `--db`; the installed plugin selects its
+host-owned persistent data outside installed files and the caller's project.
+Standard output contains protocol messages only. Read the
+[MCP contract](../docs/Skill%20MCP.md) for all tools, bounds and provenance.
+The former `mcp usage` route is removed before the first release; manually copied
+MCP client configurations must use `mcp serve`.
 
 The explicit `telemetry` commands store typed session starts, read attempts and
 successful reads with occurrence/correlation UUIDs. Queries are read-only;

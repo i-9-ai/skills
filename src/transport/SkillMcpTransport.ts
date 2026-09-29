@@ -2,10 +2,18 @@
 import { fstatSync } from 'node:fs';
 import { Socket } from 'node:net';
 import type { Readable, Writable } from 'node:stream';
-import type { SkillReadRepository } from '../repository/SkillReadRepository.ts';
+import { SkillOperationError } from '../validator/SkillOperationError.ts';
 import { strictJson } from '../../.agents/skills/skill-authoring/scripts/lib/contracts.mjs';
 
-type Store = Pick<SkillReadRepository, 'record' | 'rank' | 'close'>;
+export type SkillMcpOperations = {
+    record(value: unknown): unknown;
+    rank(value: unknown): unknown;
+    search(value: unknown): unknown;
+    read(value: unknown): unknown;
+    overview(value: unknown): unknown;
+    close(): void;
+};
+export const MAX_MCP_RESPONSE_BYTES = 1_048_576;
 type Request = {
     jsonrpc: '2.0';
     method: string;
@@ -47,7 +55,56 @@ const tools = [
         },
         annotations: { readOnlyHint: true, openWorldHint: false },
     },
+    {
+        name: 'skill_catalog_search',
+        description:
+            'Search the installed canonical skill catalog by literal metadata text. No state is written.',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                query: { type: 'string', maxLength: 200 },
+                limit: { type: 'integer', minimum: 1, maximum: 50 },
+                offset: { type: 'integer', minimum: 0, maximum: 256 },
+            },
+            additionalProperties: false,
+        },
+        annotations: { readOnlyHint: true, openWorldHint: false },
+    },
+    {
+        name: 'skill_resource_read',
+        description:
+            'Read a cataloged SKILL.md or references/ Markdown file with exact byte provenance. Never executes scripts or records usage.',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                skill: { type: 'string', maxLength: 64 },
+                resource: { type: 'string', maxLength: 1024, default: 'SKILL.md' },
+            },
+            required: ['skill'],
+            additionalProperties: false,
+        },
+        annotations: { readOnlyHint: true, openWorldHint: false },
+    },
+    {
+        name: 'skill_catalog_overview',
+        description:
+            'Show bounded installed skill metadata for routing. Read the selected SKILL.md before using it.',
+        inputSchema: {
+            type: 'object',
+            properties: { max_entries: { type: 'integer', minimum: 1, maximum: 24 } },
+            additionalProperties: false,
+        },
+        annotations: { readOnlyHint: true, openWorldHint: false },
+    },
 ];
+
+function toolError(error: SkillOperationError) {
+    return {
+        isError: true,
+        content: [{ type: 'text', text: error.message }],
+        structuredContent: { error: { code: error.code, message: error.message } },
+    };
+}
 
 function isRequest(value: unknown): value is Request {
     if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
@@ -57,11 +114,11 @@ function isRequest(value: unknown): value is Request {
     return typeof request.id === 'string' || Number.isSafeInteger(request.id);
 }
 
-/** Adapts bounded MCP requests to explicit read storage and ranking operations. */
-export class SkillUsageMcpTransport {
+/** Adapts one bounded MCP lifetime to installed catalog and explicit usage operations. */
+export class SkillMcpTransport {
     /** Bounded newline-delimited JSON-RPC. The returned promise owns server lifetime. */
     async startServer(
-        store: Store,
+        store: SkillMcpOperations,
         input: Readable = process.stdin,
         output?: Writable,
     ): Promise<void> {
@@ -82,41 +139,44 @@ export class SkillUsageMcpTransport {
         }
     }
 
-    private async serve(store: Store, input: Readable, output: Writable): Promise<void> {
+    private async serve(
+        store: SkillMcpOperations,
+        input: Readable,
+        output: Writable,
+    ): Promise<void> {
         let initialized = false;
         let ready = false;
         let buffer = Buffer.alloc(0);
 
         function callTool(params: Request['params']) {
             const name = params?.name;
-            const args = params?.arguments ?? {};
+            const args = params?.arguments === undefined ? {} : params.arguments;
 
             try {
                 const handlers: Record<string, (input: unknown) => unknown> = {
                     skill_read_record: (value) => store.record(value),
                     skill_read_rankings: (value) => store.rank(value),
+                    skill_catalog_search: (value) => store.search(value),
+                    skill_resource_read: (value) => store.read(value),
+                    skill_catalog_overview: (value) => store.overview(value),
                 };
                 const handler =
                     typeof name === 'string' && Object.hasOwn(handlers, name)
                         ? handlers[name]
                         : undefined;
-                if (!handler) throw new Error('Unknown tool');
+                if (!handler) throw new SkillOperationError('unknown_tool');
 
                 const value = handler(args);
                 return {
                     content: [{ type: 'text', text: JSON.stringify(value) }],
                     structuredContent: value,
                 };
-            } catch {
-                return {
-                    isError: true,
-                    content: [
-                        {
-                            type: 'text',
-                            text: 'Invalid tool input or unavailable storage; no evidence inferred.',
-                        },
-                    ],
-                };
+            } catch (error) {
+                return toolError(
+                    error instanceof SkillOperationError
+                        ? error
+                        : new SkillOperationError('invalid_input'),
+                );
             }
         }
 
@@ -127,7 +187,7 @@ export class SkillUsageMcpTransport {
                 return {
                     protocolVersion: '2025-11-25',
                     capabilities: { tools: {} },
-                    serverInfo: { name: 'skill-usage', version: '0.1.0' },
+                    serverInfo: { name: 'i9-skills', version: '0.1.0' },
                 };
             }
 
@@ -231,6 +291,15 @@ export class SkillUsageMcpTransport {
     }
 
     private send(output: Writable, response: unknown, signal: AbortSignal): Promise<void> {
+        let serialized = `${JSON.stringify(response)}\n`;
+        if (Buffer.byteLength(serialized, 'utf8') > MAX_MCP_RESPONSE_BYTES) {
+            serialized = `${JSON.stringify({
+                jsonrpc: '2.0',
+                id: (response as { id: unknown }).id,
+                result: toolError(new SkillOperationError('response_too_large')),
+            })}\n`;
+        }
+
         return new Promise((resolve, reject) => {
             let settled = false;
             const settle = (error?: Error | null) => {
@@ -271,7 +340,7 @@ export class SkillUsageMcpTransport {
             }
 
             try {
-                output.write(`${JSON.stringify(response)}\n`, (error) => {
+                output.write(serialized, (error) => {
                     if (!error) finish();
                 });
             } catch (error) {

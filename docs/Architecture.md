@@ -83,6 +83,34 @@ not evidence of activation or a separate source of skill instructions. Native
 host trust and event delivery require their own consumer tests; direct transport
 tests and manifest validation establish a narrower boundary.
 
+## Installed catalog access
+
+The CLI's `catalog search/read/overview` operations and `mcp serve` share one
+bundled-catalog service. Installed module location selects the package, while
+existing catalog validation checks declared identity and freshness. Retrieval
+serves only `SKILL.md` or bounded Markdown references in the selected package;
+it does not use project/global discovery or execute scripts. The same MCP
+dispatcher routes explicit usage operations to lazy, separate evidence storage.
+
+```mermaid
+flowchart LR
+    CLI[Catalog commands] --> Catalog[SkillCatalogService]
+    Plugin[PluginMcpServer] --> MCP[Shared MCP dispatcher]
+    Serve[mcp serve] --> MCP
+    MCP -->|search / read / overview| Catalog
+    Catalog --> Installed[InstalledSkillRepository]
+    Installed --> Validation[Existing catalog and file contracts]
+    Validation --> Bundled[Bundled catalog and skill resources]
+    MCP -->|explicit record / rankings| Usage[Lazy usage access]
+    Usage --> Evidence[Dedicated caller-owned evidence store]
+```
+
+Protocol initialization and catalog reads create no state. A record is validated
+before storage opens; rankings require existing compatible state and are read-only.
+Catalog access never implies a read observation or activation. Responses distinguish
+package version, catalog/content digests and unavailable Git provenance; none is
+silently substituted for another. See the [MCP contract](Skill%20MCP.md).
+
 ## Provenance and evolution
 
 [upstreams.lock.json](../upstreams.lock.json) contains benchmark source identity and digests; [the research ledger](Upstream%20Research.md) connects sources to retained and rejected ideas. The source commit locates a revision; the package digest identifies the captured file set, and per-file digests locate changes. Applicable license bytes are recorded separately when the license lives outside the package.

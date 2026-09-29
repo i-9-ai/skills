@@ -27,7 +27,7 @@ Run `npm run check` and inspect the required official workflow result for the ex
 
 ## Child DOX index
 - [Plugin data](config/PluginDataConfiguration.ts): select a persistent host-owned usage database without writing into the installed plugin.
-- [Plugin MCP entrypoint](transport/PluginUsageMcpServer.ts): dependency-free Node 24 stdio launch of the existing usage service.
+- [Plugin MCP entrypoint](transport/PluginMcpServer.ts): dependency-free Node 24 launch of catalog access and explicit usage operations; no state on initialization.
 - [Installed plugin hooks](transport/PluginHookRunner.ts): bounded native event ingress and neutral diagnostics without CLI dependencies, Git lookup or automatic setup.
 - [Plugin hook orchestration](service/PluginHookService.ts): shared discovery and host context plus proven Claude observations; storage failure cannot suppress session context.
 - [Plugin hook configuration](config/PluginHookConfiguration.ts): separate installed resources, caller collections and explicit host data selection without installation effects.
@@ -35,7 +35,10 @@ Run `npm run check` and inspect the required official workflow result for the ex
 - [Project configuration](config/ProjectConfiguration.ts): one validated root selection and named project paths without filesystem effects.
 - [Command contracts](command/AGENTS.md): capability grouping, class names, help, failures and noninteractive output.
 - [Command configuration](config/CommandConfiguration.ts): explicit public route-to-class mapping, independent of source filenames and build location.
-- [Skill usage MCP](command/mcp/UsageMcpCommand.md): explicit observed-read recording and period rankings; no automatic hooks or activation inference.
+- [Skill MCP](command/mcp/ServeMcpCommand.md): bounded bundled instructions and explicit observed-read metrics through one stdio server; no activation inference.
+- [Installed collection configuration](config/InstalledCollectionConfiguration.ts): select resources relative to the running package independently of the caller's project or home.
+- [Installed skill repository](repository/InstalledSkillRepository.ts): validate bundled catalog identity/freshness and read confined Markdown resources with content provenance.
+- [Catalog queries](service/SkillCatalogService.ts): read-only metadata search, resource retrieval and overview using the existing collection contracts.
 - [CLI operator guide](../bin/index.md): command input, effects, failures and the single launcher.
 - [Repository validation](service/CollectionValidationService.ts): coordinates collection checks.
 - [Collection validator](validator/CollectionValidator.ts): catalog, upstream-lock, and public-hygiene rules.

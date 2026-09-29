@@ -11,7 +11,7 @@ Commands adapt user input to services. Parent source instructions own implementa
 ## Local contracts
 
 - `bin/index.mjs` is the sole executable launcher; do not add parallel clients or undocumented compatibility aliases.
-- Use one command per independently useful operation. Group by stable capability, then operation: `context available-skills`, `hook verify --host codex`, `mcp usage`.
+- Use one command per independently useful operation. Group by stable capability, then operation: `context available-skills`, `hook verify --host codex`, `mcp serve`.
 - A reusable operation belongs to its user-facing domain. Lifecycle hooks call that operation; they do not determine its reusable name.
 - Class names end in `Command`, and filenames match their class exactly. Register the public route in `CommandConfiguration`; do not derive it from the filename or add a second route registry.
 - Commands parse flags, invoke a service and render the result. Filesystem lookup, validation rules, migrations and protocol handling belong to their named components.
@@ -30,7 +30,8 @@ Run command integration tests under `tests/integration/cli/`, strict type checki
 ## Child DOX index
 
 - [Hook commands](hook/AGENTS.md): lifecycle ownership, explicit host adapters and registration boundaries.
-- [Usage MCP operator guide](mcp/UsageMcpCommand.md): stdio execution, caller-owned SQLite and clean protocol output.
+- [MCP operator guide](mcp/ServeMcpCommand.md): bundled catalog access, lazy caller-owned usage storage and clean protocol output.
+- [Catalog access](../../docs/Skill%20MCP.md): installed `catalog search/read/overview` contracts shared with MCP; read-only and independent of project/global discovery.
 - [Telemetry operator guide](../../docs/Skill%20Telemetry.md): explicit record, rankings and trend commands with metadata-only diagnostics.
 - [Available skills](context/AvailableSkillsCommand.ts): reusable project/global overview with bounded discovery.
 - [Repository validation](repo/RepositoryValidateCommand.ts): local collection validation through `repo validate`.

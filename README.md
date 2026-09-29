@@ -224,6 +224,12 @@ node bin/index.mjs catalog sync --collection . --layout repository
 
 The sync command derives names, paths, descriptions, and tags from each `SKILL.md`, writes only `skills-catalog.json`, and becomes a no-op on a second run. Lifecycle evidence remains a separate review record.
 
+To query the collection bundled with the running CLI, use `catalog search --query
+authoring`, `catalog read --skill skill-authoring`, or `catalog overview`. The same
+read-only operations are available through `mcp serve`, without a data directory
+or native skill discovery. The [MCP guide](docs/Skill%20MCP.md) includes tool calls,
+bounded resource retrieval, provenance and optional explicit usage metrics.
+
 ### Cross-collection lookup
 
 Each repository keeps its own `skills-catalog.json` as its canonical, versioned inventory. When a local workstation needs to compare explicitly selected collections, the separate `skills-catalog-index` package can derive `skills-catalog.db` outside every source repository. SQLite `sync` retains source observations and normalized added, changed, and removed skill history; `history` and `changes` inspect it. The deterministic `skills-catalog.index.json` fallback provides current lookup only. Neither index alters a source catalog, installs or activates a skill, grants permissions, or runs setup. The repository's `catalog aggregate` CLI routes reuse that standalone package. See the [aggregate-index contract](.agents/skills/skills-catalog-index/references/aggregate-index.md) for commands, bounds, retention, and storage rules.

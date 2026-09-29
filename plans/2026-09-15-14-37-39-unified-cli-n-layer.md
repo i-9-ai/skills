@@ -1,5 +1,11 @@
 # Unified CLI and host usage adapters
 
+The [installed catalog MCP plan](2026-09-29-19-09-50-installed-catalog-mcp.md)
+extends this initial implementation with bundled resource queries and renames
+the usage-only route/classes to the shared `mcp serve` interface. Historical
+names in the migration map below retain provenance; current commands and
+entrypoints are described in the [CLI guide](../bin/index.md).
+
 ## Objective
 
 Replace the repository's fixed three-argument parser with one portable

@@ -2,6 +2,11 @@
 
 Issue: `i9-skills-mek`. Baseline: PR #2. Installed-hook completion: #20.
 
+The separate [installed catalog MCP plan](2026-09-29-19-09-50-installed-catalog-mcp.md)
+extends the initial usage-only server described below. Catalog initialization is
+now independent of data storage; current operator behavior is documented in the
+[MCP guide](../docs/Skill%20MCP.md). Hook acceptance remains owned by this baseline.
+
 ## Objective
 
 Expose the existing observed-read MCP from the Claude repository-root plugin

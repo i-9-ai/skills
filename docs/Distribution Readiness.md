@@ -23,7 +23,9 @@ commands remain pinned in package.json/lockfile.
 The package test packs without lifecycle scripts, checks its allowlist, extracts
 into a disposable node_modules location and copies only already installed
 production dependencies. It runs help, context, hook configuration, catalog
-checks and explicit plugin artifact preparation with the executing Node version. No registry, consumer home, installed
+checks, bundled catalog search/read/overview, actual MCP stdio and explicit plugin
+artifact preparation with the executing Node version. Catalog/MCP tests use an
+unrelated cwd and do not require host data or open a metrics store. No registry, consumer home, installed
 skills, Python, or dependency installation is used by that test.
 
 The generated local Codex environment file is excluded from this delivery
@@ -33,10 +35,19 @@ hook invokes setup and no unreviewed environment file is part of the package.
 
 The local packed test uses the actual scoped node_modules layout. A future
 authorized published version can be invoked with an explicitly pinned package:
-`npx --package=@i-9-ai/skills@<reviewed-version> i9-skills --help`.
+`npx --package='@i-9-ai/skills@<reviewed-version>' i9-skills --help`.
 This is a release recipe, not an available registry release. It may download
 software and therefore never belongs in an automatic session hook. Installed
 hooks use an already available executable or the checkout launcher.
+
+For the existing local tarball check, run `npm ci` and then
+`npm run package:check`; it creates and removes its own disposable packed install
+and verifies production-only execution. To inspect an artifact manually, run
+`npm run build` and `npm pack --ignore-scripts --pack-destination '<scratch-directory>'`
+with an existing caller-owned scratch directory. The resulting tarball is a local
+test artifact, not an npm release. Its executable supports `mcp serve`; use the
+[MCP guide](Skill%20MCP.md) for explicit client configuration and pinned future npx
+syntax. Package preparation never installs a host plugin or changes a marketplace.
 
 ## Remaining external gates
 

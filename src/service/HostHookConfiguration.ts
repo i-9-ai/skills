@@ -129,7 +129,7 @@ export class HostHookConfiguration {
                 name: 'skill-read-metrics',
                 host: 'other',
                 status: 'unimplemented; occurrence identity and successful-read mapping need host-specific verification',
-                fallback: 'telemetry record or mcp usage with explicit observed evidence',
+                fallback: 'telemetry record or mcp serve with explicit observed evidence',
             },
         ];
     }

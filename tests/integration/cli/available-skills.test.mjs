@@ -78,13 +78,14 @@ test('unified CLI help and invalid input preserve noninteractive failure boundar
         ['repo', 'validate', '--unknown'],
         ['repo', 'validate-official', '--unknown'],
         ['hook', 'session-index', '--max-entries', '0'],
-        ['mcp', 'usage'],
-        ['mcp', 'usage', '--db', 'relative.db'],
+        ['mcp', 'serve', '--unknown'],
+        ['mcp', 'serve', '--db', 'relative.db'],
         ['hook', 'session-config', '--host', 'codex', '--unknown'],
     ]) {
         const result = cli(args);
         assert.notEqual(result.status, 0, args.join(' '));
         assert.ok(result.stderr.length > 0);
+        assert.doesNotMatch(result.stderr, /command .*not found/i);
     }
 });
 

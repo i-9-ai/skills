@@ -23,7 +23,7 @@ preparing distribution, and evolving focused agent skills.
 - [Host hooks](Host%20Hooks.md): host-specific session configuration and context output, with explicit untested runtime boundaries.
 
 - [Positioning](Positioning.md): public communication and demonstrations.
-- [Skill usage MCP](Skill%20Usage%20MCP.md): local observed-read evidence and rankings, with an explicit emitter and dedicated database.
+- [Skill MCP](Skill%20MCP.md): bundled skill search, Markdown retrieval and overview plus explicit observed-read evidence and rankings.
 - [Local skill telemetry](Skill%20Telemetry.md): typed session, attempt and read observations, period trends and bounded diagnostic logs.
 - [Planning protocol](Planning%20Protocol.md): durable planning for material work.
 - [Pilot runbook](Pilot%20Runbook.md): a bounded, evidence-first procedure for the first external collection pilot.

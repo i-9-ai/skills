@@ -1,5 +1,0 @@
-# Skill usage MCP entrypoint
-
-Run `node bin/index.mjs mcp usage --db /absolute/local-data/skill-usage.db` with Node.js 24+ after explicit `npm ci`. When a plugin host supplies an absolute persistent plugin data directory, `--db` can be omitted and defaults to its `skill-usage.db`. The existing canonical parent directory must be caller-owned and trusted. The root plugin starts the same service directly without the CLI dependencies. The process uses stdin/stdout for MCP JSON-RPC; stdout contains protocol messages only. Startup applies usage-schema migrations; explicit record calls persist read events. No filesystem reads are automatically observed.
-
-See [the usage contract](../../../docs/Skill%20Usage%20MCP.md) for event fields, retry behavior, ranking queries and the dedicated-database limitation. Stop the client process to close the SQLite connection. Stopping the CLI or removing its command does not delete an externally selected `--db` file. Claude Code may delete its persistent plugin data on the final uninstall; use its `--keep-data` option when that history must survive. Verify with `node --test tests/integration/cli/skill-usage-mcp.test.mjs`.

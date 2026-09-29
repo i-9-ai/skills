@@ -16,6 +16,15 @@ export class PluginDataRepository {
     }
 
     prepareDatabase(filename: string, protectedRoots: string[]): string {
+        return this.database(filename, protectedRoots, true);
+    }
+
+    /** Verify an existing store without creating directories or upgrading its schema. */
+    verifyDatabase(filename: string, protectedRoots: string[]): string {
+        return this.database(filename, protectedRoots, false);
+    }
+
+    private database(filename: string, protectedRoots: string[], write: boolean): string {
         if (!isAbsolute(filename) || filename.length > 4096 || filename.includes('\0')) {
             throw new Error('Expected a bounded absolute plugin database path');
         }
@@ -36,30 +45,37 @@ export class PluginDataRepository {
         let current = root;
         for (const component of components) {
             current = join(current, component);
-            this.ensureDirectory(current, protectedIdentities);
+            this.ensureDirectory(current, protectedIdentities, write);
         }
 
         if (realpathSync(directory) !== directory) {
             throw new Error('Plugin data directory must be canonical');
         }
-        if ((lstatSync(directory).mode & 0o222) === 0) {
-            throw new Error('Plugin data directory is not writable');
+        if (write) {
+            if ((lstatSync(directory).mode & 0o222) === 0) {
+                throw new Error('Plugin data directory is not writable');
+            }
+            accessSync(directory, constants.W_OK);
         }
-        accessSync(directory, constants.W_OK);
 
         for (const suffix of ['', '-journal', '-wal', '-shm']) {
             this.checkExistingFile(`${database}${suffix}`);
         }
+        if (!write) lstatSync(database);
 
         return database;
     }
 
-    private ensureDirectory(directory: string, protectedIdentities: DirectoryIdentity[]): void {
+    private ensureDirectory(
+        directory: string,
+        protectedIdentities: DirectoryIdentity[],
+        create: boolean,
+    ): void {
         let info;
         try {
             info = lstatSync(directory);
         } catch (error) {
-            if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+            if (!create || (error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
             try {
                 mkdirSync(directory, { mode: 0o700 });
             } catch (creationError) {
