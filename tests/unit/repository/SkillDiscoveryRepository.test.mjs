@@ -67,6 +67,23 @@ test('discovery reads current project/global entrypoints, nested packages, alias
     assert.deepEqual(result.warnings, []);
 });
 
+test('same-name packages in one source have deterministic canonical identity order', (t) => {
+    const root = fixture(t);
+    const later = join(root, 'z-source', 'router');
+    const earlier = join(root, 'a-source', 'router');
+    const collationEquivalent = join(root, 'a-\u200bsource', 'router');
+    packageAt(later, 'skill-routing');
+    packageAt(earlier, 'skill-routing');
+    packageAt(collationEquivalent, 'skill-routing');
+    const result = new SkillDiscoveryRepository().read([{ directory: root, label: 'project' }]);
+
+    assert.deepEqual(
+        result.skills.map((skill) => skill.canonicalPath),
+        [earlier, collationEquivalent, later],
+    );
+    assert.deepEqual(result.warnings, []);
+});
+
 test('unsupported entrypoints and broken links do not hide valid sibling packages', (t) => {
     const root = fixture(t);
     packageAt(join(root, 'valid'), 'valid');

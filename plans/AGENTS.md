@@ -17,8 +17,19 @@ Verify every requirement has an implementation and a check or an explicit limit.
 
 ## Child DOX index
 
+- [Copilot legacy MCP](2026-09-29-22-12-35-copilot-legacy-mcp.md): native legacy-plugin registration and explicit isolated evidence storage, with disposable CLI verification and no persistent consumer installation.
+
+- [Federated collections pilot](2026-09-29-21-40-26-federated-collections-pilot.md): deterministic two-owner consumer verification of discovery, identity, bounded handoff and refusal, without a new router or real installation.
+
+- [Bump reports and onboarding](2026-09-29-20-48-39-bump-reports-and-onboarding.md): pinned snapshot observations, explicit semantic review and installed walkthroughs without version or evidence-store mutation.
+
+- [Public distribution readiness](2026-09-29-20-16-50-public-distribution-readiness.md): source/history and remote-surface reconciliation plus pinned distribution rehearsal and owner actions, without publication or visibility changes.
+- [Native plugin pilot](2026-09-29-19-38-34-native-plugin-pilot.md): isolated native Codex/Claude registration, source-pin replacement, hook/MCP execution and data-preserving cleanup, with explicit model and hosted-update limits.
+- [Explicit lifecycle evidence](2026-09-29-20-06-51-explicit-lifecycle-evidence.md): opt-in skill outcomes and complete catalog observations in the preserved evidence store, with bounded CLI/MCP metrics and explicit denominators.
+- [Collection maintenance](2026-09-29-19-43-00-collection-maintenance.md): bounded audit, reviewable remediation and explicit catalog-only evolution with verified preimage recovery and pending semantic handoffs.
+- [Installed catalog MCP](2026-09-29-19-09-50-installed-catalog-mcp.md): bounded bundled-skill search, resource retrieval and overview through the shared MCP/CLI, with lazy usage storage and no installation effects.
 - [Reviewable version preparation](2026-09-29-17-37-32-reviewable-version-preparation.md): manual version-only PR creation, aligned plugin/lock metadata and generated-release verification without publication.
-- [Plugin MCP and hook boundary](2026-09-24-22-40-28-plugin-mcp-and-hook-boundary.md): root-plugin MCP mapping, persistent plugin data, hook activation limits and issue reconciliation.
+- [Plugin MCP and hook boundary](2026-09-24-22-40-28-plugin-mcp-and-hook-boundary.md): root-plugin MCP and installed hook runtime, persistent host data, proven observation limits and separate native-consumer evidence.
 - [Repository plugin marketplace](2026-09-23-18-07-55-repository-plugin-marketplace.md): root host manifests and marketplace entry point at the canonical collection; no consumer installation or publication.
 - [Local skill telemetry](2026-09-19-18-00-00-local-skill-telemetry.md): typed observations, session/read trends and bounded local logs; no task tracking or automatic host installation.
 - [Meta-skill delivery](2026-09-19-14-34-36-meta-skill-delivery.md): catalog and host adapters, upstream guidance, private packed CLI validation and explicit collection scope.
@@ -30,7 +41,7 @@ Verify every requirement has an implementation and a check or an explicit limit.
 - [Interactive visual guide](2026-09-13-20-13-49-publish-entry-path-map.md): generated map and GitHub Pages publication.
 - [Lifecycle expansion](2026-09-13-20-41-52-01-expand-skill-lifecycle.md): focused lifecycle capabilities and maturity policy.
 - [Portable authoring contract](2026-09-13-20-41-52-02-portable-authoring-contract.md): reusable selection, context, handoff, and automation boundaries.
-- [Session skill-index hook](2026-09-13-21-25-00-session-skill-index-hook.md): generated entry context from the canonical catalog.
+- [Session skill-index hook](2026-09-13-21-25-00-session-skill-index-hook.md): bounded current metadata, unassessed route guidance and on-demand entrypoint locations without activation claims.
 - [Structural host compatibility](2026-09-13-22-10-00-skills-host-compatibility.md): repository-local agent discovery alias verification.
 - [Portable runtime and setup contract](2026-09-13-23-21-01-portable-runtime-setup-contract.md): explicit runtime and setup declarations for self-contained skills.
 - [TypeScript repository tooling assessment](2026-09-13-23-23-25-typescript-tooling-assessment.md): conditional migration recipe for repository-owned CLI tooling.

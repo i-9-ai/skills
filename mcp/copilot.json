@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "i9-skills": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "${PLUGIN_ROOT}/src/transport/PluginMcpServer.ts",
+        "--host",
+        "copilot"
+      ],
+      "env": {
+        "COPILOT_PLUGIN_DATA": "${COPILOT_PLUGIN_DATA}"
+      },
+      "tools": ["*"]
+    }
+  }
+}

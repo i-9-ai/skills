@@ -20,6 +20,7 @@ Test meaningful acceptance and rejection behavior, confinement, no-overwrite, an
 Run `npm test` from the repository root. Tests make no network requests and leave no fixture files in the checkout.
 
 ## Child DOX index
+- [Federated consumer pilot](integration/collection/federated-consumer.test.mjs): real catalog helpers and test-only bounded handoffs across fictional independent owners; no semantic routing or model evaluation claim.
 - [Packed CLI verification](packaging/cli-package.mjs): allowlist and runtime checks under a disposable node_modules tree using only already-installed production dependencies.
 
 - [Configuration unit tests](unit/config): root precedence, stable named paths and invalid-input rejection without filesystem effects.

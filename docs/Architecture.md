@@ -13,6 +13,7 @@ The checkout CLI runs on Node.js 24 with pinned oclif and erasable TypeScript. `
 ```mermaid
 flowchart LR
     Bin[bin/index.mjs] --> Command[command]
+    Command --> Config[config]
     Command --> Service[service]
     Service --> Validator[validator]
     Service --> Repository[repository]
@@ -24,9 +25,10 @@ flowchart LR
 | Layer | Responsibility |
 | --- | --- |
 | CLI | Select a use case, present results, and set the process exit status |
-| service | Coordinate collection validation, context discovery and MCP startup |
+| config | Resolve named paths, command routes and runtime options without I/O |
+| service | Coordinate validation, discovery, maintenance, evidence queries and reports |
 | validator | Reusable catalog, provenance, public-hygiene and official-source checks |
-| repository | Filesystem/process access and the observed-read aggregate with derived rankings |
+| repository | Filesystem/process access, installed resources and separate evidence aggregates |
 | migration | Ordered checksum-verified SQLite schema history |
 | transport | Bounded MCP protocol handling |
 
@@ -59,6 +61,147 @@ Naming is conditional intake/design work, not a seventh run stage. Names group b
 One agent reading the relevant packages in sequence is the reference execution. Where supported and authorized, independent candidate inspections and evaluation cases may run concurrently in isolated workspaces. Workers receive the minimal brief, raw inputs, output contract, and action scope. They do not own shared mutable state or remote publication. The creator reconciles disagreements and verifies returned artifacts.
 
 No runtime adapter is required for a distributed package. Optional Codex UI metadata and local icons accompany the packages; they do not execute a workflow or change the core. The project-local session-index adapter is separate: it renders bounded entry context from current project/global package metadata when a trusted host runs it, using `context available-skills` through `hook session-index`. It neither loads package bodies nor changes selection, installation, or execution authority. Resolve companion skills by the selected package set and identity; installed name collisions require explicit resolution. If a required package is missing, preserve completed work and name the missing capability rather than pretending that its stage ran.
+
+The repository-root plugin has a dependency-free Node 24 hook transport. Host
+manifests select native adapters; the common discovery repository receives a
+metadata parser appropriate to the runtime. The prepared CLI uses full YAML;
+the installed plugin uses the package-owned subset and reports incomplete
+coverage. Context and observed-read persistence have independent failure paths.
+
+```mermaid
+flowchart LR
+    Codex[Codex SessionStart] --> Runner[PluginHookRunner]
+    Claude[Claude session / native Read] --> Runner
+    Runner --> Discovery[Shared skill discovery]
+    Collections[Plugin / project / global packages] --> Discovery
+    Discovery --> Overview[Bounded host context]
+    Runner -->|verified Claude observations| Telemetry[Shared telemetry service]
+    Telemetry --> Data[Host-owned plugin data]
+```
+
+Data stays outside installed bytes and the consumer project. A storage failure
+does not suppress the available-skills overview. Read observations are counts,
+not evidence of activation or a separate source of skill instructions. Native
+host trust and event delivery require their own consumer tests; direct transport
+tests and manifest validation establish a narrower boundary.
+
+## Installed MCP and read-only guidance
+
+The CLI's `catalog search/read/overview` operations and `mcp serve` share one
+bundled-catalog service. Installed module location selects the package, while
+existing catalog validation checks declared identity and freshness. Retrieval
+serves only `SKILL.md` or bounded Markdown references in the selected package;
+it does not use project/global discovery or execute scripts. The same MCP
+dispatcher also serves pure change reports and installed onboarding data. Explicit
+records and metrics use a separate evidence store described below.
+
+```mermaid
+flowchart LR
+    CLI[Catalog commands] --> Catalog[SkillCatalogService]
+    Plugin[PluginMcpServer] --> MCP[Shared MCP dispatcher]
+    Serve[mcp serve] --> MCP
+    MCP -->|search / read / overview| Catalog
+    Catalog --> Installed[InstalledSkillRepository]
+    Installed --> Validation[Existing catalog and file contracts]
+    Validation --> Bundled[Bundled catalog and skill resources]
+    MCP -->|bump report| Bump[SkillBumpReportService]
+    ReportCLI[skills report bump] --> Bump
+    Bump --> Recommendation[Recommendation or undetermined]
+    MCP -->|onboarding| Onboarding[SkillOnboardingService]
+    GuideCLI[skills onboarding] --> Onboarding
+    Onboarding --> Guide[Versioned command data and examples]
+```
+
+Protocol initialization, catalog reads, bump reports and onboarding create no
+evidence database. Onboarding returns instructions; it never executes them.
+Catalog access never implies a read observation or activation. Responses distinguish
+package version, catalog/content digests and unavailable Git provenance; none is
+silently substituted for another. See the [MCP contract](Skill%20MCP.md).
+
+## Explicit lifecycle and catalog evidence
+
+The dedicated evidence database retains observed reads, explicitly reported
+lifecycle outcomes and complete caller-reported catalog inventories. It is
+separate from the rebuildable multi-collection catalog index. CLI and MCP
+operations use the same validation and storage contracts.
+
+```mermaid
+flowchart LR
+    Records[Explicit read / lifecycle / catalog records] --> Validate[Validate identity and event contract]
+    Validate --> Writer[Transactional writer and ordered migrations]
+    Writer --> Store[Dedicated evidence database]
+    Queries[Explicit metric queries] --> Reader[Read-only compatible-schema access]
+    Store --> Reader
+    Reader --> Reports[Rankings / outcomes / overlap / inactivity / history]
+```
+
+A valid explicit record may initialize or upgrade the selected store. Queries
+require existing compatible state and never create or migrate it. Retries retain
+event identity; changed content or conflicting attempt stages fail instead of
+overwriting history. Aggregate-index reset and rebuild operations reject this
+database.
+
+A host read observation is not an activation. Lifecycle records are emitter
+assertions, catalog observations assert a complete inventory, and neither proves
+successful execution or semantic quality. Metrics expose their denominators,
+periods and missing coverage. No reported activity does not prove non-use. See
+[lifecycle evidence](Lifecycle%20Evidence.md) for event ordering, query budgets
+and recovery, and [telemetry](Skill%20Telemetry.md) for observed-read handling.
+
+## Skill observations and version decisions
+
+Snapshot observations and bump reports do not use the telemetry database.
+`skills observe` verifies an existing schema-2 snapshot and exports a bounded
+portable inventory with separately supplied source and check evidence. It does
+not capture or restore a snapshot. The report compares two such observations and
+requires an explicit semantic review of changed files and contracts.
+
+```mermaid
+flowchart LR
+    Snapshot[Existing verified snapshot] --> Observe[skills observe]
+    Evidence[Caller-supplied source and check evidence] --> Observe
+    Observe --> Inventory[Portable observation]
+    Before[Before observation] --> Compare[skills report bump or MCP tool]
+    Inventory --> Compare
+    Review[Explicit file and contract review] --> Compare
+    Compare --> Decision[Patch / minor / major / undetermined]
+    Decision -.->|Maintainer decision| Changeset[Changeset release intent]
+    Changeset -.->|Explicit version-preparation task| Prepare[Aligned release files for review]
+```
+
+Content identity alone cannot establish compatibility or a release category.
+Incomplete, conflicting or insufficient evidence stays `undetermined`; a report
+neither changes package versions nor creates release notes. An accepted result
+may inform a separately authored Changeset. The version-preparation command then
+updates release artifacts only when explicitly invoked; tags and publication
+remain separate actions. See [skill change reports](Skill%20Change%20Reports.md)
+and [release management](Release%20Management.md).
+
+## Explicit collection maintenance
+
+The optional CLI composes package-owned validation, catalog derivation and
+snapshots into a deterministic audit/plan/application workflow. It does not run
+a model or transform semantic instructions. Plans bind to the selected collection
+and its exact inspected state; application previews unless explicitly requested.
+
+```mermaid
+flowchart LR
+    Audit[collection audit] --> Findings[Bounded findings and baseline]
+    Findings --> Plan[collection plan]
+    Plan --> Handoffs[Pending semantic handoffs]
+    Plan --> Preview[collection evolve preview]
+    Preview -->|explicit apply and current baseline| Recovery[Snapshot and restore proof]
+    Recovery --> Sync[Atomic catalog sync]
+    Sync --> Verify[Verify catalog and unchanged packages]
+    Verify -->|failure| Rollback[Restore catalog preimage]
+    Verify -->|success| Receipt[Result and remaining handoffs]
+    Rollback --> Receipt
+```
+
+Only catalog synchronization is supported automatically. Malformed catalogs and
+package content changes retain their own handoffs. Recovery captures only the
+catalog preimage, not an entire repository. See [collection maintenance](Collection%20Maintenance.md)
+for explicit selections, limits and receipt semantics.
 
 ## Provenance and evolution
 

@@ -1,7 +1,7 @@
 # Local package distribution preparation
 
 The prepared npm identity is `@i-9-ai/skills`, with the executable `i9-skills`.
-The npm package remains private. No release, registry upload, marketplace
+The manifest currently sets `private:true`. No release, registry upload, marketplace
 registration or global installation is authorized by a build or package test.
 The currently usable executable is the single bin/index.mjs launcher.
 
@@ -23,7 +23,9 @@ commands remain pinned in package.json/lockfile.
 The package test packs without lifecycle scripts, checks its allowlist, extracts
 into a disposable node_modules location and copies only already installed
 production dependencies. It runs help, context, hook configuration, catalog
-checks and explicit plugin artifact preparation with the executing Node version. No registry, consumer home, installed
+checks, bundled catalog search/read/overview, actual MCP stdio and explicit plugin
+artifact preparation with the executing Node version. Catalog/MCP tests use an
+unrelated cwd and do not require host data or open a metrics store. No registry, consumer home, installed
 skills, Python, or dependency installation is used by that test.
 
 The generated local Codex environment file is excluded from this delivery
@@ -33,25 +35,40 @@ hook invokes setup and no unreviewed environment file is part of the package.
 
 The local packed test uses the actual scoped node_modules layout. A future
 authorized published version can be invoked with an explicitly pinned package:
-`npx --package=@i-9-ai/skills@<reviewed-version> i9-skills --help`.
+`npx --package='@i-9-ai/skills@<reviewed-version>' i9-skills --help`.
 This is a release recipe, not an available registry release. It may download
 software and therefore never belongs in an automatic session hook. Installed
 hooks use an already available executable or the checkout launcher.
+
+For the existing local tarball check, run `npm ci` and then
+`npm run package:check`; it creates and removes its own disposable packed install
+and verifies production-only execution. To inspect an artifact manually, run
+`npm run build` and `npm pack --ignore-scripts --pack-destination '<scratch-directory>'`
+with an existing caller-owned scratch directory. The resulting tarball is a local
+test artifact, not an npm release. Its executable supports `mcp serve`; use the
+[MCP guide](Skill%20MCP.md) for explicit client configuration and pinned future npx
+syntax. Package preparation never installs a host plugin or changes a marketplace.
 
 ## Remaining external gates
 
 Before an authorized npm release, confirm ownership of the scoped identity, version and
 access, test actual target platforms and installation, inspect the packed files
 again, and deliberately remove private only in that release task. The
-[plugin preparation command](Plugin%20Preparation.md) creates a separate local
-artifact with verified manifest formats and inert packages. Its preview and
-write checks do not establish native plugin ingestion or marketplace acceptance.
+[plugin preparation command](Plugin%20Preparation.md) creates an optional local
+skills-only artifact with verified manifest formats and inert packages. The
+repository itself remains the root plugin, with one canonical package tree.
+Preview/write checks and the [isolated native pilot](Native%20Plugin%20Pilot.md)
+are separate evidence; neither establishes marketplace acceptance or hosted updates.
 
 Before public visibility, separately inventory GitHub branches, PRs, issues,
 discussions, releases, Actions logs/artifacts, Wiki, Pages, collaborators,
 rulesets and secret names. Local clean-tree checks cannot establish remote
 surface readiness. The [dated readiness audit](Public%20Readiness.md) records the
-current inventory and evidence gaps; repeat it before an external change. The existing Wiki workflow mirrors docs to the initialized
-Wiki using its separate token; the Pages workflow pushes docs/assets to
-gh-pages. Both select merged main. Their effects must remain part of the
-explicit publication decision; this task does not run or enable them.
+dated inventory and evidence gaps; repeat it before an external change. The
+existing Wiki workflow requires an initialized Wiki and uses `GITHUB_TOKEN`;
+the visual-guide workflow pushes docs/assets to gh-pages. Both select merged
+main. The audit could not establish Wiki initialization or active Pages hosting.
+Their triggers must remain part of the explicit publication decision; this
+assessment does not dispatch or enable them. The readiness guide separates
+repository marketplaces, workspace installation and public directory submission,
+including the local stdio MCP's public-submission limit.

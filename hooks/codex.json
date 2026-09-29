@@ -1,0 +1,19 @@
+{
+  "description": "Provide bounded skill context from the installed plugin and caller collections.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact|fork",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$PLUGIN_ROOT/src/transport/PluginHookRunner.ts\" --host codex",
+            "timeout": 10,
+            "statusMessage": "Loading available skills overview",
+            "additionalContextLimit": 4096
+          }
+        ]
+      }
+    ]
+  }
+}

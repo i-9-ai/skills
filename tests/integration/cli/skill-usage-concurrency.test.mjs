@@ -29,7 +29,7 @@ test('independent processes preserve concurrent event inserts', async (t) => {
             { length: 6 },
             (_, i) =>
                 new Promise((resolve, reject) => {
-                    const child = spawn(process.execPath, [server, 'mcp', 'usage', '--db', db], {
+                    const child = spawn(process.execPath, [server, 'mcp', 'serve', '--db', db], {
                         stdio: ['pipe', 'ignore', 'pipe'],
                     });
                     let errors = '';

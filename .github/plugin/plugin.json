@@ -8,5 +8,6 @@
   "homepage": "https://github.com/i-9-ai/skills",
   "repository": "https://github.com/i-9-ai/skills.git",
   "license": "Apache-2.0",
-  "skills": "./.agents/skills/"
+  "skills": "./.agents/skills/",
+  "mcpServers": "./mcp/copilot.json"
 }

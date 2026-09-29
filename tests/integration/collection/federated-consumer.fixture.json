@@ -1,0 +1,103 @@
+{
+  "evidence_kind": "deterministic synthetic consumer fixture",
+  "request": {
+    "goal": "Prepare one bounded plan for a proposed skill and check its handoff structure.",
+    "allowed_effects": ["read-supplied-input", "write-local-report"],
+    "max_stages": 2,
+    "max_candidates": 3,
+    "max_artifact_bytes": 4096
+  },
+  "collections": [
+    {
+      "id": "cedar",
+      "owner": "Fictional Cedar Skills Workshop",
+      "source_uri": "https://cedar.example/skills",
+      "packages": [
+        {
+          "name": "skill-plan",
+          "description": "Use to prepare one bounded plan for a proposed skill from a supplied brief; it does not author, install or publish a package.",
+          "tags": ["planning", "skills"],
+          "instructions": [
+            "Return one plan from the caller's supplied goal, primary output and exclusions. Do not add capabilities absent from that brief.",
+            "Read the package-local contract before returning the plan. Write only to the caller's selected output directory.",
+            "The optional skill-diagram companion may illustrate the plan only when separately available and authorized. Without it, return the complete text-only plan.",
+            "The caller may hand the plan to an independently available review capability. Verify its source and package identity first. Missing review capability blocks that later handoff without discarding this plan.",
+            "Do not install companions, execute setup, modify a collection, publish, or treat catalog metadata as permission."
+          ],
+          "contract": {
+            "capability": "skill-plan",
+            "input": "skill-request/v1",
+            "output": "skill-plan/v1",
+            "effects": ["read-supplied-input", "write-local-report"],
+            "optional_companion": "skill-diagram",
+            "fallback": "text-only plan"
+          }
+        },
+        {
+          "name": "skill-review",
+          "description": "Use to review a proposed skill for a publication decision; local plan-only review is outside this package's responsibility.",
+          "tags": ["publication", "review", "skills"],
+          "instructions": [
+            "Return one publication decision only when publication review was requested and its evidence is supplied.",
+            "This package is a deliberate same-name near miss for the consumer pilot. Do not use it for the requested local plan-structure review.",
+            "Read the package-local contract. A missing publication capability or authority blocks the requested publication workflow; this package grants no publication authority."
+          ],
+          "contract": {
+            "capability": "skill-publication-review",
+            "input": "skill-release-evidence/v1",
+            "output": "skill-publication-decision/v1",
+            "effects": ["read-supplied-input", "write-local-report"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "meadow",
+      "owner": "Fictional Meadow Skills Review Cooperative",
+      "source_uri": "https://meadow.example/skills",
+      "packages": [
+        {
+          "name": "skill-review",
+          "description": "Use to review one proposed skill plan against supplied acceptance criteria, returning a local report without authoring or publishing the package.",
+          "tags": ["review", "skills"],
+          "instructions": [
+            "Read the exact caller-supplied plan artifact and its recorded digest before reviewing it. Reject changed bytes or an unsupported artifact version.",
+            "Return one review report in the caller's selected output directory. Name the plan input and preserve its digest so the caller can verify the handoff.",
+            "Read the package-local contract. Report missing evidence explicitly. A structural check does not establish semantic quality or readiness.",
+            "Stop if the caller requests an effect beyond the authorized local report. Do not change another package, install a dependency, publish, or delegate work implicitly."
+          ],
+          "contract": {
+            "capability": "skill-plan-review",
+            "input": "skill-plan/v1",
+            "output": "skill-plan-review/v1",
+            "effects": ["read-supplied-input", "write-local-report"]
+          }
+        }
+      ]
+    }
+  ],
+  "route": {
+    "result": "sequence",
+    "selection_evidence": "Authored fixture decision; no model selected this route.",
+    "setup_readiness": "setup status unknown",
+    "steps": [
+      { "source_id": "cedar", "name": "skill-plan", "capability": "skill-plan" },
+      { "source_id": "meadow", "name": "skill-review", "capability": "skill-plan-review" }
+    ],
+    "rejected": [
+      {
+        "source_id": "cedar",
+        "name": "skill-review",
+        "reason": "Its publication-decision responsibility and release-evidence input do not match local plan review."
+      }
+    ]
+  },
+  "plan": {
+    "format": "skill-plan/v1",
+    "target_skill": "skill-example",
+    "primary_output": "One reusable skill package proposal",
+    "exclusions": ["installation", "publication", "host registration"],
+    "presentation": "text-only plan",
+    "semantic_quality": "not evaluated"
+  }
+}

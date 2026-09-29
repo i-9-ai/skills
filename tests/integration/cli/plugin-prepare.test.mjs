@@ -53,12 +53,38 @@ test('repository-root plugin manifests reference the canonical collection', () =
         if (relative === '.claude-plugin/plugin.json') {
             assert.equal(manifest.mcpServers, './mcp/claude.json');
             const mapping = JSON.parse(fs.readFileSync(join(repository, manifest.mcpServers)));
-            const server = mapping.mcpServers['i9-skill-usage'];
+            const server = mapping.mcpServers['i9-skills'];
             assert.equal(server.type, 'stdio');
             assert.equal(server.command, 'node');
-            assert.match(server.args[0], /PluginUsageMcpServer\.ts$/);
+            assert.deepEqual(server.args, [
+                '${CLAUDE_PLUGIN_ROOT}/src/transport/PluginMcpServer.ts',
+                '--host',
+                'claude',
+            ]);
+        } else if (relative === '.codex-plugin/plugin.json') {
+            assert.equal(manifest.mcpServers, './mcp/codex.json');
+            const mapping = JSON.parse(fs.readFileSync(join(repository, manifest.mcpServers)));
+            const server = mapping.mcpServers['i9-skills'];
+            assert.equal(server.type, 'stdio');
+            assert.equal(server.command, 'node');
+            assert.deepEqual(server.args, ['src/transport/PluginMcpServer.ts', '--host', 'codex']);
+            assert.equal(server.cwd, '.');
+            assert.deepEqual(server.env_vars, ['PLUGIN_DATA']);
+            assert.equal(server.env, undefined);
         } else {
-            assert.equal(manifest.mcpServers, undefined, relative);
+            assert.equal(manifest.mcpServers, './mcp/copilot.json');
+            const mapping = JSON.parse(fs.readFileSync(join(repository, manifest.mcpServers)));
+            const server = mapping.mcpServers['i9-skills'];
+            assert.equal(server.type, 'stdio');
+            assert.equal(server.command, 'node');
+            assert.deepEqual(server.args, [
+                '${PLUGIN_ROOT}/src/transport/PluginMcpServer.ts',
+                '--host',
+                'copilot',
+            ]);
+            assert.deepEqual(server.env, { COPILOT_PLUGIN_DATA: '${COPILOT_PLUGIN_DATA}' });
+            assert.deepEqual(server.tools, ['*']);
+            assert.equal(server.cwd, undefined);
         }
     }
 

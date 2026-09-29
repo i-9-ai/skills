@@ -9,37 +9,83 @@ entries at `.claude-plugin/marketplace.json` and
 `.github/plugin/marketplace.json`. `npm run check` verifies these paths and the
 cataloged packages. There is no checked-in copy under `plugins/`.
 
-The Claude Code plugin declares the local `i9-skill-usage` MCP in
-`mcp/claude.json`. It starts the dependency-free Node 24 server in
-`src/transport/PluginUsageMcpServer.ts`. It stores a dedicated
-`skill-usage.db` in the host's persistent plugin data directory, never in the
-installed plugin or the current project. The server exposes
-`skill_read_record` and `skill_read_rankings`; it records only explicit read
-evidence supplied by a caller. Loading the plugin does not observe reads or
-activate skills. The MCP protocol was tested from a clean copy without
-`node_modules`; native Claude plugin ingestion and subprocess behavior still
-need a consumer test. Codex and Copilot retain skills-only root plugin manifests:
-their legacy MCP loading paths do not document both plugin-root substitution
-and a persistent plugin-data directory. Do not register an MCP that will fail
-on startup. A later adapter may map it after those host contracts and a clean
-installation are verified.
+The Codex, Claude Code and Copilot plugins declare the local `i9-skills` MCP in
+`mcp/codex.json`, `mcp/claude.json` and `mcp/copilot.json`. They start the dependency-free Node 24 server
+in `src/transport/PluginMcpServer.ts --host codex|claude|copilot`. It provides read-only bundled
+catalog search, selected Markdown resources and bounded overview without a data
+directory. Explicit `skill_read_record` and `skill_read_rankings` calls use a
+dedicated `skill-usage.db` in the selected host data directory, outside
+installed files and the caller's project. Initialization and catalog access never
+create it; rankings require existing valid state. Reading instructions through
+the MCP does not record evidence, infer activation or monitor tools. The plugin's
+separate Claude hooks observe the native Read events described below.
+
+The old `i9-skill-usage` registration and usage-only entrypoint were replaced;
+update manually copied configurations. The [MCP guide](Skill%20MCP.md) provides
+tool calls, CLI equivalents, identity/limit rules and version-pinned invocation.
+Clean-copy protocol tests without `node_modules` are separate from native Claude
+ingestion and subprocess tests. The [native pilot](Native%20Plugin%20Pilot.md)
+records successful Claude initialization at pinned revisions. The
+[Codex MCP pilot](Codex%20MCP%20Pilot.md) separately proves native registration and
+explicit tool calls. The [Copilot MCP pilot](Copilot%20MCP%20Pilot.md) records
+native session discovery and direct calls through an ephemeral plugin mount;
+it does not establish a persistent marketplace installation.
+
+Codex's legacy mapping resolves `cwd: "."` against the installed plugin and
+explicitly forwards a caller-provided `PLUGIN_DATA`. It does not inherit automatic
+hook data provisioning. Without this variable, catalog/report/guide calls work
+and storage operations report unavailable. Choose an absolute data directory
+outside both installed files and consumer projects. The runtime rejects relative,
+linked and plugin-contained locations, but cannot infer the original consumer
+cwd from this legacy server process; that exclusion remains the operator's duty.
+
+Copilot's legacy mapping expands `${PLUGIN_ROOT}` for the server path and passes
+an explicitly supplied `COPILOT_PLUGIN_DATA` through its environment mapping.
+It does not provide automatic data storage or a consumer cwd. The same external
+path selection duty applies; an unset or invalid value leaves storage unavailable
+while bundled catalog/report/guide calls continue working. Host data variables
+are isolated: the Copilot adapter does not fall back to Codex or Claude values.
 
 Claude Code can remove the persistent data directory on final plugin uninstall.
 Use its `--keep-data` option when the observed-read history must remain available
 after removal; an external database selected by the CLI's `--db` belongs to its
 caller instead.
 
-Hooks have a different readiness boundary. `.codex/hooks.json` is a *project*
-registration for this checkout. The CLI can generate Claude, Copilot and other
-host-specific project registrations, but those commands currently rely on the
-checkout's oclif/YAML dependencies after explicit `npm ci` and resolve the Git
-root. None is declared as a plugin-bundled hook: an installed plugin may be
-copied elsewhere without those dependencies or a Git checkout. Before adding
-plugin hook paths to the manifests, provide an independently runnable handler
-for each host and test it in a clean installed copy. Keep each host's event
-name, output envelope and trust review separate; a common hook JSON file would
-misrepresent their contracts. Claude's successful `Read` telemetry remains an
-explicit project adapter, not automatic plugin measurement.
+The Codex and Claude manifests declare their respective `hooks/codex.json` and
+`hooks/claude.json` files. Both call `PluginHookRunner.ts` directly on Node 24,
+without Git, oclif, YAML dependencies, a build or a globally installed CLI.
+Codex receives session context; Claude receives session context and maps native
+Read attempts/successes to local metrics. Host trust and plugin enablement still
+control execution. The runtime never fetches dependencies or changes permissions.
+
+Session context discovers the installed plugin's canonical collection, the
+event cwd's `.agents/skills`, and the current HOME's `.agents/skills`. Real-path
+duplicates merge their source labels. It provides at most 24 entries within a
+4096-character context budget and reports omitted entries or incomplete coverage.
+The dependency-free parser supports the bundled skills and ordinary plain,
+quoted and block-scalar summaries; unsupported foreign YAML is skipped with a
+coverage warning. The prepared CLI retains its full YAML parser. Descriptions
+are discovery hints; read the chosen SKILL.md before applying its instructions.
+
+Claude hook metrics use `CLAUDE_PLUGIN_DATA/skill-usage.db`. Only the selected
+host's absolute data directory may be initialized, outside installed plugin and
+consumer paths. Missing or unsafe storage produces a fixed diagnostic and skips
+metrics while retaining useful session context. Codex hooks do not claim tool
+read metrics: no reliable native file-read identity was verified for its tools.
+See [host hooks](Host%20Hooks.md#installed-plugin-hooks) for launch examples,
+supported events, state constraints and failure behavior.
+
+`.codex/hooks.json` remains a separate *project* registration for this checkout;
+the CLI-generated project registrations use prepared checkout dependencies.
+Avoid enabling both project and plugin session registrations for the same work,
+because hosts can combine them and duplicate context. Removing the plugin's hook
+manifest reference disables that surface without removing stored metrics.
+Direct clean-copy transport tests do not prove native host installation, trust
+acceptance or end-to-end delivery of host events. The [isolated native pilot](Native%20Plugin%20Pilot.md)
+passed discovery, SessionStart, local source replacement and rollback in Codex
+0.159.0 and Claude Code 2.1.277. It records the tested trust path, Claude's offline
+dependency warning and Codex's stubbed first turn, without claiming model quality
+or native Read-tool telemetry.
 
 The manifests use host-specific compatibility formats because the portable
 Agent Plugins 1.0 format fixes skill discovery at a root `skills/` directory.
@@ -153,7 +199,8 @@ branch is merged, an authorized consumer can import the marketplace with
 `codex plugin marketplace add i-9-ai/skills --ref main` and then install with
 `codex plugin add i9-skills@i9-skills`. A private repository requires Git access
 for that consumer. The checked-in manifests prepare those steps;
-they do not execute them, prove native ingestion or make the repository public.
+they do not execute them or make the repository public. The local source pilot
+does not establish hosted Git/version-cache update behavior.
 Before public marketplace use, verify the exact merged ref, plugin UI rendering,
 package count, and update behavior in a consumer environment. Public directory
 submission and workspace publication remain separate authorization boundaries.
@@ -161,9 +208,12 @@ submission and workspace publication remain separate authorization boundaries.
 Claude Code and Copilot CLI can likewise read their repository marketplace
 files after a consumer explicitly adds this Git repository as a marketplace.
 Both entries select the root plugin, so they distribute the same canonical
-packages. Claude also maps the observed-read MCP. The marketplace entries do
-not install or activate the checkout-only hooks. Validate marketplace loading
-and the Claude MCP subprocess before claiming consumer support.
+packages. Claude also maps the catalog/evidence MCP and installed hooks. Codex maps
+its own session hook and the MCP with explicit storage configuration; Copilot
+currently provides skills only. Marketplace
+metadata does not grant trust or establish native execution. Validate each
+host's marketplace loading, hook delivery and any MCP subprocess before claiming
+consumer support.
 See the [Claude marketplace contract](https://code.claude.com/docs/en/plugin-marketplaces)
 and [Copilot CLI plugin reference](https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-plugin-reference)
 for their host-specific registration and trust steps.

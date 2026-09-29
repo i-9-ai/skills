@@ -1,58 +1,23 @@
 // SPDX-License-Identifier: Apache-2.0
 import { DatabaseSync } from 'node:sqlite';
-import { closeSync, constants, lstatSync, openSync, realpathSync } from 'node:fs';
-import { dirname, isAbsolute } from 'node:path';
-import { SkillReadMigration } from '../migration/SkillReadMigration.ts';
+import { SkillEvidenceDatabaseRepository } from './SkillEvidenceDatabaseRepository.ts';
 import { readFields, SkillReadValidator } from '../validator/SkillReadValidator.ts';
 import { SkillTelemetryValidator } from '../validator/SkillTelemetryValidator.ts';
+import { SkillOperationError } from '../validator/SkillOperationError.ts';
 
 /** Persists observed reads; rankings are projections of this event aggregate. */
 export class SkillReadRepository {
     private readonly database: DatabaseSync;
-    private closed = false;
+    private readonly connection: SkillEvidenceDatabaseRepository;
     private readonly validator = new SkillReadValidator();
 
     constructor(filename: string, { readOnly = false } = {}) {
-        if (!isAbsolute(filename)) throw new Error('Database path must be absolute');
-        if (realpathSync(dirname(filename)) !== dirname(filename))
-            throw new Error('Database parent must be canonical');
-
-        if (!readOnly) {
-            try {
-                closeSync(
-                    openSync(
-                        filename,
-                        constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL,
-                        0o600,
-                    ),
-                );
-            } catch (error) {
-                if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
-            }
-        }
-
-        const info = lstatSync(filename);
-        if (!info.isFile() || info.isSymbolicLink() || info.nlink !== 1)
-            throw new Error('Expected regular database file');
-
-        this.database = new DatabaseSync(filename, { readOnly });
-
-        try {
-            if (readOnly) {
-                new SkillReadMigration().verifySkillReads(this.database);
-                return;
-            }
-            new SkillReadMigration().migrateSkillReads(this.database);
-        } catch (error) {
-            this.close();
-            throw error;
-        }
+        this.connection = new SkillEvidenceDatabaseRepository(filename, { readOnly });
+        this.database = this.connection.database;
     }
 
     close(): void {
-        if (this.closed) return;
-        this.closed = true;
-        this.database.close();
+        this.connection.close();
     }
 
     record(value: unknown): { recorded: boolean; event_type: 'read' } {
@@ -65,15 +30,13 @@ export class SkillReadRepository {
                     .prepare('SELECT event_id FROM usage_events WHERE event_id=?')
                     .get(event.event_id)
             ) {
-                throw new Error(
-                    'Event ID belongs to typed telemetry; retry through its original interface',
-                );
+                throw new SkillOperationError('evidence_conflict');
             }
             const existing = this.database
                 .prepare('SELECT * FROM usage_reads WHERE event_id=?')
                 .get(event.event_id);
             if (existing && readFields.some((field) => existing[field] !== event[field])) {
-                throw new Error('Event ID already has different evidence');
+                throw new SkillOperationError('evidence_conflict');
             }
 
             if (!existing) {
@@ -106,7 +69,7 @@ export class SkillReadRepository {
             }
             const envelope = JSON.stringify(event);
             if (previous && previous.envelope !== envelope)
-                throw new Error('Event ID already has different evidence');
+                throw new SkillOperationError('evidence_conflict');
             if (previous) {
                 this.database.exec('COMMIT');
                 return { recorded: false, event_id: event.event_id, event_type: event.event_type };
@@ -116,7 +79,7 @@ export class SkillReadRepository {
                     .prepare('SELECT event_id FROM usage_reads WHERE event_id=?')
                     .get(event.event_id)
             ) {
-                throw new Error('Event ID already belongs to legacy read evidence');
+                throw new SkillOperationError('evidence_conflict');
             }
             this.database
                 .prepare('INSERT INTO usage_events VALUES (?, ?, ?, ?, ?)')

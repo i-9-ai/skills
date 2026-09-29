@@ -39,16 +39,28 @@ node bin/index.mjs --help
 node bin/index.mjs repo validate --project .
 node bin/index.mjs repo validate-official --project .
 node bin/index.mjs repo verify-release --project .
+node bin/index.mjs collection audit --collection ./example-skills --layout repository
+node bin/index.mjs skills onboarding
+node bin/index.mjs skills observe --snapshot ./snapshots/before --subject ./subject.json
+node bin/index.mjs skills report bump --file ./comparison.json --limit 20
+node bin/index.mjs collection plan --collection ./example-skills --layout repository --audit ./audit.json
+node bin/index.mjs collection evolve --collection ./example-skills --layout repository --plan ./plan.json
 node bin/index.mjs context available-skills --project ./example-project --no-global
 node bin/index.mjs context available-skills --global-root ./installed-skills --max-entries 50
 node bin/index.mjs hook list
 node bin/index.mjs hook session-config --host codex
 node bin/index.mjs hook verify --host codex --file .codex/hooks.json
 node bin/index.mjs hook session-index
-node bin/index.mjs mcp usage --db /absolute/local-data/skill-usage.db
+node bin/index.mjs catalog search --query authoring --limit 10
+node bin/index.mjs catalog read --skill skill-authoring
+node bin/index.mjs catalog overview --max-entries 12
+node bin/index.mjs mcp serve
+node bin/index.mjs mcp serve --db /absolute/local-data/skill-usage.db
 node bin/index.mjs telemetry record --db /absolute/local-data/skill-usage.db --file event.json
 node bin/index.mjs telemetry rankings --db /absolute/local-data/skill-usage.db
 node bin/index.mjs telemetry trends --db /absolute/local-data/skill-usage.db --interval month
+node bin/index.mjs telemetry catalog-observe --db /absolute/local-data/skill-usage.db --file catalog.json
+node bin/index.mjs telemetry lifecycle --db /absolute/local-data/skill-usage.db --from 2026-09-01T00:00:00.000Z --until 2026-10-01T00:00:00.000Z
 node bin/index.mjs plugin prepare --output .work/plugin-preview/i9-skills
 ```
 
@@ -56,7 +68,9 @@ Use each command's `--help`. Project resolution: the command's explicit root fla
 (`--project` for context, `--root` for plugin preparation), then
 `I9_SKILLS_PROJECT_ROOT`, then this CLI's checkout. `ProjectConfiguration`
 resolves that selection once and derives its local skill, Codex hook and catalog
-paths without reading or creating them. Filesystem validation remains in repositories. Global discovery defaults
+paths without reading or creating them. Bundled `catalog search/read/overview` and
+MCP access instead select the running installed package, ignoring that project
+override and cwd. Filesystem validation remains in repositories. Global discovery defaults
 to the current user's `.agents/skills`; `--global-root` overrides it and
 `--no-global` disables it. Tests use synthetic paths only.
 
@@ -98,6 +112,29 @@ Read [release management](../docs/Release%20Management.md) for the manual draft-
 workflow, bot-run approval, review and recovery. These commands support repository
 maintenance, not consumer installation or automatic publication.
 
+## Skill observations and change reports
+
+`skills observe` verifies an existing schema-2 snapshot and exports a pinned
+inventory, optional source assertions and caller-supplied validation/review.
+`skills report bump` compares two observations and a complete assessment;
+insufficient or contradictory evidence returns `undetermined`. Neither operation
+changes versions or evidence databases. `skills onboarding` returns a versioned
+installed guide with complete synthetic examples, without executing them.
+See [skill change reports](../docs/Skill%20Change%20Reports.md) for fields, limits
+and the inspect-through-report walkthrough. Report and guide data are also
+available through `skill_bump_report` and `skill_onboarding` in the shared MCP.
+
+## Collection maintenance
+
+`collection audit` inspects an explicitly selected collection and reports bounded
+structural findings. `collection plan --audit FILE` rechecks that evidence and
+produces supported operations plus semantic handoffs. `collection evolve --plan
+FILE` previews without writes; adding `--apply --snapshot-store ABSOLUTE_PATH`
+applies supported catalog synchronization after stale-state and recovery checks.
+No home/default collection is selected. Malformed catalogs and content changes
+remain explicit handoffs. Read [collection maintenance](../docs/Collection%20Maintenance.md)
+for complete commands, limits, snapshot receipts and failure recovery.
+
 ## Discovery
 
 `context available-skills` reads current package metadata from project and
@@ -120,18 +157,35 @@ also a manual fallback and writes context only. `hook session-config --host code
 prints the Codex configuration; `hook verify --host codex` only compares its contents.
 Neither command enables or installs a hook.
 
-`mcp usage` starts a stdio server and applies checksum-verified migrations
-to the caller-owned dedicated SQLite database. Explicit calls record observed
-reads and query period rankings. Standard output contains protocol messages
-only. A host-provided absolute plugin data directory supplies
-`skill-usage.db` when `--db` is omitted. The installed plugin invokes the same
-service through a dependency-free protocol entrypoint. See the
-[usage contract](../docs/Skill%20Usage%20MCP.md).
+`mcp serve` starts the single stdio server for bundled skill search, Markdown
+retrieval and overview plus explicit read, lifecycle and catalog evidence. Initialization and
+catalog calls require no data directory and create no state. A valid record opens
+the selected dedicated SQLite database and applies migrations; evidence queries open
+existing valid storage read-only. A missing database is unavailable, not zero
+history. The CLI accepts an absolute `--db`; the installed plugin selects its
+host data outside installed files and the caller's project. The legacy Codex and
+Copilot MCP mappings forward explicitly configured `PLUGIN_DATA` and
+`COPILOT_PLUGIN_DATA`, respectively. Their plugin cwd cannot identify the
+consuming project, so the caller owns that exclusion. Neither mapping provisions
+data automatically or falls back to another host's storage variable.
+Standard output contains protocol messages only. Read the
+[MCP contract](../docs/Skill%20MCP.md) for all tools, bounds and provenance.
+The former `mcp usage` route is removed before the first release; manually copied
+MCP client configurations must use `mcp serve`.
 
 The explicit `telemetry` commands store typed session starts, read attempts and
 successful reads with occurrence/correlation UUIDs. Queries are read-only;
 optional bounded logs retain categories and IDs. Read the complete
 [telemetry contract](../docs/Skill%20Telemetry.md) before choosing an emitter.
+
+Schema-2 `telemetry record` explicitly reports routing, activation or one terminal
+outcome. `telemetry catalog-observe` records a complete caller inventory.
+`telemetry lifecycle`, `overlap`, `inactivity` and `catalog-history` query that
+evidence with an explicit period of at most 366 days; matching MCP tools use the
+same services. Queries never create or upgrade storage. Read the
+[lifecycle guide](../docs/Lifecycle%20Evidence.md) for full event examples, source
+identity, ratio denominators, missing coverage and history paging. File reads
+never imply activation or completion.
 
 `hook telemetry-config --host claude --db /absolute/local-data/usage.db
 --collection project=/absolute/project/.agents/skills` prints an optional

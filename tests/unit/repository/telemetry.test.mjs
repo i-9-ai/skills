@@ -42,7 +42,10 @@ test('typed retries, attempts and explicit session counts remain distinct', (t) 
     const read = event('skill.read.observed', { correlation_id: attempt.correlation_id });
     assert.equal(store.recordEvent(read).recorded, true);
     assert.equal(store.recordEvent({ ...read, payload: { ...read.payload } }).recorded, false);
-    assert.throws(() => store.recordEvent({ ...read, session: 'changed' }), /different evidence/);
+    assert.throws(
+        () => store.recordEvent({ ...read, session: 'changed' }),
+        (error) => error.code === 'evidence_conflict',
+    );
     store.recordEvent(event('skill.read.observed', { session: 'opaque-b' }));
     assert.deepEqual(
         { ...store.trends().rows[0] },
@@ -62,7 +65,10 @@ test('typed retries, attempts and explicit session counts remain distinct', (t) 
         session: attempt.session,
         occurred_at: attempt.occurred_at,
     };
-    assert.throws(() => store.record(legacy), /typed telemetry/);
+    assert.throws(
+        () => store.record(legacy),
+        (error) => error.code === 'evidence_conflict',
+    );
 });
 
 test('existing v1 observations survive additive migration without fabricated session starts', (t) => {
@@ -78,7 +84,9 @@ test('existing v1 observations survive additive migration without fabricated ses
     });
     store.close();
     const db = new DatabaseSync(filename);
-    db.exec('DROP TABLE usage_events; DELETE FROM usage_migrations WHERE version=2');
+    db.exec(
+        'DROP TABLE catalog_changes; DROP TABLE catalog_members; DROP TABLE catalog_observations; DROP TABLE lifecycle_events; DROP TABLE usage_events; DELETE FROM usage_migrations WHERE version>=2',
+    );
     const original = db
         .prepare('SELECT checksum FROM usage_migrations WHERE version=1')
         .get().checksum;

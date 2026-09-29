@@ -49,6 +49,16 @@ The Skills CLI asks for a supported agent target when it cannot determine one. A
 
 This source checkout includes a project-local Codex `SessionStart` adapter. After explicit `npm ci`, a trusted host can load a compact map from current project and global skill entrypoints at startup, resume, clear and compaction. Discovery reads bounded metadata, deduplicates canonical paths, and never installs packages or invokes a route.
 
+The repository-root Codex and Claude plugins also bundle their own Node 24
+session adapters, runnable without preparing the checkout. They discover plugin,
+project and global skills. Claude additionally records supported native Read
+attempts and successes in its host-provided plugin data directory. These counts
+do not prove skill activation. See [installed plugin hooks](docs/Host%20Hooks.md#installed-plugin-hooks)
+for supported versions, trust, storage and parser limits. The [native pilot](docs/Native%20Plugin%20Pilot.md)
+records isolated Codex/Claude installation, SessionStart and local source rollback;
+it does not establish real-model behavior or hosted updates. Avoid duplicate
+project/plugin session registrations.
+
 Hosts without hooks, or projects where the user has not enabled hook trust, use the identical manual fallback:
 
 ```sh
@@ -215,6 +225,26 @@ node bin/index.mjs catalog sync --collection . --layout repository
 ```
 
 The sync command derives names, paths, descriptions, and tags from each `SKILL.md`, writes only `skills-catalog.json`, and becomes a no-op on a second run. Lifecycle evidence remains a separate review record.
+
+To query the collection bundled with the running CLI, use `catalog search --query
+authoring`, `catalog read --skill skill-authoring`, or `catalog overview`. The same
+read-only operations are available through `mcp serve`, without a data directory
+or native skill discovery. The [MCP guide](docs/Skill%20MCP.md) includes tool calls,
+bounded resource retrieval, provenance and optional explicit usage metrics.
+
+Codex, Claude and Copilot root plugins register that shared MCP directly, without
+CLI dependencies. The legacy Codex and Copilot mappings need explicitly selected
+external `PLUGIN_DATA` and `COPILOT_PLUGIN_DATA` directories, respectively, for
+storage; reads of catalog/guide/report data do not need one. The
+[Codex MCP pilot](docs/Codex%20MCP%20Pilot.md) and
+[Copilot MCP pilot](docs/Copilot%20MCP%20Pilot.md) document native tool calls,
+isolation and the operator's responsibility for the consumer path.
+
+[Lifecycle evidence](docs/Lifecycle%20Evidence.md) provides separate explicit
+route, activation and outcome records, complete catalog observations and
+read-only cohort, overlap, inactivity and history queries through the same
+CLI/MCP. These are caller-reported signals with visible denominators and coverage;
+catalog retrieval and file reads do not manufacture activation evidence.
 
 ### Cross-collection lookup
 

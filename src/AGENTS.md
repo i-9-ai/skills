@@ -26,12 +26,28 @@ Update affected domain rules, adapters, use cases, tests, and documentation toge
 Run `npm run check` and inspect the required official workflow result for the exact PR head. Test process adapters using fake executors and temporary fixtures.
 
 ## Child DOX index
+- [Skill change reports](../docs/Skill%20Change%20Reports.md): verified snapshot observations, evidence-based bump recommendations and inert installed onboarding through CLI/MCP.
+- [Snapshot observation repository](repository/SkillSnapshotObservationRepository.ts): bounded schema-2 snapshot verification and portable inventory export without capture or restore.
+- [Bump report service](service/SkillBumpReportService.ts): pure comparison and explicit-evidence classification, preserving uncertainty and paged display.
+- [Onboarding service](service/SkillOnboardingService.ts): versioned installed command data, complete synthetic fixtures and examples; no automatic execution.
 - [Plugin data](config/PluginDataConfiguration.ts): select a persistent host-owned usage database without writing into the installed plugin.
-- [Plugin MCP entrypoint](transport/PluginUsageMcpServer.ts): dependency-free Node 24 stdio launch of the existing usage service.
+- [Plugin MCP entrypoint](transport/PluginMcpServer.ts): dependency-free Node 24 launch of catalog access and explicit usage operations; no state on initialization.
+- [Installed plugin hooks](transport/PluginHookRunner.ts): bounded native event ingress and neutral diagnostics without CLI dependencies, Git lookup or automatic setup.
+- [Plugin hook orchestration](service/PluginHookService.ts): shared discovery and host context plus proven Claude observations; storage failure cannot suppress session context.
+- [Plugin hook configuration](config/PluginHookConfiguration.ts): separate installed resources, caller collections and explicit host data selection without installation effects.
+- [Plugin data filesystem](repository/PluginDataRepository.ts): validate external host-owned storage and preserve protected plugin/caller paths before opening a writer.
 - [Project configuration](config/ProjectConfiguration.ts): one validated root selection and named project paths without filesystem effects.
 - [Command contracts](command/AGENTS.md): capability grouping, class names, help, failures and noninteractive output.
 - [Command configuration](config/CommandConfiguration.ts): explicit public route-to-class mapping, independent of source filenames and build location.
-- [Skill usage MCP](command/mcp/UsageMcpCommand.md): explicit observed-read recording and period rankings; no automatic hooks or activation inference.
+- [Skill MCP](command/mcp/ServeMcpCommand.md): bounded bundled instructions and explicit observed-read metrics through one stdio server; no activation inference.
+- [Installed collection configuration](config/InstalledCollectionConfiguration.ts): select resources relative to the running package independently of the caller's project or home.
+- [Installed skill repository](repository/InstalledSkillRepository.ts): validate bundled catalog identity/freshness and read confined Markdown resources with content provenance.
+- [Catalog queries](service/SkillCatalogService.ts): read-only metadata search, resource retrieval and overview using the existing collection contracts.
+- [Collection audit](service/CollectionAuditService.ts): bounded structural findings and baseline evidence for an explicitly selected collection, separate from official or behavioral validation.
+- [Collection remediation](service/CollectionRemediationService.ts): reviewable plans and explicit catalog-only application, preserving unresolved semantic handoffs and recovery evidence.
+- [Maintenance filesystem](repository/CollectionMaintenanceRepository.ts): collection fingerprints and confined catalog preimage/publication checks without scanning unrelated repository state.
+- [Maintenance snapshots](repository/CollectionSnapshotRepository.ts): bounded package-helper snapshots and restore proof for the selected catalog preimage only.
+- [Remediation input](validator/CollectionRemediationValidator.ts): closed audit/plan contracts, supported operation identity and stale-state rejection.
 - [CLI operator guide](../bin/index.md): command input, effects, failures and the single launcher.
 - [Repository validation](service/CollectionValidationService.ts): coordinates collection checks.
 - [Collection validator](validator/CollectionValidator.ts): catalog, upstream-lock, and public-hygiene rules.
@@ -48,6 +64,13 @@ Run `npm run check` and inspect the required official workflow result for the ex
 - [Aggregate catalog](repository/AggregateCatalogRepository.ts): derived multi-source state and history through explicit source/index selections.
 - [Host hook configuration](service/HostHookConfiguration.ts): verified per-host registration and context envelopes around the same discovery service.
 - [Skill read repository](repository/SkillReadRepository.ts): transactional observed-read storage and ranking projections.
-- [Usage migration](migration/SkillReadMigration.ts): ordered checksum-verified schema history.
+- [Evidence database](repository/SkillEvidenceDatabaseRepository.ts): shared dedicated SQLite connection and transactional boundaries; read-only queries never create or migrate storage.
+- [Lifecycle repository](repository/SkillLifecycleRepository.ts): explicit attempt invariants, cohort projections and co-routing counts without inferred activation.
+- [Catalog observations](repository/CatalogObservationRepository.ts): complete caller inventories, transactional deltas and coverage-aware inactivity queries.
+- [Evidence service](service/SkillEvidenceService.ts): shared CLI/MCP orchestration over validated lifecycle and catalog assertions.
+- [Evidence validator](validator/SkillEvidenceValidator.ts): closed versioned events, source assertions, reason codes and bounded period queries.
+- [Evidence command configuration](config/SkillEvidenceCommandConfiguration.ts): shared CLI query flags outside individual command implementations.
+- [Usage migration](migration/SkillReadMigration.ts): ordered checksum-verified read, typed-event and explicit lifecycle/catalog schema history.
 - [Skill telemetry](service/SkillTelemetryService.ts): explicit typed observations, read-only metrics and optional bounded diagnostics.
 - [Telemetry contract](../docs/Skill%20Telemetry.md): event schema, commands, migration and measurement boundaries.
+- [Lifecycle contract](../docs/Lifecycle%20Evidence.md): schema-2 assertions, source identity, denominators, completeness, query bounds and CLI/MCP parity.

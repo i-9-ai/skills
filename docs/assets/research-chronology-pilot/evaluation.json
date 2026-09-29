@@ -1,0 +1,245 @@
+{
+  "schemaVersion": 1,
+  "caseId": "research-chronology-39",
+  "executionDate": "2026-09-29",
+  "issue": "https://github.com/i-9-ai/skills/issues/39",
+  "sourceRevision": "863a5cd76c5c1828f29027270a041bb84fff170d",
+  "package": "skill-domain-research",
+  "previousRound": {
+    "record": "../research-pilot-v2/evaluation.json",
+    "criticalCriterion": "R11",
+    "result": "failed",
+    "unchanged": true
+  },
+  "frozenScope": {
+    "case": "A fictional process owner treats a matching package digest and author field as authenticated provenance.",
+    "output": "Research dossier; no new skill, live verification or acceptance decision.",
+    "depth": "extended",
+    "reasons": [
+      "security consequence",
+      "ambiguous identity terms",
+      "novelty",
+      "source revision and applicability"
+    ],
+    "questions": [
+      "digest-match purpose and assumptions",
+      "expected-source verification workflow",
+      "owner-claim classification and unknowns"
+    ],
+    "sourceClasses": [
+      "issuing body",
+      "implementation verification documentation",
+      "provenance specification"
+    ],
+    "candidateFamilies": [
+      "NIST",
+      "Sigstore",
+      "SLSA"
+    ],
+    "maximums": {
+      "queries": 4,
+      "retrievalOperations": 12,
+      "uniquePrimaryDocuments": 6,
+      "researchMinutes": 20,
+      "challengePasses": 1,
+      "correctionPasses": 1
+    },
+    "stopConditions": [
+      "budget or deadline reached",
+      "indispensable source gap after bounded correction"
+    ],
+    "failedRequestsConsumeBounds": true,
+    "externalReferenceSkillsSupplied": 0
+  },
+  "results": {
+    "artifactIntegrity": "passed",
+    "observedPreRetrievalPlanning": "passed",
+    "budgetAndStopBehavior": "passed",
+    "semanticCompleteness": "blocked_external_research",
+    "sourceFit": "supported only for inspected landing-page purposes and visible status notices",
+    "newOfficialPackageValidation": "not_applicable_no_skill_changed",
+    "generalImprovement": "not_established"
+  },
+  "observedSequence": [
+    {
+      "order": 1,
+      "role": "executor",
+      "event": "plan freeze and hash result",
+      "toolAnchor": "263184"
+    },
+    {
+      "order": 2,
+      "role": "coordinator",
+      "event": "complete frozen plan read; actual returned bytes inspected"
+    },
+    {
+      "order": 3,
+      "role": "coordinator",
+      "event": "independent hashes and explicit acknowledgment written",
+      "toolAnchor": "57e80b"
+    },
+    {
+      "order": 4,
+      "role": "executor",
+      "event": "acknowledgment and unchanged plan verified before retrieval",
+      "toolAnchor": "6c29f4"
+    },
+    {
+      "order": 5,
+      "role": "executor",
+      "event": "first native domain web call",
+      "recordedAt": "2026-09-29T22:05:03.741Z"
+    },
+    {
+      "order": 6,
+      "role": "executor",
+      "event": "six total web invocations, then dossier and final artifact seal",
+      "recordedSealAt": "2026-09-29T22:16:48.845Z"
+    }
+  ],
+  "independentReview": {
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoningEffort": "max",
+    "separateFromExecutor": true,
+    "observations": [
+      "Sixteen retained artifact hashes verified, including the manifest; nine relocated package files also matched committed Git bytes.",
+      "Coordinator plan-read output matched frozen plan and preparation bytes; explicit acknowledgment call and returned hashes verified.",
+      "Eight exported executor trace rows matched original native records, including freeze, acknowledgment verification and first web invocation.",
+      "Fresh-case prefix inspected; no earlier domain retrieval appeared in that retained prefix.",
+      "Actual queries, retrieval operations and candidate counters independently recounted.",
+      "Original retained second NIST result checked against its native tool record after a later reviewer fetch failed."
+    ],
+    "chronologyLimits": [
+      "Incoming coordination-message body was encrypted and was not reconstructed; the visible acknowledgment and preflight establish the observed boundary.",
+      "Native local records and unsigned clocks are not an externally signed timestamp service or a forensic audit of every process.",
+      "A later dossier, ledger or hash without an observed earlier plan is not accepted as proof of prior planning.",
+      "Raw session records are deliberately not redistributed; public hashes and descriptions alone cannot reproduce private trace inspection."
+    ]
+  },
+  "retrieval": {
+    "queries": 4,
+    "operations": 8,
+    "uniqueCandidates": 6,
+    "nativeWebInvocations": 6,
+    "inspectedPrimaryLandingPages": 2,
+    "firstBracketStart": "2026-09-29T22:05:03Z",
+    "finalBracketEnd": "2026-09-29T22:10:04Z",
+    "retrievalBracketSeconds": 301,
+    "firstBracketToSealSeconds": 705.845,
+    "firstActualCallToSealSeconds": 705.104,
+    "timingLimit": "Unsigned recorded-clock arithmetic, not inference latency, tokens or cost.",
+    "blockedCandidates": [
+      "Sigstore verification documentation",
+      "NIST publication download",
+      "SLSA versioned index",
+      "SLSA artifact verification"
+    ],
+    "failureInterpretation": "Observed restricted-URL or internal tool errors, not publisher access-policy findings; no bypass channel used."
+  },
+  "supportedSources": [
+    {
+      "id": "P1",
+      "url": "https://csrc.nist.gov/pubs/fips/180-4/upd1/final",
+      "identifier": "FIPS 180-4",
+      "scope": "digest change-detection purpose and visible record status only"
+    },
+    {
+      "id": "P2",
+      "url": "https://csrc.nist.gov/pubs/fips/186-5/final",
+      "identifier": "FIPS 186-5",
+      "scope": "signature purposes including signatory authentication and visible correction notice only"
+    }
+  ],
+  "semanticLimits": [
+    "Full standards, errata and the indispensable verification workflow were not inspected.",
+    "Expected-digest origin, covered bytes, authenticated identity and acceptance policy remain unknown.",
+    "No complete verification recipe, authenticated-source status or actual package acceptance was established.",
+    "One correction case does not establish general pipeline improvement or replace the earlier failed run."
+  ],
+  "retainedArtifacts": {
+    "redistribution": "Identifiers and hashes only; listed paths are logical names in the private retained run, not bundled public files.",
+    "algorithm": "sha256",
+    "files": [
+      {
+        "artifact": "caller/parent-acknowledgment.json",
+        "bytes": 742,
+        "sha256": "791bca26a8c0e878a612bd2b5b14feafb5289716ca215fda864745bf2ba7e275"
+      },
+      {
+        "artifact": "caller/phase1-events.md",
+        "bytes": 2423,
+        "sha256": "6e841bcd126612153cc123558d48abf3986a4802bfe78b0966cf069396208ef3"
+      },
+      {
+        "artifact": "caller/research-dossier.md",
+        "bytes": 15408,
+        "sha256": "9fbe2b839bc238900b80a124c034c0efca4cda615fea08d68cd11206209bdb72"
+      },
+      {
+        "artifact": "caller/research-ledger.json",
+        "bytes": 20651,
+        "sha256": "ef7a25c81e5f1460773c17585b1db3cfb854e2a91d0ed179c6ebf6bf0283a0c9"
+      },
+      {
+        "artifact": "caller/research-plan.md",
+        "bytes": 11783,
+        "sha256": "6d2d254cceedc08a0c8eafb9b3bf338521ad28830a961efc63cae9b475d77ace"
+      },
+      {
+        "artifact": "package-identity.json",
+        "bytes": 2132,
+        "sha256": "4954d4b4da44f4d010c696f95d975b2922e68e1ecdf3ff5c3812bc9d6c6e8628"
+      },
+      {
+        "artifact": "package/skill-domain-research/LICENSE",
+        "bytes": 11358,
+        "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+      },
+      {
+        "artifact": "package/skill-domain-research/SKILL.md",
+        "bytes": 11526,
+        "sha256": "91f927307365669165dafb58d00f7634a4ef6974f712e1f877148fef8968571d"
+      },
+      {
+        "artifact": "package/skill-domain-research/agents/openai.yaml",
+        "bytes": 324,
+        "sha256": "ee363df3a58e42cbaf014cfa1e9f73bfd559f43ac207d76c75c58db2d28de930"
+      },
+      {
+        "artifact": "package/skill-domain-research/assets/icon.png",
+        "bytes": 6052,
+        "sha256": "c71fbd1826d05ee3d98dc0e3cb3e027d8d6990e4b5d80922c6d713c6ea46e544"
+      },
+      {
+        "artifact": "package/skill-domain-research/assets/icon.render.json",
+        "bytes": 410,
+        "sha256": "4a17dc7f6a1c7749cc41b86aef1f82de1652ac2f8489004c0601c37aaf290a75"
+      },
+      {
+        "artifact": "package/skill-domain-research/assets/icon.svg",
+        "bytes": 993,
+        "sha256": "05f7b64828327f6e2f773a9183774d655d80e8dd74c268ac9d4c38cc2ee3c3ea"
+      },
+      {
+        "artifact": "package/skill-domain-research/assets/research-dossier.md",
+        "bytes": 3576,
+        "sha256": "4e1fdd996eaeb7bdb1606aa14a063f7a0ce6d10d12f8cb16707fa7d9823f2aad"
+      },
+      {
+        "artifact": "package/skill-domain-research/references/authoritative-source-policy.md",
+        "bytes": 5186,
+        "sha256": "0c353228946b0b66bb294f7b8cbbcf310208c60359f30f1c7a69bdb997126060"
+      },
+      {
+        "artifact": "package/skill-domain-research/references/provenance.md",
+        "bytes": 2822,
+        "sha256": "082a9dbbb6845424d58ebb63aab72ae904e85edd081adf750792705d58bf9e52"
+      },
+      {
+        "artifact": "caller/artifact-hashes.json",
+        "bytes": 3424,
+        "sha256": "314f849ae4115eb196858f36c5bd1a88ef0870bd8d55a7160f1f4911cfce4c8e"
+      }
+    ]
+  }
+}

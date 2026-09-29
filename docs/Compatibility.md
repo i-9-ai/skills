@@ -22,8 +22,10 @@ Primary documentation was inspected on 2026-09-12. This table records documented
 | --- | --- | --- |
 | Codex | Reads repository `.agents/skills`; optional `agents/openai.yaml` supports interface metadata and icon paths. [Official guide](https://learn.chatgpt.com/docs/build-skills) | Native canonical tree; per-skill interface metadata, source-attributed SVG small icon, and PNG large icon |
 | Codex session index | Optional trusted project hook renders bounded project/global package metadata; the manual command renders the same output | Project-local `.codex/hooks.json`; no automatic trust, package loading, installation, or route invocation |
+| Installed Codex/Claude plugins | Root manifests map native hooks and MCP to direct Node 24 TypeScript transports | Native discovery, SessionStart and local source rollback passed in the [isolated pilot](Native%20Plugin%20Pilot.md) on Codex 0.159.0/Claude 2.1.277. Claude MCP initialized; the separate [Codex MCP pilot](Codex%20MCP%20Pilot.md) proved explicit tool calls with caller-selected external storage. Read-hook telemetry remains direct-test evidence; Codex read inference is absent. |
 | Claude Code | Reads `SKILL.md` and local resources under its skill directories; provider-specific frontmatter includes model and invocation controls. [Official guide](https://code.claude.com/docs/en/skills) | `.claude/skills` alias and `CLAUDE.md` alias; no required Claude-specific fields or hooks |
 | GitHub Copilot | Supports skill directories and resources; VS Code adds invocation/frontmatter and extension-level capabilities. [GitHub overview](https://docs.github.com/en/copilot/concepts/agents/about-agent-skills), [VS Code guide](https://code.visualstudio.com/docs/agent-customization/agent-skills) | `.github/skills` alias; no invented per-skill manifest or extension package |
+| Copilot CLI plugin MCP | Root legacy manifest maps the shared Node 24 transport and an explicit `COPILOT_PLUGIN_DATA` environment value | The [native MCP pilot](Copilot%20MCP%20Pilot.md) on CLI 1.0.89 exercised ephemeral plugin loading, 13-tool discovery and direct catalog/evidence calls. No model turn, persistent marketplace installation or native read-hook telemetry is claimed. |
 | Gemini CLI | `GEMINI.md` is the default context filename; `context.fileName` can select other names. [Official context guide](https://geminicli.com/docs/cli/gemini-md/) | Preserve the legacy `GEMINI.md` alias to canonical `AGENTS.md` without changing host settings; session hooks are described separately |
 | Antigravity | Current workspace location is `.agents/skills`; older `.agent/skills` remains a compatibility path. [Official guide](https://antigravity.google/docs/skills) | Native canonical tree; no duplicate legacy alias |
 | OpenCode | Documents standard skill metadata and `.agents/skills` discovery; permission settings belong to host configuration. [Official guide](https://opencode.ai/docs/skills/) | Native canonical tree; no required `opencode.json` or permission change |
@@ -39,8 +41,9 @@ uses `AGENTS.md`. [Claude Code](https://code.claude.com/docs/en/memory#share-one
 explicitly supports a `CLAUDE.md` symlink to that file. Its newer native AGENTS.md
 loading is conditional on version and settings; keeping the alias preserves the
 existing repository entrypoint. Gemini's filename adapter remains useful with
-its default settings. These are structural and documented contracts; no native
-host launch or Windows symlink checkout was tested, and no home settings changed.
+its default settings. These instruction-loading claims are structural and
+documented contracts. The later native plugin pilot does not test every project
+instruction alias or Windows symlink checkout; no real home settings changed.
 
 The optional Codex session index remains an adapter, rather than a portable package requirement. Its command discovers project and global `.agents/skills` entrypoints with canonical deduplication and writes bounded context. If a host does not support hooks, or the project is not trusted for them, run `node bin/index.mjs context available-skills` and use the same compact map manually.
 
@@ -58,3 +61,11 @@ Skills CLI `1.5.26` was exercised locally with `skills add . --list` against the
 Optional reasoning-effort recommendations are explained in each skill body and do not select models or apply host settings. They are not benchmark claims. An execution environment supporting the file format may still differ in model behavior, available tools, context budget, or permissions. Record those differences rather than hiding them behind a compatibility label. The [OpenAI sidecar reference](../.agents/skills/skill-authoring/references/openai-yaml.md) separates verified host fields from collection authoring conventions.
 
 The [initial pilot report](Pilot%20Evaluation.md) records the historical six-stage synthetic creation exercise, actual output observations, official validation, and the limits of its same-session manual baseline. It does not establish readiness for the current version 2 authoring contract, which adds mandatory domain research.
+
+The [current research pilot](Research%20Pipeline%20Pilot.md) exercises version 2
+on two frozen synthetic tasks with a separate task-only baseline and independent
+grading. Both arms met the visible task cases and passed official package
+validation. Overall pipeline readiness failed: the executor recorded research
+depth after retrieval despite the prior-planning requirement. The report retains
+that deviation, exact identities and the follow-up; no universal improvement or
+successful multi-contributor synthesis is claimed.

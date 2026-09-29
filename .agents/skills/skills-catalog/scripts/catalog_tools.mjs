@@ -476,6 +476,11 @@ function difference(current, desired) {
 
 function canonicalBytes(value) { return Buffer.from(`${JSON.stringify(value, null, 2)}\n`); }
 
+/** Derive canonical metadata from package entrypoints without reading or writing a catalog. */
+export function deriveCatalog(input, options = {}) {
+  return desiredCatalog(collectionConfig(input, options));
+}
+
 export function inspectCatalog(input, options = {}) {
   const config = collectionConfig(input, options);
   const current = readCatalog(config);

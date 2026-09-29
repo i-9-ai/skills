@@ -103,7 +103,10 @@ test('host first-receipt retries preserve time but reject conflicting mapped evi
     };
     assert.equal(store.recordEvent(first, { preserveFirstReceipt: true }).recorded, true);
     const later = { ...first, occurred_at: '2026-09-02T00:00:00.000Z' };
-    assert.throws(() => store.recordEvent(later), /different evidence/);
+    assert.throws(
+        () => store.recordEvent(later),
+        (error) => error.code === 'evidence_conflict',
+    );
     assert.equal(store.recordEvent(later, { preserveFirstReceipt: true }).recorded, false);
     assert.throws(
         () =>
@@ -111,7 +114,7 @@ test('host first-receipt retries preserve time but reject conflicting mapped evi
                 { ...later, payload: { ...later.payload, skill: 'changed' } },
                 { preserveFirstReceipt: true },
             ),
-        /different evidence/,
+        (error) => error.code === 'evidence_conflict',
     );
     assert.equal(store.trends().rows[0].period, '2026-09-01');
     const attempt = adapter.observation(

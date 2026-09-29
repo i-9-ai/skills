@@ -10,7 +10,7 @@ import {
     realpathSync,
 } from 'node:fs';
 import { join, sep } from 'node:path';
-import { parseDocument } from 'yaml';
+import { YamlFrontmatterValidator } from '../validator/YamlFrontmatterValidator.ts';
 
 export type SkillSummary = {
     name: string;
@@ -19,7 +19,7 @@ export type SkillSummary = {
     sources: string[];
 };
 
-export type Discovery = { skills: SkillSummary[]; warnings: string[] };
+export type Discovery = { skills: SkillSummary[]; warnings: string[]; sources?: string[] };
 export type CollectionSource = { directory: string; label: string };
 
 const MAX_FILE_BYTES = 131_072;
@@ -29,6 +29,14 @@ const MAX_DEPTH = 8;
 
 /** Read metadata only. Never run scripts or write catalogs during discovery. */
 export class SkillDiscoveryRepository {
+    private readonly metadata: Pick<YamlFrontmatterValidator, 'parse'>;
+
+    constructor(
+        metadata: Pick<YamlFrontmatterValidator, 'parse'> = new YamlFrontmatterValidator(),
+    ) {
+        this.metadata = metadata;
+    }
+
     read(sources: CollectionSource[]): Discovery {
         const skills = new Map<string, SkillSummary>();
         const warnings: string[] = [];
@@ -47,10 +55,17 @@ export class SkillDiscoveryRepository {
             skills: [...skills.values()].sort(
                 (left, right) =>
                     left.name.localeCompare(right.name, 'en') ||
-                    left.sources[0].localeCompare(right.sources[0], 'en'),
+                    left.sources[0].localeCompare(right.sources[0], 'en') ||
+                    this.comparePath(left.canonicalPath, right.canonicalPath),
             ),
             warnings,
+            sources: [...new Set(sources.map((source) => source.label))],
         };
+    }
+
+    private comparePath(left: string, right: string): number {
+        if (left === right) return 0;
+        return left < right ? -1 : 1;
     }
 
     private readSource(
@@ -167,14 +182,7 @@ export class SkillDiscoveryRepository {
             const text = new TextDecoder('utf-8', { fatal: true }).decode(
                 bytes.subarray(0, length),
             );
-            const frontmatter = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(text);
-            if (!frontmatter) throw new Error('Missing frontmatter');
-
-            const document = parseDocument(frontmatter[1], { uniqueKeys: true, strict: true });
-            if (document.errors.length > 0 || document.warnings.length > 0)
-                throw new Error('Invalid frontmatter');
-
-            const metadata = document.toJS({ maxAliasCount: 0 }) as Record<string, unknown> | null;
+            const metadata = this.metadata.parse(text) as Record<string, unknown> | null;
             if (!metadata || typeof metadata !== 'object' || Array.isArray(metadata))
                 throw new Error('Invalid summary');
             if (typeof metadata.name !== 'string' || typeof metadata.description !== 'string')

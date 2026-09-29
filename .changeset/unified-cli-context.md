@@ -13,7 +13,7 @@ with canonical deduplication, source labels and disclosed coverage limits.
 
 Expose the session adapter through `hook session-index`, Codex configuration
 rendering/comparison through `hook session-config --host codex` and `hook verify --host codex`,
-and explicit read metrics through `mcp usage --db PATH`. Keep collection validation behavior, and remove the superseded standalone
+and explicit read metrics through `mcp serve --db PATH`. Keep collection validation behavior, and remove the superseded standalone
 executables and transitional command aliases. Organize tests by unit layer
 and separate CLI/collection integration contracts. Automatic read collection is
 limited to the separately implemented optional Claude Read adapter; npm/plugin

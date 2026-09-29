@@ -609,6 +609,13 @@ function writeSqlite(filename, index, DatabaseSync, { mode, observedAt, resetHis
   const temporary = `${filename}.tmp-${process.pid}-${Date.now()}`;
   let database;
   const existingBytes = optionalRegularBytes(filename, "existing SQLite index", MAX_INDEX_BYTES);
+  if (existingBytes?.subarray(0, 16).equals(Buffer.from("SQLite format 3\0", "binary"))) {
+    const inspected = new DatabaseSync(filename, { readOnly: true });
+    try {
+      const evidence = inspected.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name IN ('usage_migrations','usage_reads','usage_events','lifecycle_events','catalog_observations') LIMIT 1").get();
+      requireCondition(!evidence, "dedicated evidence databases cannot be synchronized or rebuilt as catalog indexes");
+    } finally { inspected.close(); }
+  }
   requireCondition(mode === "sync" || existingBytes === null || resetHistory,
     "rebuild would discard SQLite history; pass --reset-history to confirm a new baseline");
   if (mode === "sync" && existingBytes !== null) {
