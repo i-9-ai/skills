@@ -75,8 +75,8 @@ test('global override and project deduplication are observable through the CLI',
 test('unified CLI help and invalid input preserve noninteractive failure boundaries', () => {
     assert.match(cli(['--help']).stdout, /TOPICS/);
     for (const args of [
-        ['validate', '--unknown'],
-        ['ci-official', '--unknown'],
+        ['repo', 'validate', '--unknown'],
+        ['repo', 'validate-official', '--unknown'],
         ['hook', 'session-index', '--max-entries', '0'],
         ['mcp', 'usage'],
         ['mcp', 'usage', '--db', 'relative.db'],

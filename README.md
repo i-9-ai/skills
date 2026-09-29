@@ -6,10 +6,10 @@ I-9 Skills is a toolkit for the full life of an agent skill: discover what alrea
 
 **24 focused skills. One responsibility each. One reviewable output each.**
 
-The working package version is `0.1.0-rc.1`. This is an experimental collection
-for explicit pilots; the npm package remains private and unpublished. Structural
-checks and fixture tests do not establish production quality or universal host
-compatibility.
+The working package version is recorded in [package.json](package.json). This is
+an experimental collection for explicit pilots; the npm package remains private
+and unpublished. Structural checks and fixture tests do not establish production
+quality or universal host compatibility.
 
 The prepared CLI package name is `@i-9-ai/skills` and its executable is
 `i9-skills`. In a trusted checkout, run `npm ci`, then `npm run check` and
@@ -200,7 +200,11 @@ git diff --check
 
 The [validation contract](docs/Validation.md) explains the layered checks. Every package must also pass the official `skills-ref validate` tool identified by the [Agent Skills specification](https://agentskills.io/specification#validation). GitHub Actions installs the pinned external Python validator in an isolated environment and validates every canonical package at the exact PR revision.
 
-Pending user-visible changes use [Changesets](docs/Release%20Management.md) for version intent and future release notes. The current workflow validates those entries only; it does not publish packages, create tags, or create releases.
+Pending user-visible changes use [Changesets](docs/Release%20Management.md) for
+version intent and future release notes. A manual workflow can prepare a draft
+version PR with an aligned package, lockfile and plugin manifests. Normal PR
+checks still apply; preparation does not publish packages, create tags or create
+releases. The release guide also covers local preparation and no-note retries.
 
 Catalog maintenance is automated:
 

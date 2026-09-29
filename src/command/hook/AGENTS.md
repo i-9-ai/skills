@@ -28,9 +28,9 @@ Run `node bin/index.mjs hook verify --host codex --file .codex/hooks.json`, the 
 
 ## Child DOX index
 
-- [Session index command](session-index.ts): lifecycle entrypoint for the compact overview.
-- [Host configuration](session-config.ts): prints the selected registration without writing files.
-- [Host verification](verify.ts): compares a supplied configuration and reports that no hook ran.
-- [Hook inventory](list.ts): distinguishes implemented registrations and observation coverage from unsupported host mappings.
-- [Read observation](observe.ts): bounded native event ingress and nonblocking diagnostics.
-- [Observation registration](telemetry-config.ts): explicit selected collection/database registration without host writes.
+- [Session index command](SessionIndexHookCommand.ts): lifecycle entrypoint for the compact overview.
+- [Host configuration](SessionConfigCommand.ts): prints the selected registration without writing files.
+- [Host verification](HookVerifyCommand.ts): compares a supplied configuration and reports that no hook ran.
+- [Hook inventory](HookListCommand.ts): distinguishes implemented registrations and observation coverage from unsupported host mappings.
+- [Read observation](HookObserveCommand.ts): bounded native event ingress and nonblocking diagnostics.
+- [Observation registration](TelemetryConfigCommand.ts): explicit selected collection/database registration without host writes.

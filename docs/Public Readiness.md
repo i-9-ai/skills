@@ -60,14 +60,20 @@ visibility decision; this dated inventory is not a live monitor.
 
 ## Publication triggers and remaining gates
 
-The candidate source contains four workflows. Validation and Changesets checks
-are read-only. The visual-guide workflow can push the generated guide tree to
-gh-pages on a matching main push or explicit dispatch. The Wiki workflow can
-write documentation to the initialized Wiki on a matching main push or dispatch,
-using its separate token. They select main and were not run, enabled or reconfigured
-for this task. Their future effects must be reviewed before merging or enabling
-publication. The currently registered remote workflows are not evidence that
-these candidate publication workflows have run.
+The source now contains five workflows (updated 2026-09-29). Validation and
+Changesets checks have read-only repository permissions. The manual
+[version-preparation workflow](Release%20Management.md) can create or update a
+draft PR from the default branch with aligned package, lockfile and plugin
+versions. It grants only contents/PR write access and has no registry, tag,
+release or marketplace publication step. Its fixture checks do not establish
+that live bot PR creation is permitted by repository policy.
+
+The visual-guide workflow can push the generated guide tree to gh-pages on a
+matching main push or explicit dispatch. The Wiki workflow can write documentation
+to the initialized Wiki with `GITHUB_TOKEN` on a matching main push or dispatch.
+Preparing a version does not dispatch either publication workflow or change their configuration.
+Their effects remain subject to the existing publication boundaries. The dated
+remote inventory above does not establish which later workflows have run.
 
 Before any external release, repeat the source/history and remote audit, resolve
 the ruleset/reporting evidence gaps as relevant to that release, verify scoped

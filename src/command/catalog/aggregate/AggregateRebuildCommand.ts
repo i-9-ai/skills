@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import { Command, Flags } from '@oclif/core';
-import { aggregateInput, aggregateWriteFlags } from './sync.ts';
+import { aggregateInput, aggregateWriteFlags } from './AggregateSyncCommand.ts';
 import { AggregateCatalogService } from '../../../service/AggregateCatalogService.ts';
 
 export default class AggregateRebuildCommand extends Command {

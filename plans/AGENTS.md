@@ -17,6 +17,7 @@ Verify every requirement has an implementation and a check or an explicit limit.
 
 ## Child DOX index
 
+- [Reviewable version preparation](2026-09-29-17-37-32-reviewable-version-preparation.md): manual version-only PR creation, aligned plugin/lock metadata and generated-release verification without publication.
 - [Plugin MCP and hook boundary](2026-09-24-22-40-28-plugin-mcp-and-hook-boundary.md): root-plugin MCP mapping, persistent plugin data, hook activation limits and issue reconciliation.
 - [Repository plugin marketplace](2026-09-23-18-07-55-repository-plugin-marketplace.md): root host manifests and marketplace entry point at the canonical collection; no consumer installation or publication.
 - [Local skill telemetry](2026-09-19-18-00-00-local-skill-telemetry.md): typed observations, session/read trends and bounded local logs; no task tracking or automatic host installation.

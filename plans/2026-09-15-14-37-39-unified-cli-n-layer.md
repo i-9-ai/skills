@@ -3,8 +3,8 @@
 ## Objective
 
 Replace the repository's fixed three-argument parser with one portable
-TypeScript CLI based on oclif. Preserve the existing validation and session
-index commands while adding the usage MCP as a CLI command. Make command
+TypeScript CLI based on oclif. Preserve validation and session-index behavior
+while adding the usage MCP as a CLI command. Make command
 ownership, application services, and I/O repositories explicit and testable.
 
 ## Scope
@@ -78,8 +78,10 @@ ownership, application services, and I/O repositories explicit and testable.
 
 ## Acceptance
 
-- `validate`, `ci-official`, and `context available-skills` run through the
-  canonical CLI with their prior observable behavior.
+- `repo validate`, `repo validate-official`, and `context available-skills`
+  run through the canonical CLI with their prior observable behavior.
+- Every command file matches its exported class name, ending in `Command`.
+  Explicit registration owns route spelling independently of the filename.
 - `mcp usage --db PATH` starts the existing bounded stdio server using a
   caller-owned dedicated database.
 - Commands have explicit help and invalid-input behavior.
@@ -109,8 +111,8 @@ update their indexes and input/side-effect descriptions together.
 
 ## Runtime and framework evidence
 
-Use the installed `@oclif/core@5.0.0` pattern discovery with a singular command
-directory. Node 24 strips erasable TypeScript during source execution; explicit
+Use the installed `@oclif/core@5.0.0` explicit discovery with a singular command
+directory and one route map. Node 24 strips erasable TypeScript during source execution; explicit
 type checking remains a development check. Node refuses native stripping under
 node_modules. The subsequent [meta-skill delivery plan](2026-09-19-14-34-36-meta-skill-delivery.md)
 adds an explicit compiled build and local packed-artifact test; registry and
@@ -118,12 +120,48 @@ plugin publication remain separate boundaries.
 
 The oclif skill was used with its complete implementation and migration guides.
 Its explicit-discovery/manifest incompatibility assertion conflicts with the
-official discovery guide and installed framework. This delivery uses pattern
-discovery and records that gap without changing installed skills.
+official discovery guide and installed framework. The initial implementation
+used pattern discovery; the inaugural naming correction below replaces it with
+the supported explicit map without changing installed skills.
 
 Sources: [oclif discovery](https://oclif.io/docs/command_discovery_strategies/)
 and [Node TypeScript](https://nodejs.org/api/typescript.html), checked during
 implementation. No upstream implementation code was copied.
+
+## Command registration correction
+
+[Issue #18](https://github.com/i-9-ai/skills/issues/18) completes the original
+class/file naming requirement. The source contract's command-file exception
+did not implement the requested convention and is removed. This refinement
+belongs to the inaugural CLI baseline rather than a second architecture.
+
+1. Rename all command files to their exported class names; update imports and
+   indexed links. Keep existing capability directories and no duplicate clients.
+2. Add `CommandConfiguration` with the explicit route-to-class map. Export that
+   map from the existing CLI module for oclif's `explicit` strategy. The source
+   launcher points to the TypeScript module; the package points to compiled JS.
+   There is no runtime compiler, new dependency or filesystem-based route naming.
+3. Use `RepositoryValidateCommand` for local `repo validate --project PATH` and
+   `OfficialSkillsValidateCommand` for `repo validate-official`, which performs
+   local checks and the pinned Agent Skills validator in its prepared CI environment.
+   Preserve the `validate` and `ci:official` npm scripts used by workflows while
+   changing their underlying routes. No external consumer of the old CLI spellings
+   was found, so retain no hidden alias.
+4. Update help, examples, operator documentation, Changeset and scoped contracts.
+   Root instructions still govern source, then `src/AGENTS.md`, then
+   `src/command/AGENTS.md`, with `hook/AGENTS.md` only for host lifecycle rules.
+   `config/` gains a named route owner without requiring another instruction file.
+5. Exercise every registered route's help in the checkout and packed artifact,
+   representative actual calls, unknown flags, required project selection and
+   absence of filename-derived or obsolete command routes. Run `npm run check`,
+   `npm run package:check` serially, Changesets and whitespace checks; retain the
+   exact-commit independent review and matching CI result.
+
+No host settings, usage databases, distributed skill procedures or publication
+permissions change. The existing hook and MCP routes remain unchanged. Reverting
+this coherent correction restores the former command loader and filenames without
+touching caller data. The earlier standalone-CLI rollback above describes the
+original migration, not this naming correction.
 
 ## Final command taxonomy and cleanup
 
@@ -244,7 +282,7 @@ Only implemented hook handlers may be registered: SessionStart invokes the teste
 
 ## Cohesive object boundaries
 
-Repository-owned source is TypeScript, with cohesive classes named for their patterns and matching source files. Commands retain oclif ID filenames and class names ending in Command. Validator internals are private methods; services own dependency seams, repositories own filesystem/process/SQLite effects, and SkillReadMigration owns transactional schema history. The framework launch function remains a thin utility. ProjectConfiguration owns the cohesive project-path selection contract. No entity layer is created for data-only shapes.
+Repository-owned source is TypeScript, with cohesive classes named for their patterns and matching source files. Command filenames match their exported classes, ending in `Command`; `CommandConfiguration` owns the explicit route IDs. Validator internals are private methods; services own dependency seams, repositories own filesystem/process/SQLite effects, and SkillReadMigration owns transactional schema history. The framework launch function remains a thin utility. ProjectConfiguration owns the cohesive project-path selection contract. No entity layer is created for data-only shapes.
 
 The new command and hook AGENTS contracts persist naming, help/output and host lifecycle rules. Tests now separate unit layer contracts from CLI and collection integration. The superseded standalone executable files and aliases were removed because no external consumer was demonstrated. The existing portable package helpers are not a second CLI core and retain their independently distributable JavaScript runtime.
 
@@ -260,7 +298,11 @@ Reviewed the official documentation on 2026-09-15 against the current one-table 
 
 Decision for this bounded delivery: retain Node 24 DatabaseSync and SkillReadMigration, with tested immediate transactions, retry idempotence, concurrent writers and checksum rejection. No candidate eliminates the need for input/privacy rules, event identity or verified backup. Introducing an ORM now would add a second schema workflow for one simple table, while the useful telemetry model is still being designed. This is a scope-based decision, not a claim that custom migration code is generally superior. Reassess Kysely and Drizzle when implementing the normalized multi-event telemetry schema; preserve existing ledger data and checksum history in disposable upgrade/concurrency fixtures before changing the dependency or driver. No migration dependency, hidden code generator or native package installation was added.
 
-## Verified consolidation outcome
+## Original TypeScript consolidation checkpoint (historical)
+
+These observations describe the initial migration, before packed distribution
+and the subsequent command-registration correction. Current review and CI
+evidence belongs to the exact delivery commit.
 
 - Strict TypeScript and collection checks pass; 167 tests pass on the default runtime and Node 24.19.0.
 - Repository hook verification reports matching configuration without executing/enabling the host hook. Only SessionStart is registered.
@@ -281,7 +323,7 @@ Decision for this bounded delivery: retain Node 24 DatabaseSync and SkillReadMig
 | `src/domain/session-index-policy.mjs` | `src/repository/SkillDiscoveryRepository.ts` |
 | `src/infrastructure/skill-usage-store.mjs` | `src/repository/SkillReadRepository.ts` |
 | `src/skill-usage-mcp.mjs` | `src/transport/SkillUsageMcpTransport.ts` |
-| `src/skill-usage-mcp.md` | `src/command/mcp/usage.md` |
+| `src/skill-usage-mcp.md` | `src/command/mcp/UsageMcpCommand.md` |
 | `src/cli.mjs` | `bin/index.mjs` |
 | `tests/session-index.test.mjs` | `tests/unit/repository/SkillDiscoveryRepository.test.mjs`, `tests/integration/cli/available-skills.test.mjs`, `tests/unit/service/AvailableSkillsService.test.mjs`, `tests/unit/config/ProjectConfiguration.test.mjs` |
 | `tests/official-validator.test.mjs` | `tests/unit/repository/official-validator-process.test.mjs`, `tests/unit/validator/official-validator.test.mjs` |
@@ -298,7 +340,7 @@ All listed old paths are absent and replacements exist. The deleted source wrapp
 
 ## Discovery and lifecycle naming
 
-The repository reads installed package directories, so its class/file is SkillDiscoveryRepository rather than a catalog or session repository. AvailableSkillsService and AvailableSkillsInput describe the reusable overview; renderAvailableSkills performs discovery and renderOverview formats the result. Only SessionIndexHookCommand retains the lifecycle name and lives under hook/session-index. Command ID filenames remain oclif conventions. Unit files now identify SkillDiscoveryRepository and AvailableSkillsService; CLI tests cover the reusable command and its lifecycle adapter together. No old naming aliases or executable entrypoints are retained.
+The repository reads installed package directories, so its class/file is SkillDiscoveryRepository rather than a catalog or session repository. AvailableSkillsService and AvailableSkillsInput describe the reusable overview; renderAvailableSkills performs discovery and renderOverview formats the result. `SessionIndexHookCommand` retains the lifecycle name, lives in `src/command/hook/SessionIndexHookCommand.ts`, and is explicitly registered as `hook:session-index`. Unit files now identify SkillDiscoveryRepository and AvailableSkillsService; CLI tests cover the reusable command and its lifecycle adapter together. No old naming aliases or executable entrypoints are retained.
 
 ## Catalog command group
 

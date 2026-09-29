@@ -12,23 +12,28 @@
     "node": ">=24"
   },
   "scripts": {
-    "validate": "node bin/index.mjs validate --project .",
+    "validate": "node bin/index.mjs repo validate --project .",
     "test": "node --test \"tests/**/*.test.mjs\" \".agents/skills/*/tests/*.test.mjs\"",
-    "check": "npm run format:check && npm run typecheck && npm run validate && npm test",
+    "check": "npm run format:check && npm run typecheck && npm run release:verify && npm run validate && npm test",
     "format": "prettier --write \"src/**/*.ts\" \"bin/*.mjs\" \"tests/unit/**/*.mjs\" \"tests/integration/cli/**/*.mjs\" \"tests/packaging/*.mjs\"",
     "format:check": "prettier --check \"src/**/*.ts\" \"bin/*.mjs\" \"tests/unit/**/*.mjs\" \"tests/integration/cli/**/*.mjs\" \"tests/packaging/*.mjs\"",
     "typecheck": "tsc --noEmit",
     "cli": "node bin/index.mjs",
-    "ci:official": "node bin/index.mjs ci-official",
+    "ci:official": "node bin/index.mjs repo validate-official",
     "changeset": "changeset",
     "changeset:status": "changeset status",
-    "release:prepare": "changeset version",
+    "release:prepare": "node bin/index.mjs repo prepare-version --project .",
+    "release:verify": "node bin/index.mjs repo verify-release --project .",
     "build": "npm run typecheck && node -e \"require('node:fs').rmSync('dist', {recursive: true, force: true})\" && tsc --project tsconfig.build.json",
     "package:check": "npm run build && node --test tests/packaging/cli-package.mjs"
   },
   "oclif": {
     "bin": "i9-skills",
-    "commands": "./dist/command",
+    "commands": {
+      "strategy": "explicit",
+      "target": "./dist/index.js",
+      "identifier": "COMMANDS"
+    },
     "topicSeparator": " "
   },
   "config": {
