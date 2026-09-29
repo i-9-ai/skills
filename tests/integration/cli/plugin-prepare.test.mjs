@@ -61,6 +61,16 @@ test('repository-root plugin manifests reference the canonical collection', () =
                 '--host',
                 'claude',
             ]);
+        } else if (relative === '.codex-plugin/plugin.json') {
+            assert.equal(manifest.mcpServers, './mcp/codex.json');
+            const mapping = JSON.parse(fs.readFileSync(join(repository, manifest.mcpServers)));
+            const server = mapping.mcpServers['i9-skills'];
+            assert.equal(server.type, 'stdio');
+            assert.equal(server.command, 'node');
+            assert.deepEqual(server.args, ['src/transport/PluginMcpServer.ts', '--host', 'codex']);
+            assert.equal(server.cwd, '.');
+            assert.deepEqual(server.env_vars, ['PLUGIN_DATA']);
+            assert.equal(server.env, undefined);
         } else {
             assert.equal(manifest.mcpServers, undefined, relative);
         }

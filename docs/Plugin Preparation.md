@@ -9,9 +9,9 @@ entries at `.claude-plugin/marketplace.json` and
 `.github/plugin/marketplace.json`. `npm run check` verifies these paths and the
 cataloged packages. There is no checked-in copy under `plugins/`.
 
-The Claude Code plugin declares the local `i9-skills` MCP in
-`mcp/claude.json`. It starts the dependency-free Node 24 server in
-`src/transport/PluginMcpServer.ts --host claude`. It provides read-only bundled
+The Codex and Claude Code plugins declare the local `i9-skills` MCP in
+`mcp/codex.json` and `mcp/claude.json`. They start the dependency-free Node 24 server
+in `src/transport/PluginMcpServer.ts --host codex|claude`. It provides read-only bundled
 catalog search, selected Markdown resources and bounded overview without a data
 directory. Explicit `skill_read_record` and `skill_read_rankings` calls use a
 dedicated `skill-usage.db` in the host's persistent plugin data directory, outside
@@ -25,8 +25,17 @@ update manually copied configurations. The [MCP guide](Skill%20MCP.md) provides
 tool calls, CLI equivalents, identity/limit rules and version-pinned invocation.
 Clean-copy protocol tests without `node_modules` are separate from native Claude
 ingestion and subprocess tests. The [native pilot](Native%20Plugin%20Pilot.md)
-records successful Claude initialization at pinned revisions. Codex and Copilot do not yet register this MCP;
-their native loading and persistence must be tested before adding mappings.
+records successful Claude initialization at pinned revisions. The
+[Codex MCP pilot](Codex%20MCP%20Pilot.md) separately proves native registration and
+explicit tool calls. Copilot does not yet register this MCP.
+
+Codex's legacy mapping resolves `cwd: "."` against the installed plugin and
+explicitly forwards a caller-provided `PLUGIN_DATA`. It does not inherit automatic
+hook data provisioning. Without this variable, catalog/report/guide calls work
+and storage operations report unavailable. Choose an absolute data directory
+outside both installed files and consumer projects. The runtime rejects relative,
+linked and plugin-contained locations, but cannot infer the original consumer
+cwd from this legacy server process; that exclusion remains the operator's duty.
 
 Claude Code can remove the persistent data directory on final plugin uninstall.
 Use its `--keep-data` option when the observed-read history must remain available
@@ -190,8 +199,9 @@ submission and workspace publication remain separate authorization boundaries.
 Claude Code and Copilot CLI can likewise read their repository marketplace
 files after a consumer explicitly adds this Git repository as a marketplace.
 Both entries select the root plugin, so they distribute the same canonical
-packages. Claude also maps the catalog/usage MCP and installed hooks. Codex maps
-its own session hook; Copilot currently provides skills only. Marketplace
+packages. Claude also maps the catalog/evidence MCP and installed hooks. Codex maps
+its own session hook and the MCP with explicit storage configuration; Copilot
+currently provides skills only. Marketplace
 metadata does not grant trust or establish native execution. Validate each
 host's marketplace loading, hook delivery and any MCP subprocess before claiming
 consumer support.

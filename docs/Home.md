@@ -21,6 +21,7 @@ preparing distribution, and evolving focused agent skills.
 - [Distribution preparation](Distribution%20Readiness.md): explicit JavaScript build, packed CLI verification and remaining publication gates.
 - [Plugin preparation](Plugin%20Preparation.md): inspect the repository-root host manifests and marketplace entry, and learn the post-merge installation path.
 - [Native plugin pilot](Native%20Plugin%20Pilot.md): measured Codex/Claude installation, session hooks, Claude MCP, local update/rollback and cleanup, with reproducible isolation boundaries.
+- [Codex MCP pilot](Codex%20MCP%20Pilot.md): native tool discovery, catalog access and explicit external evidence storage without a model turn.
 - [Public readiness](Public%20Readiness.md): dated source/history and remote-surface audit with explicit evidence gaps.
 
 - [Host hooks](Host%20Hooks.md): host-specific session configuration and context output, with explicit untested runtime boundaries.

@@ -162,3 +162,55 @@ afterward. Claude keeps its original full network denial.
 This establishes native hook delivery against a stubbed model transport, never
 real model behavior, provider connectivity, authentication or task quality. The
 public report must state this distinction and preserve the failed no-turn lane.
+
+## Native Codex MCP mapping
+
+Complete the remaining Codex MCP acceptance through the existing legacy plugin
+manifest, preserving its explicit `.agents/skills` collection and installed
+Node 24 entrypoint. Before selecting configuration fields, inspect their handling
+in the pinned Codex source and the installed app-server protocol. In particular,
+prove how the legacy loader resolves `cwd` and relative command arguments, and
+whether explicitly listed environment variables reach the MCP child. Hook-only
+environment injection is not evidence for MCP behavior.
+
+The candidate adapter is a file-backed `mcpServers` mapping with `command: node`,
+`cwd: .`, the relative `src/transport/PluginMcpServer.ts --host codex` arguments,
+and `env_vars: [PLUGIN_DATA]`. Its capability boundary must be explicit: catalog
+queries need no storage; usage operations require a caller-supplied absolute data
+directory outside both plugin and consumer. Do not invent a home fallback, copy
+hook environment assumptions, add automatic setup, or change collection layout.
+Keep an unsupported field or mapping absent if native execution cannot prove it.
+
+The legacy MCP process uses the installed plugin as its working directory. It
+cannot infer the consuming thread's directory from that value. Therefore the
+operator must select data outside the consumer as well as outside the plugin;
+do not claim that this adapter independently enforces the unknown consumer path.
+
+Use a new disposable source fixture and Codex profile, never reuse the retained
+A/B/A proof directories. Capture the exact source commit plus any candidate file
+overlay hashes; once the change has a reviewed commit, repeat the affected native
+checks against that commit. Keep the full network denial and outside-write denial
+from the original preflight. No model response stub is needed if the native
+app-server permits direct tool calls on an ephemeral thread; otherwise record the
+missing capability before changing this plan. Authentication must remain absent.
+
+Through native marketplace/plugin registration and app-server RPC, verify:
+
+1. The installed manifest and MCP mapping hashes match the candidate source, and
+   native status/tool discovery identifies the expected plugin server.
+2. A catalog query returns the bundled canonical packages without creating an
+   evidence database. With no `PLUGIN_DATA`, an explicit usage write returns
+   `storage_unavailable` and creates no fallback database.
+3. With an explicit isolated `PLUGIN_DATA`, one synthetic read can be written and
+   queried through native MCP. Verify database location and schema, and preserve
+   those bytes across native plugin/marketplace removal.
+4. Plugin source/cache and consumer snapshots remain unchanged by MCP calls;
+   stopped process groups and empty native inventories establish cleanup.
+
+Add meaningful offline regression coverage for the mapping and its data boundary,
+but keep native host execution outside the ordinary test suite. Record pinned
+source references, host/runtime versions, request/result shapes and sanitized
+observations in the pilot evidence. Root documentation and the Changeset must
+distinguish native discovery/direct tool execution from model use and automatic
+data provisioning. Removing this optional mapping rolls back Codex MCP discovery
+without removing preserved data or changing canonical skills and hooks.

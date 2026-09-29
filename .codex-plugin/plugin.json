@@ -10,6 +10,7 @@
   "license": "Apache-2.0",
   "skills": "./.agents/skills/",
   "hooks": "./hooks/codex.json",
+  "mcpServers": "./mcp/codex.json",
   "interface": {
     "displayName": "I-9 Skills",
     "shortDescription": "Author and maintain portable agent skills",

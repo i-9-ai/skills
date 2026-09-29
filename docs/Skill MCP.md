@@ -18,8 +18,9 @@ node bin/index.mjs mcp serve --db /absolute/local-data/skill-usage.db
 ```
 
 The [unified CLI](../bin/index.md) uses the same service and transport as the
-Claude plugin's dependency-free `src/transport/PluginMcpServer.ts --host claude`.
-That registration is named `i9-skills` in `mcp/claude.json`. The former `mcp usage`
+dependency-free `src/transport/PluginMcpServer.ts --host claude|codex` entrypoint.
+Both host registrations are named `i9-skills` in their respective
+`mcp/claude.json` and `mcp/codex.json` files. The former `mcp usage`
 route, usage-only class names and `i9-skill-usage` registration were replaced
 before the first release; update manually copied client configurations.
 
@@ -30,8 +31,13 @@ and open it read-only. Missing state is reported as unavailable, not empty histo
 An explicit CLI `--db` selects a caller-owned absolute path; plugin state uses
 the selected host's absolute persistent data directory outside both the installed
 plugin and caller project. No automatic cwd/home fallback is used for storage.
-Codex and Copilot do not register this MCP until their native loading and data
-contracts have matching verification; they can use the explicit CLI configuration.
+Codex's legacy mapping forwards an explicitly supplied `PLUGIN_DATA`; it does
+not automatically provision the hook's data directory for MCP. Its process cwd
+is the installed plugin, so it cannot infer the consuming thread's project cwd.
+The operator must select data outside that consumer; the runtime still rejects
+relative, linked and plugin-contained locations. See the
+[native Codex MCP pilot](Codex%20MCP%20Pilot.md) for source and runtime proof.
+Copilot has no bundled MCP mapping and may use the explicit CLI configuration.
 
 The npm package is not published yet. After an authorized publication, replace
 `<released-version>` with the verified version in the client configuration:

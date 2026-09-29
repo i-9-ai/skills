@@ -232,6 +232,12 @@ read-only operations are available through `mcp serve`, without a data directory
 or native skill discovery. The [MCP guide](docs/Skill%20MCP.md) includes tool calls,
 bounded resource retrieval, provenance and optional explicit usage metrics.
 
+Codex and Claude root plugins register that shared MCP directly, without CLI
+dependencies. Codex's verified legacy mapping needs an explicitly selected
+external `PLUGIN_DATA` directory for storage; reads of catalog/guide/report data
+do not need one. The [Codex MCP pilot](docs/Codex%20MCP%20Pilot.md) documents native
+tool calls, isolation and the operator's responsibility for the consumer path.
+
 [Lifecycle evidence](docs/Lifecycle%20Evidence.md) provides separate explicit
 route, activation and outcome records, complete catalog observations and
 read-only cohort, overlap, inactivity and history queries through the same

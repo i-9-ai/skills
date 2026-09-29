@@ -4,7 +4,9 @@ The isolated pilot on 2026-09-29 passed native registration, 24-skill discovery,
 SessionStart execution, local source replacement and rollback in Codex and Claude
 Code. Claude's MCP initialization also passed. No repository runtime defect was
 found in this scope. This is evidence for the versions and source commits below,
-not a claim about every host, model or later revision.
+not a claim about every host, model or later revision. The subsequent
+[Codex MCP pilot](Codex%20MCP%20Pilot.md) adds native tool discovery and explicit
+catalog/read-evidence calls; the historical A/B/A results below remain unchanged.
 
 ## Candidate and environment
 
@@ -145,8 +147,9 @@ installation do not become dependencies of the ordinary repository test suite.
 
 Native Read-tool telemetry, real-model skill selection/task quality, interactive
 Claude trust, online dependency preparation, hosted updates, Windows behavior,
-Copilot runtime, Codex MCP mapping and public-directory acceptance were not
-exercised. Direct runtime tests and repository CI provide separate evidence.
+Copilot runtime and public-directory acceptance were not exercised. Codex MCP
+mapping was outside this A/B/A round and is covered by the separate linked pilot.
+Direct runtime tests and repository CI provide separate evidence.
 This pilot does not authorize publication or installation into a real profile.
 
 The Codex diagnosis used immutable source

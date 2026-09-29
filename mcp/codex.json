@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "i9-skills": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "src/transport/PluginMcpServer.ts",
+        "--host",
+        "codex"
+      ],
+      "cwd": ".",
+      "env_vars": [
+        "PLUGIN_DATA"
+      ]
+    }
+  }
+}

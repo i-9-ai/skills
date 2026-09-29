@@ -40,6 +40,12 @@ warning, stubbed Codex model transport and local update mechanism. Repository
 checks, official skills-ref results and packed-runtime acceptance apply to their
 exact PR heads; obtain fresh results for the final release commit.
 
+The separate [Codex MCP pilot](Codex%20MCP%20Pilot.md) adds native plugin tool
+discovery and explicit catalog/read-evidence calls. Its legacy mapping requires
+caller-selected external `PLUGIN_DATA` for storage and cannot infer the original
+consumer cwd. This does not establish a hosted marketplace update or a public
+directory's remote-MCP acceptance.
+
 ## Read-only GitHub exposure inventory
 
 The remote/Actions inventory cutoff was **2026-09-29 20:28:57 UTC**. Discussion
