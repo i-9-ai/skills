@@ -17,6 +17,7 @@ Verify every requirement has an implementation and a check or an explicit limit.
 
 ## Child DOX index
 
+- [Installed catalog MCP](2026-09-29-19-09-50-installed-catalog-mcp.md): bounded bundled-skill search, resource retrieval and overview through the shared MCP/CLI, with lazy usage storage and no installation effects.
 - [Reviewable version preparation](2026-09-29-17-37-32-reviewable-version-preparation.md): manual version-only PR creation, aligned plugin/lock metadata and generated-release verification without publication.
 - [Plugin MCP and hook boundary](2026-09-24-22-40-28-plugin-mcp-and-hook-boundary.md): root-plugin MCP and installed hook runtime, persistent host data, proven observation limits and separate native-consumer evidence.
 - [Repository plugin marketplace](2026-09-23-18-07-55-repository-plugin-marketplace.md): root host manifests and marketplace entry point at the canonical collection; no consumer installation or publication.
