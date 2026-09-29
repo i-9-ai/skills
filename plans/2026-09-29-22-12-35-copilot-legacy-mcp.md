@@ -49,6 +49,13 @@ coordinating maintainer.
 
 ## Validation and acceptance
 
+Source-inspection qualification: the official plugin and MCP guides were read as
+live rendered pages on 2026-09-29. The revision metadata and raw download locators
+above were resolved, but their Markdown bodies were not compared to those returned
+excerpts. Preserve that difference from the planned pinned-source inspection;
+the mapping and environment claims are additionally verified by the bounded
+native CLI run below. No byte-exact documentation snapshot is claimed.
+
 The isolated native probe selected the file-backed mapping with
 `${PLUGIN_ROOT}/src/transport/PluginMcpServer.ts`, `--host copilot`,
 `env.COPILOT_PLUGIN_DATA: ${COPILOT_PLUGIN_DATA}` and `tools: ["*"]`. The runtime

@@ -60,10 +60,10 @@ does not record activation or a successful task.
 
 Reviewed on 2026-09-29:
 
-- GitHub's [plugin reference](https://github.com/github/docs/blob/339429df5ad02314aa9976e27dde0c17b3b910f6/content/copilot/reference/copilot-cli-reference/cli-plugin-reference.md)
+- GitHub's rendered [plugin reference](https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-plugin-reference)
   establishes the legacy manifest locations and file-backed `mcpServers` field,
   and separates Agent Plugins data semantics.
-- GitHub's [MCP configuration guide](https://github.com/github/docs/blob/339429df5ad02314aa9976e27dde0c17b3b910f6/content/copilot/how-tos/copilot-cli/customize-copilot/add-mcp-servers.md)
+- GitHub's rendered [MCP configuration guide](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-mcp-servers)
   documents local stdio configuration and explicit environment fields. Native
   observations below establish the narrower legacy-plugin expansion behavior.
 - The official CLI repository at
@@ -77,6 +77,13 @@ Reviewed on 2026-09-29:
   and [RPC contract](https://github.com/github/copilot-sdk/blob/a2b2c18eb5a20417fc613eaaa93199f55ad22ea4/nodejs/src/generated/rpc.ts)
   supplied the headless stdio, no-auto-login, session MCP and explicit permission
   request shapes. The probe installed no SDK dependency and sent no model turn.
+
+The first two sources were inspected as live rendered pages, with the original
+tool-return excerpts retained. Repository metadata resolved `github/docs` revision
+`339429df5ad02314aa9976e27dde0c17b3b910f6` and raw download locators, but those raw
+Markdown bodies were not inspected or byte-compared to the rendered text. The
+revision is a reference locator, not an exact-source identity for those excerpts.
+The pinned SDK files and the native CLI observations supply separate evidence.
 
 These sources were consulted for interfaces. No upstream executable, source code,
 skill payload or other licensed asset is redistributed by this change. The
