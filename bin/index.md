@@ -56,6 +56,8 @@ node bin/index.mjs mcp serve --db /absolute/local-data/skill-usage.db
 node bin/index.mjs telemetry record --db /absolute/local-data/skill-usage.db --file event.json
 node bin/index.mjs telemetry rankings --db /absolute/local-data/skill-usage.db
 node bin/index.mjs telemetry trends --db /absolute/local-data/skill-usage.db --interval month
+node bin/index.mjs telemetry catalog-observe --db /absolute/local-data/skill-usage.db --file catalog.json
+node bin/index.mjs telemetry lifecycle --db /absolute/local-data/skill-usage.db --from 2026-09-01T00:00:00.000Z --until 2026-10-01T00:00:00.000Z
 node bin/index.mjs plugin prepare --output .work/plugin-preview/i9-skills
 ```
 
@@ -141,9 +143,9 @@ prints the Codex configuration; `hook verify --host codex` only compares its con
 Neither command enables or installs a hook.
 
 `mcp serve` starts the single stdio server for bundled skill search, Markdown
-retrieval and overview plus explicit observed-read metrics. Initialization and
+retrieval and overview plus explicit read, lifecycle and catalog evidence. Initialization and
 catalog calls require no data directory and create no state. A valid record opens
-the selected dedicated SQLite database and applies migrations; rankings open
+the selected dedicated SQLite database and applies migrations; evidence queries open
 existing valid storage read-only. A missing database is unavailable, not zero
 history. The CLI accepts an absolute `--db`; the installed plugin selects its
 host-owned persistent data outside installed files and the caller's project.
@@ -156,6 +158,15 @@ The explicit `telemetry` commands store typed session starts, read attempts and
 successful reads with occurrence/correlation UUIDs. Queries are read-only;
 optional bounded logs retain categories and IDs. Read the complete
 [telemetry contract](../docs/Skill%20Telemetry.md) before choosing an emitter.
+
+Schema-2 `telemetry record` explicitly reports routing, activation or one terminal
+outcome. `telemetry catalog-observe` records a complete caller inventory.
+`telemetry lifecycle`, `overlap`, `inactivity` and `catalog-history` query that
+evidence with an explicit period of at most 366 days; matching MCP tools use the
+same services. Queries never create or upgrade storage. Read the
+[lifecycle guide](../docs/Lifecycle%20Evidence.md) for full event examples, source
+identity, ratio denominators, missing coverage and history paging. File reads
+never imply activation or completion.
 
 `hook telemetry-config --host claude --db /absolute/local-data/usage.db
 --collection project=/absolute/project/.agents/skills` prints an optional

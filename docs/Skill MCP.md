@@ -1,9 +1,9 @@
-# Skill catalog and explicit read metrics
+# Skill catalog and explicit evidence
 
 One local MCP exposes this installed collection's instructions and explicit
-observed-read metrics. Catalog tools only read bundled files; they do not record
+read, lifecycle and catalog evidence. Catalog lookup tools only read bundled files; they do not record
 usage, activate skills, scan the caller's home or execute package scripts.
-Recording a read requires a separate explicit call with evidence from its emitter.
+Recording evidence requires a separate explicit call with evidence from its emitter.
 
 ## Start
 
@@ -25,7 +25,7 @@ before the first release; update manually copied client configurations.
 
 Initialization, tool listing, search, resource reads and overview require no data
 directory and create no database. Only an explicit valid record may initialize
-the selected dedicated usage database. Rankings require existing valid storage
+the selected dedicated usage database. Evidence queries require existing valid storage
 and open it read-only. Missing state is reported as unavailable, not empty history.
 An explicit CLI `--db` selects a caller-owned absolute path; plugin state uses
 the selected host's absolute persistent data directory outside both the installed
@@ -126,22 +126,45 @@ Use opaque random session tokens, never user identities or task names. Identifie
 
 Call `skill_read_rankings` with optional canonical UTC `from`, exclusive `until`, and `limit` (1–100, default 20). Each row contains collection, skill, read count and distinct session count. Results aggregate revisions; revision remains stored per event. These are demand signals, not importance or quality proofs.
 
+## Explicit lifecycle and catalog observations
+
+Six additional tools share the closed schema-2 contracts in the
+[lifecycle guide](Lifecycle%20Evidence.md): `skill_lifecycle_record`,
+`skill_catalog_observe`, `skill_lifecycle_metrics`, `skill_routing_overlap`,
+`skill_catalog_inactivity` and `skill_catalog_history`. Records receive complete
+event objects; queries receive an explicit half-open UTC period and optional
+collection/skill filters. Tool listing describes each schema and its write/read
+annotation. No tool receives a database or filesystem path as an argument.
+
+Lifecycle ratios return denominators; absent catalog coverage is an error, not
+proof of inactivity. Catalog observation is a complete caller-reported inventory,
+distinct from reading this installed collection's metadata. Reads, hooks and
+catalog retrieval never manufacture lifecycle outcomes. The guide includes
+complete event examples, retries, reason codes, query budgets and history paging.
+
 ## Storage and limits
 
 On the first explicit record, ordered checksum-verified migrations run in SQLite transactions. Inserts use `BEGIN IMMEDIATE` and a five-second busy timeout, preserving events from cooperating processes. No database replacement, history pruning, remote telemetry or prompt storage occurs. Database failures require operator diagnosis; there is no reset fallback. Use a stable, trusted local directory; path inspection does not promise race-proof filesystem confinement. A new database has mode 0600; pre-existing modes remain caller-owned. The [typed telemetry CLI](Skill%20Telemetry.md) shares this evidence store and adds explicit session/attempt events and trends.
 
-**Use a dedicated usage database for this delivery.** Existing catalog helpers replace database files and cannot safely run alongside this writer. Catalog or unrelated databases are rejected, untouched. Unifying the database requires a shared transactional catalog writer first.
+**Use a dedicated evidence database.** Aggregate catalog helpers replace derived
+database files and refuse this evidence store, including reset/rebuild requests.
+Catalog or unrelated databases are rejected, untouched. Migration 3 preserves
+older read events; queries against an older known schema request an explicit
+upgrade instead of performing one. Keep a backup before an explicit write upgrades
+storage. There is no shared transactional writer for derived catalog databases.
 
 The adapter implements newline-delimited JSON-RPC stdio initialization, ping,
-tool discovery and calls. Input messages are bounded to 64 KiB and serialized
+tool discovery and calls. Input messages are bounded to 1 MiB and serialized
 responses to 1 MiB. Oversized tool output produces a bounded error and the server
 can process a later valid request. Errors contain categories, not host paths,
-raw requests or documents. No HTTP, MCP resource protocol, subscriptions or
-activation inference is implemented; Markdown retrieval is an explicit tool.
+raw requests or documents. Individual lifecycle events are at most 8 KiB and
+catalog observations at most 256 KiB. No HTTP, MCP resource protocol, subscriptions
+or activation inference is implemented; Markdown retrieval is an explicit tool.
 
 Tool failures set `isError` and include `structuredContent.error` with `code` and
 a fixed message: `invalid_input`, `catalog_unavailable`, `resource_unavailable`,
-`storage_unavailable`, `response_too_large` or `unknown_tool`. Correct input or
+`storage_unavailable`, `response_too_large`, `unknown_tool`, `evidence_conflict`,
+`schema_upgrade_required`, `query_limit_exceeded` or `catalog_unobserved`. Correct input or
 repair the selected local installation/state, then retry; the server never
 downloads missing files or resets evidence as a recovery shortcut.
 

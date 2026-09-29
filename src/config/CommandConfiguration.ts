@@ -30,6 +30,12 @@ import TelemetryRankingsCommand from '../command/telemetry/TelemetryRankingsComm
 import TelemetryRecordCommand from '../command/telemetry/TelemetryRecordCommand.ts';
 import TelemetryTrendsCommand from '../command/telemetry/TelemetryTrendsCommand.ts';
 
+import TelemetryLifecycleCommand from '../command/telemetry/TelemetryLifecycleCommand.ts';
+import TelemetryOverlapCommand from '../command/telemetry/TelemetryOverlapCommand.ts';
+import TelemetryInactivityCommand from '../command/telemetry/TelemetryInactivityCommand.ts';
+import TelemetryCatalogHistoryCommand from '../command/telemetry/TelemetryCatalogHistoryCommand.ts';
+import TelemetryCatalogObserveCommand from '../command/telemetry/TelemetryCatalogObserveCommand.ts';
+
 /** Owns public command routes independently of class names and source layout. */
 export class CommandConfiguration {
     static readonly commands = {
@@ -59,6 +65,11 @@ export class CommandConfiguration {
         'repo:validate': RepositoryValidateCommand,
         'repo:prepare-version': PrepareVersionCommand,
         'repo:verify-release': VerifyReleaseCommand,
+        'telemetry:lifecycle': TelemetryLifecycleCommand,
+        'telemetry:overlap': TelemetryOverlapCommand,
+        'telemetry:inactivity': TelemetryInactivityCommand,
+        'telemetry:catalog-history': TelemetryCatalogHistoryCommand,
+        'telemetry:catalog-observe': TelemetryCatalogObserveCommand,
         'telemetry:rankings': TelemetryRankingsCommand,
         'telemetry:record': TelemetryRecordCommand,
         'telemetry:trends': TelemetryTrendsCommand,

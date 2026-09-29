@@ -3,13 +3,26 @@ import { SkillReadRepository } from '../repository/SkillReadRepository.ts';
 import { TelemetryInputRepository } from '../repository/TelemetryInputRepository.ts';
 import { TelemetryLogRepository } from '../repository/TelemetryLogRepository.ts';
 import { SkillTelemetryValidator } from '../validator/SkillTelemetryValidator.ts';
+import { SkillEvidenceValidator } from '../validator/SkillEvidenceValidator.ts';
+import { SkillOperationError } from '../validator/SkillOperationError.ts';
+import { SkillEvidenceService } from './SkillEvidenceService.ts';
 
 /** Composes explicit local operations; no host event or task status is inferred. */
 export class SkillTelemetryService {
     async record(database: string, file: string, logFile?: string) {
-        const event = new SkillTelemetryValidator().event(
-            await new TelemetryInputRepository().read(file),
-        );
+        let input: unknown;
+        try {
+            input = await new TelemetryInputRepository().read(file);
+        } catch {
+            throw new SkillOperationError('invalid_input');
+        }
+        const event =
+            input &&
+            typeof input === 'object' &&
+            'schema_version' in input &&
+            input.schema_version === 2
+                ? new SkillEvidenceValidator().lifecycle(input)
+                : new SkillTelemetryValidator().event(input);
         if (logFile) {
             const protectedFiles = [
                 database,
@@ -20,9 +33,12 @@ export class SkillTelemetryService {
             if (file !== '-') protectedFiles.push(file);
             TelemetryLogRepository.assertSeparate(logFile, protectedFiles);
         }
-        const store = new SkillReadRepository(database);
+        let store: SkillReadRepository | undefined;
         try {
-            const result = store.recordEvent(event);
+            const result =
+                event.schema_version === 2
+                    ? new SkillEvidenceService().recordLifecycle(database, event)
+                    : (store = new SkillReadRepository(database)).recordEvent(event);
             let logStatus = logFile ? 'written' : 'disabled';
             if (logFile) {
                 try {
@@ -42,7 +58,7 @@ export class SkillTelemetryService {
             }
             return { ...result, log: logStatus };
         } finally {
-            store.close();
+            store?.close();
         }
     }
 

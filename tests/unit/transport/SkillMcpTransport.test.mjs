@@ -58,7 +58,7 @@ test('protocol state prevents storage calls before initialization and closes onc
 
 test('oversized protocol input never reaches storage or echoes the supplied content', async () => {
     const running = transport();
-    running.input.end('x'.repeat(65537));
+    running.input.end('x'.repeat(1_048_577));
     await running.done;
 
     assert.deepEqual(running.calls, [['close']]);

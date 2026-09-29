@@ -5,6 +5,12 @@ It separates a session start, a read attempt and a successful read. None proves
 that a model followed a skill, and a missing observation does not prove non-use.
 No command installs hooks, sends data remotely or tracks task status.
 
+[Lifecycle evidence](Lifecycle%20Evidence.md) adds separate, explicit routing,
+activation and outcome assertions, complete catalog observations, cohort ratios,
+co-routing overlap and inactivity coverage. It documents schema 2 and the matching
+CLI/MCP calls; the read/session schema below remains supported without inferred
+activation.
+
 ## Record one observation
 
 Create an existing local data directory with access limited to its owner. Select
@@ -82,6 +88,9 @@ MCP reads contribute to read metrics without fabricated session starts.
 ## Storage, logs and failures
 
 Migration 2 adds typed events without changing migration 1 or its read rows.
+Migration 3 adds explicit lifecycle and catalog evidence without rewriting those
+earlier migrations or observations. Valid explicit records upgrade compatible
+older storage; read-only queries return `schema_upgrade_required` instead.
 The event and successful-read projection commit in one transaction. Concurrent
 writers use SQLite's five-second busy timeout. Keep the usage database separate
 from catalog databases; unrelated tables, unknown migration versions and

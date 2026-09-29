@@ -13,11 +13,17 @@ import {
 } from '../../unit/fixture/InstalledCatalogFixture.mjs';
 
 const tools = [
+    'skill_catalog_history',
+    'skill_catalog_inactivity',
+    'skill_catalog_observe',
     'skill_catalog_overview',
     'skill_catalog_search',
+    'skill_lifecycle_metrics',
+    'skill_lifecycle_record',
     'skill_read_rankings',
     'skill_read_record',
     'skill_resource_read',
+    'skill_routing_overlap',
 ];
 const observedRead = {
     event_id: 'synthetic-observed-read',

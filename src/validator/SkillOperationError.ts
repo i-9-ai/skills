@@ -1,5 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
 const messages = {
+    evidence_conflict:
+        'Evidence conflicts with an existing occurrence or attempt; preserve the original identity.',
+    schema_upgrade_required:
+        'Evidence storage requires an explicit compatible schema upgrade; queries never migrate it.',
+    query_limit_exceeded:
+        'Evidence query exceeds its work limit; select a smaller period or collection.',
+    catalog_unobserved:
+        'No complete catalog observation exists for the selected period and collection.',
     invalid_input: 'Invalid input; use only the documented fields, types and limits.',
     catalog_unavailable:
         'Installed catalog unavailable; verify the package identity and catalog freshness.',

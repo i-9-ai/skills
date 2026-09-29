@@ -60,6 +60,13 @@ Run `npm run check` and inspect the required official workflow result for the ex
 - [Aggregate catalog](repository/AggregateCatalogRepository.ts): derived multi-source state and history through explicit source/index selections.
 - [Host hook configuration](service/HostHookConfiguration.ts): verified per-host registration and context envelopes around the same discovery service.
 - [Skill read repository](repository/SkillReadRepository.ts): transactional observed-read storage and ranking projections.
-- [Usage migration](migration/SkillReadMigration.ts): ordered checksum-verified schema history.
+- [Evidence database](repository/SkillEvidenceDatabaseRepository.ts): shared dedicated SQLite connection and transactional boundaries; read-only queries never create or migrate storage.
+- [Lifecycle repository](repository/SkillLifecycleRepository.ts): explicit attempt invariants, cohort projections and co-routing counts without inferred activation.
+- [Catalog observations](repository/CatalogObservationRepository.ts): complete caller inventories, transactional deltas and coverage-aware inactivity queries.
+- [Evidence service](service/SkillEvidenceService.ts): shared CLI/MCP orchestration over validated lifecycle and catalog assertions.
+- [Evidence validator](validator/SkillEvidenceValidator.ts): closed versioned events, source assertions, reason codes and bounded period queries.
+- [Evidence command configuration](config/SkillEvidenceCommandConfiguration.ts): shared CLI query flags outside individual command implementations.
+- [Usage migration](migration/SkillReadMigration.ts): ordered checksum-verified read, typed-event and explicit lifecycle/catalog schema history.
 - [Skill telemetry](service/SkillTelemetryService.ts): explicit typed observations, read-only metrics and optional bounded diagnostics.
 - [Telemetry contract](../docs/Skill%20Telemetry.md): event schema, commands, migration and measurement boundaries.
+- [Lifecycle contract](../docs/Lifecycle%20Evidence.md): schema-2 assertions, source identity, denominators, completeness, query bounds and CLI/MCP parity.

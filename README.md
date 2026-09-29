@@ -232,6 +232,12 @@ read-only operations are available through `mcp serve`, without a data directory
 or native skill discovery. The [MCP guide](docs/Skill%20MCP.md) includes tool calls,
 bounded resource retrieval, provenance and optional explicit usage metrics.
 
+[Lifecycle evidence](docs/Lifecycle%20Evidence.md) provides separate explicit
+route, activation and outcome records, complete catalog observations and
+read-only cohort, overlap, inactivity and history queries through the same
+CLI/MCP. These are caller-reported signals with visible denominators and coverage;
+catalog retrieval and file reads do not manufacture activation evidence.
+
 ### Cross-collection lookup
 
 Each repository keeps its own `skills-catalog.json` as its canonical, versioned inventory. When a local workstation needs to compare explicitly selected collections, the separate `skills-catalog-index` package can derive `skills-catalog.db` outside every source repository. SQLite `sync` retains source observations and normalized added, changed, and removed skill history; `history` and `changes` inspect it. The deterministic `skills-catalog.index.json` fallback provides current lookup only. Neither index alters a source catalog, installs or activates a skill, grants permissions, or runs setup. The repository's `catalog aggregate` CLI routes reuse that standalone package. See the [aggregate-index contract](.agents/skills/skills-catalog-index/references/aggregate-index.md) for commands, bounds, retention, and storage rules.

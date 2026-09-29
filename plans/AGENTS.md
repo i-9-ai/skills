@@ -17,6 +17,7 @@ Verify every requirement has an implementation and a check or an explicit limit.
 
 ## Child DOX index
 
+- [Explicit lifecycle evidence](2026-09-29-20-06-51-explicit-lifecycle-evidence.md): opt-in skill outcomes and complete catalog observations in the preserved evidence store, with bounded CLI/MCP metrics and explicit denominators.
 - [Public distribution readiness](2026-09-29-20-16-50-public-distribution-readiness.md): source/history and remote-surface reconciliation plus pinned distribution rehearsal and owner actions, without publication or visibility changes.
 - [Native plugin pilot](2026-09-29-19-38-34-native-plugin-pilot.md): isolated native Codex/Claude registration, source-pin replacement, hook/MCP execution and data-preserving cleanup, with explicit model and hosted-update limits.
 - [Collection maintenance](2026-09-29-19-43-00-collection-maintenance.md): bounded audit, reviewable remediation and explicit catalog-only evolution with verified preimage recovery and pending semantic handoffs.

@@ -3,7 +3,7 @@ import { Command, Flags } from '@oclif/core';
 import { SkillTelemetryService } from '../../service/SkillTelemetryService.ts';
 
 export default class TelemetryRecordCommand extends Command {
-    static description = 'Record one explicit typed observation; never infer skill activation.';
+    static description = 'Record a schema-1 observation or explicit schema-2 lifecycle event.';
     static examples = ['<%= config.bin %> telemetry record --db /data/usage.db --file event.json'];
     static flags = {
         db: Flags.string({

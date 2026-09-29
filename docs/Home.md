@@ -27,6 +27,7 @@ preparing distribution, and evolving focused agent skills.
 - [Positioning](Positioning.md): public communication and demonstrations.
 - [Skill MCP](Skill%20MCP.md): bundled skill search, Markdown retrieval and overview plus explicit observed-read evidence and rankings.
 - [Local skill telemetry](Skill%20Telemetry.md): typed session, attempt and read observations, period trends and bounded diagnostic logs.
+- [Lifecycle evidence](Lifecycle%20Evidence.md): explicit route, activation and outcome events, catalog history, cohort denominators and coverage-aware inactivity through CLI/MCP.
 - [Planning protocol](Planning%20Protocol.md): durable planning for material work.
 - [Pilot runbook](Pilot%20Runbook.md): a bounded, evidence-first procedure for the first external collection pilot.
 - [Pilot evaluation](Pilot%20Evaluation.md): current pilot evidence and limitations.

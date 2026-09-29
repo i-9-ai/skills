@@ -8,6 +8,7 @@ import { SkillMcpTransport } from '../transport/SkillMcpTransport.ts';
 import { SkillOperationError } from '../validator/SkillOperationError.ts';
 import { SkillReadValidator } from '../validator/SkillReadValidator.ts';
 import { SkillCatalogService } from './SkillCatalogService.ts';
+import { SkillEvidenceService } from './SkillEvidenceService.ts';
 
 export type SkillMcpOptions = {
     database?: string;
@@ -60,7 +61,8 @@ export class SkillMcpService {
         try {
             this.writer ??= new SkillReadRepository(this.database(true));
             return this.writer.record(event);
-        } catch {
+        } catch (error) {
+            if (error instanceof SkillOperationError) throw error;
             throw new SkillOperationError('storage_unavailable');
         }
     }
@@ -77,7 +79,8 @@ export class SkillMcpService {
         try {
             reader = new SkillReadRepository(this.database(false), { readOnly: true });
             return reader.rank(query);
-        } catch {
+        } catch (error) {
+            if (error instanceof SkillOperationError) throw error;
             throw new SkillOperationError('storage_unavailable');
         } finally {
             reader?.close();
@@ -87,6 +90,25 @@ export class SkillMcpService {
     close(): void {
         this.writer?.close();
         this.writer = undefined;
+    }
+
+    recordLifecycle(value: unknown) {
+        return new SkillEvidenceService().recordLifecycle(() => this.database(true), value);
+    }
+    observeCatalog(value: unknown) {
+        return new SkillEvidenceService().recordCatalog(() => this.database(true), value);
+    }
+    lifecycle(value: unknown) {
+        return new SkillEvidenceService().query(() => this.database(false), 'lifecycle', value);
+    }
+    overlap(value: unknown) {
+        return new SkillEvidenceService().query(() => this.database(false), 'overlap', value);
+    }
+    inactivity(value: unknown) {
+        return new SkillEvidenceService().query(() => this.database(false), 'inactivity', value);
+    }
+    catalogHistory(value: unknown) {
+        return new SkillEvidenceService().query(() => this.database(false), 'history', value);
     }
 
     private database(write: boolean): string {

@@ -16,6 +16,13 @@ import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { COMMANDS } from '../../src/index.ts';
+import {
+    catalog as evidenceCatalog,
+    follow,
+    lifecycle,
+    member,
+    period,
+} from '../unit/fixture/SkillEvidenceFixture.mjs';
 
 const repository = fileURLToPath(new URL('../../', import.meta.url));
 
@@ -206,6 +213,111 @@ test('the allowlisted artifact runs from node_modules on Node 24+ without TypeSc
     assert.equal(responses[3].result.structuredContent.error.code, 'storage_unavailable');
     for (const directory of [installed, root, home])
         assert.equal(existsSync(join(directory, 'skill-usage.db')), false);
+
+    const evidenceRoot = join(root, 'evidence');
+    mkdirSync(evidenceRoot);
+    const evidenceDatabase = join(evidenceRoot, 'usage.db');
+    const evidenceWrite = (operation, event) => {
+        const input = join(evidenceRoot, 'event.json');
+        writeFileSync(input, JSON.stringify(event));
+        return JSON.parse(
+            run(
+                process.execPath,
+                [launcher, 'telemetry', operation, '--db', evidenceDatabase, '--file', input],
+                root,
+            ),
+        );
+    };
+    const route = lifecycle('skill.routed', { occurred_at: '2026-09-18T00:00:00.000Z' });
+    const observation = evidenceCatalog([member(), member('unrouted')], {
+        occurred_at: period.from,
+    });
+    assert.equal(evidenceWrite('catalog-observe', observation).added, 2);
+    assert.equal(evidenceWrite('record', route).recorded, true);
+    assert.equal(evidenceWrite('record', route).recorded, false);
+    evidenceWrite('record', follow(route, 'skill.activated', '2026-09-19T00:00:00.000Z'));
+    evidenceWrite('record', follow(route, 'skill.completed', '2026-09-20T00:00:00.000Z'));
+
+    const queryPairs = [
+        ['lifecycle', 'skill_lifecycle_metrics'],
+        ['overlap', 'skill_routing_overlap'],
+        ['inactivity', 'skill_catalog_inactivity'],
+        ['catalog-history', 'skill_catalog_history'],
+    ];
+    const cliEvidence = queryPairs.map(([operation]) =>
+        JSON.parse(
+            run(
+                process.execPath,
+                [
+                    launcher,
+                    'telemetry',
+                    operation,
+                    '--db',
+                    evidenceDatabase,
+                    '--from',
+                    period.from,
+                    '--until',
+                    period.until,
+                ],
+                root,
+            ),
+        ),
+    );
+    assert.deepEqual(cliEvidence[0].rows[0].completion_rate, {
+        numerator: 1,
+        denominator: 1,
+        rate: 1,
+    });
+    assert.deepEqual(
+        cliEvidence[2].rows.map((row) => row.skill),
+        ['unrouted'],
+    );
+    const evidenceBefore = readFileSync(evidenceDatabase);
+    const evidenceMcp = spawnSync(
+        process.execPath,
+        [launcher, 'mcp', 'serve', '--db', evidenceDatabase],
+        {
+            cwd: root,
+            env: environment,
+            encoding: 'utf8',
+            timeout: 30000,
+            input:
+                [
+                    { jsonrpc: '2.0', id: 1, method: 'initialize' },
+                    { jsonrpc: '2.0', method: 'notifications/initialized' },
+                    { jsonrpc: '2.0', id: 2, method: 'tools/list' },
+                    ...queryPairs.map(([, name], index) => ({
+                        jsonrpc: '2.0',
+                        id: index + 3,
+                        method: 'tools/call',
+                        params: { name, arguments: period },
+                    })),
+                    {
+                        jsonrpc: '2.0',
+                        id: 7,
+                        method: 'tools/call',
+                        params: { name: 'skill_read_rankings' },
+                    },
+                ]
+                    .map((request) => JSON.stringify(request))
+                    .join('\n') + '\n',
+        },
+    );
+    assert.equal(evidenceMcp.status, 0, evidenceMcp.stderr);
+    const evidenceResponses = evidenceMcp.stdout.trim().split('\n').map(JSON.parse);
+    const toolNames = evidenceResponses[1].result.tools.map((tool) => tool.name);
+    for (const name of [
+        'skill_lifecycle_record',
+        'skill_catalog_observe',
+        ...queryPairs.map(([, name]) => name),
+    ])
+        assert.ok(toolNames.includes(name), name);
+    assert.deepEqual(
+        evidenceResponses.slice(2, 6).map((response) => response.result.structuredContent),
+        cliEvidence,
+    );
+    assert.deepEqual(evidenceResponses[6].result.structuredContent.rows, []);
+    assert.deepEqual(readFileSync(evidenceDatabase), evidenceBefore);
 
     const maintenanceRoot = join(root, 'maintenance-collection');
     const maintenanceSkills = join(maintenanceRoot, '.agents/skills');
