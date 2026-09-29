@@ -282,7 +282,7 @@ Only implemented hook handlers may be registered: SessionStart invokes the teste
 
 ## Cohesive object boundaries
 
-Repository-owned source is TypeScript, with cohesive classes named for their patterns and matching source files. Commands retain oclif ID filenames and class names ending in Command. Validator internals are private methods; services own dependency seams, repositories own filesystem/process/SQLite effects, and SkillReadMigration owns transactional schema history. The framework launch function remains a thin utility. ProjectConfiguration owns the cohesive project-path selection contract. No entity layer is created for data-only shapes.
+Repository-owned source is TypeScript, with cohesive classes named for their patterns and matching source files. Command filenames match their exported classes, ending in `Command`; `CommandConfiguration` owns the explicit route IDs. Validator internals are private methods; services own dependency seams, repositories own filesystem/process/SQLite effects, and SkillReadMigration owns transactional schema history. The framework launch function remains a thin utility. ProjectConfiguration owns the cohesive project-path selection contract. No entity layer is created for data-only shapes.
 
 The new command and hook AGENTS contracts persist naming, help/output and host lifecycle rules. Tests now separate unit layer contracts from CLI and collection integration. The superseded standalone executable files and aliases were removed because no external consumer was demonstrated. The existing portable package helpers are not a second CLI core and retain their independently distributable JavaScript runtime.
 
@@ -340,7 +340,7 @@ All listed old paths are absent and replacements exist. The deleted source wrapp
 
 ## Discovery and lifecycle naming
 
-The repository reads installed package directories, so its class/file is SkillDiscoveryRepository rather than a catalog or session repository. AvailableSkillsService and AvailableSkillsInput describe the reusable overview; renderAvailableSkills performs discovery and renderOverview formats the result. Only SessionIndexHookCommand retains the lifecycle name and lives under hook/session-index. Command ID filenames remain oclif conventions. Unit files now identify SkillDiscoveryRepository and AvailableSkillsService; CLI tests cover the reusable command and its lifecycle adapter together. No old naming aliases or executable entrypoints are retained.
+The repository reads installed package directories, so its class/file is SkillDiscoveryRepository rather than a catalog or session repository. AvailableSkillsService and AvailableSkillsInput describe the reusable overview; renderAvailableSkills performs discovery and renderOverview formats the result. `SessionIndexHookCommand` retains the lifecycle name, lives in `src/command/hook/SessionIndexHookCommand.ts`, and is explicitly registered as `hook:session-index`. Unit files now identify SkillDiscoveryRepository and AvailableSkillsService; CLI tests cover the reusable command and its lifecycle adapter together. No old naming aliases or executable entrypoints are retained.
 
 ## Catalog command group
 
