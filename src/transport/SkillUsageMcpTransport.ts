@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
+import { fstatSync } from 'node:fs';
+import { Socket } from 'node:net';
 import type { Readable, Writable } from 'node:stream';
 import type { SkillReadRepository } from '../repository/SkillReadRepository.ts';
+import { strictJson } from '../../.agents/skills/skill-authoring/scripts/lib/contracts.mjs';
 
 type Store = Pick<SkillReadRepository, 'record' | 'rank' | 'close'>;
 type Request = {
@@ -57,15 +60,32 @@ function isRequest(value: unknown): value is Request {
 /** Adapts bounded MCP requests to explicit read storage and ranking operations. */
 export class SkillUsageMcpTransport {
     /** Bounded newline-delimited JSON-RPC. The returned promise owns server lifetime. */
-    startServer(
+    async startServer(
         store: Store,
         input: Readable = process.stdin,
-        output: Writable = process.stdout,
+        output?: Writable,
     ): Promise<void> {
+        let stdoutPipe: Socket | undefined;
+        try {
+            if (output === undefined && process.platform !== 'win32') {
+                const descriptor = fstatSync(1);
+                if (descriptor.isFIFO() || descriptor.isSocket()) {
+                    // Node's process.stdout.destroy() leaves fd 1 and pending
+                    // writes open. Own the sole protocol writer for this lifetime.
+                    stdoutPipe = new Socket({ fd: 1, readable: false, writable: true });
+                }
+            }
+            await this.serve(store, input, output ?? stdoutPipe ?? process.stdout);
+        } finally {
+            stdoutPipe?.destroy();
+            store.close();
+        }
+    }
+
+    private async serve(store: Store, input: Readable, output: Writable): Promise<void> {
         let initialized = false;
         let ready = false;
-        let buffer = '';
-        const send = (value: unknown) => output.write(`${JSON.stringify(value)}\n`);
+        let buffer = Buffer.alloc(0);
 
         function callTool(params: Request['params']) {
             const name = params?.name;
@@ -118,23 +138,25 @@ export class SkillUsageMcpTransport {
             return undefined;
         }
 
-        function handle(line: string): void {
+        function handle(line: Buffer): unknown {
             let value: unknown;
 
             try {
-                value = JSON.parse(line);
+                value = strictJson(line);
             } catch {
-                send({ jsonrpc: '2.0', id: null, error: { code: -32700, message: 'Parse error' } });
-                return;
+                return {
+                    jsonrpc: '2.0',
+                    id: null,
+                    error: { code: -32700, message: 'Parse error' },
+                };
             }
 
             if (!isRequest(value)) {
-                send({
+                return {
                     jsonrpc: '2.0',
                     id: null,
                     error: { code: -32600, message: 'Invalid request' },
-                });
-                return;
+                };
             }
 
             if (!Object.hasOwn(value, 'id')) {
@@ -145,63 +167,116 @@ export class SkillUsageMcpTransport {
             try {
                 const result = dispatch(value);
                 if (result === undefined) {
-                    send({
+                    return {
                         jsonrpc: '2.0',
                         id: value.id,
                         error: { code: -32601, message: 'Method not found' },
-                    });
-                    return;
+                    };
                 }
-                send({ jsonrpc: '2.0', id: value.id, result });
+                return { jsonrpc: '2.0', id: value.id, result };
             } catch {
-                send({
+                return {
                     jsonrpc: '2.0',
                     id: value.id,
                     error: { code: -32602, message: 'Invalid protocol state or parameters' },
-                });
+                };
             }
         }
 
-        return new Promise((resolve, reject) => {
-            let closed = false;
+        const cancellation = new AbortController();
+        const inputFailed = (error: Error) => cancellation.abort(error);
+        const inputClosed = () => {
+            if (!input.readableEnded) cancellation.abort(new Error('MCP input closed'));
+        };
+        const outputFailed = (error: Error) => {
+            cancellation.abort(error);
+            input.destroy(error);
+        };
+        const outputClosed = () => outputFailed(new Error('MCP output closed'));
+        input.once('error', inputFailed);
+        input.once('close', inputClosed);
+        output.once('error', outputFailed);
+        output.once('close', outputClosed);
 
-            function close(error?: Error): void {
-                if (closed) return;
-                closed = true;
-                store.close();
+        try {
+            for await (const chunk of input) {
+                const bytes = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+                let offset = 0;
+
+                while (offset < bytes.length) {
+                    cancellation.signal.throwIfAborted();
+                    const newline = bytes.indexOf(10, offset);
+                    const end = newline === -1 ? bytes.length : newline;
+                    if (buffer.length + end - offset > 65536) return;
+
+                    buffer = Buffer.concat([buffer, bytes.subarray(offset, end)]);
+                    if (newline === -1) break;
+
+                    const response = handle(buffer);
+                    buffer = Buffer.alloc(0);
+                    offset = newline + 1;
+                    // One response at a time. A stalled peer cannot cause an
+                    // unbounded output queue or additional storage operations.
+                    if (response !== undefined) {
+                        await this.send(output, response, cancellation.signal);
+                    }
+                }
+            }
+        } finally {
+            input.off('error', inputFailed);
+            input.off('close', inputClosed);
+            output.off('error', outputFailed);
+            output.off('close', outputClosed);
+        }
+    }
+
+    private send(output: Writable, response: unknown, signal: AbortSignal): Promise<void> {
+        return new Promise((resolve, reject) => {
+            let settled = false;
+            const settle = (error?: Error | null) => {
+                if (settled) return;
+                settled = true;
+                signal.removeEventListener('abort', aborted);
                 if (error) {
                     reject(error);
                     return;
                 }
                 resolve();
+            };
+            const aborted = () => {
+                output.destroy();
+                settle(signal.reason);
+            };
+            const close = () => finish(new Error('MCP output closed'));
+            const finish = (error?: Error | null) => {
+                output.off('error', finish);
+                output.off('close', close);
+                settle(error);
+            };
+
+            if (output.destroyed) {
+                settle(new Error('MCP output closed'));
+                return;
             }
 
-            input.setEncoding('utf8');
-            input.on('data', (chunk: string) => {
-                buffer += chunk;
+            // Cancellation destroys a stalled writer. Keep its error handler
+            // through destruction so late write/close failures stay handled.
+            // Writable reports callback errors before emitting its error event.
+            output.once('error', finish);
+            output.once('close', close);
+            signal.addEventListener('abort', aborted, { once: true });
+            if (signal.aborted) {
+                aborted();
+                return;
+            }
 
-                while (buffer.includes('\n')) {
-                    const end = buffer.indexOf('\n');
-                    const line = buffer.slice(0, end);
-                    buffer = buffer.slice(end + 1);
-
-                    if (Buffer.byteLength(line) > 65536) {
-                        input.destroy();
-                        close();
-                        return;
-                    }
-                    handle(line);
-                }
-
-                if (Buffer.byteLength(buffer) > 65536) {
-                    input.destroy();
-                    close();
-                }
-            });
-
-            input.once('end', () => close());
-            input.once('close', () => close());
-            input.once('error', (error) => close(error));
+            try {
+                output.write(`${JSON.stringify(response)}\n`, (error) => {
+                    if (!error) finish();
+                });
+            } catch (error) {
+                finish(error as Error);
+            }
         });
     }
 }

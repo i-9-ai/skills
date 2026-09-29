@@ -11,6 +11,7 @@ import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { SafeRoot } from './lib/filesystem.mjs';
+import { publicSourceHostname } from './lib/public-host.mjs';
 import {
   LIMITS, STAGES, SHA256, REVISION, ValidationError, requireCondition,
   validSlug, nonblank, relativeParts, fields, strictJson, scalar,
@@ -122,7 +123,7 @@ export function validateSkill(input) {
     nonblank(metadata.license, 'license', 256);
     const license = root.readText('LICENSE').trim();
     requireCondition(license.length >= 500 && hasRecognizableLicenseText(metadata.license, license),
-      'LICENSE must contain the full text for the declared package license');
+      'LICENSE does not match the supported full-text profile for the declared package license; preserve custom notices and obtain explicit license/provenance review');
     validateSetupContract(root, metadata, text);
     let links = 0;
     for (const [relative, info] of inventory) if (info.isFile() && relative.endsWith('.md')) {
@@ -152,12 +153,13 @@ function hasRecognizableLicenseText(declared, license) {
   const value = license.toLowerCase().replace(/\s+/gu, ' ');
   const normalized = declared.trim().toLowerCase();
   if (normalized === 'apache-2.0') {
-    // The standard terms are invariant; whitespace and the optional application
-    // appendix/copyright notice may differ without truncating a license clause.
+    // Only case and whitespace vary in the standard terms and stock suffixes.
+    // Custom notices remain intact and require explicit license/provenance review.
     const end = 'end of terms and conditions';
     const index = value.indexOf(end);
     const terms = value.slice(0, index + end.length).trim();
-    return index !== -1 && digestBytes(terms) === '95cef6332b35354c12f9d666ab9ff47002e6f7ef937924896882b2e0cdb7a0d6';
+    return index !== -1 && digestBytes(terms) === '95cef6332b35354c12f9d666ab9ff47002e6f7ef937924896882b2e0cdb7a0d6'
+      && hasRecognizableApacheSuffix(license);
   }
   if (normalized === 'mit') return /mit license/u.test(value)
     && /permission is hereby granted, free of charge, to any person obtaining a copy/u.test(value)
@@ -171,6 +173,20 @@ function hasRecognizableLicenseText(declared, license) {
     && /(?:additional )?restrictions/u.test(value)
     && /does not convey or imply any license or right/u.test(value);
   return false;
+}
+
+function hasRecognizableApacheSuffix(license) {
+  const marker = /end\s+of\s+terms\s+and\s+conditions/iu.exec(license);
+  if (!marker) return false;
+  const suffix = license.slice(marker.index + marker[0].length).trim();
+  if (!suffix) return true;
+  // Compare the stock appendix/application template without erasing any text.
+  // Unsupported custom notices are preserved, not judged legally invalid.
+  const normalized = suffix.toLowerCase().replace(/\s+/gu, ' ').trim();
+  return new Set([
+    'fa8253f85b3b2b8280de9d0ee20bb8e1cac67d8b73ebbd902c273bb24529d8b2',
+    '5472baaf5010dcbf4055b636f9f165abe61ee07deb6ed43eec174bb5e44e747e',
+  ]).has(digestBytes(normalized));
 }
 
 function markdownHeadings(text) {
@@ -191,25 +207,6 @@ function markdownHeadings(text) {
   return headings;
 }
 
-function publicSourceHostname(hostname) {
-  const host = hostname.replace(/^\[|\]$/gu, '').toLowerCase();
-  if (host === 'localhost' || host.endsWith('.localhost') || host === 'local' || host.endsWith('.local')) return false;
-  const parts = host.split('.');
-  if (parts.length === 4 && parts.every(part => /^(?:0|[1-9][0-9]{0,2})$/u.test(part) && Number(part) <= 255)) {
-    const [first, second] = parts.map(Number);
-    return first !== 0 && first !== 10 && first !== 127 && first < 224
-      && !(first === 100 && second >= 64 && second <= 127)
-      && !(first === 169 && second === 254)
-      && !(first === 172 && second >= 16 && second <= 31)
-      && !(first === 192 && second === 168)
-      && !(first === 198 && (second === 18 || second === 19));
-  }
-  if (host.includes(':')) return host !== '::' && host !== '::1' && !host.startsWith('::ffff:')
-    && !/^f[cd][0-9a-f:]*$/u.test(host) && !/^fe[89ab][0-9a-f:]*$/u.test(host)
-    && !/^::ffff:(?:127|10|192\.168|169\.254|172\.(?:1[6-9]|2[0-9]|3[0-1]))\./u.test(host);
-  return parts.length >= 2 && parts.every(part => /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/u.test(part));
-}
-
 function sourceIdentity(source) {
   const uri = nonblank(source.uri, 'source uri', 2048);
   requireCondition(!/\s/u.test(uri), 'source URI must not contain unencoded whitespace');
@@ -219,6 +216,7 @@ function sourceIdentity(source) {
     && !parsed.username && !parsed.password && !parsed.search && !parsed.hash;
   const synthetic = parsed.protocol === 'urn:' && parsed.pathname.startsWith('example:') && !parsed.search && !parsed.hash;
   requireCondition(publicHttps || synthetic, 'source uri must be public HTTPS without credentials/query/fragment or a synthetic urn:example');
+  if (publicHttps) parsed.hostname = parsed.hostname.replace(/\.$/u, '');
   parsed.search = ''; parsed.hash = '';
   return parsed.href.replace(/%[0-9a-f]{2}/giu, encoded => {
     const character = String.fromCharCode(Number.parseInt(encoded.slice(1), 16));

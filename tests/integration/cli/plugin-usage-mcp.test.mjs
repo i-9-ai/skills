@@ -18,6 +18,10 @@ test('a clean plugin copy starts the observed-read MCP in host data', (t) => {
     fs.mkdirSync(plugin);
     fs.mkdirSync(data);
     fs.cpSync(join(repository, 'src'), join(plugin, 'src'), { recursive: true });
+    const authoringLibrary = '.agents/skills/skill-authoring/scripts/lib';
+    fs.cpSync(join(repository, authoringLibrary), join(plugin, authoringLibrary), {
+        recursive: true,
+    });
     fs.writeFileSync(join(plugin, 'package.json'), '{"type":"module"}\n');
 
     const entry = join(plugin, 'src/transport/PluginUsageMcpServer.ts');

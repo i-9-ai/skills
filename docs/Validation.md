@@ -41,17 +41,52 @@ is a maintenance tool, not a dependency for validation or installed skills.
 Material-based packages retain their exact pinned source path, SHA-256, reuse
 decision and notice in `assets/icon.source.json`.
 
+Duplicate-icon checks ignore SVG comments and compare PNG dimensions and decoded
+RGBA16 pixels. Palette, grayscale, RGB, alpha and bit-depth representations are
+normalized, including padding bits and fully transparent samples. Compression,
+row filters, background hints (`bKGD`), text and pixel density (`pHYs`) cannot
+make identical stored pixels distinct. This is not a renderer or a perceptual
+similarity assessment; distinct rasterizations of similar artwork still require
+visual review.
+
+Color-managed PNGs are outside this bounded comparison profile. Validation
+rejects `cHRM`, `gAMA`, `iCCP`, `sRGB`, `cICP`, `mDCV` and `cLLI` with an explicit
+normalization diagnostic. These chunks can affect color interpretation or tone
+mapping, as defined by the [PNG color-space and mastering rules](https://www.w3.org/TR/png-3/#4Concepts.ColourSpaces).
+Rerender the reviewed SVG, or use a color-aware renderer to convert the image
+to the collection's untagged sRGB pixel convention before exporting without
+these chunks. Do not merely strip a profile from unchanged samples. Review the
+result and refresh the paired render receipt. No ICC conversion or profile
+decompression runs during validation.
+
+Markdown character references and HTML URL whitespace are normalized before
+scheme and path checks. Numeric references follow the [HTML replacement rules](https://html.spec.whatwg.org/multipage/parsing.html#numeric-character-reference-end-state):
+for example, `&#128;` resolves to `€`, while zero, surrogate and out-of-range
+values resolve to `U+FFFD`. SVG remains subject to separate XML rules.
+Package paths reject Windows device names, including the
+[console names `CONIN$` and `CONOUT$`](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilea#consoles),
+forbidden punctuation and trailing dots/spaces even on Unix hosts. Apache recognition
+accepts the canonical terms plus only the recognized optional appendix or
+application notice; extra clauses require review instead of silently passing.
+This structural check does not establish legal rights.
+
 The visual guide uses a pinned variable font with its full OFL notice. Its
 [font source receipt](diagrams/font-sources.lock.json) identifies the exact
 upstream font and license bytes. The publication verifier requires every HTML
 guide under `docs/assets/` to appear in `visual-guides.lock.json`; only the
 navigation page `index.html` is exempt from guide receipts.
+Review dates must be real calendar dates in canonical `YYYY-MM-DD` form.
 
 Canonical repository packages live in `.agents/skills/`. Collection validation permits only these exact aliases: `CLAUDE.md` to `AGENTS.md`, `.claude/skills` to `../.agents/skills`, and `.github/skills` to `../.agents/skills`. It verifies their targets, does not traverse them during inventory, and counts the canonical packages once. This collection-only exception never permits symlinks inside a package or run.
 
 Root `.work/`, `tmp/`, `.beads/`, and `.codex/environments/` are local operational state and are never read or traversed by collection validation. Other `.codex/` files remain in the checked publication corpus. When Git metadata is available, a bounded read-only index check rejects tracked scratch without returning its names or contents. Git is required for that check; exported trees cannot establish what the publication index contains. Nested directories with those names remain part of the checked publication corpus. Root Git metadata is excluded. Cache-like names do not create additional exemptions; keep local environments and generated scratch under the designated root scratch directories.
 
 Lock verification is offline. It checks source identity, immutable revisions, safe file paths, known consumers, digest formatting, and the aggregate hash described in [source research](Upstream%20Research.md). It cannot verify that upstream bytes, licensing, ownership, or adoption claims match the recorded source. The lock is an audit input for future evolution, not an installed runtime dependency.
+
+The shared provenance-host policy rejects non-global literal IP ranges, including
+documentation and reserved ranges, using the IANA special-purpose registries
+recorded in the helper. It performs no DNS or network requests; accepting a
+hostname is not a reachability check or an SSRF protection boundary.
 
 ## Detached-package checks
 

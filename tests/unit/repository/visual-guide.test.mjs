@@ -43,6 +43,26 @@ test('visual guide verification rejects source-only and artifact-only drift befo
         JSON.stringify(receipt),
     );
     assert.deepEqual(new VisualGuideRepository().verify(root), { guides: 1 });
+    for (const reviewedOn of [
+        '2026-99-99',
+        '2026-02-31',
+        '2025-02-29',
+        '2026-04-31',
+        '2026-9-22',
+    ]) {
+        receipt.guides[0].reviewed_on = reviewedOn;
+        fs.writeFileSync(
+            path.join(root, 'docs/diagrams/visual-guides.lock.json'),
+            JSON.stringify(receipt),
+        );
+        assert.throws(() => new VisualGuideRepository().verify(root), /valid calendar date/);
+    }
+    receipt.guides[0].reviewed_on = '2024-02-29';
+    fs.writeFileSync(
+        path.join(root, 'docs/diagrams/visual-guides.lock.json'),
+        JSON.stringify(receipt),
+    );
+    assert.deepEqual(new VisualGuideRepository().verify(root), { guides: 1 });
     for (const file of [source, artifact]) {
         const original = fs.readFileSync(path.join(root, file));
         fs.appendFileSync(path.join(root, file), 'changed');

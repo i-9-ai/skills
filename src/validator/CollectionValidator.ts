@@ -3,6 +3,8 @@ import { CollectionValidationError } from './CollectionValidationError.ts';
 // SPDX-License-Identifier: Apache-2.0
 import { createHash } from 'node:crypto';
 import { inflateSync } from 'node:zlib';
+import { publicSourceHostname } from '../../.agents/skills/skill-authoring/scripts/lib/public-host.mjs';
+import { relativeParts } from '../../.agents/skills/skill-authoring/scripts/lib/contracts.mjs';
 
 export const IGNORED_ROOT_NAMES = Object.freeze(['.git', '.beads', '.work', 'tmp', 'node_modules']);
 export const IGNORED_RELATIVE_PATHS = Object.freeze(['.codex/environments']);
@@ -48,6 +50,17 @@ const PNG_CRC_TABLE = (() => {
 
 const LIMIT_PNG_CHUNK = 16 * 1024 * 1024;
 const LIMIT_PNG_DECODED = 16 * 1024 * 1024;
+// These PNG 3 chunks change color interpretation or tone mapping. Comparing
+// stored samples cannot establish equivalence across their color spaces.
+const UNSUPPORTED_PNG_COLOR_CHUNKS = new Set([
+    'cHRM',
+    'gAMA',
+    'iCCP',
+    'sRGB',
+    'cICP',
+    'mDCV',
+    'cLLI',
+]);
 
 /** Validates catalog identity, source evidence and publication-safe assets. */
 export class CollectionValidator {
@@ -155,7 +168,9 @@ export class CollectionValidator {
             !/<script\b|\bon[a-z]+\s*=|\b(?:href|src)\s*=|data:|@import\b/iu.test(text),
             `${relative} contains active or external SVG content`,
         );
-        const digest = createHash('sha256').update(text).digest('hex');
+        const digest = createHash('sha256')
+            .update(text.replace(/<!--[\s\S]*?-->/gu, ''))
+            .digest('hex');
         this.requireCondition(!digests.has(digest), `${relative} duplicates another skill icon`);
         digests.add(digest);
     }
@@ -172,6 +187,8 @@ export class CollectionValidator {
         let sawPalette = false;
         let sawTransparency = false;
         let paletteEntries = 0;
+        let palette: Buffer = Buffer.alloc(0);
+        let transparency: Buffer = Buffer.alloc(0);
         let sawIdat = false;
         let closedIdatSequence = false;
         let sawIend = false;
@@ -218,6 +235,11 @@ export class CollectionValidator {
                 continue;
             }
 
+            this.requireCondition(
+                !UNSUPPORTED_PNG_COLOR_CHUNKS.has(type),
+                `${relative} uses unsupported PNG color-management chunk ${type}; normalize with a color-aware renderer to untagged sRGB pixels and refresh the render receipt`,
+            );
+
             switch (type) {
                 case 'IHDR':
                     this.requireCondition(false, `${relative} must be a valid PNG`);
@@ -238,6 +260,7 @@ export class CollectionValidator {
                         `${relative} must be a valid PNG`,
                     );
                     sawPalette = true;
+                    palette = content;
                     break;
                 case 'tRNS':
                     this.requireCondition(
@@ -254,6 +277,7 @@ export class CollectionValidator {
                         `${relative} must be a valid PNG`,
                     );
                     sawTransparency = true;
+                    transparency = content;
                     break;
                 case 'IDAT':
                     this.requireCondition(
@@ -308,10 +332,80 @@ export class CollectionValidator {
                         );
                     }
             }
+            return this.pngPixelDigest(ihdr, rows, palette, transparency);
         } catch (error) {
             if (error instanceof CollectionValidationError) throw error;
             throw new CollectionValidationError(`${relative} must be a valid PNG`);
         }
+    }
+
+    /** Normalize supported PNG samples to RGBA16, one bounded row at a time. */
+    private pngPixelDigest(
+        header: PngHeader,
+        rows: Buffer[],
+        palette: Buffer,
+        transparency: Buffer,
+    ): string {
+        const { width, height, bitDepth, colorType } = header;
+        const channels = { 0: 1, 2: 3, 3: 1, 4: 2, 6: 4 }[colorType];
+        const maximum = 2 ** bitDepth - 1;
+        const scale = (sample: number) => sample * (65535 / maximum);
+        const transparent = Array.from({ length: transparency.length / 2 }, (_, index) =>
+            transparency.readUInt16BE(index * 2),
+        );
+        const digest = createHash('sha256').update(`${width}x${height}\0`);
+        const rgba = Buffer.alloc(width * 8);
+
+        for (const row of rows) {
+            for (let pixel = 0; pixel < width; pixel += 1) {
+                const samples = Array.from({ length: channels }, (_, channel) => {
+                    const bit = (pixel * channels + channel) * bitDepth;
+                    if (bitDepth === 16) return row.readUInt16BE(bit / 8);
+                    return (row[Math.floor(bit / 8)] >> (8 - bitDepth - (bit % 8))) & maximum;
+                });
+                const [first, second, third, fourth] = samples;
+                let values: number[];
+                switch (colorType) {
+                    case 0:
+                        values = [
+                            scale(first),
+                            scale(first),
+                            scale(first),
+                            first === transparent[0] ? 0 : 65535,
+                        ];
+                        break;
+                    case 2:
+                        values = [
+                            scale(first),
+                            scale(second),
+                            scale(third),
+                            samples.every((sample, index) => sample === transparent[index])
+                                ? 0
+                                : 65535,
+                        ];
+                        break;
+                    case 3:
+                        values = [
+                            palette[first * 3] * 257,
+                            palette[first * 3 + 1] * 257,
+                            palette[first * 3 + 2] * 257,
+                            (transparency[first] ?? 255) * 257,
+                        ];
+                        break;
+                    case 4:
+                        values = [scale(first), scale(first), scale(first), scale(second)];
+                        break;
+                    case 6:
+                        values = [scale(first), scale(second), scale(third), scale(fourth)];
+                        break;
+                }
+                if (values[3] === 0) values.fill(0);
+                for (let channel = 0; channel < 4; channel += 1)
+                    rgba.writeUInt16BE(values[channel], pixel * 8 + channel * 2);
+            }
+            digest.update(rgba);
+        }
+        return digest.digest('hex');
     }
 
     validateLock(value: unknown, names: ReadonlySet<string>) {
@@ -373,7 +467,7 @@ export class CollectionValidator {
             this.requireCondition(
                 repository?.protocol === 'https:' &&
                     repository.hostname &&
-                    this.publicRepositoryHostname(repository.hostname) &&
+                    publicSourceHostname(repository.hostname) &&
                     !repository.username &&
                     !repository.password &&
                     !repository.search &&
@@ -510,24 +604,11 @@ export class CollectionValidator {
     }
 
     private relativePath(value: unknown): asserts value is string {
-        this.requireCondition(
-            typeof value === 'string' && value.length > 0 && value.length <= 1024,
-            'path must be a nonempty relative POSIX path of at most 1024 characters',
-        );
-        this.requireCondition(
-            value.isWellFormed() && !/[\\\x00-\x1f\x7f]/.test(value),
-            'path contains a backslash, invalid Unicode, or control character',
-        );
-        this.requireCondition(
-            !value.startsWith('/') && !/^[A-Za-z]:/.test(value),
-            'absolute paths are not allowed',
-        );
-        const parts = value.split('/');
-        this.requireCondition(
-            parts.every((part) => !['', '.', '..'].includes(part)),
-            'path contains an empty, current-directory, or parent-directory component',
-        );
-        this.requireCondition(parts.length <= 24, 'path nesting exceeds the limit');
+        try {
+            relativeParts(value);
+        } catch (error) {
+            throw new CollectionValidationError((error as Error).message);
+        }
     }
 
     private validateSafeSvg(relative: string, text: string) {
@@ -565,10 +646,11 @@ export class CollectionValidator {
                         ),
                     `${relative} is not well-formed XML`,
                 );
+                const decodedContent = this.decodeXmlEntities(relative, content);
                 if (stack.at(-1)?.name === 'style')
                     this.validateSvgPaintReferences(relative, content);
                 if (stack.length === 2 && stack[0].name === 'svg' && stack[1].name === 'title')
-                    titleText += this.decodeXmlEntities(relative, content);
+                    titleText += decodedContent;
                 offset = end === -1 ? text.length : end;
                 continue;
             }
@@ -637,6 +719,10 @@ export class CollectionValidator {
                 for (const [attribute, value] of parsedAttributes) {
                     if (attribute === 'xmlns' || attribute.startsWith('xmlns:')) {
                         const prefix = attribute === 'xmlns' ? '' : attribute.slice(6);
+                        this.requireCondition(
+                            attribute === 'xmlns' || /^[A-Za-z_][A-Za-z0-9_.-]*$/u.test(prefix),
+                            `${relative} has an invalid XML namespace prefix`,
+                        );
                         const xml = 'http://www.w3.org/XML/1998/namespace';
                         const xmlns = 'http://www.w3.org/2000/xmlns/';
                         this.requireCondition(
@@ -895,55 +981,5 @@ export class CollectionValidator {
                 } as Record<number, number[]>
             )[colorType] ?? []
         ).includes(bitDepth);
-    }
-
-    private publicRepositoryHostname(hostname: string) {
-        const host = hostname
-            .replace(/^\[|\]$/gu, '')
-            .replace(/\.$/u, '')
-            .toLowerCase();
-        if (
-            host === 'localhost' ||
-            host.endsWith('.localhost') ||
-            host === 'local' ||
-            host.endsWith('.local')
-        )
-            return false;
-        const parts = host.split('.');
-        if (
-            parts.length === 4 &&
-            parts.every((part) => /^(?:0|[1-9][0-9]{0,2})$/u.test(part) && Number(part) <= 255)
-        ) {
-            const [first, second] = parts.map(Number);
-            return (
-                first !== 0 &&
-                first !== 10 &&
-                first !== 127 &&
-                first < 224 &&
-                !(first === 100 && second >= 64 && second <= 127) &&
-                !(first === 169 && second === 254) &&
-                !(first === 172 && second >= 16 && second <= 31) &&
-                !(first === 192 && second === 168) &&
-                !(first === 198 && (second === 18 || second === 19))
-            );
-        }
-        if (host.includes(':'))
-            return (
-                host !== '::' &&
-                host !== '::1' &&
-                !host.startsWith('::ffff:') &&
-                !/^f[cd][0-9a-f:]*$/u.test(host) &&
-                !/^fe[89ab][0-9a-f:]*$/u.test(host)
-            );
-        return (
-            parts.length >= 2 &&
-            host.length <= 253 &&
-            parts.every(
-                (label) =>
-                    label.length >= 1 &&
-                    label.length <= 63 &&
-                    /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/u.test(label),
-            )
-        );
     }
 }

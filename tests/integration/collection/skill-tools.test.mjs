@@ -8,7 +8,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 import { DEFAULT_ICON_PATH, DEFAULT_LARGE_ICON_PATH, DEFAULT_LICENSE_PATH, LIMITS, REVISION, SHA256, STAGES, SafeRoot, ValidationError, initSkill, parseFrontmatter, strictJson, validSlug, validateMetadata, validateRun, validateSkill } from '../../../.agents/skills/skill-authoring/scripts/skill_tools.mjs';
-import { htmlLinks, markdownLinks } from '../../../.agents/skills/skill-authoring/scripts/lib/contracts.mjs';
+import { htmlLinks, markdownLinks, relativeParts } from '../../../.agents/skills/skill-authoring/scripts/lib/contracts.mjs';
 
 const HELPER = fileURLToPath(new URL('../../../.agents/skills/skill-authoring/scripts/skill_tools.mjs', import.meta.url));
 const EFFORT_METADATA = `metadata:
@@ -250,6 +250,79 @@ test('HTML resource discovery preserves line locations and ignores attributes in
     assert.deepEqual(links.at(-1), [1, 'same.md']);
 });
 
+test('standard named references resolve genuine Unicode Markdown resources exactly once', t => {
+    const packagePath = makeSkill(fixture(t));
+    fs.mkdirSync(path.join(packagePath, 'references'));
+    const targets = [
+        ['A&nbsp;B.md', 'A\u00a0B.md'],
+        ['&copy;.txt', '\u00a9.txt'],
+        ['&NotEqualTilde;.txt', '\u2242\u0338.txt'],
+        ['&Afr;.txt', '\u{1d504}.txt'],
+        ['&CounterClockwiseContourIntegral;.txt', '\u2233.txt'],
+        ['&amp;copy;.txt', '&copy;.txt'],
+        ['&unknownReference;.txt', '&unknownReference;.txt'],
+    ];
+    for (const [encoded, decoded] of targets) {
+        fs.writeFileSync(path.join(packagePath, 'references', decoded), 'Synthetic local resource.\n');
+        fs.appendFileSync(path.join(packagePath, 'SKILL.md'), `\n[Resource](references/${encoded})\n`);
+    }
+    assert.equal(validateSkill(packagePath).local_links, targets.length);
+    assert.deepEqual(markdownLinks('[guide]: references/A&nbsp;B.md\n[Guide][guide]'), [[1, 'references/A\u00a0B.md']]);
+    assert.deepEqual(htmlLinks('<a href="references/&copy;.txt">Guide</a>'), [[1, 'references/\u00a9.txt']]);
+    fs.rmSync(path.join(packagePath, 'references', '&unknownReference;.txt'));
+    assert.throws(() => validateSkill(packagePath), /invalid local link/u, 'unknown references stay literal and still require a real target');
+});
+
+test('numeric references apply HTML C1 and invalid-scalar replacements in resource links', t => {
+    const packagePath = makeSkill(fixture(t));
+    const references = path.join(packagePath, 'references');
+    fs.mkdirSync(references);
+    const replacements = [
+        [128, '€'], [130, '‚'], [131, 'ƒ'], [132, '„'], [133, '…'], [134, '†'],
+        [135, '‡'], [136, 'ˆ'], [137, '‰'], [138, 'Š'], [139, '‹'], [140, 'Œ'],
+        [142, 'Ž'], [145, '‘'], [146, '’'], [147, '“'], [148, '”'], [149, '•'],
+        [150, '–'], [151, '—'], [152, '˜'], [153, '™'], [154, 'š'], [155, '›'],
+        [156, 'œ'], [158, 'ž'], [159, 'Ÿ'],
+    ];
+    const invalidScalars = [0, 0xd800, 0xdfff, 0x110000, 9999999];
+    const cases = [...replacements, ...invalidScalars.map(code => [code, '\ufffd'])];
+    for (const [code, character] of cases) {
+        fs.writeFileSync(path.join(references, `${character}.md`), 'Synthetic local resource.\n');
+        for (const encoded of [`&#${code};`, `&#x${code.toString(16)};`]) {
+            const target = `references/${encoded}.md`;
+            const decoded = `references/${character}.md`;
+            assert.deepEqual(markdownLinks(`[Resource](${target})`), [[1, decoded]], encoded);
+            assert.deepEqual(htmlLinks(`<a href="${target}">Resource</a>`), [[1, decoded]], encoded);
+            fs.appendFileSync(path.join(packagePath, 'SKILL.md'), `\n[Resource](${target})\n`);
+        }
+    }
+    assert.equal(validateSkill(packagePath).local_links, cases.length * 2);
+
+    // HTML keeps unlisted controls and noncharacters; XML has different rules.
+    for (const code of [0x81, 0x8d, 0x8f, 0x90, 0x9d, 0xffff, 0x10ffff]) {
+        assert.deepEqual(markdownLinks(`[Resource](&#x${code.toString(16)};.md)`), [[1, `${String.fromCodePoint(code)}.md`]]);
+    }
+    assert.deepEqual(markdownLinks('[Once](&amp;#128;.md)'), [[1, '&#128;.md']]);
+    assert.deepEqual(markdownLinks('[Resource]: references/&#128;.md\n[Resource]'), [[1, 'references/€.md']]);
+    fs.rmSync(path.join(references, '€.md'));
+    assert.throws(() => validateSkill(packagePath), /invalid local link/u);
+});
+
+test('named and numeric references cannot conceal prohibited schemes or root traversal', t => {
+    const packagePath = makeSkill(fixture(t));
+    const filename = path.join(packagePath, 'SKILL.md');
+    const original = fs.readFileSync(filename, 'utf8');
+    for (const target of [
+        'javascript&colon;alert(1)', 'java&Tab;script&colon;alert(1)',
+        'javascript&#58;alert(1)', 'javascript&#x3a;alert(1)',
+        '&period;&period;&sol;outside.txt', '&#46;&#46;&#47;outside.txt',
+        '&sol;absolute.txt', '..&bsol;outside.txt', 'javascript&unknownReference;&colon;alert(1)',
+    ]) {
+        fs.writeFileSync(filename, `${original}\n[Unsafe](${target})\n`);
+        assert.throws(() => validateSkill(packagePath), /scheme|escapes|absolute|backslash|nonportable/u, target);
+    }
+});
+
 test('license validation rejects a mismatched declaration and missing Apache terms', t => {
     const packagePath = makeSkill(fixture(t));
     const filename = path.join(packagePath, 'SKILL.md');
@@ -269,6 +342,95 @@ test('package symlinks and hard links are rejected before reading outside conten
     guardReadsOf(t, [outside]); fs.symlinkSync(outside, path.join(packagePath, 'linked.md'));
     assert.throws(() => validateSkill(packagePath)); fs.unlinkSync(path.join(packagePath, 'linked.md'));
     fs.linkSync(outside, path.join(packagePath, 'hard-link.md')); assert.throws(() => validateSkill(packagePath));
+});
+
+test('Apache terms allow the stock appendix and application template with normalized whitespace', t => {
+    const packagePath = makeSkill(fixture(t));
+    const filename = path.join(packagePath, 'LICENSE');
+    const license = fs.readFileSync(filename, 'utf8');
+    const end = license.indexOf('END OF TERMS AND CONDITIONS') + 'END OF TERMS AND CONDITIONS'.length;
+    const terms = license.slice(0, end);
+    const notice = license.slice(license.lastIndexOf('Copyright'));
+    for (const accepted of [terms, license, `${terms}\n${notice}`]) {
+        for (const whitespace of [accepted, accepted.replace(/\s+/gu, ' ')]) {
+            fs.writeFileSync(filename, whitespace);
+            assert.equal(validateSkill(packagePath).name, 'example-skill');
+        }
+    }
+    for (const base of [terms, license, `${terms}\n${notice}`]) {
+        fs.writeFileSync(filename, `${base}\nRedistribution is prohibited.\n`);
+        assert.throws(() => validateSkill(packagePath), /declared package license/);
+    }
+});
+
+test('Apache marker whitespace remains valid while altered terms and extra clauses fail cleanly', t => {
+    const packagePath = makeSkill(fixture(t));
+    const filename = path.join(packagePath, 'LICENSE');
+    const license = fs.readFileSync(filename, 'utf8');
+    for (const marker of ['END OF TERMS AND\nCONDITIONS', 'END  OF\tTERMS AND CONDITIONS', 'end\r\nof terms\r\nand conditions']) {
+        const wrapped = license.replace('END OF TERMS AND CONDITIONS', marker);
+        fs.writeFileSync(filename, wrapped);
+        assert.equal(validateSkill(packagePath).name, 'example-skill');
+        fs.writeFileSync(filename, `${wrapped}\nRedistribution is prohibited.\n`);
+        assert.throws(() => validateSkill(packagePath), { name: 'ValidationError', message: /declared package license/ });
+    }
+    fs.writeFileSync(filename, license.replace('END OF TERMS AND CONDITIONS', 'END OF ALTERED TERMS'));
+    assert.throws(() => validateSkill(packagePath), { name: 'ValidationError', message: /declared package license/ });
+});
+
+test('Apache custom copyright notices remain unsupported and untouched', t => {
+    const packagePath = makeSkill(fixture(t));
+    const filename = path.join(packagePath, 'LICENSE');
+    const license = fs.readFileSync(filename, 'utf8');
+    const end = license.indexOf('END OF TERMS AND CONDITIONS') + 'END OF TERMS AND CONDITIONS'.length;
+    const notice = license.slice(license.lastIndexOf('Copyright'));
+    for (const base of [license, `${license.slice(0, end)}\n${notice}`]) {
+        for (const identity of ['2026 Example Contributors', '(c) 2020-2026 Example & Partners', '© 2026 Émilie O’Connor', '2026 Example, Inc.']) {
+            const customized = base.replace('[yyyy] [name of copyright owner]', identity);
+            fs.writeFileSync(filename, customized);
+            assert.throws(() => validateSkill(packagePath), /declared package license/u, identity);
+            assert.equal(fs.readFileSync(filename, 'utf8'), customized, 'validation must preserve the attribution for explicit review');
+        }
+    }
+});
+
+test('Apache copyright lines cannot absorb restrictions or joined prose', t => {
+    const packagePath = makeSkill(fixture(t));
+    const filename = path.join(packagePath, 'LICENSE');
+    const license = fs.readFileSync(filename, 'utf8');
+    const end = license.indexOf('END OF TERMS AND CONDITIONS') + 'END OF TERMS AND CONDITIONS'.length;
+    const notice = license.slice(license.lastIndexOf('Copyright'));
+    for (const base of [license, `${license.slice(0, end)}\n${notice}`]) {
+        for (const identity of [
+            '2026 Example Contributors and redistribution is prohibited.',
+            '2026 Example Contributors for noncommercial use only',
+            '2026 Example; Redistribution is prohibited.',
+            '2026 Example. Redistribution is prohibited.',
+            '2026 Example, redistribution is prohibited.',
+            '2026 Example: noncommercial use only',
+            '2026 Example (all rights reserved)',
+            '2026 Example - Redistribution is prohibited',
+            'Additional terms prohibit redistribution.',
+        ]) {
+            const customized = base.replace('[yyyy] [name of copyright owner]', identity);
+            fs.writeFileSync(filename, customized);
+            assert.throws(() => validateSkill(packagePath), /declared package license/u, identity);
+            assert.equal(fs.readFileSync(filename, 'utf8'), customized);
+        }
+    }
+});
+
+test('portable package paths reject reserved filenames and Windows alternate streams', t => {
+    for (const component of ['con.txt', 'CONIN$', 'conout$', 'ConIn$.md', 'cOnOuT$.txt', 'PRN', 'aux.json', 'NUL.md', 'COM1.log', 'lpt9', 'COM¹.txt', 'name.', 'name ', 'a:b', 'a<b', 'a>b', 'a"b', 'a|b', 'a?b', 'a*b']) {
+        assert.throws(() => relativeParts(`references/${component}`), /nonportable/, component);
+    }
+    for (const component of ['coninput$', 'CONOUT$-notes.md', 'my-CONIN$.md']) {
+        assert.deepEqual(relativeParts(`references/${component}`), ['references', component]);
+    }
+    assert.deepEqual(relativeParts('references/Console Guide.md'), ['references', 'Console Guide.md']);
+    const packagePath = makeSkill(fixture(t));
+    fs.writeFileSync(path.join(packagePath, 'con.txt'), 'Invalid portable resource');
+    assert.throws(() => validateSkill(packagePath), /nonportable/);
 });
 
 test('a symlink used as the selected package root is rejected', t => {
@@ -490,6 +652,22 @@ test('source identities normalize unreserved encodings and reject single-label o
 test('equivalent HTTPS hosts and trailing separators cannot fabricate separate sources', t => {
     const { manifest, data } = makeRun(fixture(t));
     data.sources[0].uri = 'https://example.org/skill'; data.sources[1].uri = 'https://EXAMPLE.org:443/skill/'; rejectRun(manifest, data);
+});
+
+test('a terminal DNS dot cannot create another source identity or synthesis contributor', t => {
+    const { manifest, data } = makeRun(fixture(t));
+    data.sources[0].uri = 'https://example.org/skill';
+    data.sources[1].uri = 'https://EXAMPLE.org.:443/skill';
+    for (const source of data.sources) source.revision = 'a'.repeat(40);
+    writeJson(manifest, data);
+    assert.throws(() => validateRun(manifest), /duplicate source URI and revision/u);
+    data.sources[1].revision = 'b'.repeat(40);
+    writeJson(manifest, data);
+    assert.throws(() => validateRun(manifest), /synthesis/u, 'different revisions of one canonical host still count as one contributor');
+    data.stages.find(stage => stage.name === 'synthesis').status = 'skipped';
+    data.stages.find(stage => stage.name === 'synthesis').summary = 'Only one distinct contributing package is available.';
+    writeJson(manifest, data);
+    assert.equal(validateRun(manifest).sources, 2);
 });
 
 test('reusable public sources require immutable revisions and adapted sources need declared licenses', t => {

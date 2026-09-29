@@ -1,5 +1,6 @@
 /** Pure structural contracts. No filesystem, process execution, or network access. */
 import path from 'node:path';
+import htmlNamedReferences from './html-entities.json' with { type: 'json' };
 
 export const LIMITS = Object.freeze({
   textBytes: 262_144, jsonBytes: 1_048_576, artifactBytes: 4_194_304,
@@ -9,6 +10,18 @@ export const STAGES = Object.freeze(['intake', 'discovery', 'domain-research', '
 export const SLUG = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*(?![\s\S])/u;
 export const SHA256 = /^[0-9a-f]{64}(?![\s\S])/u;
 export const REVISION = /^(?:[0-9a-f]{40}|[0-9a-f]{64})(?![\s\S])/u;
+
+// WHATWG numeric-reference replacements; unlisted C1 controls keep their value.
+// https://html.spec.whatwg.org/multipage/parsing.html#numeric-character-reference-end-state
+const HTML_C1_REPLACEMENTS = Object.freeze({
+  0x80: 0x20ac, 0x82: 0x201a, 0x83: 0x0192, 0x84: 0x201e,
+  0x85: 0x2026, 0x86: 0x2020, 0x87: 0x2021, 0x88: 0x02c6,
+  0x89: 0x2030, 0x8a: 0x0160, 0x8b: 0x2039, 0x8c: 0x0152,
+  0x8e: 0x017d, 0x91: 0x2018, 0x92: 0x2019, 0x93: 0x201c,
+  0x94: 0x201d, 0x95: 0x2022, 0x96: 0x2013, 0x97: 0x2014,
+  0x98: 0x02dc, 0x99: 0x2122, 0x9a: 0x0161, 0x9b: 0x203a,
+  0x9c: 0x0153, 0x9e: 0x017e, 0x9f: 0x0178,
+});
 
 export class ValidationError extends Error {
   constructor(message) { super(message); this.name = 'ValidationError'; }
@@ -37,6 +50,9 @@ export function relativeParts(value) {
   const parts = value.split('/');
   requireCondition(parts.every(part => !['', '.', '..'].includes(part)),
     'path contains an empty, current-directory, or parent-directory component');
+  requireCondition(parts.every(part => !/[<>:"|?*]/u.test(part) && !/[. ]$/u.test(part)
+    && !/^(?:con|conin\$|conout\$|prn|aux|nul|com[1-9¹²³]|lpt[1-9¹²³])(?:\.|$)/iu.test(part)),
+    'path contains a nonportable filename component');
   requireCondition(parts.length <= LIMITS.depth, 'path nesting exceeds the limit');
   return parts;
 }
@@ -285,7 +301,7 @@ function visibleMarkdown(text) {
 export function markdownLinks(text) {
   const visible = visibleMarkdown(text);
   const lineAt = lineNumberLookup(visible);
-  const links = markdownLinkRanges(text).map(({ start, target }) => [lineAt(start), target]);
+  const links = markdownLinkRanges(text).map(({ start, target }) => [lineAt(start), urlReference(htmlAttributeValue(target))]);
   return links.concat(htmlLinks(visible)).sort(([left], [right]) => left - right);
 }
 
@@ -414,14 +430,19 @@ function lineNumberLookup(text) {
 function htmlAttributeValue(value) {
   return value.replace(/&(?:#(x[0-9a-f]+|[0-9]+)|([a-z][a-z0-9]*));/giu, (entity, numeric, named) => {
     if (named) {
-      const references = { amp: '&', AMP: '&', quot: '"', QUOT: '"', apos: "'", lt: '<', LT: '<', gt: '>', GT: '>', colon: ':', sol: '/', bsol: '\\', Tab: '\t', NewLine: '\n' };
-      requireCondition(Object.hasOwn(references, named), 'unsupported named HTML character reference in resource attribute');
-      return references[named];
+      // Unknown names are literal text; recognized references are decoded once.
+      // The complete static table and its BSD notice travel with this package.
+      return Object.hasOwn(htmlNamedReferences, named) ? htmlNamedReferences[named] : entity;
     }
     const code = numeric[0].toLowerCase() === 'x' ? Number.parseInt(numeric.slice(1), 16) : Number(numeric);
-    requireCondition(code > 0 && code <= 0x10ffff && !(code >= 0xd800 && code <= 0xdfff), 'invalid HTML character reference');
-    return String.fromCodePoint(code);
+    if (code === 0 || code > 0x10ffff || (code >= 0xd800 && code <= 0xdfff)) return '\ufffd';
+    return String.fromCodePoint(HTML_C1_REPLACEMENTS[code] ?? code);
   });
+}
+
+/** URL parsers trim surrounding ASCII whitespace and ignore embedded tab/CR/LF. */
+function urlReference(value) {
+  return value.replace(/^[\u0000-\u0020]+|[\u0000-\u0020]+$/gu, '').replace(/[\t\r\n]/gu, '');
 }
 
 function srcsetTargets(value) {
@@ -453,17 +474,15 @@ export function htmlLinks(text) {
       if (raw === undefined) continue;
       const value = htmlAttributeValue(raw);
       if (tag.name === 'base' && name === 'href') {
-        if (base === undefined) base = value;
+        if (base === undefined) base = urlReference(value);
         continue;
       }
       const targets = name.endsWith('srcset') ? srcsetTargets(value) : [value];
       const line = lineAt(tag.index + tag.name.length + 1 + attribute.index);
-      for (const target of targets) links.push([line, target]);
+      for (const target of targets) links.push([line, urlReference(target)]);
     }
   }
   if (base !== undefined) {
-    const urlReference = value => value.replace(/^[\u0000-\u0020]+|[\u0000-\u0020]+$/gu, '').replace(/[\t\r\n]/gu, '');
-    base = urlReference(base);
     const basePath = base.split(/[?#]/u, 1)[0];
     const hasScheme = value => /^[A-Za-z][A-Za-z0-9+.-]*:/u.test(value);
     if (hasScheme(base)) {
@@ -475,8 +494,7 @@ export function htmlLinks(text) {
     // Enough artificial parents prevent URL's origin-root clamping from hiding
     // traversal. Size each local resolution independently of unrelated URLs.
     const baseDepth = basePath.split('/').length;
-    return links.map(([line, rawTarget]) => {
-      const target = urlReference(rawTarget);
+    return links.map(([line, target]) => {
       if (hasScheme(target) || target.startsWith('/')) return [line, target];
       requireCondition(!target.includes('\\'), 'HTML resource paths must not contain backslashes');
       if (!basePath && (!target || /^[?#]/u.test(target))) return [line, target];
