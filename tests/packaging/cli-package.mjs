@@ -9,6 +9,7 @@ import {
     readFileSync,
     realpathSync,
     rmSync,
+    symlinkSync,
     writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -27,7 +28,7 @@ import {
 
 const repository = fileURLToPath(new URL('../../', import.meta.url));
 
-test('the allowlisted artifact runs from node_modules on Node 24+ without TypeScript or development dependencies', (t) => {
+test('clean source prepares an allowlisted artifact that runs from node_modules without development dependencies', (t) => {
     const root = realpathSync(mkdtempSync(join(tmpdir(), 'i9-packed-cli-')));
     t.after(() => rmSync(root, { recursive: true, force: true }));
     const config = join(root, 'user.npmrc');
@@ -63,9 +64,33 @@ test('the allowlisted artifact runs from node_modules on Node 24+ without TypeSc
         assert.equal(result.status, 0, result.stderr);
         return result.stdout;
     };
+    // A Git consumer starts with tracked source, never the checkout's ignored dist.
+    // Reuse existing build dependencies without installing or fetching anything.
+    const cleanSource = join(root, 'source');
+    mkdirSync(cleanSource);
+    for (const path of [
+        'package.json',
+        'package-lock.json',
+        'tsconfig.json',
+        'tsconfig.build.json',
+        'src',
+        'bin',
+        '.agents/skills',
+        'skills-catalog.json',
+        'docs',
+        'README.md',
+        'LICENSE',
+    ]) {
+        const target = join(cleanSource, path);
+        mkdirSync(dirname(target), { recursive: true });
+        cpSync(join(repository, path), target, { recursive: true });
+    }
+    symlinkSync(join(repository, 'node_modules'), join(cleanSource, 'node_modules'), 'dir');
+    assert.equal(existsSync(join(cleanSource, 'dist')), false);
     const packResult = JSON.parse(
-        run('npm', ['pack', '--ignore-scripts', '--json', '--pack-destination', root]),
+        run('npm', ['pack', '--json', '--pack-destination', root], cleanSource),
     );
+    assert.equal(existsSync(join(cleanSource, 'dist/index.js')), true);
     const packed = Array.isArray(packResult) ? packResult[0] : packResult['@i-9-ai/skills'];
     assert.equal(packed?.name, '@i-9-ai/skills');
     const names = packed.files.map((file) => file.path);

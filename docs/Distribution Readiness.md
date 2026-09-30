@@ -1,18 +1,94 @@
-# Local package distribution preparation
+# CLI distribution from Git source
 
 The prepared npm identity is `@i-9-ai/skills`, with the executable `i9-skills`.
 The manifest currently sets `private:true`. No release, registry upload, marketplace
 registration or global installation is authorized by a build or package test.
-The currently usable executable is the single bin/index.mjs launcher.
+This npm flag prevents registry publication and is independent of GitHub
+repository visibility.
+The executable is the single `bin/index.mjs` launcher, exposed as `i9-skills`.
+Public Git-source consumption does not require registry publication.
 
 Checkout execution uses Node 24 native erasable TypeScript. Node does not strip
-TypeScript under node_modules, so an explicit build emits the same source as
+TypeScript under node_modules, so package preparation emits the same source as
 JavaScript under dist. The packed allowlist excludes src and includes dist,
 the launcher, distributed skill resources and public documentation. The launcher
 chooses source in a checkout and built code in a packed installation; it never
 compiles, downloads or installs during command startup.
 
-Run npm ci, then npm run package:check (which includes the build). The build first performs
+## Run from an immutable public revision
+
+Use Node.js 24+, npm and Git. Replace `<reviewed-full-commit-sha>` with the full
+SHA of a reviewed public revision containing `scripts.prepare` in `package.json`.
+Review the source and its dependency lockfile before the explicit download:
+
+```sh
+npx --yes --allow-git=root --package='git+https://github.com/i-9-ai/skills.git#<reviewed-full-commit-sha>' i9-skills --help
+npx --yes --allow-git=root --package='git+https://github.com/i-9-ai/skills.git#<reviewed-full-commit-sha>' i9-skills catalog search --query authoring --limit 10
+```
+
+npm downloads the selected Git revision into its cache, installs its build
+dependencies and runs `prepare: npm run build` before packing the CLI. This
+installation lifecycle compiles the ignored `dist` directory; the source Git
+tree does not contain prebuilt output. The installed artifact contains compiled
+JavaScript and production dependencies. The first call therefore needs network
+access to the public Git source and npm dependencies; `--yes` accepts npm's
+installation prompt. A later cached invocation can use `npx --offline` with the
+same exact package spec when the required cache entries are present. Cache
+availability is local state, not an installation guarantee.
+
+The examples set `--allow-git=root` for this invocation only, permitting the
+selected top-level Git source while preventing transitive Git dependencies.
+npm 12 defaults to blocking Git sources; npm 11.19.1 accepts the same explicit
+setting. See npm's [Git-fetch configuration](https://docs.npmjs.com/cli/install/#allow-git).
+The isolated Git-source checks used npm 11.19.1 and npm 12.0.2. The Node 24 check
+used Node 24.21.0 and verified help, catalog search/read, project discovery and
+MCP resource retrieval from a production-only install; this is local Git-source
+evidence, separate from fetching the public GitHub URL after merge.
+
+The Git-source call keeps `private: true`. The registry spellings
+`npx @i-9-ai/skills` and
+`npx --package='@i-9-ai/skills@<reviewed-version>' i9-skills --help` require a
+separate npm publication; making GitHub public does not create that release.
+Skill package installation still uses the separate pinned Skills CLI shown in
+the [README](../README.md#install).
+
+## Consumer command mapping
+
+After the reviewed package spec above, append the same `i9-skills` command:
+
+| Purpose | Command and explicit caller selection |
+| --- | --- |
+| Inspect bundled packages | `i9-skills catalog overview` or `i9-skills catalog read --skill skill-authoring` |
+| Discover the caller's installed packages | `i9-skills context available-skills --project . --no-global` |
+| Audit a selected collection | `i9-skills collection audit --collection ./example-skills --layout repository` |
+| Inspect synthetic onboarding steps | `i9-skills skills onboarding` |
+| Start the bundled catalog MCP | `i9-skills mcp serve` |
+
+For example, project-only discovery from the caller's current directory is:
+
+```sh
+npx --yes --allow-git=root --package='git+https://github.com/i-9-ai/skills.git#<reviewed-full-commit-sha>' i9-skills context available-skills --project . --no-global
+```
+
+Bundled catalog and MCP operations locate the installed package. Commands
+working on the caller's project or collection need the explicit root shown
+above. Keep `node bin/index.mjs repo validate --project .`, version preparation
+and other contributor commands in their trusted source checkout with explicit
+`npm ci`; Git-source execution does not supply that repository's development
+state. See the [CLI guide](../bin/index.md) for each command's effects and limits.
+
+Automatic session hooks use an already available local executable or the
+dependency-free installed plugin runtime. They do not run a download-capable
+`npx` command. Current generated project registrations target a prepared POSIX
+Git checkout; npm-installed hook registration needs a separately verified
+adapter. The [hook guide](Host%20Hooks.md) records that boundary.
+
+## Local package verification
+
+Run `npm ci`, then `npm run package:check`. Explicit `npm ci`, `npm install` and
+ordinary `npm pack` now run the npm preparation lifecycle. Use
+`npm ci --ignore-scripts` only when deliberately deferring preparation; then run
+`npm run build` explicitly before packing with scripts disabled. The build first performs
 strict type checking with JavaScript helper inference; its emission pass treats
 existing package-owned MJS helpers as external code to avoid emitting duplicate
 packages. The emission-only noCheck setting runs only after the separate strict
@@ -20,9 +96,11 @@ source check has passed; it does not replace that check. After that check the
 build replaces only the disposable, ignored dist directory. Dependencies and
 commands remain pinned in package.json/lockfile.
 
-The package test packs without lifecycle scripts, checks its allowlist, extracts
-into a disposable node_modules location and copies only already installed
-production dependencies. It runs help, context, hook configuration, catalog
+The package test starts from a disposable source copy with no `dist`, reuses
+already installed build dependencies and packs with preparation enabled. It
+checks the compiled allowlist, extracts into a disposable node_modules location
+and copies only already installed production dependencies. It runs help,
+context, hook configuration, catalog
 checks, bundled catalog search/read/overview, actual MCP stdio and explicit plugin
 artifact preparation with the executing Node version. Catalog/MCP tests use an
 unrelated cwd and do not require host data or open a metrics store. No registry, consumer home, installed
@@ -32,13 +110,6 @@ The generated local Codex environment file is excluded from this delivery
 because its npm install setup was not the lockfile-driven contract. Explicit
 setup is npm ci in a trusted checkout, followed by npm run check. No startup
 hook invokes setup and no unreviewed environment file is part of the package.
-
-The local packed test uses the actual scoped node_modules layout. A future
-authorized published version can be invoked with an explicitly pinned package:
-`npx --package='@i-9-ai/skills@<reviewed-version>' i9-skills --help`.
-This is a release recipe, not an available registry release. It may download
-software and therefore never belongs in an automatic session hook. Installed
-hooks use an already available executable or the checkout launcher.
 
 For the existing local tarball check, run `npm ci` and then
 `npm run package:check`; it creates and removes its own disposable packed install

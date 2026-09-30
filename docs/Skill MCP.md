@@ -49,6 +49,18 @@ consumer cwd from its plugin-root process. Its native session RPC loading and
 tool calls are recorded in the [Copilot MCP pilot](Copilot%20MCP%20Pilot.md).
 Both legacy adapters retain the explicit CLI configuration as a fallback.
 
+For an explicit public Git-source launch on Node 24 and npm 12, use the
+[distribution guide](Distribution%20Readiness.md#run-from-an-immutable-public-revision)
+to select and review the full source SHA, then run:
+
+```sh
+npx --yes --allow-git=root --package='git+https://github.com/i-9-ai/skills.git#<reviewed-full-commit-sha>' i9-skills mcp serve
+```
+
+The initial call downloads the source/build dependencies and runs preparation;
+stdout remains reserved for MCP protocol messages. This is an explicit client
+launch, not an automatic session setup hook.
+
 The npm package is not published yet. After an authorized publication, replace
 `<released-version>` with the verified version in the client configuration:
 

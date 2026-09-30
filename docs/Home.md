@@ -18,7 +18,7 @@ preparing distribution, and evolving focused agent skills.
 - [Visual guides](assets/index.html): a GitHub Pages-ready landing page for interactive maps.
 
 ## Deeper references
-- [Distribution preparation](Distribution%20Readiness.md): explicit JavaScript build, packed CLI verification and remaining publication gates.
+- [CLI distribution](Distribution%20Readiness.md): immutable Git-source `npx` calls, preparation, packed CLI verification and remaining registry publication gates.
 - [Plugin preparation](Plugin%20Preparation.md): inspect the repository-root host manifests and marketplace entry, and learn the post-merge installation path.
 - [Native plugin pilot](Native%20Plugin%20Pilot.md): measured Codex/Claude installation, session hooks, Claude MCP, local update/rollback and cleanup, with reproducible isolation boundaries.
 - [Codex MCP pilot](Codex%20MCP%20Pilot.md): native tool discovery, catalog access and explicit external evidence storage without a model turn.

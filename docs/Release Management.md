@@ -33,7 +33,8 @@ It runs `npm run release:prepare`, which consumes the pending entries and update
 - versions in `.codex-plugin/plugin.json`, `.claude-plugin/plugin.json` and
   `.github/plugin/plugin.json`.
 
-Other manifest fields remain unchanged. The package stays private. This workflow
+Other manifest fields remain unchanged. The npm manifest still blocks registry
+publication. This workflow
 has only `contents: write` and `pull-requests: write` permissions and contains no
 publication action. It does not create tags, GitHub releases, marketplace
 submissions or installations. Those remain separately authorized operations.

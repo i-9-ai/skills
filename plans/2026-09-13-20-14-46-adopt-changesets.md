@@ -7,7 +7,7 @@ Adopt the Changesets CLI as the repository's reviewable format for user-visible 
 ## Scope
 
 1. Add the exact `@changesets/cli` development dependency and its lockfile.
-2. Create `.changeset/config.json` for this private single-package repository, enabling version calculation for the private package while disabling package tagging.
+2. Create `.changeset/config.json` for this single-package repository, enabling version calculation for the unpublished npm package while disabling package tagging.
 3. Add a changeset for the initial public-ready collection so the release candidate can be promoted through an authorized future version-preparation task.
 4. Add documented commands for creating an entry, inspecting pending status, and preparing a version.
 5. Add a read-only GitHub Actions workflow that installs locked dependencies and validates the pending Changesets state on pull requests and `main`.
