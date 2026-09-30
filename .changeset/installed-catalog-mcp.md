@@ -1,5 +1,5 @@
 ---
-"@i-9-ai/skills": minor
+"@i-9.ai/skills": minor
 ---
 
 Add read-only bundled catalog access through `catalog search`, `catalog read`, `catalog overview` and the shared MCP tools `skill_catalog_search`, `skill_resource_read`, and `skill_catalog_overview`. Resolve the installed package independently of cwd/global skills, validate catalog identity and freshness, return content digests without inventing Git provenance, and limit retrieval to bounded `SKILL.md` and Markdown references. Returned instructions remain untrusted content and never execute automatically.

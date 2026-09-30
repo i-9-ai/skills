@@ -1,5 +1,5 @@
 ---
-"@i-9-ai/skills": patch
+"@i-9.ai/skills": patch
 ---
 
 Document a pinned MCP Inspector 2.8.0 CLI route for the Node 24 checkout:

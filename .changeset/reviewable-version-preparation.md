@@ -1,5 +1,5 @@
 ---
-"@i-9-ai/skills": minor
+"@i-9.ai/skills": minor
 ---
 
 Add `repo prepare-version` and `repo verify-release` for reviewable version

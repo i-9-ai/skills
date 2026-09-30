@@ -67,7 +67,7 @@ test('installed provenance distinguishes content digests from unverified version
     const result = service(target).search({});
     assert.deepEqual(result.provenance, {
         collection: 'i9-skills',
-        package_name: '@i-9-ai/skills',
+        package_name: '@i-9.ai/skills',
         package_version: '9.8.7',
         repository: 'https://github.com/i-9-ai/skills',
         source_ref: null,

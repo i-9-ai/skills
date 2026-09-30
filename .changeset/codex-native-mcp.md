@@ -1,5 +1,5 @@
 ---
-"@i-9-ai/skills": minor
+"@i-9.ai/skills": minor
 ---
 
 Register the shared local skill MCP directly in the repository-root Codex plugin.

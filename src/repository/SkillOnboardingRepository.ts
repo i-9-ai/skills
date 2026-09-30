@@ -18,7 +18,7 @@ export class SkillOnboardingRepository {
             root = new SafeRoot(this.configuration.root());
             const validator = new ReleaseVersionValidator();
             const manifest = validator.document(strictJson(root.readBytes('package.json', 65536)));
-            if (manifest.name !== '@i-9-ai/skills') throw new Error();
+            if (manifest.name !== '@i-9.ai/skills') throw new Error();
             return validator.version(manifest);
         } catch {
             throw new SkillBumpReportError('onboarding_unavailable');

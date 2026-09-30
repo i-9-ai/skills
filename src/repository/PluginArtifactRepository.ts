@@ -47,7 +47,7 @@ export class PluginArtifactRepository {
                 layout: 'repository',
             });
             const manifest = source.readJson('package.json');
-            if (manifest.name !== '@i-9-ai/skills' || manifest.license !== 'Apache-2.0') {
+            if (manifest.name !== '@i-9.ai/skills' || manifest.license !== 'Apache-2.0') {
                 throw new Error('Plugin preparation requires the I-9 Skills package identity.');
             }
 

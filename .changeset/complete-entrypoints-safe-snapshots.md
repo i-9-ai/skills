@@ -1,5 +1,5 @@
 ---
-"@i-9-ai/skills": patch
+"@i-9.ai/skills": patch
 ---
 
 Preserve essential skill workflows and complete examples without an arbitrary

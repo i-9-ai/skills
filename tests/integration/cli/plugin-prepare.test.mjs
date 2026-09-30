@@ -126,7 +126,7 @@ function fixture(t) {
     fs.writeFileSync(join(source, 'AGENTS.md'), 'Use skills-catalog.json for discovery.\n');
     fs.copyFileSync(DEFAULT_LICENSE_PATH, join(source, 'LICENSE'));
     const manifest = {
-        name: '@i-9-ai/skills',
+        name: '@i-9.ai/skills',
         version: '1.2.3-rc.1',
         description: 'Synthetic skills.',
         homepage: 'https://example.com/skills',

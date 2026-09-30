@@ -4,8 +4,8 @@
     {
       "source": "docs/diagrams/skill-management-entry-paths.json",
       "artifact": "docs/assets/skill-management-entry-paths.html",
-      "source_sha256": "93642f91f7e43b2d8c93886b52825d319e1a2c1dbcce421b6a94fb08e4ef245d",
-      "artifact_sha256": "8ec06054ee24c722f3064fd60612618bcffbb12e65b31fb4edff9bfe1ca93b8f",
+      "source_sha256": "00ef987d95abbcd7945b4fe1fe16e1a69dfc48339b6431fd546dced7dba9d89e",
+      "artifact_sha256": "2f3b4985ab04dc21aa5e30a1c07e5a3c4346699cf421e955b493207b140cd607",
       "generator": "archify 2.17.0-dev.1 + prior reviewed pinned-font template overlay",
       "reviewed_on": "2026-09-30"
     }

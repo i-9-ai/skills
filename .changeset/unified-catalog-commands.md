@@ -1,5 +1,5 @@
 ---
-"@i-9-ai/skills": minor
+"@i-9.ai/skills": minor
 ---
 
 Expose catalog inspect, check and sync in the unified CLI with explicit

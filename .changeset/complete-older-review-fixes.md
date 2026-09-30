@@ -1,5 +1,5 @@
 ---
-"@i-9-ai/skills": patch
+"@i-9.ai/skills": patch
 ---
 
 Complete authoring validation for multiline Markdown links and embedded HTML resources, including poster and srcset URLs, with bounded link-location lookup. Reject single-label private source hosts, equivalent percent-encoded source duplicates, adapted sources without immutable revisions, unknown license declarations and truncated Apache terms.

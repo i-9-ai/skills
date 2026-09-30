@@ -29,7 +29,7 @@ separately authorized collection and are excluded from this delivery.
    professional determinations receive a qualified human-validation handoff.
 5. Keep the generated local Codex environment file excluded. Explicit setup
    uses npm ci; command startup never fetches or installs dependencies.
-6. Prepare the authorized `@i-9-ai/skills` package identity with bin `i9-skills`,
+6. Prepare the authorized `@i-9.ai/skills` package identity with bin `i9-skills`,
    retaining private true and updating lockfile, pending Changesets and actual
    scoped node_modules tests. Prepare a local packed artifact with a deliberate allowlist. The
    build checks strict types, replaces disposable dist output and emits the

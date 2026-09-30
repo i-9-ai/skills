@@ -1,5 +1,5 @@
 ---
-"@i-9-ai/skills": patch
+"@i-9.ai/skills": patch
 ---
 
 Document isolated native Codex and Claude plugin installation, 24-skill discovery,

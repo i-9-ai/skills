@@ -54,12 +54,12 @@ test('installed guide identity rejects missing, foreign, malformed and linked ma
     for (const content of [
         'not-json',
         JSON.stringify({ name: 'foreign', version: '1.0.0' }),
-        JSON.stringify({ name: '@i-9-ai/skills', version: 'latest' }),
+        JSON.stringify({ name: '@i-9.ai/skills', version: 'latest' }),
     ]) {
         fs.writeFileSync(manifest, content);
         reject();
     }
-    fs.writeFileSync(manifest, JSON.stringify({ name: '@i-9-ai/skills', version: '9.8.7' }));
+    fs.writeFileSync(manifest, JSON.stringify({ name: '@i-9.ai/skills', version: '9.8.7' }));
     assert.equal(service.guide({ section: 'inspect' }).package_version, '9.8.7');
     const alias = path.join(target.root, 'manifest.json');
     fs.renameSync(manifest, alias);

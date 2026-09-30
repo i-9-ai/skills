@@ -1,5 +1,5 @@
 ---
-"@i-9-ai/skills": minor
+"@i-9.ai/skills": minor
 ---
 
 Add a Copilot CLI legacy-plugin MCP mapping through `.github/plugin/plugin.json`

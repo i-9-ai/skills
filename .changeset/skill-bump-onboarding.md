@@ -1,5 +1,5 @@
 ---
-"@i-9-ai/skills": minor
+"@i-9.ai/skills": minor
 ---
 
 Add read-only `skills observe` export from existing verified schema-2 snapshots,

@@ -1,5 +1,5 @@
 ---
-"@i-9-ai/skills": patch
+"@i-9.ai/skills": patch
 ---
 
 Extract multi-collection lookup, SQLite synchronization history and the evidence-backed evolution ledger into the standalone `skills-catalog-index` package. `skills-catalog` now maintains only one collection's canonical inventory and hands off aggregate work explicitly.

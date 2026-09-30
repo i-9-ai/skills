@@ -6,24 +6,47 @@ I-9 Skills is a toolkit for the full life of an agent skill: discover what alrea
 
 **24 focused skills. One responsibility each. One reviewable output each.**
 
-The working package version is recorded in [package.json](package.json). This is
-an experimental collection for explicit pilots; the npm manifest blocks registry
-publication and the package remains unpublished. Structural checks and fixture tests do not establish production
-quality or universal host compatibility.
+This collection is experimental; feedback is welcome. Structural checks and
+fixture tests do not establish production quality or universal host compatibility.
 
-The CLI package name is `@i-9-ai/skills` and its executable is
-`i9-skills`. A public Git revision can supply the CLI directly through `npx`;
-the npm registry name remains unpublished. In a trusted checkout, run `npm ci`,
-then `npm run check` and `npm run package:check` on Node.js 24+. The explicit
-`npm ci` also builds the distributable CLI through npm's `prepare` lifecycle.
-Read the [distribution guide](docs/Distribution%20Readiness.md) for Git-source
-execution, local packed tests and the separate registry/plugin release boundaries. This repository
-is itself a plugin for Codex, Claude Code and Copilot: their root manifests
-reference the one canonical `.agents/skills` collection. Its Codex marketplace
-entry is included for review; importing or installing remains a separate
-consumer action after merge.
+Install the packages with the Skills CLI, or install the collection as a plugin
+to include its host hooks and MCP. Codex, Claude Code and Copilot manifests all
+reference the same `.agents/skills` collection. The toolkit CLI is also available
+directly from Git through `npx`; npm registry publication is still pending.
 
 ## Install
+
+### Codex plugin
+
+With Codex CLI and Node.js 24+ available, add this repository's marketplace and
+install its plugin:
+
+```sh
+codex plugin marketplace add i-9-ai/skills --ref main
+codex plugin add i9-skills@i9-skills
+codex plugin list
+```
+
+This uses our GitHub marketplace and does not require a listing in OpenAI's
+public plugin directory. The plugin includes all 24 skills, the session hook
+and the catalog MCP. Start a new Codex session after installation. For desktop
+clients, restart the app and select **I9 Skills** in the plugin marketplace
+picker; availability remains subject to the client's workspace policy.
+
+For a manual installation from a local folder, clone the repository and register
+that folder as the marketplace instead:
+
+```sh
+git clone https://github.com/i-9-ai/skills.git
+codex plugin marketplace add ./skills
+codex plugin add i9-skills@i9-skills
+```
+
+If you already have a checkout, use its path instead of `./skills`. Keep the
+checkout while using a local marketplace. These methods install the root plugin
+without copying skills into a second source tree. You do not need `npm ci` for
+the bundled plugin hooks or MCP. See [plugin installation and updates](docs/Plugin%20Preparation.md#install-in-codex)
+for desktop setup, verification, updates and removal.
 
 ### Easiest: ask your agent
 
@@ -32,42 +55,36 @@ consumer action after merge.
 ### CLI: install for this project
 
 ```sh
-npx skills@1.5.26 add https://github.com/i-9-ai/skills --skill '*' --yes
+npx skills add https://github.com/i-9-ai/skills --skill '*' --yes
 ```
 
 ### CLI: install globally
 
 ```sh
-npx skills@1.5.26 add https://github.com/i-9-ai/skills --global --skill '*' --yes
+npx skills add https://github.com/i-9-ai/skills --global --skill '*' --yes
 ```
 
-These commands pin the installer and use the repository's default branch. For a
-repeatable production installation, replace the repository URL with a reviewed
-immutable revision.
+These commands use the current Skills CLI and the repository's default branch.
 
 The Skills CLI asks for a supported agent target when it cannot determine one. After installation, start a new agent session if its skill picker does not refresh automatically.
 
 ## Run the toolkit CLI
 
 Installing the skill packages and running this repository's toolkit are separate
-operations. With Node.js 24+, npm and Git available, replace
-`<reviewed-full-commit-sha>` with the full SHA of a public revision containing the
-CLI preparation lifecycle, then run:
+operations. With Node.js 24+, npm and Git available, run the current toolkit
+directly from GitHub:
 
 ```sh
-npx --yes --allow-git=root --package='git+https://github.com/i-9-ai/skills.git#<reviewed-full-commit-sha>' i9-skills --help
-npx --yes --allow-git=root --package='git+https://github.com/i-9-ai/skills.git#<reviewed-full-commit-sha>' i9-skills catalog overview
-npx --yes --allow-git=root --package='git+https://github.com/i-9-ai/skills.git#<reviewed-full-commit-sha>' i9-skills catalog read --skill skill-authoring
+npx --yes --allow-git=root github:i-9-ai/skills --help
+npx --yes --allow-git=root github:i-9-ai/skills catalog overview
+npx --yes --allow-git=root github:i-9-ai/skills catalog read --skill skill-authoring
 ```
 
-The first invocation explicitly downloads the reviewed Git source and build
-dependencies into npm's cache and compiles the CLI before packing it. The
-installed artifact runs compiled JavaScript with production dependencies;
-command startup performs no build. `private: true` continues to block npm
-publication. `npx @i-9-ai/skills` requires a separately published registry release.
-`--allow-git=root` permits the selected top-level Git source for this invocation;
-npm 12 requires that explicit setting. Git-source preparation was exercised with
-npm 11.19.1 and npm 12.0.2; the Node 24 consumer test used Node 24.21.0.
+The first invocation downloads and prepares the package in npm's cache. npm
+selects the package's single executable, so `--package` is unnecessary.
+`--allow-git=root` permits this Git source on npm 12. Once the scoped package is
+published on npm, the registry command will be `npx @i-9.ai/skills --help`.
+That registry command is not available yet; progress is tracked in [#17](https://github.com/i-9-ai/skills/issues/17).
 See the [command mapping](docs/Distribution%20Readiness.md#consumer-command-mapping)
 for project discovery, collection maintenance and MCP examples.
 
@@ -88,11 +105,11 @@ project/plugin session registrations.
 Hosts without hooks, or projects where the user has not enabled hook trust, use the identical manual fallback:
 
 ```sh
-npx --yes --allow-git=root --package='git+https://github.com/i-9-ai/skills.git#<reviewed-full-commit-sha>' i9-skills context available-skills --project .
+npx --yes --allow-git=root github:i-9-ai/skills context available-skills --project .
 ```
 
-Use the reviewed SHA selected above. In a prepared source checkout, the same
-manual command is `node bin/index.mjs context available-skills --project .`.
+In a prepared source checkout, the same manual command is
+`node bin/index.mjs context available-skills --project .`.
 Automatic hooks use their already available local runtime; the explicit `npx`
 download command is for manual use.
 
@@ -171,7 +188,7 @@ code before execution. The enabled root plugin starts its local hooks and MCP
 with Node 24; session startup performs no download or build. Hooks discover
 plugin, project and global packages, while MCP catalog tools read only the
 bundled collection. Context and catalog retrieval do not activate skills or
-record evidence. Registry `npx @i-9-ai/skills` remains unavailable until a separate
+record evidence. Registry `npx @i-9.ai/skills` remains unavailable until a separate
 npm publication.
 
 ## From idea to durable skill system

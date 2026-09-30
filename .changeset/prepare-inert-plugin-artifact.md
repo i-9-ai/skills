@@ -1,5 +1,5 @@
 ---
-"@i-9-ai/skills": minor
+"@i-9.ai/skills": minor
 ---
 
 Add `plugin prepare --output` with a no-write preview and explicit `--write`
