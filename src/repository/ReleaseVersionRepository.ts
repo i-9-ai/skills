@@ -276,7 +276,7 @@ export class ReleaseVersionRepository {
     }
 
     private canonicalChangelog(generated: string, previous?: string): string {
-        const historyStart = previous?.match(/^## /mu)?.index;
+        const historyStart = previous?.match(/^#{1,6}\s+\d+\.\d+/mu)?.index;
         const history = historyStart === undefined ? '' : previous!.slice(historyStart);
         if (!generated.endsWith(history))
             throw new Error('Changesets must preserve existing release history verbatim.');
