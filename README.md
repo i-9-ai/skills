@@ -147,11 +147,39 @@ Consult [`skills-catalog.json`](skills-catalog.json) for the generated machine-r
 | [`skill-migration`](.agents/skills/skill-migration/SKILL.md) | Move one skill between collections | Migrated package and migration record |
 | [`skills-catalog`](.agents/skills/skills-catalog/SKILL.md) | Derive and validate a collection inventory | `skills-catalog.json` |
 | [`skills-catalog-index`](.agents/skills/skills-catalog-index/SKILL.md) | Query explicit collections and retain local changes/evolution evidence | Local aggregate index and history |
+
+## Current entry paths
+
+```mermaid
+flowchart LR
+    Task[User task] --> Native[Host skill discovery]
+    Native --> Read[Selected SKILL.md and references]
+    Git[Reviewed Git-source npx] --> CLI[i9-skills CLI]
+    CLI -->|catalog search / read / overview| Catalog[Bundled catalog]
+    CLI -->|mcp serve| MCP[Local stdio MCP]
+    Root[Repository-root plugin] --> Host[Codex / Claude / Copilot manifests]
+    Host -->|native stdio| MCP
+    Host -->|Codex / Claude SessionStart| Hook[Local Node 24 hook]
+    Hook --> Context[Bounded metadata context]
+    MCP -->|catalog tools| Catalog
+    Catalog --> Read
+    Read --> Work[Portable meta-skill workflow]
+```
+
+The CLI's explicit Git-source download prepares its dependencies and compiled
+code before execution. The enabled root plugin starts its local hooks and MCP
+with Node 24; session startup performs no download or build. Hooks discover
+plugin, project and global packages, while MCP catalog tools read only the
+bundled collection. Context and catalog retrieval do not activate skills or
+record evidence. Registry `npx @i-9-ai/skills` remains unavailable until a separate
+npm publication.
+
 ## From idea to durable skill system
 
 ```mermaid
 flowchart LR
-    T((Task)) --> SI[Session index] --> R[Skill Routing]
+    T((Task)) --> R[Skill Routing]
+    SI[Optional metadata context] -. shortlist .-> R
     R --> RT[Smallest valid route<br/>or none]
 
     subgraph Build
@@ -183,9 +211,12 @@ flowchart LR
 
 The arrows represent artifact handoffs. Start a user task at **Skill Routing**; start collection maintenance at the **Canonical catalog**. The available-skills overview reads installed package metadata; the session hook supplies that same compact view at startup. Neither is another source of truth. A host may execute stages sequentially or delegate them; subagents are optional. Specialists never assume a companion is installed, invoke another skill recursively, or acquire authority from a handoff.
 
-[Explore the interactive entry-path map](docs/assets/skill-management-entry-paths.html). Its source specification is [`docs/diagrams/skill-management-entry-paths.json`](docs/diagrams/skill-management-entry-paths.json), while the generated interactive artifact is [`docs/assets/skill-management-entry-paths.html`](docs/assets/skill-management-entry-paths.html).
+[Explore the interactive entry-path map](https://i-9-ai.github.io/skills/skill-management-entry-paths.html)
+for the current native-skill, CLI/MCP and root-plugin paths. Its source
+specification is [`docs/diagrams/skill-management-entry-paths.json`](docs/diagrams/skill-management-entry-paths.json),
+while the generated interactive artifact is [`docs/assets/skill-management-entry-paths.html`](docs/assets/skill-management-entry-paths.html).
 
-[![Preview of the interactive skill-management entry-path map](docs/assets/skill-management-entry-paths.preview.png)](docs/assets/skill-management-entry-paths.html)
+[![Preview of the interactive skill-management entry-path map](docs/assets/skill-management-entry-paths.preview.png)](https://i-9-ai.github.io/skills/skill-management-entry-paths.html)
 
 A typical creation run qualifies sources, researches the proposed skill's subject against current authoritative evidence and the process-owner record, synthesizes distinct useful contributions, designs the boundary, authors the package, evaluates behavior, reviews security, and determines lifecycle readiness. Publication and installation remain explicit external actions. Existing collections enter through audit and refactoring; evidence-backed updates enter through evolution. Measured iterative improvement enters through optimization before evaluation. Recurring maintenance begins with `skills-maintenance-scheduling`, which returns an approval-ready proposal and leaves scheduler configuration and every maintenance side effect behind separate gates.
 

@@ -8,7 +8,7 @@ prompts, install hooks, change skills or update a task tracker.
 
 Use Node.js 24+ and a prepared checkout or packed CLI. Select an existing,
 canonical absolute data directory owned by the caller. The dedicated SQLite
-database is shared with [read telemetry](Skill%20Telemetry.md). Catalog lookup
+database is shared with [read telemetry](https://github.com/i-9-ai/skills/wiki/Skill-Telemetry). Catalog lookup
 and MCP initialization need no database; only a valid explicit record can create
 or upgrade the selected database.
 
@@ -193,7 +193,7 @@ separate. Member changes contain before/after digests and provenance, not files.
 
 ## MCP parity, limits and recovery
 
-The same [MCP server](Skill%20MCP.md) exposes these contracts:
+The same [MCP server](https://github.com/i-9-ai/skills/wiki/Skill-MCP) exposes these contracts:
 
 | MCP tool | Equivalent CLI operation |
 | --- | --- |
@@ -229,4 +229,4 @@ dedicated evidence database; they cannot erase its history. Schema mismatch,
 unknown versions and changed checksums require diagnosis, with no reset fallback.
 Five-second SQLite writer contention and transaction boundaries preserve retries
 and prevent partial records. Optional record diagnostics follow the existing
-bounded [log contract](Skill%20Telemetry.md#storage-logs-and-failures).
+bounded [log contract](https://github.com/i-9-ai/skills/wiki/Skill-Telemetry#storage-logs-and-failures).

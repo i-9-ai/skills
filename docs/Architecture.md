@@ -1,5 +1,39 @@
 # Architecture
 
+## Current entry paths
+
+The portable packages, prepared CLI and repository-root plugin are separate
+entry paths into the same collection. The CLI starts from `bin/index.mjs`;
+native plugin adapters start local transports directly, without preparing the
+CLI or fetching dependencies during a host event.
+
+```mermaid
+flowchart LR
+    Task[User task] --> Native[Host skill discovery]
+    Native --> Read[Selected SKILL.md and references]
+    Git[Reviewed Git-source npx] --> CLI[i9-skills CLI]
+    CLI -->|catalog search / read / overview| Catalog[Bundled catalog]
+    CLI -->|mcp serve| MCP[Local stdio MCP]
+    Root[Repository-root plugin] --> Host[Codex / Claude / Copilot manifests]
+    Host -->|native stdio| MCP
+    Host -->|Codex / Claude SessionStart| Hook[Local Node 24 hook]
+    Hook --> Context[Bounded metadata context]
+    MCP -->|catalog tools| Catalog
+    Catalog --> Read
+    Read --> Work[Portable meta-skill workflow]
+```
+
+The Git-source `npx` call downloads a reviewed immutable revision and runs its
+explicit preparation lifecycle; registry `npx @i-9-ai/skills` still requires npm
+publication. Hook context discovers plugin, project and global packages. MCP
+catalog access uses the installed bundled catalog and returns selected Markdown.
+Neither context nor retrieval activates a skill or records evidence. The CLI
+also exposes explicit collection maintenance, observations, reports and evidence
+queries; the MCP exposes the catalog, onboarding, bump reports and explicit
+evidence tools. See [CLI distribution](https://github.com/i-9-ai/skills/wiki/Distribution-Readiness),
+[plugin preparation](https://github.com/i-9-ai/skills/wiki/Plugin-Preparation) and
+the [interactive entry-path map](https://i-9-ai.github.io/skills/skill-management-entry-paths.html).
+
 ## Responsibility boundaries
 
 The collection is organized around independently useful tasks, not vendors or platforms. The skills own discovery, synthesis, design, authoring, evaluation, and naming. `skill-authoring` is the entrypoint for producing a package and only coordinates the other procedures. `skills-synthesis` produces the synthesis contract; it does not also search the web, author code, or grade its own output. `skill-naming` owns open naming decisions and returns a report without renaming files.
@@ -32,11 +66,11 @@ flowchart LR
 | migration | Ordered checksum-verified SQLite schema history |
 | transport | Bounded MCP protocol handling |
 
-Validators do not launch processes or read files. Services coordinate validators and repositories; commands own parsing/output. A thin `bin/index.mjs` launches the CLI. The [source index](../src/AGENTS.md) records these boundaries. Python is installed only by the workflow for the upstream `skills-ref` command; no repository-owned validation logic is implemented in Python.
+Validators do not launch processes or read files. Services coordinate validators and repositories; commands own parsing/output. A thin `bin/index.mjs` launches the CLI. The [source index](https://github.com/i-9-ai/skills/blob/main/src/AGENTS.md) records these boundaries. Python is installed only by the workflow for the upstream `skills-ref` command; no repository-owned validation logic is implemented in Python.
 
 ## Execution contract
 
-The [creator's handoff protocol](../.agents/skills/skill-authoring/references/handoff-protocol.md) owns the run format. Specialists can be installed and used alone through their local inputs/outputs; they need no repository root files. The creator locates separately available companions through the host's inventory or trusted explicit paths and wraps their returned artifacts in ordered stages with SHA-256 evidence. Resource paths belong to the installed package; outputs belong to the caller's selected workspace.
+The [creator's handoff protocol](https://github.com/i-9-ai/skills/blob/main/.agents/skills/skill-authoring/references/handoff-protocol.md) owns the run format. Specialists can be installed and used alone through their local inputs/outputs; they need no repository root files. The creator locates separately available companions through the host's inventory or trusted explicit paths and wraps their returned artifacts in ordered stages with SHA-256 evidence. Resource paths belong to the installed package; outputs belong to the caller's selected workspace.
 
 Stages are intake → discovery → domain-research → conditional synthesis → design → authoring → evaluation. The creator may consult `skill-design` within intake before discovery when clarification is needed; that preliminary brief does not replace the final design stage. Domain research always opens current public authoritative sources relevant to the proposed skill's subject and preserves the process-owner record, scope, date, conflicts, and unknowns. With no contributing skill package, synthesis is skipped with evidence. With one contributing package, its useful contributions go directly to design alongside the research dossier. Synthesis compares two or more distinct contributing packages. Mirrors and revisions of the same source do not fill the contribution requirement.
 
@@ -71,7 +105,8 @@ coverage. Context and observed-read persistence have independent failure paths.
 ```mermaid
 flowchart LR
     Codex[Codex SessionStart] --> Runner[PluginHookRunner]
-    Claude[Claude session / native Read] --> Runner
+    Claude[Claude SessionStart] --> Runner
+    Read[Claude native Read attempt / success] --> Runner
     Runner --> Discovery[Shared skill discovery]
     Collections[Plugin / project / global packages] --> Discovery
     Discovery --> Overview[Bounded host context]
@@ -98,7 +133,8 @@ records and metrics use a separate evidence store described below.
 ```mermaid
 flowchart LR
     CLI[Catalog commands] --> Catalog[SkillCatalogService]
-    Plugin[PluginMcpServer] --> MCP[Shared MCP dispatcher]
+    Hosts[Codex / Claude / Copilot MCP manifests] --> Plugin[PluginMcpServer]
+    Plugin --> MCP[Shared MCP dispatcher]
     Serve[mcp serve] --> MCP
     MCP -->|search / read / overview| Catalog
     Catalog --> Installed[InstalledSkillRepository]
@@ -116,7 +152,7 @@ Protocol initialization, catalog reads, bump reports and onboarding create no
 evidence database. Onboarding returns instructions; it never executes them.
 Catalog access never implies a read observation or activation. Responses distinguish
 package version, catalog/content digests and unavailable Git provenance; none is
-silently substituted for another. See the [MCP contract](Skill%20MCP.md).
+silently substituted for another. See the [MCP contract](https://github.com/i-9-ai/skills/wiki/Skill-MCP).
 
 ## Explicit lifecycle and catalog evidence
 
@@ -147,10 +183,10 @@ A host read observation is not an activation. Lifecycle records are emitter
 assertions, catalog observations assert a complete inventory, and neither proves
 successful execution or semantic quality. Metrics expose their denominators,
 periods and missing coverage. No reported activity does not prove non-use. See
-[lifecycle evidence](Lifecycle%20Evidence.md) for event ordering, query budgets
-and recovery, and [telemetry](Skill%20Telemetry.md) for observed-read handling.
+[lifecycle evidence](https://github.com/i-9-ai/skills/wiki/Lifecycle-Evidence) for event ordering, query budgets
+and recovery, and [telemetry](https://github.com/i-9-ai/skills/wiki/Skill-Telemetry) for observed-read handling.
 
-[Skill memory inspection](Skill%20Memory.md) composes these projections in one
+[Skill memory inspection](https://github.com/i-9-ai/skills/wiki/Skill-Memory) composes these projections in one
 read snapshot. Summaries retain evidence identity and missing coverage; retention
 inspection counts records around an optional caller cutoff within the queried
 period. Neither operation establishes a retention policy, evaluates historical
@@ -182,8 +218,8 @@ Incomplete, conflicting or insufficient evidence stays `undetermined`; a report
 neither changes package versions nor creates release notes. An accepted result
 may inform a separately authored Changeset. The version-preparation command then
 updates release artifacts only when explicitly invoked; tags and publication
-remain separate actions. See [skill change reports](Skill%20Change%20Reports.md)
-and [release management](Release%20Management.md).
+remain separate actions. See [skill change reports](https://github.com/i-9-ai/skills/wiki/Skill-Change-Reports)
+and [release management](https://github.com/i-9-ai/skills/wiki/Release-Management).
 
 ## Explicit collection maintenance
 
@@ -208,12 +244,12 @@ flowchart LR
 
 Only catalog synchronization is supported automatically. Malformed catalogs and
 package content changes retain their own handoffs. Recovery captures only the
-catalog preimage, not an entire repository. See [collection maintenance](Collection%20Maintenance.md)
+catalog preimage, not an entire repository. See [collection maintenance](https://github.com/i-9-ai/skills/wiki/Collection-Maintenance)
 for explicit selections, limits and receipt semantics.
 
 ## Provenance and evolution
 
-[upstreams.lock.json](../upstreams.lock.json) contains benchmark source identity and digests; [the research ledger](Upstream%20Research.md) connects sources to retained and rejected ideas. The source commit locates a revision; the package digest identifies the captured file set, and per-file digests locate changes. Applicable license bytes are recorded separately when the license lives outside the package.
+[upstreams.lock.json](https://github.com/i-9-ai/skills/blob/main/upstreams.lock.json) contains benchmark source identity and digests; [the research ledger](https://github.com/i-9-ai/skills/wiki/Upstream-Research) connects sources to retained and rejected ideas. The source commit locates a revision; the package digest identifies the captured file set, and per-file digests locate changes. Applicable license bytes are recorded separately when the license lives outside the package.
 
 The skill-evolution package can resolve a new upstream revision, capture it under the same rules, compare added, changed, and removed files, and map differences to local contributions. It must distinguish improvements, already covered behavior, irrelevant changes, regressions, and license changes, then propose a bounded change with tests and a PR. Measured candidate improvement belongs to skill-optimization, which requires frozen splits, bounded edits, and a held-out gate. Hashes do not rank quality. No updater or monitor silently replaces accepted skills.
 
@@ -225,6 +261,6 @@ The catalog is a derived package inventory. The Git revision identifies the coll
 
 A caller that needs to compare several explicitly selected collections uses the separate `skills-catalog-index` package to build a local derived `skills-catalog.db` from their validated `skills-catalog.json` manifests. Canonical inventory generation remains in `skills-catalog`. The aggregate is outside all source repositories, records logical source identifiers and catalog digests rather than local paths, and retains timestamped source observations plus normalized before/after skill changes. Its current source and skill tables remain a deterministic projection. The `skills-catalog.index.json` fallback provides the same current projection without history. These local indexes are not canonical catalogs, directory scanners, installers, activators, or source updaters.
 
-Follow the [lifecycle policy](Lifecycle%20Policy.md) to evaluate maturity through the target project's existing evidence and approval system, or a portable approval record when none exists. Catalog presence does not assign a lifecycle state. Upstream benchmarking and local structural validation are prerequisites, not proof of production operation.
+Follow the [lifecycle policy](https://github.com/i-9-ai/skills/wiki/Lifecycle-Policy) to evaluate maturity through the target project's existing evidence and approval system, or a portable approval record when none exists. Catalog presence does not assign a lifecycle state. Upstream benchmarking and local structural validation are prerequisites, not proof of production operation.
 
 Recurring collection maintenance begins with `skills-maintenance-scheduling`. It freezes an explicit package inventory and revision, inspects only project-local scheduling and approval mechanisms, and returns a cadence proposal with the real executor, evidence owner, stop condition, and rollback path. The default is advisory. Even when scheduler configuration is separately authorized, scheduled runs remain limited to proposing work or collecting read-only evidence; they cannot approve, modify, install, merge, or publish a skill.

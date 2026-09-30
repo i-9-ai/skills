@@ -11,14 +11,14 @@ export class WikiLinkService {
         const parts: string[] = [];
         let cursor = 0;
         for (const link of markdownLinkRanges(body)) {
-            if (!link.target.startsWith('../')) continue;
+            if (/^(?:[A-Za-z][A-Za-z\d+.-]*:|\/|#|\?)/.test(link.target)) continue;
 
             const suffixIndex = link.target.search(/[?#]/);
             const destination =
                 suffixIndex === -1 ? link.target : link.target.slice(0, suffixIndex);
             const suffix = suffixIndex === -1 ? '' : link.target.slice(suffixIndex);
             const resolved = path.posix.normalize(
-                path.posix.join(path.posix.dirname(sourcePath), destination),
+                path.posix.join(path.posix.dirname(sourcePath), decodeURIComponent(destination)),
             );
             if (
                 resolved === '..' ||
@@ -28,7 +28,15 @@ export class WikiLinkService {
                 throw new Error('Wiki link escapes the repository');
             }
 
-            const url = `https://github.com/${repository}/blob/main/${resolved}${suffix}`;
+            const isDocumentation = resolved.startsWith('docs/');
+            const isPage = /\.md$/i.test(resolved);
+            if (isDocumentation && !isPage) continue;
+
+            const pageTitle = path.posix.basename(resolved).slice(0, -3).replaceAll(' ', '-');
+            const repositoryPath = resolved.split('/').map(encodeURIComponent).join('/');
+            const url = isDocumentation
+                ? `https://github.com/${repository}/wiki/${encodeURIComponent(pageTitle)}${suffix}`
+                : `https://github.com/${repository}/blob/main/${repositoryPath}${suffix}`;
             parts.push(body.slice(cursor, link.start), url);
             cursor = link.end;
         }

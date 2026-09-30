@@ -48,7 +48,7 @@ Use only proof points that are true for the displayed revision. Link to the pack
 3. **Prove it before promotion.** Evaluate behavior, security, compatibility, and lifecycle readiness at the same revision.
 4. **Improve without starting over.** Audit an existing collection, preserve weak signals as hypotheses, and evolve only the smallest supported change.
 
-The diagram in the [README](../README.md#from-idea-to-durable-skill-system) is the canonical concise visualization of this flow.
+The diagram in the [README](https://github.com/i-9-ai/skills/blob/main/README.md#from-idea-to-durable-skill-system) is the canonical concise visualization of this flow.
 
 ## Product story: modularization without disruption
 

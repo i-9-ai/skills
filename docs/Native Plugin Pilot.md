@@ -5,7 +5,7 @@ SessionStart execution, local source replacement and rollback in Codex and Claud
 Code. Claude's MCP initialization also passed. No repository runtime defect was
 found in this scope. This is evidence for the versions and source commits below,
 not a claim about every host, model or later revision. The subsequent
-[Codex MCP pilot](Codex%20MCP%20Pilot.md) adds native tool discovery and explicit
+[Codex MCP pilot](https://github.com/i-9-ai/skills/wiki/Codex-MCP-Pilot) adds native tool discovery and explicit
 catalog/read-evidence calls; the historical A/B/A results below remain unchanged.
 
 ## Candidate and environment
@@ -99,7 +99,7 @@ A, the synthetic consumer remained unchanged, and no owned process remained.
 
 ## Repeat the bounded pilot
 
-Follow the [isolated pilot plan](../plans/2026-09-29-19-38-34-native-plugin-pilot.md)
+Follow the [isolated pilot plan](https://github.com/i-9-ai/skills/blob/main/plans/2026-09-29-19-38-34-native-plugin-pilot.md)
 before running native clients. Use a fresh disposable root, explicit environment
 and OS sandbox for every subprocess. Do not paste these commands into a shell
 using an ordinary user profile. Replace the bracketed arguments with locations

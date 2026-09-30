@@ -15,7 +15,7 @@ assessment.
 The catalog contains 24 meta-skills. All have their entrypoint, full license,
 OpenAI interface metadata and SVG/PNG icons. The repository license, scoped
 notices, source revisions and reuse decisions remain separate records: see
-[upstream research](Upstream%20Research.md), upstreams.lock.json, and package
+[upstream research](https://github.com/i-9-ai/skills/wiki/Upstream-Research), upstreams.lock.json, and package
 notices. The derived HTML entity table retains its BSD license beside the data.
 Presence and consistency checks do not replace a legal review of every possible
 redistribution claim. General domain/tool packages are outside this collection.
@@ -44,20 +44,20 @@ host manifests. Optional portable staging copies validated packages, manifests,
 license material and an integrity receipt into a disposable artifact. These are
 different distribution surfaces; neither creates a registry release.
 
-The [native pilot](Native%20Plugin%20Pilot.md) records immutable A/B/A source pins,
+The [native pilot](https://github.com/i-9-ai/skills/wiki/Native-Plugin-Pilot) records immutable A/B/A source pins,
 24-skill discovery, actual Codex/Claude SessionStart delivery, Claude MCP
 initialization and data-preserving cleanup. It limits the offline dependency
 warning, stubbed Codex model transport and local update mechanism. Repository
 checks, official skills-ref results and packed-runtime acceptance apply to their
 exact PR heads; obtain fresh results for the final release commit.
 
-The separate [Codex MCP pilot](Codex%20MCP%20Pilot.md) adds native plugin tool
+The separate [Codex MCP pilot](https://github.com/i-9-ai/skills/wiki/Codex-MCP-Pilot) adds native plugin tool
 discovery and explicit catalog/read-evidence calls. Its legacy mapping requires
 caller-selected external `PLUGIN_DATA` for storage and cannot infer the original
 consumer cwd. This does not establish a hosted marketplace update or a public
 directory's remote-MCP acceptance.
 
-The [Copilot MCP pilot](Copilot%20MCP%20Pilot.md) adds native session discovery and
+The [Copilot MCP pilot](https://github.com/i-9-ai/skills/wiki/Copilot-MCP-Pilot) adds native session discovery and
 direct catalog/read-evidence calls through an ephemeral legacy plugin mount.
 It requires explicit external `COPILOT_PLUGIN_DATA` for storage and likewise
 cannot infer the consumer cwd. Persistent marketplace installation, hosted
@@ -81,7 +81,7 @@ and workflow logs; do not extend this snapshot to those later records by inferen
 | Repository secrets, variables and environments | Zero visible entries | No secret values requested. Organization/enterprise configuration was outside scope. |
 | Collaborators | One visible collaborator | Identity details retained only in protected local evidence. |
 | Wiki | REST has_wiki:false; GraphQL hasWikiEnabled:true; authenticated ref lookup returned repository-not-found; five historical mirror runs failed | No Wiki content was accessible to audit. The maintainer now authorizes enablement, supported first-page initialization and verification of the existing mirror; [issue #52](https://github.com/i-9-ai/skills/issues/52) records actual results separately. |
-| Pages and private vulnerability reporting | Both APIs returned 404 | Availability unconfirmed. Existing [security guidance](../SECURITY.md) remains the reporting fallback. |
+| Pages and private vulnerability reporting | Both APIs returned 404 | Availability unconfirmed. Existing [security guidance](https://github.com/i-9-ai/skills/blob/main/SECURITY.md) remains the reporting fallback. |
 | Main protection and rulesets | Provider returned 403 requiring a different account plan or public repository | Protection was not applied. [Issue #32](https://github.com/i-9-ai/skills/issues/32) records the requested policy and blocked configuration. |
 
 The earlier audit's raw administrative snapshots contained generated clone-token
@@ -95,7 +95,7 @@ and future changes remain explicit rather than being counted as clean.
 ## Existing publication triggers
 
 Source includes five workflows. Validation and Changesets are read-only. The
-manual [version-preparation workflow](Release%20Management.md) prepares a draft
+manual [version-preparation workflow](https://github.com/i-9-ai/skills/wiki/Release-Management) prepares a draft
 version PR; it does not publish npm packages, tags, GitHub releases or listings.
 Its tests do not establish whether live bot PR creation is enabled by policy.
 
@@ -148,7 +148,7 @@ that format evidence is separate from a native installation test.
    and record exact cutoffs. Keep raw reports outside tracked files. Inventory
    new refs, comments, logs, Wiki/Pages and artifacts before changing visibility.
 3. Rehearse the selected commit in a fresh isolated consumer using the
-   [native pilot procedure](Native%20Plugin%20Pilot.md#repeat-the-bounded-pilot).
+   [native pilot procedure](https://github.com/i-9-ai/skills/wiki/Native-Plugin-Pilot#repeat-the-bounded-pilot).
    Use a detached source at the full SHA, verify actual loaded bytes, then test
    the intended hosted source separately. Preserve data through rollback and
    unregister. A moving main name does not substitute for source identity.

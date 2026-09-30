@@ -21,13 +21,13 @@ the MCP does not record evidence, infer activation or monitor tools. The plugin'
 separate Claude hooks observe the native Read events described below.
 
 The old `i9-skill-usage` registration and usage-only entrypoint were replaced;
-update manually copied configurations. The [MCP guide](Skill%20MCP.md) provides
+update manually copied configurations. The [MCP guide](https://github.com/i-9-ai/skills/wiki/Skill-MCP) provides
 tool calls, CLI equivalents, identity/limit rules and version-pinned invocation.
 Clean-copy protocol tests without `node_modules` are separate from native Claude
-ingestion and subprocess tests. The [native pilot](Native%20Plugin%20Pilot.md)
+ingestion and subprocess tests. The [native pilot](https://github.com/i-9-ai/skills/wiki/Native-Plugin-Pilot)
 records successful Claude initialization at pinned revisions. The
-[Codex MCP pilot](Codex%20MCP%20Pilot.md) separately proves native registration and
-explicit tool calls. The [Copilot MCP pilot](Copilot%20MCP%20Pilot.md) records
+[Codex MCP pilot](https://github.com/i-9-ai/skills/wiki/Codex-MCP-Pilot) separately proves native registration and
+explicit tool calls. The [Copilot MCP pilot](https://github.com/i-9-ai/skills/wiki/Copilot-MCP-Pilot) records
 native session discovery and direct calls through an ephemeral plugin mount;
 it does not establish a persistent marketplace installation.
 
@@ -72,7 +72,7 @@ host's absolute data directory may be initialized, outside installed plugin and
 consumer paths. Missing or unsafe storage produces a fixed diagnostic and skips
 metrics while retaining useful session context. Codex hooks do not claim tool
 read metrics: no reliable native file-read identity was verified for its tools.
-See [host hooks](Host%20Hooks.md#installed-plugin-hooks) for launch examples,
+See [host hooks](https://github.com/i-9-ai/skills/wiki/Host-Hooks#installed-plugin-hooks) for launch examples,
 supported events, state constraints and failure behavior.
 
 `.codex/hooks.json` remains a separate *project* registration for this checkout;
@@ -81,7 +81,7 @@ Avoid enabling both project and plugin session registrations for the same work,
 because hosts can combine them and duplicate context. Removing the plugin's hook
 manifest reference disables that surface without removing stored metrics.
 Direct clean-copy transport tests do not prove native host installation, trust
-acceptance or end-to-end delivery of host events. The [isolated native pilot](Native%20Plugin%20Pilot.md)
+acceptance or end-to-end delivery of host events. The [isolated native pilot](https://github.com/i-9-ai/skills/wiki/Native-Plugin-Pilot)
 passed discovery, SessionStart, local source replacement and rollback in Codex
 0.159.0 and Claude Code 2.1.277. It records the tested trust path, Claude's offline
 dependency warning and Codex's stubbed first turn, without claiming model quality
@@ -193,7 +193,7 @@ results outside distributed packages. Run official `skills-ref validate` on
 each changed skill. Structural checks do not replace an explicitly authorized
 installation test in each intended consumer.
 
-The repository [marketplace manifest](../.agents/plugins/marketplace.json)
+The repository [marketplace manifest](https://github.com/i-9-ai/skills/blob/main/.agents/plugins/marketplace.json)
 references `./`, the repository root. After this
 branch is merged, an authorized consumer can import the marketplace with
 `codex plugin marketplace add i-9-ai/skills --ref main` and then install with
@@ -211,7 +211,7 @@ Both entries select the root plugin, so they distribute the same canonical
 packages. Claude also maps the catalog/evidence MCP and installed hooks. Codex maps
 its own session hook and the MCP with explicit storage configuration; Copilot
 maps the catalog/evidence MCP through its verified legacy plugin adapter with
-caller-selected external storage. See the [Copilot MCP pilot](Copilot%20MCP%20Pilot.md)
+caller-selected external storage. See the [Copilot MCP pilot](https://github.com/i-9-ai/skills/wiki/Copilot-MCP-Pilot)
 for its native evidence and remaining installation/update limits. Marketplace
 metadata does not grant trust or establish native execution. Validate each
 host's marketplace loading, hook delivery and any MCP subprocess before claiming

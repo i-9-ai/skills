@@ -16,7 +16,7 @@ Changesets may be omitted only for changes that have no user-visible release not
 
 ## Prepare a version pull request
 
-The manual [Prepare version pull request workflow](../.github/workflows/release-preparation.yml)
+The manual [Prepare version pull request workflow](https://github.com/i-9-ai/skills/blob/main/.github/workflows/release-preparation.yml)
 creates or updates one draft PR against the repository's default branch. Select
 that branch when dispatching it; runs from other branches or tags are skipped.
 Concurrent preparation runs are serialized. A local check reads pending Markdown
@@ -130,7 +130,7 @@ without sharing the selected checkout's refs, index, configuration or hooks.
 Git fetching and formatter execution are disabled. The selected checkout is
 read-only and the disposable directory is removed afterward.
 
-The [release-note workflow](../.github/workflows/changesets.yml) first runs normal
+The [release-note workflow](https://github.com/i-9-ai/skills/blob/main/.github/workflows/changesets.yml) first runs normal
 Changesets status against the PR base or preceding push commit. When a prepared
 version has consumed its notes, the strict verifier must establish that complete
 generated-release evidence instead. Branch names, empty note directories and a

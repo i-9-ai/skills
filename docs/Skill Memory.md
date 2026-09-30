@@ -156,6 +156,6 @@ i9-skills skills memory retention --db "$example_dir/evidence.db" --collection d
 
 The summary has one explicit activation, no inferred completion, weaker read count
 zero and `catalog_unobserved`. Retention counts the activation once on the
-at-or-after-cutoff side. See [Lifecycle Evidence](Lifecycle%20Evidence.md) for the
-existing recording contracts and [Skill Telemetry](Skill%20Telemetry.md) for legacy
+at-or-after-cutoff side. See [Lifecycle Evidence](https://github.com/i-9-ai/skills/wiki/Lifecycle-Evidence) for the
+existing recording contracts and [Skill Telemetry](https://github.com/i-9-ai/skills/wiki/Skill-Telemetry) for legacy
 read evidence.

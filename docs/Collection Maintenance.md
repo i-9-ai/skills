@@ -128,7 +128,7 @@ inputs. Snapshot subprocess output is at most 1 MiB with a ten-second timeout.
 Unsafe files, incomplete coverage or exceeded limits prevent application.
 
 Use the relevant package's instructions for semantic remediation, then repeat the
-audit. Run the [official and local validation](Validation.md) applicable to the
+audit. Run the [official and local validation](https://github.com/i-9-ai/skills/wiki/Validation) applicable to the
 changed packages and evaluate their actual task behavior separately. The
-[architecture](Architecture.md) describes the boundary between procedural skills
+[architecture](https://github.com/i-9-ai/skills/wiki/Architecture) describes the boundary between procedural skills
 and this deterministic optional CLI adapter.

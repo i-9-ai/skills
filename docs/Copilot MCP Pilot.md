@@ -51,8 +51,8 @@ an explicitly selected database:
 i9-skills mcp serve --db /absolute/external/i9-evidence/skill-usage.db
 ```
 
-See the [MCP contract](Skill%20MCP.md) for inputs and bounds, and
-[lifecycle evidence](Lifecycle%20Evidence.md) for the distinction between caller
+See the [MCP contract](https://github.com/i-9-ai/skills/wiki/Skill-MCP) for inputs and bounds, and
+[lifecycle evidence](https://github.com/i-9-ai/skills/wiki/Lifecycle-Evidence) for the distinction between caller
 assertions, observed reads and independently verified outcomes. Reading a skill
 does not record activation or a successful task.
 

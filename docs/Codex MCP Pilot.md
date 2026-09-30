@@ -137,7 +137,7 @@ as a native plugin failure.
 ## Repository regressions and limits
 
 The mapping needs Node 24 but no CLI dependencies, build or global installation.
-It shares the [MCP service](Skill%20MCP.md) with the CLI and Claude plugin. Catalog
+It shares the [MCP service](https://github.com/i-9-ai/skills/wiki/Skill-MCP) with the CLI and Claude plugin. Catalog
 access, onboarding and reports need no data directory. For explicit records,
 select a stable external directory and supply it to the host launch:
 
@@ -149,7 +149,7 @@ Use a reviewed configuration for the host actually running the plugin. A desktop
 process may not inherit a terminal's environment. No cwd/home fallback is used.
 Only a valid explicit record may initialize `skill-usage.db`; discovery and
 read-only catalog calls never create it. Follow the
-[native pilot plan](../plans/2026-09-29-19-38-34-native-plugin-pilot.md) with a fresh
+[native pilot plan](https://github.com/i-9-ai/skills/blob/main/plans/2026-09-29-19-38-34-native-plugin-pilot.md) with a fresh
 isolated profile for reproduction. Keep raw host logs outside the repository.
 
 Five dedicated offline mapping tests pass under Node 24.21.0: path-with-spaces

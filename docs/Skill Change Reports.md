@@ -29,7 +29,7 @@ new disposable caller directory. Review before execution. The fixture's stale
 catalog exercises an actual catalog repair; its synthetic evidence is not proof
 of validation on real work.
 
-The sequence uses [collection maintenance](Collection%20Maintenance.md) and the
+The sequence uses [collection maintenance](https://github.com/i-9-ai/skills/wiki/Collection-Maintenance) and the
 bundled snapshot helper. Evolution without `--apply` is a preview; the explicit
 write supports catalog synchronization only. The `prepared_ci_only` official
 validation command needs a prepared environment and is separate from the offline
@@ -153,5 +153,5 @@ do not promise race-proof filesystem confinement.
 
 Errors expose categories, not paths or submitted documents. Reports and guides
 never write versions, evidence storage, source packages or release metadata.
-[Release preparation](Release%20Management.md), installation and publication keep
+[Release preparation](https://github.com/i-9-ai/skills/wiki/Release-Management), installation and publication keep
 their own authorization boundaries.

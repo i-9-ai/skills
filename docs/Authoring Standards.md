@@ -10,7 +10,7 @@ State positive selection triggers in a `When to use` section and exclusions in a
 
 ## Names and affinity
 
-Start with the domain, followed by a responsibility or subject. Use `skill` or `skills` according to whether one target or multiple candidates/sources define the work. In another domain, prefer names such as `github-issue` and `github-action` over a generic verb that hides the affinity group. Preserve established vocabulary and check actual installation/catalog collisions before adopting a name. The portable [naming specialist](../.agents/skills/skill-naming/SKILL.md) produces a decision and migration impact list; authoring applies accepted changes. Domain examples do not impose a fixed taxonomy.
+Start with the domain, followed by a responsibility or subject. Use `skill` or `skills` according to whether one target or multiple candidates/sources define the work. In another domain, prefer names such as `github-issue` and `github-action` over a generic verb that hides the affinity group. Preserve established vocabulary and check actual installation/catalog collisions before adopting a name. The portable [naming specialist](https://github.com/i-9-ai/skills/blob/main/.agents/skills/skill-naming/SKILL.md) produces a decision and migration impact list; authoring applies accepted changes. Domain examples do not impose a fixed taxonomy.
 
 ## Portable package
 
@@ -34,7 +34,7 @@ When a package needs preparation, keep its contract in `SKILL.md`: state prerequ
 
 Repository-owned tooling and the creator helper use Node.js built-ins. Filesystem validation requires an owned, stable workspace: it rejects unsafe entries and detected changes before accepting results, but does not claim confinement against concurrent adversarial mutation. Node's [filesystem API](https://nodejs.org/docs/latest-v24.x/api/fs.html) exposes path-based operations, not portable descriptor-relative directory traversal. Do not execute candidate scripts or allow another writer to alter the selected tree during validation.
 
-Provide optional host metadata and icons when their format and utility are verified. `agents/openai.yaml` is an optional Codex UI surface; other supported hosts may need only `SKILL.md`. Keep adapters consistent with the core, include their assets and license, validate resource paths, and never add a fictional manifest or mandatory vendor integration. Consult the [host matrix](Compatibility.md) before adding files.
+Provide optional host metadata and icons when their format and utility are verified. `agents/openai.yaml` is an optional Codex UI surface; other supported hosts may need only `SKILL.md`. Keep adapters consistent with the core, include their assets and license, validate resource paths, and never add a fictional manifest or mandatory vendor integration. Consult the [host matrix](https://github.com/i-9-ai/skills/wiki/Compatibility) before adding files.
 
 ## Optional metadata and runtime guidance
 
@@ -55,7 +55,7 @@ metadata:
 
 `reasoning-effort` is optional guidance: `low` for routine bounded work, `medium` for ordinary analysis, or `high` for conflicting evidence and substantial multi-step judgments. It is a collection convention, not a standardized runtime control or benchmark claim. Explain its meaning and task-specific reason in the body because some hosts strip metadata. Omit it when the inherited setting is sufficient. Keep model IDs and benchmark bookkeeping out of the default scaffold.
 
-Consult the creator's [runtime reference](../.agents/skills/skill-authoring/references/runtime-guidance.md) before choosing native fields. Model lists, effort settings, permissions, and invocation controls belong to different files across hosts. Preserve explicit user selections and limits; use the host's actual catalog and selection interface when available, otherwise inherit the existing model and setting. No metadata field creates selection capability or authorizes delegation. The [OpenAI reference](../.agents/skills/skill-authoring/references/openai-yaml.md) covers its optional sidecar and verified source provenance.
+Consult the creator's [runtime reference](https://github.com/i-9-ai/skills/blob/main/.agents/skills/skill-authoring/references/runtime-guidance.md) before choosing native fields. Model lists, effort settings, permissions, and invocation controls belong to different files across hosts. Preserve explicit user selections and limits; use the host's actual catalog and selection interface when available, otherwise inherit the existing model and setting. No metadata field creates selection capability or authorizes delegation. The [OpenAI reference](https://github.com/i-9-ai/skills/blob/main/.agents/skills/skill-authoring/references/openai-yaml.md) covers its optional sidecar and verified source provenance.
 
 ## Provenance and rights
 
@@ -71,7 +71,7 @@ When a skill describes a hook, watcher, daemon, scheduler, or background loop, i
 
 Evaluate positive/negative triggers, real task outputs, error paths, and relevant adversarial cases against frozen criteria. Compare a new skill with a no-skill baseline and a revision with the accepted version. Separate structural checks, behavioral evaluation, named-provider testing, and production evidence. Require no critical correctness, scope, privacy, licensing, or portability blocker before claiming a scoped pass.
 
-Every new or modified package must also pass the official `skills-ref validate` command linked by the [specification's validation section](https://agentskills.io/specification#validation). Record the tool source/version and exact candidate identity. Follow the [pinned repository setup](Validation.md); a failed or unavailable official check blocks readiness. Custom validation and manual inspection supplement this requirement.
+Every new or modified package must also pass the official `skills-ref validate` command linked by the [specification's validation section](https://agentskills.io/specification#validation). Record the tool source/version and exact candidate identity. Follow the [pinned repository setup](https://github.com/i-9-ai/skills/wiki/Validation); a failed or unavailable official check blocks readiness. Custom validation and manual inspection supplement this requirement.
 
 ## Contributing and evolution
 

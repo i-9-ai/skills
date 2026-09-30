@@ -34,7 +34,7 @@ test('Wiki synchronization excludes agent instructions and removes stale Wiki co
     fs.mkdirSync(path.join(docs, 'nested'), { recursive: true });
     fs.mkdirSync(path.join(wiki, '.git'), { recursive: true });
     fs.mkdirSync(path.join(wiki, 'nested'));
-    fs.writeFileSync(path.join(docs, 'Home.md'), '# Home\n');
+    fs.writeFileSync(path.join(docs, 'Home.md'), '# Home\n[Page](nested/Page.md)\n');
     fs.writeFileSync(path.join(docs, 'AGENTS.md'), 'private instructions\n');
     fs.writeFileSync(path.join(docs, 'nested/AGENTS.md'), 'nested instructions\n');
     fs.writeFileSync(path.join(docs, 'nested/Page.md'), '[source](../../README.md)\n');
@@ -45,7 +45,10 @@ test('Wiki synchronization excludes agent instructions and removes stale Wiki co
 
     new WikiMirrorRepository().synchronize(docs, wiki, 'example/skills');
 
-    assert.equal(fs.readFileSync(path.join(wiki, 'Home.md'), 'utf8'), '# Home\n');
+    assert.equal(
+        fs.readFileSync(path.join(wiki, 'Home.md'), 'utf8'),
+        '# Home\n[Page](https://github.com/example/skills/wiki/Page)\n',
+    );
     assert.equal(fs.readFileSync(path.join(wiki, '.git/config'), 'utf8'), 'preserve');
     assert.equal(fs.existsSync(path.join(wiki, 'AGENTS.md')), false);
     assert.equal(fs.existsSync(path.join(wiki, 'nested/AGENTS.md')), false);
