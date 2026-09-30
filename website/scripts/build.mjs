@@ -186,19 +186,10 @@ function assertSafeSvg(bytes) {
 function publicOrigin(value) {
     if (value === null || value === undefined) return null;
     const url = new URL(value);
-    if (
-        url.protocol !== 'https:' ||
-        url.username ||
-        url.password ||
-        url.pathname !== '/' ||
-        url.search ||
-        url.hash
-    ) {
-        throw new Error(
-            'Public URL must be an HTTPS origin without credentials, path, query or fragment',
-        );
+    if (url.protocol !== 'https:' || url.username || url.password || url.search || url.hash) {
+        throw new Error('Public URL must be HTTPS without credentials, query or fragment');
     }
-    return url.origin + '/';
+    return url.href.endsWith('/') ? url.href : url.href + '/';
 }
 
 export function buildSite({
@@ -334,7 +325,7 @@ function main() {
     const args = process.argv.slice(2);
     if (args.includes('--help')) {
         process.stdout.write(
-            'Build the I-9 Skills static site.\nUsage: node website/scripts/build.mjs [--out-dir DIRECTORY] [--public-url HTTPS_ORIGIN]\nDefault: .work/website-preview, review indexing. I9_SITE_PUBLIC_URL selects production metadata; never deploys or overwrites source.\n',
+            'Build the I-9 Skills static site.\nUsage: node website/scripts/build.mjs [--out-dir DIRECTORY] [--public-url HTTPS_BASE_URL]\nDefault: .work/website-preview, review indexing. I9_SITE_PUBLIC_URL selects production metadata; never deploys or overwrites source.\n',
         );
         return;
     }

@@ -17,7 +17,8 @@ function showLanguageSuggestion() {
 
     const options = JSON.parse(banner.dataset.languageSuggestion);
     const locale = suggestLanguage({
-        pathname: window.location.pathname,
+        // The banner is rendered only on the root page, including a hosted subpath.
+        pathname: '/',
         preferredLanguages: navigator.languages?.length
             ? navigator.languages
             : [navigator.language],

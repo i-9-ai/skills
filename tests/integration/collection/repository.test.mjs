@@ -764,13 +764,16 @@ test('public hygiene scans UTF-16 byte orders with or without BOM without echoin
 });
 
 test('documentation publication verifies inputs before staging and publishing main', () => {
-    const workflow = fs.readFileSync(join(process.cwd(), '.github', 'workflows', 'publish-visual-guides.yml'), 'utf8');
-    assert.match(workflow, /concurrency:\n\s+group: publish-visual-guides-\$\{\{ github\.repository \}\}\n\s+cancel-in-progress: false/);
-    assert.match(workflow, /with:\n\s+ref: main\n\s+persist-credentials: false/);
-    assert.match(workflow, /git add --all\n\s+if git diff --quiet --staged; then/);
+    const workflow = fs.readFileSync(join(process.cwd(), '.github', 'workflows', 'publish-website.yml'), 'utf8');
+    assert.match(workflow, /concurrency:\n\s+group: github-pages-\$\{\{ github\.repository \}\}\n\s+cancel-in-progress: false/);
+    assert.match(workflow, /ref: \$\{\{ github.sha \}\}/);
+    assert.match(workflow, /permissions: \{\}/);
+    assert.match(workflow, /pages: write\n\s+id-token: write/);
+    assert.match(workflow, /actions\/deploy-pages@[a-f0-9]{40}/);
+    assert.match(workflow, /actions\/upload-pages-artifact@[a-f0-9]{40}/);
+    assert.match(workflow, /--exclude='\/index.html' --exclude='AGENTS.md'/);
     const verification = workflow.indexOf("new VisualGuideRepository().verify('.')");
     assert.ok(verification > 0, 'visual-guide verification must run');
-    assert.ok(verification < workflow.indexOf('GITHUB_TOKEN:'), 'verify before configuring publication credentials');
     assert.ok(verification < workflow.indexOf('rsync -a'), 'verify before copying publishable assets');
     assert.doesNotMatch(workflow, /continue-on-error:/);
     assert.match(workflow, /node-version: '24'/);

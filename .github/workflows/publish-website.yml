@@ -1,0 +1,78 @@
+name: Publish catalog website
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "website/**"
+      - "skills-catalog.json"
+      - ".agents/skills/**"
+      - "docs/assets/**"
+      - "docs/diagrams/**"
+      - "src/repository/VisualGuideRepository.ts"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/publish-website.yml"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: github-pages-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: read
+    steps:
+      - name: Check out the exact merged source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+      - name: Read Pages configuration
+        id: pages
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+      - name: Install reviewed dependencies
+        run: npm ci
+      - name: Test the website
+        run: npm run site:test
+      - name: Verify legacy visual guides
+        run: |
+          node --input-type=module <<'NODE'
+          import { VisualGuideRepository } from './src/repository/VisualGuideRepository.ts';
+          new VisualGuideRepository().verify('.');
+          NODE
+      - name: Build the production catalog and preserve guide URLs
+        env:
+          I9_SITE_PUBLIC_URL: ${{ steps.pages.outputs.base_url }}
+        run: |
+          npm run site:build
+          rsync -a --exclude='/index.html' --exclude='AGENTS.md' --exclude='*.visual-check.*' docs/assets/ .work/website-preview/
+      - name: Upload the Pages artifact
+        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
+        with:
+          path: .work/website-preview
+  deploy:
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy the catalog website
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4

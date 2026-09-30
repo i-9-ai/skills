@@ -17,6 +17,8 @@ Verify every requirement has an implementation and a check or an explicit limit.
 
 ## Child DOX index
 
+- [Website GitHub Pages delivery](2026-09-30-20-27-20-website-github-pages.md): catalog website and verified legacy guides in one Pages artifact; release waits for verified deployment.
+
 - [Cloudflare catalog site delivery](2026-09-30-18-31-35-cloudflare-site-delivery.md): authorized native Git previews and main production, with separate indexing modes; website merge approval and existing guide URLs remain independent.
 - [Changesets publication and releases](2026-09-30-17-02-00-changesets-publication-and-releases.md): reviewed version PRs, official artifact publication with scoped npm OIDC, and GitHub release/tag creation; historical 0.1.0 metadata recovery never re-uploads npm.
 - [Catalog promotion site](2026-09-30-15-57-19-catalog-promotion-site.md): a multilingual static catalog, original visual design and loopback-only preview; no site deployment or Pages routing change before explicit approval.

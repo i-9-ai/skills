@@ -23,7 +23,8 @@ Without a public URL, builds use review indexing. `--public-url` or the
 `I9_SITE_PUBLIC_URL` environment variable explicitly selects production metadata;
 the argument takes precedence. Select that environment variable only for the
 provider's production environment. The URL must be an HTTPS origin with no
-credentials, path beyond `/`, query or fragment. This selection never deploys.
+credentials, query or fragment. A project path such as `/skills/` is supported;
+the base URL is normalized with a trailing slash. This selection never deploys.
 
 Inputs are skills-catalog.json, content.mjs, render.mjs, the bundled runtime assets
 and each canonical package's assets/icon.svg. The catalog must use schema version

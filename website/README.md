@@ -1,9 +1,9 @@
 # I-9 Skills promotion site
 
 This is a static site for the repository's meta-skill collection. Local builds
-support pull-request review; Cloudflare Pages supplies Git previews and production
-from `main` when configured. The existing GitHub Pages visual guides and their
-publishing workflow remain separate.
+support pull-request review; GitHub Pages publishes the catalog and existing
+visual guides from `main`. Cloudflare Pages supplies independent Git previews
+and a production mirror when configured.
 
 ## Review locally
 
@@ -90,6 +90,15 @@ Browser review checks English/PT-BR/Spanish, search/filter/reset/empty states,
 query and section preservation, copy success/failure, keyboard, 375 px mobile,
 desktop, no JavaScript and reduced motion. Functional testing does not replace
 comparison with the selected design references.
+
+## GitHub Pages production
+
+`.github/workflows/publish-website.yml` publishes the website from merged main
+through official Pages artifact and deployment actions. Set the repository Pages
+source to GitHub Actions. The build reads the configured Pages base URL, so locale,
+asset, canonical and sitemap URLs support `/skills/`. Verified visual guides are
+included at their existing filenames; the old guide index does not replace the
+catalog homepage. Deployment permissions are confined to the deploy job.
 
 ## Cloudflare Git delivery
 
