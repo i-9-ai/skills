@@ -91,8 +91,8 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
         run('npm', ['pack', '--json', '--pack-destination', root], cleanSource),
     );
     assert.equal(existsSync(join(cleanSource, 'dist/index.js')), true);
-    const packed = Array.isArray(packResult) ? packResult[0] : packResult['@i-9-ai/skills'];
-    assert.equal(packed?.name, '@i-9-ai/skills');
+    const packed = Array.isArray(packResult) ? packResult[0] : packResult['@i-9.ai/skills'];
+    assert.equal(packed?.name, '@i-9.ai/skills');
     const names = packed.files.map((file) => file.path);
     assert.ok(names.includes('dist/index.js'));
     assert.ok(names.includes('bin/index.mjs'));
@@ -112,7 +112,7 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
     }
 
     const modules = join(root, 'consumer', 'node_modules');
-    const installed = join(modules, '@i-9-ai', 'skills');
+    const installed = join(modules, '@i-9.ai', 'skills');
     mkdirSync(installed, { recursive: true });
     run(
         'tar',

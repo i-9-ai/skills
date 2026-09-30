@@ -1,5 +1,5 @@
 {
-  "name": "@i-9-ai/skills",
+  "name": "@i-9.ai/skills",
   "version": "0.1.0-rc.1",
   "private": true,
   "description": "A portable collection of focused skills and its validation tooling.",

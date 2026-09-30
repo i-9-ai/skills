@@ -45,7 +45,7 @@ ownership, application services, and I/O repositories explicit and testable.
 - No publishing, consumer installation, automatic plugin installation,
   automatic host-hook enablement, or changes to home configuration.
 - No npm registry publication in this delivery. A later, separately authorized
-  distribution release may publish the package as `@i-9-ai/skills` and expose
+  distribution release may publish the package as `@i-9.ai/skills` and expose
   the short `i9-skills` command through `bin`. It must test the packed artifact
   in a clean Node 24 environment and pin any hook invocation to a reviewed
   release. Session hooks may diagnose a missing executable and show a manual

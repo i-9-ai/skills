@@ -180,18 +180,18 @@ This cleanup does not remove the npm cache or a caller-owned evidence database.
 
 ## Released npm package: a separate route
 
-The skills npm package is not published yet. After an authorized publication,
-replace `<released-version>` with a verified exact version. The server portion
-of an Inspector CLI command can then use:
+The skills npm package is not published yet. After publication, the server
+portion of an Inspector CLI command can use:
 
 ```sh
-npx --yes --package='@i-9-ai/skills@<released-version>' i9-skills mcp serve
+npx --yes @i-9.ai/skills mcp serve
 ```
 
 Use that whole command before Inspector's `--`, followed by the same Inspector
-method and output options. In particular, the server's `--yes` and `--package`
-belong before the separator. This deliberately permits npm to fetch the pinned
-skills package; it is not the checkout procedure and has not been exercised by
+method and output options. The server's `--yes` belongs before the separator.
+For repeatable runs, append an exact verified release version to the package
+name. This deliberately permits npm to fetch the skills package; it is not the
+checkout procedure and has not been exercised by
 this guide. See [distribution readiness](https://github.com/i-9-ai/skills/wiki/Distribution-Readiness) for the
 current local tarball verification route.
 

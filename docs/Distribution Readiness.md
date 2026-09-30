@@ -1,6 +1,6 @@
 # CLI distribution from Git source
 
-The prepared npm identity is `@i-9-ai/skills`, with the executable `i9-skills`.
+The prepared npm identity is `@i-9.ai/skills`, with the executable `i9-skills`.
 The manifest currently sets `private:true`. No release, registry upload, marketplace
 registration or global installation is authorized by a build or package test.
 This npm flag prevents registry publication and is independent of GitHub
@@ -15,15 +15,14 @@ the launcher, distributed skill resources and public documentation. The launcher
 chooses source in a checkout and built code in a packed installation; it never
 compiles, downloads or installs during command startup.
 
-## Run from an immutable public revision
+## Run directly from GitHub
 
-Use Node.js 24+, npm and Git. Replace `<reviewed-full-commit-sha>` with the full
-SHA of a reviewed public revision containing `scripts.prepare` in `package.json`.
-Review the source and its dependency lockfile before the explicit download:
+Use Node.js 24+, npm and Git. The ordinary command selects this repository's
+default branch and lets npm infer its single executable:
 
 ```sh
-npx --yes --allow-git=root --package='git+https://github.com/i-9-ai/skills.git#<reviewed-full-commit-sha>' i9-skills --help
-npx --yes --allow-git=root --package='git+https://github.com/i-9-ai/skills.git#<reviewed-full-commit-sha>' i9-skills catalog search --query authoring --limit 10
+npx --yes --allow-git=root github:i-9-ai/skills --help
+npx --yes --allow-git=root github:i-9-ai/skills catalog search --query authoring --limit 10
 ```
 
 npm downloads the selected Git revision into its cache, installs its build
@@ -45,16 +44,21 @@ used Node 24.21.0 and verified help, catalog search/read, project discovery and
 MCP resource retrieval from a production-only install; this is local Git-source
 evidence, separate from fetching the public GitHub URL after merge.
 
-The Git-source call keeps `private: true`. The registry spellings
-`npx @i-9-ai/skills` and
-`npx --package='@i-9-ai/skills@<reviewed-version>' i9-skills --help` require a
-separate npm publication; making GitHub public does not create that release.
-Skill package installation still uses the separate pinned Skills CLI shown in
+The Git-source call keeps `private: true`. The registry command
+`npx @i-9.ai/skills --help` requires a separate npm publication; making GitHub
+public does not create that release. The `--package` flag is not required for
+either spelling because this package declares one executable.
+Skill package installation uses the separate unversioned Skills CLI shown in
 the [README](https://github.com/i-9-ai/skills/blob/main/README.md#install).
+
+For a reproducible audit or automated integration, an operator can optionally
+append `#` and a full reviewed commit SHA to the Git package spec, or select an
+exact released npm version. Ordinary installation examples use current versions;
+test receipts record the versions and revisions actually exercised.
 
 ## Consumer command mapping
 
-After the reviewed package spec above, append the same `i9-skills` command:
+Append the command arguments after `github:i-9-ai/skills`:
 
 | Purpose | Command and explicit caller selection |
 | --- | --- |
@@ -67,7 +71,7 @@ After the reviewed package spec above, append the same `i9-skills` command:
 For example, project-only discovery from the caller's current directory is:
 
 ```sh
-npx --yes --allow-git=root --package='git+https://github.com/i-9-ai/skills.git#<reviewed-full-commit-sha>' i9-skills context available-skills --project . --no-global
+npx --yes --allow-git=root github:i-9-ai/skills context available-skills --project . --no-global
 ```
 
 Bundled catalog and MCP operations locate the installed package. Commands

@@ -52,6 +52,34 @@ not newly dispatched by this audit.
 
 ## Verification and rollback
 
+### Consumer installation refinement
+
+The follow-up installation request uses unversioned `npx skills` and current
+GitHub source examples as the normal path. Remove mandatory SHA placeholders
+and explicit `--package` selection from those examples; retain immutable source
+selection as an optional reproducibility technique and keep actual test versions
+in evidence receipts. Document Codex Git-marketplace and local-folder installation
+in the README, with verification, desktop discovery, updates and removal in the
+plugin guide. Exercise both marketplace sources and the inferred single npm bin
+in disposable consumer state, leaving real installed skills and host settings
+unchanged. No dependency, command route or plugin manifest changes are required.
+The selected npm identity is now `@i-9.ai/skills`, matching the domain rather than
+the GitHub organization spelling. Update the manifest, root lock metadata,
+installed-package identity checks, packed fixtures, pending Changesets and public
+references together. The `i9-skills` executable and `i-9-ai/skills` GitHub
+repository remain unchanged. Re-run the production-only packed installation;
+renaming this unpublished package must not make its installed catalog, onboarding
+or plugin-artifact preparation reject its own manifest. Registry ownership must
+be established under the selected npm scope, independently of account username.
+
+Registry publication remains issue #17. The current account check returns
+`ENEEDAUTH` and the public registry identity returns `E404`; the shorter registry
+command must remain labeled unavailable until an authenticated scope owner
+publishes a reviewed package. Keep the existing publication guard while that
+prerequisite is unresolved. Check the Changeset, links and Node 24 repository
+suite before review. Reverting these documentation changes restores the earlier
+examples without changing any consumer or registry state.
+
 Record the Gitleaks version, refs/cutoff, scanned commit count and findings without
 secret matches. Validate current repository and packed allowlist through existing
 Node 24 checks, inspect exact-head official package evidence, and preserve the

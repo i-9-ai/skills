@@ -11,7 +11,7 @@ import type { CollectionCatalogEntry } from './CollectionCatalogRepository.ts';
 
 export type InstalledCollectionProvenance = {
     collection: 'i9-skills';
-    package_name: '@i-9-ai/skills';
+    package_name: '@i-9.ai/skills';
     package_version: string;
     repository: 'https://github.com/i-9-ai/skills';
     source_ref: null;
@@ -85,7 +85,7 @@ export class InstalledSkillRepository {
                 skills: checked.value.skills,
                 provenance: {
                     collection: 'i9-skills',
-                    package_name: '@i-9-ai/skills',
+                    package_name: '@i-9.ai/skills',
                     package_version: version,
                     repository: 'https://github.com/i-9-ai/skills',
                     source_ref: null,
@@ -106,7 +106,7 @@ export class InstalledSkillRepository {
         const manifest = versions.document(strictJson(root.readBytes('package.json', 65_536)));
         const repository = versions.document(manifest.repository);
         if (
-            manifest.name !== '@i-9-ai/skills' ||
+            manifest.name !== '@i-9.ai/skills' ||
             typeof repository.url !== 'string' ||
             ![
                 'git+https://github.com/i-9-ai/skills.git',

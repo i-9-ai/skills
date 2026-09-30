@@ -50,28 +50,28 @@ tool calls are recorded in the [Copilot MCP pilot](https://github.com/i-9-ai/ski
 Both legacy adapters retain the explicit CLI configuration as a fallback.
 
 For an explicit public Git-source launch on Node 24 and npm 12, use the
-[distribution guide](https://github.com/i-9-ai/skills/wiki/Distribution-Readiness#run-from-an-immutable-public-revision)
-to select and review the full source SHA, then run:
+[distribution guide](https://github.com/i-9-ai/skills/wiki/Distribution-Readiness#run-directly-from-github), then run:
 
 ```sh
-npx --yes --allow-git=root --package='git+https://github.com/i-9-ai/skills.git#<reviewed-full-commit-sha>' i9-skills mcp serve
+npx --yes --allow-git=root github:i-9-ai/skills mcp serve
 ```
 
 The initial call downloads the source/build dependencies and runs preparation;
 stdout remains reserved for MCP protocol messages. This is an explicit client
 launch, not an automatic session setup hook.
 
-The npm package is not published yet. After an authorized publication, replace
-`<released-version>` with the verified version in the client configuration:
+The npm package is not published yet. After publication, a client can launch the
+current registry package directly:
 
 ```sh
-npx --yes --package='@i-9-ai/skills@<released-version>' i9-skills mcp serve
+npx --yes @i-9.ai/skills mcp serve
 ```
 
-This deliberately permits npm to obtain that pinned package; it is not an
-installation step performed by a hook. For current development use the checkout
-command above or the [local tarball test](https://github.com/i-9-ai/skills/wiki/Distribution-Readiness). Never use
-an unpinned `latest` package as an implicit hook dependency.
+This explicitly permits npm to obtain the package; it is not an installation
+step performed by a hook. For a reproducible client configuration, append an
+exact verified release version to the package name. For current development use
+the checkout command above or the [local tarball test](https://github.com/i-9-ai/skills/wiki/Distribution-Readiness).
+Automatic hooks continue to use their installed local runtime.
 
 ## Search, then read
 

@@ -1,5 +1,5 @@
 ---
-"@i-9-ai/skills": patch
+"@i-9.ai/skills": patch
 ---
 
 Make mirrored documentation links open rendered GitHub Wiki pages instead of raw

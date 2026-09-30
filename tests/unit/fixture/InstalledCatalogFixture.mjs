@@ -47,7 +47,7 @@ export function catalogFixture(t, { runtime = false } = {}) {
         installed,
         'package.json',
         JSON.stringify({
-            name: '@i-9-ai/skills',
+            name: '@i-9.ai/skills',
             version: '9.8.7',
             type: 'module',
             repository: { type: 'git', url: 'git+https://github.com/i-9-ai/skills.git' },

@@ -1,5 +1,5 @@
 ---
-"@i-9-ai/skills": minor
+"@i-9.ai/skills": minor
 ---
 
 Add explicit local lifecycle evidence for routed, activated, completed, not-applicable, blocked and abandoned skill attempts. `telemetry record` accepts the closed schema-2 envelope, and `telemetry catalog-observe` records complete redacted catalog inventories. Transactional migration 3 preserves the existing read and telemetry history, with canonical retry handling, a shared event-ID namespace and source/session conflict checks.

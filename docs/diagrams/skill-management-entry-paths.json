@@ -28,7 +28,7 @@
     {"id": "instructions", "lane": "use", "col": 2, "type": "database", "label": "Selected SKILL.md", "sublabel": "bounded references", "width": 154},
     {"id": "workflow", "lane": "use", "col": 3, "type": "backend", "label": "Meta-skill workflow", "sublabel": "research / create / improve", "width": 164},
     {"id": "result", "lane": "use", "col": 4, "type": "security", "label": "Reviewable output", "sublabel": "evidence and limits", "width": 154},
-    {"id": "cli", "lane": "tooling", "col": 0, "type": "external", "label": "Pinned Git CLI", "sublabel": "explicit npx download", "width": 140},
+    {"id": "cli", "lane": "tooling", "col": 0, "type": "external", "label": "Git-source CLI", "sublabel": "explicit npx download", "width": 140},
     {"id": "commands", "lane": "tooling", "col": 1, "type": "backend", "label": "i9-skills commands", "sublabel": "prepared Node 24 CLI", "width": 148},
     {"id": "mcp", "lane": "tooling", "col": 2, "type": "messagebus", "label": "Local stdio MCP", "sublabel": "bundled catalog and tools", "width": 154},
     {"id": "plugin", "lane": "host", "col": 0, "type": "external", "label": "Root plugin", "sublabel": "reviewed repository copy", "width": 140},
@@ -51,6 +51,6 @@
   ],
   "cards": [
     {"dot": "cyan", "title": "Explicit tooling", "items": ["CLI also offers catalog reads, collection maintenance and evidence queries", "MCP also offers onboarding, bump reports and explicit evidence tools"]},
-    {"dot": "amber", "title": "Current boundaries", "items": ["Registry npx @i-9-ai/skills is unpublished; use a reviewed Git SHA", "Context and catalog reads do not activate skills or record evidence"]}
+    {"dot": "amber", "title": "Current boundaries", "items": ["Registry npx @i-9.ai/skills is unpublished; use the Git-source CLI", "Context and catalog reads do not activate skills or record evidence"]}
   ]
 }

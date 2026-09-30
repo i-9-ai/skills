@@ -175,7 +175,81 @@ write retains its new partial directory for inspection and returns nonzero;
 manifests are written last. Never install a partial artifact. The command does
 not delete, overwrite, repair or clean existing artifacts.
 
-## Verification and future marketplace use
+## Install in Codex
+
+The repository contains a Codex marketplace with one root plugin. Consumers can
+install it directly from GitHub; a public OpenAI directory listing is not a
+prerequisite. Use a Codex client with plugin marketplace support and Node.js 24+
+on the executable search path for its hooks and MCP.
+
+```sh
+codex plugin marketplace add i-9-ai/skills --ref main
+codex plugin add i9-skills@i9-skills
+codex plugin list
+```
+
+`i9-skills@i9-skills` identifies the plugin and marketplace, respectively; it is
+not a version selector. The marketplace entry points to the repository root,
+and the plugin manifest selects `.agents/skills`, its hook and its MCP. No
+second skills source tree or `npm ci` is needed for these plugin runtimes.
+Start a new session after installation and confirm that the plugin is enabled.
+Avoid enabling both the installed plugin session hook and the checkout's project
+session hook in the same session.
+
+### Local-folder installation
+
+Clone a checkout when you want to inspect or develop the plugin locally, then
+register its existing marketplace:
+
+```sh
+git clone https://github.com/i-9-ai/skills.git
+codex plugin marketplace add ./skills
+codex plugin add i9-skills@i9-skills
+codex plugin list
+```
+
+An existing checkout's absolute path can replace `./skills`. Keep that source
+folder while using its local marketplace. Choose the GitHub or local source for
+the `i9-skills` marketplace; they share the same identity.
+
+For supported desktop clients, restart the app after configuring the marketplace,
+open the Plugins Directory, choose **I9 Skills**, and install or enable **I-9
+Skills**. Opening this trusted repository also exposes its checked-in repo
+marketplace. Workspace-managed availability may require an administrator's
+import; local CLI registration does not override that policy. See the
+[OpenAI marketplace setup documentation](https://developers.openai.com/plugins/build/plugins#add-a-marketplace-from-the-cli)
+for client-specific controls.
+
+### Verify, update and remove
+
+`codex plugin list` should show `i9-skills` in the `i9-skills` marketplace as
+installed. In a new session, check that its 24 skills and `i9-skills` MCP are
+available and that the session hook completes. An absent `node` executable or
+Node version below 24 prevents the bundled runtimes from starting; installation
+alone does not prove their execution.
+
+For a Git-backed marketplace, refresh its source and install the selected plugin:
+
+```sh
+codex plugin marketplace upgrade i9-skills
+codex plugin add i9-skills@i9-skills
+codex plugin list
+```
+
+For a local source, update that checkout first, then reinstall and restart the
+client. Recheck the installed version and capabilities after an update; the
+native pilot verifies local replacement, not every client's hosted update cache.
+To uninstall the plugin and optionally stop tracking its marketplace:
+
+```sh
+codex plugin remove i9-skills@i9-skills
+codex plugin marketplace remove i9-skills
+```
+
+These commands manage plugin installation and marketplace registration. They do
+not delete caller-owned evidence storage or the source checkout.
+
+## Verification and marketplace boundaries
 
 `npm run check` exercises preview, source rejection, no-overwrite and exact
 package byte preservation with disposable data. `npm run package:check`
@@ -194,16 +268,13 @@ each changed skill. Structural checks do not replace an explicitly authorized
 installation test in each intended consumer.
 
 The repository [marketplace manifest](https://github.com/i-9-ai/skills/blob/main/.agents/plugins/marketplace.json)
-references `./`, the repository root. After this
-branch is merged, an authorized consumer can import the marketplace with
-`codex plugin marketplace add i-9-ai/skills --ref main` and then install with
-`codex plugin add i9-skills@i9-skills`. The consumer must be able to fetch the
-selected Git source. The checked-in manifests prepare those steps;
-they do not execute them or make the repository public. The local source pilot
-does not establish hosted Git/version-cache update behavior.
-Before public marketplace use, verify the exact merged ref, plugin UI rendering,
-package count, and update behavior in a consumer environment. Public directory
-submission and workspace publication remain separate authorization boundaries.
+references `./`, the repository root. GitHub and local-folder registration and
+installation use the same root plugin. The consumer must be able to fetch its
+selected source. The checked-in manifests do not execute installation. Public
+directory submission and workspace publication remain separate from installing
+this repository marketplace. Verify plugin UI rendering, package count and
+update behavior in the intended consumer; the isolated source pilot does not
+establish universal client behavior.
 
 Claude Code and Copilot CLI can likewise read their repository marketplace
 files after a consumer explicitly adds this Git repository as a marketplace.

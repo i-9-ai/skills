@@ -24,7 +24,7 @@ flowchart LR
 ```
 
 The Git-source `npx` call downloads a reviewed immutable revision and runs its
-explicit preparation lifecycle; registry `npx @i-9-ai/skills` still requires npm
+explicit preparation lifecycle; registry `npx @i-9.ai/skills` still requires npm
 publication. Hook context discovers plugin, project and global packages. MCP
 catalog access uses the installed bundled catalog and returns selected Markdown.
 Neither context nor retrieval activates a skill or records evidence. The CLI

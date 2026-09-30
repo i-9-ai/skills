@@ -1,5 +1,5 @@
 ---
-"@i-9-ai/skills": patch
+"@i-9.ai/skills": patch
 ---
 
 Reconcile historical pull-request findings across the portable package helpers and collection CLI. Installation now isolates Git source verification from inherited repository/configuration overrides and rejects additional credential markers. Catalog discovery handles nested resource examples, unquoted YAML scalars and metadata indentation without requiring an English sentence in caller instructions; installed symlink entrypoints execute their alias and maintenance checks correctly.
