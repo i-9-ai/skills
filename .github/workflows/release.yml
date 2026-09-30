@@ -1,0 +1,243 @@
+name: Release packages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Prepare/publish a release, or restore the original 0.1.0 GitHub release
+        type: choice
+        options: [release, backfill-0.1.0]
+        default: release
+
+permissions: {}
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  select-mode:
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && inputs.operation != 'backfill-0.1.0'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      mode: ${{ steps.select.outputs.mode }}
+      publish-plan-artifact-id: ${{ steps.select.outputs.publish-plan-artifact-id }}
+    steps:
+      - name: Check out the triggering commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Install locked dependencies without preparation
+        run: npm ci --ignore-scripts
+      - name: Provide the local default branch for release planning
+        id: release-base
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git update-ref "refs/heads/$DEFAULT_BRANCH" "$GITHUB_SHA"
+      - name: Check pending notes before invoking Changesets
+        id: notes
+        run: |
+          node --input-type=module <<'NODE'
+          import { appendFileSync } from 'node:fs';
+          import { ReleaseVersionRepository } from './src/repository/ReleaseVersionRepository.ts';
+
+          const repository = new ReleaseVersionRepository(process.cwd());
+          const notes = repository.pending();
+          for (const note of notes) repository.read(note);
+
+          appendFileSync(process.env.GITHUB_OUTPUT, `pending=${notes.length > 0}\n`);
+          NODE
+      - name: Validate the local release plan
+        id: plan
+        if: steps.notes.outputs.pending == 'true'
+        run: |
+          npm run changeset:status -- --output "$RUNNER_TEMP/i9-release-plan.json"
+
+          node --input-type=module <<'NODE'
+          import { appendFileSync, readFileSync } from 'node:fs';
+          import { join } from 'node:path';
+
+          const plan = JSON.parse(readFileSync(join(process.env.RUNNER_TEMP, 'i9-release-plan.json'), 'utf8'));
+          if (!Array.isArray(plan.releases)) {
+            throw new Error('Changesets did not return a release plan.');
+          }
+
+          const version = plan.releases.some((release) => ['major', 'minor', 'patch'].includes(release.type));
+          appendFileSync(process.env.GITHUB_OUTPUT, `version=${version}\n`);
+          if (!version) console.log('No package bump is planned; notes remain untouched.');
+          NODE
+      - name: Select version preparation or publication
+        id: select
+        if: steps.notes.outputs.pending == 'false' || steps.plan.outputs.version == 'true'
+        uses: changesets/action/select-mode@ae32849d5ba541f9ae29e40e22a623bc13562f51 # v2.1.2
+
+  version:
+    needs: select-mode
+    if: needs.select-mode.outputs.mode == 'version'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Check out the triggering commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Install locked dependencies without preparation
+        run: npm ci --ignore-scripts
+      - name: Create or update the draft version pull request
+        uses: changesets/action/version@ae32849d5ba541f9ae29e40e22a623bc13562f51 # v2.1.2
+        with:
+          script: npm run release:prepare
+          pr-draft: always
+          pr-base-branch: ${{ github.event.repository.default_branch }}
+          commit-message: 'chore: prepare package and plugin version'
+          pr-title: 'chore: prepare package and plugin version'
+
+  pack:
+    needs: select-mode
+    if: needs.select-mode.outputs.mode == 'publish'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    outputs:
+      pack-dir-artifact-id: ${{ steps.pack.outputs.pack-dir-artifact-id }}
+    steps:
+      - name: Check out the triggering commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Install locked dependencies and build
+        run: npm ci
+      - name: Verify the generated release at the reviewed merge
+        id: verify
+        run: |
+          BASE_SHA="$(git rev-parse HEAD^1)"
+          npm run release:verify -- --base "$BASE_SHA"
+      - name: Run repository and packed-runtime checks
+        run: |
+          npm run check
+          npm run package:check
+      - name: Pack the selected publication plan
+        id: pack
+        uses: changesets/action/pack@ae32849d5ba541f9ae29e40e22a623bc13562f51 # v2.1.2
+        with:
+          publish-plan-artifact-id: ${{ needs.select-mode.outputs.publish-plan-artifact-id }}
+
+  publish:
+    needs: pack
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - name: Check out the triggering commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Install locked dependencies without preparation
+        run: npm ci --ignore-scripts
+      - name: Publish the packed artifact and create the GitHub release
+        uses: changesets/action/publish@ae32849d5ba541f9ae29e40e22a623bc13562f51 # v2.1.2
+        with:
+          pack-dir-artifact-id: ${{ needs.pack.outputs.pack-dir-artifact-id }}
+          create-github-releases: true
+          push-git-tags: true
+
+  backfill:
+    if: github.event_name == 'workflow_dispatch' && inputs.operation == 'backfill-0.1.0' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      INITIAL_RELEASE_COMMIT: 468de535b715c817a1eda72682f15f9e55e52fdc
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Check out the original reviewed release commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: 468de535b715c817a1eda72682f15f9e55e52fdc
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Install the original locked CLI without preparation
+        run: npm ci --ignore-scripts
+      - name: Verify the fixed release source and existing metadata
+        id: existing
+        run: |
+          test "$(git rev-parse HEAD)" = "$INITIAL_RELEASE_COMMIT"
+          npm run release:verify
+
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { readFileSync } from 'node:fs';
+          import { ReleaseVersionRepository } from './src/repository/ReleaseVersionRepository.ts';
+
+          const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
+          assert.equal(pkg.name, '@i-9.ai/skills');
+          assert.equal(pkg.version, '0.1.0');
+          assert.equal(new ReleaseVersionRepository(process.cwd()).pending().length, 0);
+          NODE
+
+          if git show-ref --verify --quiet refs/tags/v0.1.0; then
+            test "$(git rev-parse 'v0.1.0^{commit}')" = "$INITIAL_RELEASE_COMMIT"
+            test "$(gh release view v0.1.0 --json isDraft --jq .isDraft)" = "false"
+            echo 'complete=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'complete=false' >> "$GITHUB_OUTPUT"
+          fi
+      - name: Restore the original tag and generated GitHub release without npm upload
+        if: steps.existing.outputs.complete == 'false'
+        uses: changesets/action@ae32849d5ba541f9ae29e40e22a623bc13562f51 # v2.1.2
+        with:
+          publish-script: node node_modules/@changesets/cli/bin.js git-tag
+          push-with-git-cli: true
+          create-github-releases: true
+          push-git-tags: true
+      - name: Verify the remote historical tag and release
+        run: |
+          git fetch origin refs/tags/v0.1.0:refs/tags/v0.1.0
+          test "$(git rev-parse 'v0.1.0^{commit}')" = "$INITIAL_RELEASE_COMMIT"
+          test "$(gh release view v0.1.0 --json isDraft --jq .isDraft)" = "false"

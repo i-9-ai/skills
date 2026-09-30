@@ -95,9 +95,11 @@ and future changes remain explicit rather than being counted as clean.
 ## Existing publication triggers
 
 Source includes five workflows. Validation and Changesets are read-only. The
-manual [version-preparation workflow](https://github.com/i-9-ai/skills/wiki/Release-Management) prepares a draft
-version PR; it does not publish npm packages, tags, GitHub releases or listings.
-Its tests do not establish whether live bot PR creation is enabled by policy.
+[Changesets release workflow](https://github.com/i-9-ai/skills/wiki/Release-Management) prepares a draft
+version PR and publishes its reviewed protected-branch merge through npm OIDC,
+creating tags and GitHub releases. The npm publisher must be bound to this
+repository and `release.yml`; local tests do not establish provider readiness.
+The explicit historical 0.1.0 backfill creates only the original tag/release.
 
 The Wiki workflow selects main, verifies Wiki enablement and mirrors docs with
 GITHUB_TOKEN after matching merges or an explicit dispatch. It excludes agent
@@ -112,7 +114,7 @@ audit neither dispatches them nor changes their permissions.
 | --- | --- | --- |
 | Local repository plugin | Root Codex/Claude/Copilot manifests and marketplace entries; Codex/Claude installation pilot and native Codex/Copilot MCP calls | Select the reviewed merged commit and authorize real-consumer installation. Persistent Copilot marketplace installation and hosted updates remain separate untested distribution steps; see [issue #12](https://github.com/i-9-ai/skills/issues/12). |
 | Repository-hosted marketplace | Canonical root path, identity and explicit source pinning | Consumers must be able to fetch the selected source. Confirm hosted fetching/update behavior at the selected revision; repository visibility and directory acceptance are separate decisions. |
-| npm executable | Scoped identity @i-9.ai/skills, i9-skills bin, explicit public registry access, compiled allowlist and packed-runtime tests | Prepare and review the generated version and final tarball, then explicitly publish and verify an anonymous registry consumer. Public metadata alone does not upload a package. See [issue #17](https://github.com/i-9-ai/skills/issues/17). |
+| npm executable | Public @i-9.ai/skills@0.1.0, i9-skills bin, compiled allowlist and verified anonymous CLI/catalog/MCP consumer | Future versions require a reviewed generated version PR and the scoped workflow publisher. Verify actual registry and GitHub results after each release. See [initial distribution](https://github.com/i-9-ai/skills/issues/17) and [release automation](https://github.com/i-9-ai/skills/issues/66). |
 | Public OpenAI directory | Optional skills-only staging and provider-neutral package cores | Owner chooses submission mode, verifies publisher/access and listing/support/privacy details, runs required scans/review and explicitly publishes after acceptance. No listing or identity is fabricated here. |
 | Public Claude/Copilot listing | Repository marketplace manifests | Follow each host's current listing/review process; repository access or local validation does not imply directory acceptance. |
 | Public repository governance | Experimental notice, security policy, refreshed independent audit and explicit maintainer authorization | Apply and verify public access and [main protection](https://github.com/i-9-ai/skills/issues/32); enable, initialize and verify the [Wiki mirror](https://github.com/i-9-ai/skills/issues/52). Pages availability remains separate. |

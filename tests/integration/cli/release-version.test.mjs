@@ -255,9 +255,7 @@ function setVersion(target, version) {
 }
 
 function workflow() {
-    return parse(
-        readFileSync(join(repository, '.github/workflows/release-preparation.yml'), 'utf8'),
-    );
+    return parse(readFileSync(join(repository, '.github/workflows/release.yml'), 'utf8'));
 }
 
 function workflowFixture(t, options) {
@@ -284,13 +282,20 @@ function workflowFixture(t, options) {
     return target;
 }
 
-function workflowStep(target, id) {
-    const step = workflow().jobs['prepare-version'].steps.find((candidate) => candidate.id === id);
+function workflowStep(target, id, job = 'select-mode', overrides = {}) {
+    const step = workflow().jobs[job].steps.find((candidate) => candidate.id === id);
     assert.ok(step?.run, `the workflow must expose the ${id} selection step`);
     const output = join(target.temporary, `${id}-output`);
     const result = spawnSync('bash', ['--noprofile', '--norc', '-eo', 'pipefail', '-c', step.run], {
         cwd: target.root,
-        env: { ...target.environment, GITHUB_OUTPUT: output, RUNNER_TEMP: target.temporary },
+        env: {
+            ...target.environment,
+            GITHUB_SHA: git(target, ['rev-parse', 'HEAD']),
+            DEFAULT_BRANCH: 'main',
+            GITHUB_OUTPUT: output,
+            RUNNER_TEMP: target.temporary,
+            ...overrides,
+        },
         encoding: 'utf8',
         timeout: 30000,
     });
@@ -854,28 +859,200 @@ test('release verification requires a full immutable base commit identity', (t) 
     }
 });
 
-test('version workflow only creates draft PRs from an explicitly selected default-branch run', () => {
+test('release workflow separates draft version review, checked artifacts and scoped publication', () => {
     const definition = workflow();
-    assert.deepEqual(Object.keys(definition.on), ['workflow_dispatch']);
-    assert.deepEqual(definition.permissions, { contents: 'write', 'pull-requests': 'write' });
+    assert.deepEqual(Object.keys(definition.on), ['push', 'workflow_dispatch']);
+    assert.deepEqual(definition.on.push.branches, ['main']);
+    assert.deepEqual(definition.permissions, {});
     assert.equal(definition.concurrency['cancel-in-progress'], false);
-    const job = definition.jobs['prepare-version'];
-    assert.match(job.if, /github\.ref.*github\.event\.repository\.default_branch/u);
+    const selection = definition.jobs['select-mode'];
+    assert.match(selection.if, /github\.ref.*github\.event\.repository\.default_branch/u);
+    assert.match(selection.if, /inputs\.operation != 'backfill-0\.1\.0'/u);
+    const releaseBase = selection.steps.find((step) => step.id === 'release-base');
+    assert.deepEqual(releaseBase.env, {
+        DEFAULT_BRANCH: '${{ github.event.repository.default_branch }}',
+    });
+    assert.ok(
+        selection.steps.indexOf(releaseBase) <
+            selection.steps.findIndex((step) => step.id === 'plan'),
+    );
     assert.equal(
-        job.steps.find((step) => step.id === 'plan').if,
+        selection.steps.find((step) => step.id === 'plan').if,
         "steps.notes.outputs.pending == 'true'",
     );
-    const changesets = job.steps.filter((step) => step.uses?.startsWith('changesets/action'));
-    assert.equal(changesets.length, 1, 'no combined version/publish or registry-selection action');
-    assert.match(changesets[0].uses, /^changesets\/action\/version@[a-f0-9]{40}$/u);
-    assert.equal(changesets[0].if, "steps.plan.outputs.version == 'true'");
-    assert.equal(changesets[0].with['pr-draft'], 'always');
-    assert.equal(changesets[0].with.script, 'npm run release:prepare');
+    assert.equal(
+        selection.steps.find((step) => step.id === 'select').if,
+        "steps.notes.outputs.pending == 'false' || steps.plan.outputs.version == 'true'",
+    );
+    const pin = 'ae32849d5ba541f9ae29e40e22a623bc13562f51';
+    assert.equal(
+        selection.steps.find((step) => step.id === 'select').uses,
+        `changesets/action/select-mode@${pin}`,
+    );
+
+    const version = definition.jobs.version;
+    assert.equal(version.needs, 'select-mode');
+    assert.equal(version.if, "needs.select-mode.outputs.mode == 'version'");
+    assert.deepEqual(version.permissions, { contents: 'write', 'pull-requests': 'write' });
+    const prepare = version.steps.find((step) =>
+        step.uses?.startsWith('changesets/action/version@'),
+    );
+    assert.equal(prepare.uses, `changesets/action/version@${pin}`);
+    assert.equal(prepare.with['pr-draft'], 'always');
+    assert.equal(prepare.with.script, 'npm run release:prepare');
+
+    const pack = definition.jobs.pack;
+    assert.equal(pack.needs, 'select-mode');
+    assert.equal(pack.if, "needs.select-mode.outputs.mode == 'publish'");
+    assert.deepEqual(pack.permissions, { contents: 'read' });
+    assert.match(pack.steps.find((step) => step.id === 'verify').run, /release:verify -- --base/u);
+    assert.match(
+        pack.steps.map((step) => step.run ?? '').join('\n'),
+        /npm run check\n.*npm run package:check/u,
+    );
+    assert.deepEqual(pack.steps.find((step) => step.id === 'pack').with, {
+        'publish-plan-artifact-id': '${{ needs.select-mode.outputs.publish-plan-artifact-id }}',
+    });
+
+    const publish = definition.jobs.publish;
+    assert.equal(publish.needs, 'pack');
+    assert.deepEqual(publish.permissions, { contents: 'write', 'id-token': 'write' });
+    const upload = publish.steps.find((step) =>
+        step.uses?.startsWith('changesets/action/publish@'),
+    );
+    assert.equal(upload.uses, `changesets/action/publish@${pin}`);
+    assert.deepEqual(upload.with, {
+        'pack-dir-artifact-id': '${{ needs.pack.outputs.pack-dir-artifact-id }}',
+        'create-github-releases': true,
+        'push-git-tags': true,
+    });
+    for (const [name, job] of Object.entries(definition.jobs)) {
+        if (name !== 'publish') assert.notEqual(job.permissions?.['id-token'], 'write');
+        for (const checkout of job.steps.filter((step) =>
+            step.uses?.startsWith('actions/checkout@'),
+        )) {
+            assert.equal(checkout.with['persist-credentials'], false);
+            if (name !== 'backfill') assert.equal(checkout.with.ref, '${{ github.sha }}');
+        }
+    }
     assert.doesNotMatch(
-        job.steps.map((step) => step.run ?? '').join('\n'),
-        /npm publish|gh release|git tag/u,
+        JSON.stringify(definition),
+        /NPM_TOKEN|NODE_AUTH_TOKEN|npm login|pull_request_target/u,
     );
 });
+
+test('historical release recovery is explicit, fixed to its original commit and cannot upload npm', () => {
+    const definition = workflow();
+    assert.deepEqual(definition.on.workflow_dispatch.inputs.operation.options, [
+        'release',
+        'backfill-0.1.0',
+    ]);
+    const job = definition.jobs.backfill;
+    assert.match(job.if, /github\.event_name == 'workflow_dispatch'/u);
+    assert.match(job.if, /inputs\.operation == 'backfill-0\.1\.0'/u);
+    assert.match(job.if, /github\.ref.*github\.event\.repository\.default_branch/u);
+    assert.deepEqual(job.permissions, { contents: 'write' });
+    const source = '468de535b715c817a1eda72682f15f9e55e52fdc';
+    assert.equal(job.env.INITIAL_RELEASE_COMMIT, source);
+    assert.equal(
+        job.steps.find((step) => step.uses?.startsWith('actions/checkout@')).with.ref,
+        source,
+    );
+    const recovery = job.steps.find((step) => step.uses?.startsWith('changesets/action@'));
+    assert.equal(recovery.if, "steps.existing.outputs.complete == 'false'");
+    assert.deepEqual(recovery.with, {
+        'publish-script': 'node node_modules/@changesets/cli/bin.js git-tag',
+        'push-with-git-cli': true,
+        'create-github-releases': true,
+        'push-git-tags': true,
+    });
+    const existing = job.steps.find((step) => step.id === 'existing').run;
+    assert.match(existing, /git rev-parse 'v0\.1\.0\^\{commit\}'.*INITIAL_RELEASE_COMMIT/u);
+    assert.match(existing, /gh release view v0\.1\.0/u);
+    assert.match(existing, /complete=true/u);
+    assert.doesNotMatch(JSON.stringify(job), /npm publish|changeset publish|id-token|NPM_TOKEN/u);
+});
+
+test('publication preflight accepts a generated version and rejects a later unrelated commit', (t) => {
+    const target = workflowFixture(t);
+    const pkg = json(target.root, 'package.json');
+    const quote = (value) => `'${value.replaceAll("'", "'\"'\"'")}'`;
+    pkg.scripts['release:verify'] =
+        `${quote(process.execPath)} ${quote(join(repository, 'bin/index.mjs'))} repo verify-release --project .`;
+    writeJson(target.root, 'package.json', pkg);
+    commit(target, 'Configure the real verifier in a disposable package');
+    successful(cli(target, 'prepare-version'));
+    commit(target, 'Record the generated version merge candidate');
+
+    const before = files(target.root);
+    const accepted = workflowStep(target, 'verify', 'pack');
+    assert.equal(accepted.status, 0, accepted.stderr || accepted.stdout);
+    assert.deepEqual(files(target.root), before, 'publication verification is read-only');
+
+    write(target.root, 'unrelated.js', 'export const change = true;\n');
+    commit(target, 'Record an unrelated change after version preparation');
+    const rejected = workflowStep(target, 'verify', 'pack');
+    assert.notEqual(rejected.status, 0, rejected.stdout);
+});
+
+for (const state of ['missing', 'stale']) {
+    test(`release planning pins a ${state} local base in a detached checkout`, (t) => {
+        const target = workflowFixture(t);
+        git(target, ['checkout', '--quiet', '--detach']);
+        if (state === 'missing') git(target, ['branch', '--delete', '--force', 'main']);
+        write(target.root, 'implementation.ts', 'export const behavior = 2;\n');
+        const source = commit(target, 'Record the exact synthetic workflow trigger');
+        const before = files(target.root);
+        target.environment.GITHUB_SHA = 'a'.repeat(40);
+        target.environment.DEFAULT_BRANCH = 'unrelated-caller-branch';
+
+        if (state === 'missing') {
+            const unavailable = workflowStep(target, 'plan');
+            assert.notEqual(unavailable.status, 0, unavailable.stdout);
+            assert.match(
+                unavailable.stdout + unavailable.stderr,
+                /Failed to find where HEAD diverged/u,
+            );
+        }
+
+        const prepared = workflowStep(target, 'release-base');
+        assert.equal(prepared.status, 0, prepared.stderr || prepared.stdout);
+        assert.equal(git(target, ['rev-parse', 'main']), source);
+        assert.equal(git(target, ['rev-parse', 'HEAD']), source);
+        assert.equal(git(target, ['rev-parse', '--abbrev-ref', 'HEAD']), 'HEAD');
+        const planned = workflowStep(target, 'plan');
+        assert.equal(planned.status, 0, planned.stderr || planned.stdout);
+        assert.equal(planned.outputs.version, 'true');
+        assert.deepEqual(files(target.root), before, 'only the local Git base ref changes');
+    });
+}
+
+test('release planning refuses to repoint its base when checkout differs from the trigger', (t) => {
+    const target = workflowFixture(t);
+    const original = git(target, ['rev-parse', 'main']);
+    git(target, ['checkout', '--quiet', '--detach']);
+    write(target.root, 'implementation.ts', 'export const behavior = 2;\n');
+    commit(target, 'Record a different checkout');
+    const result = workflowStep(target, 'release-base', 'select-mode', {
+        GITHUB_SHA: original,
+    });
+    assert.notEqual(result.status, 0, result.stdout);
+    assert.equal(git(target, ['rev-parse', 'main']), original);
+});
+
+for (const state of ['pre.json', 'pre']) {
+    test(`release selection rejects ${state} before the planner can mutate it`, (t) => {
+        const target = workflowFixture(t);
+        write(target.root, `.changeset/${state}`, '{"mode":"pre"}\n');
+        commit(target, 'Record unsupported prerelease state');
+        const before = files(target.root);
+        const selected = workflowStep(target, 'notes');
+        assert.notEqual(selected.status, 0, selected.stdout);
+        assert.match(selected.stderr, /prerelease[- ]state/u);
+        assert.notEqual(selected.outputs.pending, 'true');
+        assert.deepEqual(files(target.root), before);
+    });
+}
 
 for (const [label, content, expectedPending, expectedVersion] of [
     ['no notes', undefined, 'false', undefined],
