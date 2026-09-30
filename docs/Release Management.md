@@ -137,6 +137,10 @@ target files outside the selected project.
 Changesets configuration must explicitly set `format: false`. This keeps
 generated changelog content reproducible without auto-detecting or executing a
 local formatter. Source formatting still uses the normal repository check.
+Preparation removes whitespace-only indentation from new release entries and
+strict verification reproduces that same canonical output. This normalization
+leaves existing release history and generated nonblank Markdown and code
+indentation unchanged.
 
 If preparation fails, the adapter restores its captured manifests, pending notes
 and changelog. Diagnose the reported error before retrying; do not overwrite

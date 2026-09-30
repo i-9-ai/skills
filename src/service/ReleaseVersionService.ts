@@ -35,6 +35,8 @@ export class ReleaseVersionService {
                     .some((line) => line.trim() === `## ${nextVersion}`)
             )
                 throw new Error('Changesets did not generate the version changelog heading.');
+            if (nextVersion !== version)
+                this.repository.normalizeChangelog(snapshot.get('CHANGELOG.md'));
             return { version: nextVersion, changed: true, notes: notes.length };
         } catch (error) {
             this.repository.restore(snapshot);
