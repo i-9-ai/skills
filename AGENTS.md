@@ -53,6 +53,7 @@ Run `npm run check` and `git diff --check` with Node.js 24+ after explicit `npm 
 
 ## Child DOX index
 
+- [website/AGENTS.md](website/AGENTS.md): multilingual catalog promotion source and local static preview; site publication and existing Pages routing remain separately approval-gated.
 - [.agents/AGENTS.md](.agents/AGENTS.md): canonical agent-facing skill collection.
 - [docs/Home.md](docs/Home.md): canonical public documentation, mirrored to the GitHub Wiki after documentation changes merge into `main`.
 - [.agents/references/public-documentation.md](.agents/references/public-documentation.md): agent-facing guidance for the public documentation tree.

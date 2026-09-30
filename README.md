@@ -55,16 +55,19 @@ for desktop setup, verification, updates and removal.
 ### CLI: install for this project
 
 ```sh
-npx skills add https://github.com/i-9-ai/skills --skill '*' --yes
+npx skills add i-9-ai/skills --yes
 ```
 
 ### CLI: install globally
 
 ```sh
-npx skills add https://github.com/i-9-ai/skills --global --skill '*' --yes
+npx skills add i-9-ai/skills --global --yes
 ```
 
 These commands use the current Skills CLI and the repository's default branch.
+`--yes` selects every available skill and skips the selection prompts; an
+additional `--skill '*'` is unnecessary. Use `--skill <name>` when selecting
+specific packages instead. Agent selection remains a separate installer option.
 
 The Skills CLI asks for a supported agent target when it cannot determine one. After installation, start a new agent session if its skill picker does not refresh automatically.
 

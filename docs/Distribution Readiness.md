@@ -17,6 +17,26 @@ the launcher, distributed skill resources and public documentation. The launcher
 chooses source in a checkout and built code in a packed installation; it never
 compiles, downloads or installs during command startup.
 
+## Install the portable skill packages
+
+The separate [Skills CLI](https://skills.sh/docs/cli) accepts GitHub's
+`owner/repository` shorthand. Install all packages for the current project:
+
+```sh
+npx skills add i-9-ai/skills --yes
+```
+
+For the user's global skill scope:
+
+```sh
+npx skills add i-9-ai/skills --global --yes
+```
+
+`--yes` selects all available skills without a separate `--skill '*'` flag.
+Choose `--skill <name>` for an explicit subset and `--agent <name>` when a
+particular supported agent target is required. These commands install skill
+packages; they do not install this repository's root plugin or run its toolkit.
+
 ## Run a published build
 
 With Node.js 24+ and npm, run:
