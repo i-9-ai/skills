@@ -17,6 +17,7 @@ Verify every requirement has an implementation and a check or an explicit limit.
 
 ## Child DOX index
 
+- [Changesets publication and releases](2026-09-30-17-02-00-changesets-publication-and-releases.md): reviewed version PRs, official artifact publication with scoped npm OIDC, and GitHub release/tag creation; historical 0.1.0 metadata recovery never re-uploads npm.
 - [Initial npm publication](2026-09-30-14-43-53-initial-npm-publication.md): reviewed public package metadata and generated version preparation, followed by an authorized tarball upload and anonymous consumer verification; no unattended releases or host installation.
 
 - [Public repository governance](2026-09-30-01-12-53-public-repository-governance.md): conditionally authorized source/exposure review and GitHub visibility transition, followed by effective main protection; registry and directory publication remain separate.

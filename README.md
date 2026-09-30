@@ -11,8 +11,8 @@ fixture tests do not establish production quality or universal host compatibilit
 
 Install the packages with the Skills CLI, or install the collection as a plugin
 to include its host hooks and MCP. Codex, Claude Code and Copilot manifests all
-reference the same `.agents/skills` collection. The toolkit CLI is also available
-directly from Git through `npx`; npm registry publication is still pending.
+reference the same `.agents/skills` collection. The toolkit CLI is available
+from the public npm registry through `npx`, without a global installation.
 
 ## Install
 
@@ -92,8 +92,10 @@ The first invocation downloads the package into npm's cache. Git-source builds
 also install build dependencies and run preparation; registry builds already
 contain compiled code. npm
 selects the package's single executable, so `--package` is unnecessary.
-`--allow-git=root` permits this Git source on npm 12. Initial registry publication
-and its consumer evidence are tracked in [#17](https://github.com/i-9-ai/skills/issues/17).
+`--allow-git=root` permits this Git source on npm 12. Registry distribution and
+anonymous CLI/catalog/MCP verification are recorded in [#17](https://github.com/i-9-ai/skills/issues/17).
+Reviewed version PRs now drive npm publication, version tags and GitHub releases
+through [Changesets](docs/Release%20Management.md).
 See the [command mapping](docs/Distribution%20Readiness.md#consumer-command-mapping)
 for project discovery, collection maintenance and MCP examples.
 
