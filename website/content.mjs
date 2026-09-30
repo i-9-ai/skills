@@ -173,7 +173,7 @@ export const messages = {
             source: 'GitHub',
             docs: 'Documentation',
             license: 'Apache-2.0',
-            preview: 'Local review build. Publication requires approval.',
+            preview: 'Review build. Production awaits the approved merge.',
         },
     },
     'pt-br': {
@@ -301,7 +301,7 @@ export const messages = {
             source: 'GitHub',
             docs: 'Documentação',
             license: 'Apache-2.0',
-            preview: 'Build para revisão local. Publicação depende de aprovação.',
+            preview: 'Versão em revisão. Produção depende da aprovação do merge.',
         },
     },
     es: {
@@ -431,7 +431,7 @@ export const messages = {
             source: 'GitHub',
             docs: 'Documentación',
             license: 'Apache-2.0',
-            preview: 'Build para revisión local. La publicación requiere aprobación.',
+            preview: 'Versión en revisión. Producción depende de la aprobación del merge.',
         },
     },
 };

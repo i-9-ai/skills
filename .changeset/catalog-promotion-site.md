@@ -8,7 +8,8 @@ language and search URL-state preservation, a dismissible root-only browser-lang
 suggestion, simplified all-skills installation, manual package/plugin/toolkit
 installation paths, and documented evidence limits. npm run site:build creates
 an owned static review artifact, npm run site:preview serves it on loopback only,
-and npm run site:test checks synthetic output and preview safety. Default builds
+and npm run site:test checks synthetic output and preview safety, including
+reserved-path case aliases and preservation of dangling caller-owned links. Default builds
 remain noindex. Explicit production URL configuration adds canonical locale links,
 share metadata and a sitemap for native Cloudflare Git delivery; the builder never
 deploys. Existing GitHub Pages visual-guide routing remains unchanged, and the

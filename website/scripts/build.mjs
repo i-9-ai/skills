@@ -9,6 +9,19 @@ const buildMarker = '.i9-site-build.json';
 const hash = (bytes) => createHash('sha256').update(bytes).digest('hex');
 const inside = (root, candidate) => candidate === root || candidate.startsWith(root + path.sep);
 
+function entry(filename) {
+    try {
+        return fs.lstatSync(filename);
+    } catch (error) {
+        if (error.code === 'ENOENT') return null;
+        throw error;
+    }
+}
+
+// Reserved source names are protected in every case spelling, including on
+// case-sensitive hosts. This avoids probing or writing to detect volume rules.
+const protectedPath = (filename) => filename.normalize('NFC').toLowerCase();
+
 function regularFile(filename, maximum = 5 * 1024 * 1024) {
     const stat = fs.lstatSync(filename);
     if (!stat.isFile() || stat.isSymbolicLink() || stat.size > maximum) {
@@ -20,7 +33,7 @@ function regularFile(filename, maximum = 5 * 1024 * 1024) {
 function assertNoLinks(filename) {
     let current = path.resolve(filename);
     while (current !== path.dirname(current)) {
-        if (fs.existsSync(current) && fs.lstatSync(current).isSymbolicLink()) {
+        if (entry(current)?.isSymbolicLink()) {
             throw new Error('Symbolic links are not allowed in output paths');
         }
         current = path.dirname(current);
@@ -122,11 +135,12 @@ function safeRelative(relative) {
 
 function inspectOutput(output, files) {
     assertNoLinks(output);
-    if (!fs.existsSync(output)) return {};
-    if (!fs.lstatSync(output).isDirectory()) throw new Error('Output must be a directory');
+    const outputEntry = entry(output);
+    if (!outputEntry) return {};
+    if (!outputEntry.isDirectory()) throw new Error('Output must be a directory');
     if (!fs.readdirSync(output).length) return {};
     const markerFile = path.join(output, buildMarker);
-    if (!fs.existsSync(markerFile)) throw new Error('Existing output is not an owned site build');
+    if (!entry(markerFile)) throw new Error('Existing output is not an owned site build');
     const previous = JSON.parse(regularFile(markerFile, 256 * 1024));
     if (
         previous.kind !== 'i9-skills-local-site' ||
@@ -141,7 +155,7 @@ function inspectOutput(output, files) {
             throw new Error('Unsafe build ownership entry');
         const target = path.join(output, relative);
         assertNoLinks(target);
-        if (!fs.existsSync(target) || hash(regularFile(target)) !== digest) {
+        if (!entry(target) || hash(regularFile(target)) !== digest) {
             throw new Error(
                 'Previously generated output was changed; preserve it before rebuilding',
             );
@@ -150,7 +164,7 @@ function inspectOutput(output, files) {
     for (const relative of files.keys()) {
         const target = path.join(output, relative);
         assertNoLinks(target);
-        if (fs.existsSync(target) && !Object.hasOwn(previous.files, relative)) {
+        if (entry(target) && !Object.hasOwn(previous.files, relative)) {
             throw new Error('Output conflicts with an unowned file');
         }
     }
@@ -215,10 +229,11 @@ export function buildSite({
         '.claude-plugin',
         '.beads',
         '.pages',
-    ].map((relative) => path.resolve(root, relative));
+    ].map((relative) => protectedPath(path.resolve(root, relative)));
+    const outputKey = protectedPath(output);
     if (
-        output === root ||
-        blocked.some((scope) => inside(scope, output) || inside(output, scope))
+        outputKey === protectedPath(root) ||
+        blocked.some((scope) => inside(scope, outputKey) || inside(outputKey, scope))
     ) {
         throw new Error('Output would overwrite source or published guide state');
     }

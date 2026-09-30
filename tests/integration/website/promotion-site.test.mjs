@@ -175,6 +175,55 @@ test('invalid public URLs are rejected before creating output', (t) => {
     }
 });
 
+test('rebuild preserves an unowned dangling output symlink before any mutation', (t) => {
+    const f = fixture(t);
+    f.build();
+    const before = artifactBytes(f.output);
+    const symlink = path.join(f.output, 'sitemap.xml');
+    const target = path.join(f.root, 'missing-caller-document');
+    fs.symlinkSync(target, symlink);
+    assert.equal(fs.existsSync(symlink), false);
+    assert.throws(
+        () =>
+            buildSite({
+                projectRoot: f.root,
+                outputDirectory: f.output,
+                publicUrl: 'https://example.test',
+            }),
+        /Symbolic links/,
+    );
+    assert.equal(fs.lstatSync(symlink).isSymbolicLink(), true);
+    assert.equal(fs.readlinkSync(symlink), target);
+    assert.deepEqual(artifactBytes(f.output), before);
+    const danglingDirectory = path.join(f.root, 'dangling-output');
+    fs.symlinkSync(path.join(f.root, 'missing-output-directory'), danglingDirectory);
+    assert.throws(
+        () => buildSite({ projectRoot: f.root, outputDirectory: danglingDirectory }),
+        /Symbolic links/,
+    );
+    assert.equal(fs.lstatSync(danglingDirectory).isSymbolicLink(), true);
+});
+
+test('case aliases cannot bypass protected source, staging or ancestor paths', (t) => {
+    const f = fixture(t);
+    for (const outputDirectory of [
+        'WEBSITE/review',
+        'DOCS/review',
+        '.PAGES/review',
+        'SRC/review',
+        f.root.toUpperCase(),
+    ]) {
+        assert.throws(
+            () => buildSite({ projectRoot: f.root, outputDirectory }),
+            /overwrite source/,
+        );
+    }
+    assert.deepEqual(fs.readdirSync(path.join(f.root, 'website')).sort(), ['assets']);
+    for (const name of ['DOCS', 'docs', '.PAGES', '.pages', 'SRC', 'src']) {
+        assert.ok(!fs.existsSync(path.join(f.root, name)));
+    }
+});
+
 test('search matches responsibilities and categories, and announces singular or plural in every locale', () => {
     const skills = [
         { category: 'manage', search: 'skills-snapshot Snapshot síntético' },

@@ -50,6 +50,9 @@ Project source (including nonexistent or empty reserved scopes), canonical skill
 Git metadata, visual-guide sources and staging, ancestor
 directories and symbolic-link paths are refused. Active/external SVG icon content
 is rejected before copying. Use one writer and do not mutate output concurrently.
+Reserved paths are protected in every case spelling on all supported filesystems;
+names such as `WEBSITE` and `.PAGES` cannot bypass source or staging protection.
+Symlinks are refused even when their destination is missing.
 
 ## Failure recovery and verification
 
