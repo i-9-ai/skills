@@ -282,18 +282,19 @@ function workflowFixture(t, options) {
     return target;
 }
 
-function workflowStep(target, id, job = 'select-mode') {
+function workflowStep(target, id, job = 'select-mode', overrides = {}) {
     const step = workflow().jobs[job].steps.find((candidate) => candidate.id === id);
     assert.ok(step?.run, `the workflow must expose the ${id} selection step`);
     const output = join(target.temporary, `${id}-output`);
     const result = spawnSync('bash', ['--noprofile', '--norc', '-eo', 'pipefail', '-c', step.run], {
         cwd: target.root,
         env: {
+            ...target.environment,
             GITHUB_SHA: git(target, ['rev-parse', 'HEAD']),
             DEFAULT_BRANCH: 'main',
-            ...target.environment,
             GITHUB_OUTPUT: output,
             RUNNER_TEMP: target.temporary,
+            ...overrides,
         },
         encoding: 'utf8',
         timeout: 30000,
@@ -1002,6 +1003,8 @@ for (const state of ['missing', 'stale']) {
         write(target.root, 'implementation.ts', 'export const behavior = 2;\n');
         const source = commit(target, 'Record the exact synthetic workflow trigger');
         const before = files(target.root);
+        target.environment.GITHUB_SHA = 'a'.repeat(40);
+        target.environment.DEFAULT_BRANCH = 'unrelated-caller-branch';
 
         if (state === 'missing') {
             const unavailable = workflowStep(target, 'plan');
@@ -1030,9 +1033,9 @@ test('release planning refuses to repoint its base when checkout differs from th
     git(target, ['checkout', '--quiet', '--detach']);
     write(target.root, 'implementation.ts', 'export const behavior = 2;\n');
     commit(target, 'Record a different checkout');
-    target.environment.GITHUB_SHA = original;
-
-    const result = workflowStep(target, 'release-base');
+    const result = workflowStep(target, 'release-base', 'select-mode', {
+        GITHUB_SHA: original,
+    });
     assert.notEqual(result.status, 0, result.stdout);
     assert.equal(git(target, ['rev-parse', 'main']), original);
 });
