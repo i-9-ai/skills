@@ -37,8 +37,37 @@ Disable the workflow or switch GitHub Pages away from `gh-pages` to stop publica
 
 ## Execution status
 
-Implemented in this PR: the editable diagram specification, generated interactive map, static README preview, landing page, and `main`-only `gh-pages` workflow. The first public deployment remains pending until this change merges and a maintainer enables GitHub Pages for `gh-pages`.
+Historical implementation: the editable diagram specification, generated interactive map, static README preview, landing page, and `main`-only `gh-pages` workflow. GitHub Pages now serves the built `gh-pages` branch at https://i-9-ai.github.io/skills/. A newly reviewed diagram is published by the existing workflow after its changes merge into `main`.
 
 The source and generated HTML are bound by `docs/diagrams/visual-guides.lock.json`. The Node.js 24 workflow verifies both SHA-256 digests before configuring publication credentials or copying assets. The initial receipt records a reviewed existing artifact, whose metadata identifies archify 2.17.0-dev.1; this repository does not contain a pinned reproducible generator. Regeneration therefore remains manual. A maintainer must compare the JSON's nodes, paths, labels and views with the regenerated visible guide before refreshing both digests and the review date. Never refresh a digest merely to clear a failed check. The receipt detects drift; it does not prove that a generator produced the HTML or replace visual review.
 
 Local check: `node --input-type=module -e "import { VisualGuideRepository } from './src/repository/VisualGuideRepository.ts'; new VisualGuideRepository().verify('.')"`. Repository tests also verify the checked-in pair and rejection of changed source/artifact bytes.
+
+## Current entry-path refresh — 2026-09-30
+
+Update the existing visual-guide acceptance boundary to show actual native skill,
+Git-source CLI/MCP and repository-root plugin entry paths. Keep the map bounded
+to twelve nodes; detailed authoring handoffs and evidence storage retain their
+separate Mermaid diagrams. Inspect the launcher, command routes, local hook/MCP
+transports and host manifests before recording their behavior. Do not imply
+registry publication, automatic hook downloads, skill activation or implicit
+evidence recording.
+
+Regenerate through the installed Archify source renderer in a disposable copy.
+Overlay only the template's `archify-fonts` style block with the previous
+reviewed artifact's identical pinned font block before rendering. The installed
+skill remains unchanged. Record this font-template overlay in the generator
+identity; it is not an untouched upstream render or a generator pinned inside
+this repository. Verify the embedded font hash against `font-sources.lock.json`
+and compare viewer scripts/styles with the prior artifact, allowing only authored
+guided-view data to change outside the diagram, cards and title.
+
+Require a final 9/9 showcase delivery with no composition errors or warnings.
+Collect browser containment at 1440×900, 1600×1000, 1920×1080 and 2048×1320 from an
+identical temporary copy of the delivered HTML, inspect both endpoint themes,
+and refresh the README preview from that evidence. Bind the checked-in source
+and artifact digests only after the visible guide is reviewed. Run the focused
+visual-guide integrity tests, repository checks, Changesets and whitespace
+validation. Revert the source/artifact/receipt, preview and diagram explanations
+together to restore the preceding reviewed map. No new dependency, publication
+workflow, consumer installation or npm release is introduced.

@@ -1,5 +1,39 @@
 # Architecture
 
+## Current entry paths
+
+The portable packages, prepared CLI and repository-root plugin are separate
+entry paths into the same collection. The CLI starts from `bin/index.mjs`;
+native plugin adapters start local transports directly, without preparing the
+CLI or fetching dependencies during a host event.
+
+```mermaid
+flowchart LR
+    Task[User task] --> Native[Host skill discovery]
+    Native --> Read[Selected SKILL.md and references]
+    Git[Reviewed Git-source npx] --> CLI[i9-skills CLI]
+    CLI -->|catalog search / read / overview| Catalog[Bundled catalog]
+    CLI -->|mcp serve| MCP[Local stdio MCP]
+    Root[Repository-root plugin] --> Host[Codex / Claude / Copilot manifests]
+    Host -->|native stdio| MCP
+    Host -->|Codex / Claude SessionStart| Hook[Local Node 24 hook]
+    Hook --> Context[Bounded metadata context]
+    MCP -->|catalog tools| Catalog
+    Catalog --> Read
+    Read --> Work[Portable meta-skill workflow]
+```
+
+The Git-source `npx` call downloads a reviewed immutable revision and runs its
+explicit preparation lifecycle; registry `npx @i-9-ai/skills` still requires npm
+publication. Hook context discovers plugin, project and global packages. MCP
+catalog access uses the installed bundled catalog and returns selected Markdown.
+Neither context nor retrieval activates a skill or records evidence. The CLI
+also exposes explicit collection maintenance, observations, reports and evidence
+queries; the MCP exposes the catalog, onboarding, bump reports and explicit
+evidence tools. See [CLI distribution](https://github.com/i-9-ai/skills/wiki/Distribution-Readiness),
+[plugin preparation](https://github.com/i-9-ai/skills/wiki/Plugin-Preparation) and
+the [interactive entry-path map](https://i-9-ai.github.io/skills/skill-management-entry-paths.html).
+
 ## Responsibility boundaries
 
 The collection is organized around independently useful tasks, not vendors or platforms. The skills own discovery, synthesis, design, authoring, evaluation, and naming. `skill-authoring` is the entrypoint for producing a package and only coordinates the other procedures. `skills-synthesis` produces the synthesis contract; it does not also search the web, author code, or grade its own output. `skill-naming` owns open naming decisions and returns a report without renaming files.
@@ -71,7 +105,8 @@ coverage. Context and observed-read persistence have independent failure paths.
 ```mermaid
 flowchart LR
     Codex[Codex SessionStart] --> Runner[PluginHookRunner]
-    Claude[Claude session / native Read] --> Runner
+    Claude[Claude SessionStart] --> Runner
+    Read[Claude native Read attempt / success] --> Runner
     Runner --> Discovery[Shared skill discovery]
     Collections[Plugin / project / global packages] --> Discovery
     Discovery --> Overview[Bounded host context]
@@ -98,7 +133,8 @@ records and metrics use a separate evidence store described below.
 ```mermaid
 flowchart LR
     CLI[Catalog commands] --> Catalog[SkillCatalogService]
-    Plugin[PluginMcpServer] --> MCP[Shared MCP dispatcher]
+    Hosts[Codex / Claude / Copilot MCP manifests] --> Plugin[PluginMcpServer]
+    Plugin --> MCP[Shared MCP dispatcher]
     Serve[mcp serve] --> MCP
     MCP -->|search / read / overview| Catalog
     Catalog --> Installed[InstalledSkillRepository]

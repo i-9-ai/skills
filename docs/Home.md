@@ -14,8 +14,8 @@ preparing distribution, and evolving focused agent skills.
 - [Skill change reports](https://github.com/i-9-ai/skills/wiki/Skill-Change-Reports): pinned observations, evidence-based bump reports and a runnable installed onboarding guide.
 - [Release management](https://github.com/i-9-ai/skills/wiki/Release-Management): version preparation and Changesets.
 - [Lifecycle policy](https://github.com/i-9-ai/skills/wiki/Lifecycle-Policy): portable maturity evidence and promotion decisions.
-- [Entry-path map](assets/skill-management-entry-paths.html): an interactive view of the three main ways to start.
-- [Visual guides](assets/index.html): a GitHub Pages-ready landing page for interactive maps.
+- [Entry-path map](https://i-9-ai.github.io/skills/skill-management-entry-paths.html): native skills, the explicit CLI/MCP, and repository-root plugin hooks.
+- [Visual guides](https://i-9-ai.github.io/skills/): the published landing page for interactive maps.
 
 ## Deeper references
 - [CLI distribution](https://github.com/i-9-ai/skills/wiki/Distribution-Readiness): immutable Git-source `npx` calls, preparation, packed CLI verification and remaining registry publication gates.
