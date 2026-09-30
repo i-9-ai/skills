@@ -20,8 +20,8 @@
     "validate": "node bin/index.mjs repo validate --project .",
     "test": "node --test \"tests/**/*.test.mjs\" \".agents/skills/*/tests/*.test.mjs\"",
     "check": "npm run format:check && npm run typecheck && npm run release:verify && npm run validate && npm test",
-    "format": "prettier --write \"src/**/*.ts\" \"bin/*.mjs\" \"tests/unit/**/*.mjs\" \"tests/integration/cli/**/*.mjs\" \"tests/packaging/*.mjs\"",
-    "format:check": "prettier --check \"src/**/*.ts\" \"bin/*.mjs\" \"tests/unit/**/*.mjs\" \"tests/integration/cli/**/*.mjs\" \"tests/packaging/*.mjs\"",
+    "format": "prettier --write \"src/**/*.ts\" \"bin/*.mjs\" \"tests/unit/**/*.mjs\" \"tests/integration/cli/**/*.mjs\" \"tests/packaging/*.mjs\" \"website/**/*.mjs\" \"tests/integration/website/*.mjs\" \"website/**/*.css\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"bin/*.mjs\" \"tests/unit/**/*.mjs\" \"tests/integration/cli/**/*.mjs\" \"tests/packaging/*.mjs\" \"website/**/*.mjs\" \"tests/integration/website/*.mjs\" \"website/**/*.css\"",
     "typecheck": "tsc --noEmit",
     "cli": "node bin/index.mjs",
     "ci:official": "node bin/index.mjs repo validate-official",
@@ -31,7 +31,10 @@
     "release:verify": "node bin/index.mjs repo verify-release --project .",
     "build": "npm run typecheck && node -e \"require('node:fs').rmSync('dist', {recursive: true, force: true})\" && tsc --project tsconfig.build.json",
     "package:check": "npm run build && node --test tests/packaging/cli-package.mjs",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "site:build": "node website/scripts/build.mjs",
+    "site:preview": "node website/scripts/preview.mjs",
+    "site:test": "node --test tests/integration/website/*.test.mjs"
   },
   "oclif": {
     "bin": "i9-skills",
