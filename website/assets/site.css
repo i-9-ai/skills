@@ -95,6 +95,35 @@ a svg {
 .skip-link:focus {
     transform: translateY(0);
 }
+.language-suggestion {
+    background: var(--lime);
+    border-bottom: 1px solid var(--line);
+}
+.language-suggestion-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 24px;
+    padding-block: 12px;
+}
+.language-suggestion p {
+    flex: 1 1 280px;
+    margin: 0;
+}
+.language-suggestion a,
+.language-suggestion button {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--ink);
+    font-weight: 600;
+}
+.language-suggestion button {
+    padding: 6px 12px;
+    background: transparent;
+    border: 1px solid currentColor;
+    border-radius: 4px;
+}
 .site-header {
     display: flex;
     align-items: center;

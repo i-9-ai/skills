@@ -1,4 +1,5 @@
 import { formatSkillCount, matchesSkill } from './catalog-state.mjs';
+import { languageDestination, suggestLanguage } from './language-state.mjs';
 
 const controls = document.querySelector('[data-catalog-controls]');
 const search = document.querySelector('#skill-search');
@@ -9,6 +10,38 @@ const empty = document.querySelector('[data-empty-state]');
 const reset = document.querySelector('[data-reset]');
 const allowedCategories = new Set(buttons.map((button) => button.dataset.category));
 let category = 'all';
+
+function showLanguageSuggestion() {
+    const banner = document.querySelector('[data-language-suggestion]');
+    if (!banner) return;
+
+    const options = JSON.parse(banner.dataset.languageSuggestion);
+    const locale = suggestLanguage({
+        pathname: window.location.pathname,
+        preferredLanguages: navigator.languages?.length
+            ? navigator.languages
+            : [navigator.language],
+        availableLocales: Object.keys(options),
+        currentLocale: document.body.dataset.locale,
+    });
+    if (!locale) return;
+
+    const suggestion = options[locale];
+    const action = banner.querySelector('[data-language-action]');
+    const dismiss = banner.querySelector('[data-language-dismiss]');
+    banner.lang = suggestion.tag;
+    banner.querySelector('[data-language-message]').textContent = suggestion.message;
+    action.textContent = suggestion.action;
+    action.hreflang = suggestion.tag;
+    action.href = languageDestination(window.location.href, locale);
+    dismiss.textContent = suggestion.dismiss;
+    dismiss.addEventListener('click', () => {
+        banner.hidden = true;
+    });
+    banner.hidden = false;
+}
+
+showLanguageSuggestion();
 
 function synchronizeLanguages() {
     for (const link of document.querySelectorAll('[data-language-link]')) {

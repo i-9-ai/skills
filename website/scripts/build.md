@@ -3,7 +3,7 @@
 ## Purpose and prerequisites
 
 Render the site from the current catalog and authored locales into a caller-owned
-local review directory. Requires Node.js 24+. Uses only built-in Node modules and
+static directory. Requires Node.js 24+. Uses only built-in Node modules and
 local files, with no installation, network, host configuration or publishing.
 
 ## Inputs and invocation
@@ -11,6 +11,7 @@ local files, with no installation, network, host configuration or publishing.
 ~~~sh
 node website/scripts/build.mjs
 node website/scripts/build.mjs --out-dir .work/another-site-preview
+node website/scripts/build.mjs --out-dir .work/production-site --public-url https://example.pages.dev
 node website/scripts/build.mjs --help
 ~~~
 
@@ -18,7 +19,13 @@ Default output is .work/website-preview under this checkout. Relative output
 resolves from the checkout, not the shell directory. Absolute caller-owned
 output paths are accepted after confinement/ownership checks.
 
-Inputs are skills-catalog.json, content.mjs, render.mjs, the three runtime assets
+Without a public URL, builds use review indexing. `--public-url` or the
+`I9_SITE_PUBLIC_URL` environment variable explicitly selects production metadata;
+the argument takes precedence. Select that environment variable only for the
+provider's production environment. The URL must be an HTTPS origin with no
+credentials, path beyond `/`, query or fragment. This selection never deploys.
+
+Inputs are skills-catalog.json, content.mjs, render.mjs, the bundled runtime assets
 and each canonical package's assets/icon.svg. The catalog must use schema version
 1, safe canonical names and the exact .agents/skills/name path. Every name needs
 one explicit category. Missing, extra, duplicate or unsafe membership fails before
@@ -27,8 +34,10 @@ writing. Locale message key/type coverage must match.
 ## Output and side effects
 
 Creates complete root/English, PT-BR and Spanish HTML, shared local assets,
-current icons, review-only robots.txt and .i9-site-build.json. The marker records
-catalog/file hashes, count, locales and publication: not-authorized. It contains
+current icons, robots.txt and .i9-site-build.json. Review output disallows indexing;
+production output adds canonical locale URLs, public share metadata and sitemap.xml.
+The marker records catalog/file hashes, count, locales, mode, selected public URL
+and publication: not-deployed. It contains
 no private source path.
 
 Writes only known artifact names. A new output or empty directory is accepted.
@@ -37,7 +46,8 @@ match its hash. Unknown files are preserved; conflicting unowned names refuse th
 rebuild. Stale unchanged owned files may be unlinked individually. There is no
 recursive output deletion.
 
-Project source, canonical skills, Git metadata, visual-guide sources, ancestor
+Project source (including nonexistent or empty reserved scopes), canonical skills,
+Git metadata, visual-guide sources and staging, ancestor
 directories and symbolic-link paths are refused. Active/external SVG icon content
 is rejected before copying. Use one writer and do not mutate output concurrently.
 

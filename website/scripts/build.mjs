@@ -3,7 +3,7 @@ import path from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { categories, languages, messages } from '../content.mjs';
-import { renderPage } from '../render.mjs';
+import { escapeHtml, renderPage } from '../render.mjs';
 
 const buildMarker = '.i9-site-build.json';
 const hash = (bytes) => createHash('sha256').update(bytes).digest('hex');
@@ -169,16 +169,53 @@ function assertSafeSvg(bytes) {
     }
 }
 
+function publicOrigin(value) {
+    if (value === null || value === undefined) return null;
+    const url = new URL(value);
+    if (
+        url.protocol !== 'https:' ||
+        url.username ||
+        url.password ||
+        url.pathname !== '/' ||
+        url.search ||
+        url.hash
+    ) {
+        throw new Error(
+            'Public URL must be an HTTPS origin without credentials, path, query or fragment',
+        );
+    }
+    return url.origin + '/';
+}
+
 export function buildSite({
     projectRoot = fileURLToPath(new URL('../../', import.meta.url)),
     outputDirectory,
     categoryMap = categories,
+    publicUrl = null,
 } = {}) {
+    const origin = publicOrigin(publicUrl);
     const root = fs.realpathSync(projectRoot);
     const output = path.resolve(root, outputDirectory ?? '.work/website-preview');
-    const blocked = ['website', '.agents', '.git', 'docs/assets', 'docs/diagrams'].map((relative) =>
-        path.resolve(root, relative),
-    );
+    const blocked = [
+        'website',
+        'src',
+        'tests',
+        'bin',
+        'plans',
+        'docs',
+        'dist',
+        'node_modules',
+        '.agents',
+        '.git',
+        '.github',
+        '.changeset',
+        '.codex',
+        '.claude',
+        '.codex-plugin',
+        '.claude-plugin',
+        '.beads',
+        '.pages',
+    ].map((relative) => path.resolve(root, relative));
     if (
         output === root ||
         blocked.some((scope) => inside(scope, output) || inside(output, scope))
@@ -189,14 +226,23 @@ export function buildSite({
     const catalogBytes = sourceFile(root, 'skills-catalog.json', 1024 * 1024);
     const skills = validateCatalog(JSON.parse(catalogBytes), categoryMap);
     const files = new Map();
-    files.set('index.html', Buffer.from(renderPage({ locale: 'en', rootPage: true, skills })));
+    files.set(
+        'index.html',
+        Buffer.from(renderPage({ locale: 'en', rootPage: true, skills, publicUrl: origin })),
+    );
     for (const language of languages) {
         files.set(
             language.key + '/index.html',
-            Buffer.from(renderPage({ locale: language.key, skills })),
+            Buffer.from(renderPage({ locale: language.key, skills, publicUrl: origin })),
         );
     }
-    for (const name of ['site.css', 'site.mjs', 'catalog-state.mjs', 'hero-packages.webp']) {
+    for (const name of [
+        'site.css',
+        'site.mjs',
+        'catalog-state.mjs',
+        'language-state.mjs',
+        'hero-packages.webp',
+    ]) {
         files.set('assets/' + name, sourceFile(root, 'website/assets/' + name));
     }
     for (const skill of skills) {
@@ -204,7 +250,32 @@ export function buildSite({
         assertSafeSvg(bytes);
         files.set('assets/icons/' + skill.name + '.svg', bytes);
     }
-    files.set('robots.txt', Buffer.from('User-agent: *\nDisallow: /\n'));
+    files.set(
+        'robots.txt',
+        Buffer.from(
+            origin
+                ? 'User-agent: *\nAllow: /\nSitemap: ' + origin + 'sitemap.xml\n'
+                : 'User-agent: *\nDisallow: /\n',
+        ),
+    );
+    if (origin) {
+        const entries = languages
+            .map(
+                (language) =>
+                    '<url><loc>' +
+                    escapeHtml(new URL(language.key + '/', origin).href) +
+                    '</loc></url>',
+            )
+            .join('');
+        files.set(
+            'sitemap.xml',
+            Buffer.from(
+                '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' +
+                    entries +
+                    '</urlset>\n',
+            ),
+        );
+    }
     const previous = inspectOutput(output, files);
     const manifest = {
         schemaVersion: 1,
@@ -212,7 +283,9 @@ export function buildSite({
         catalogSha256: hash(catalogBytes),
         skillCount: skills.length,
         languages: languages.map((language) => language.key),
-        publication: 'not-authorized',
+        mode: origin ? 'production' : 'review',
+        publicUrl: origin,
+        publication: 'not-deployed',
         files: Object.fromEntries([...files].map(([relative, bytes]) => [relative, hash(bytes)])),
     };
     // All content and ownership checks finish before any output mutation.
@@ -246,14 +319,35 @@ function main() {
     const args = process.argv.slice(2);
     if (args.includes('--help')) {
         process.stdout.write(
-            'Build the local I-9 Skills review site.\nUsage: node website/scripts/build.mjs [--out-dir DIRECTORY]\nDefault: .work/website-preview; never deploys or overwrites source.\n',
+            'Build the I-9 Skills static site.\nUsage: node website/scripts/build.mjs [--out-dir DIRECTORY] [--public-url HTTPS_ORIGIN]\nDefault: .work/website-preview, review indexing. I9_SITE_PUBLIC_URL selects production metadata; never deploys or overwrites source.\n',
         );
         return;
     }
-    if (args.length && (args.length !== 2 || args[0] !== '--out-dir' || !args[1])) {
-        throw new Error('Use --help for the supported arguments');
+    const options = { publicUrl: process.env.I9_SITE_PUBLIC_URL };
+    const setters = {
+        '--out-dir': (value) => {
+            options.outputDirectory = value;
+        },
+        '--public-url': (value) => {
+            options.publicUrl = value;
+        },
+    };
+    const seen = new Set();
+    for (let index = 0; index < args.length; index += 2) {
+        const option = args[index];
+        const value = args[index + 1];
+        if (
+            !Object.hasOwn(setters, option) ||
+            !value ||
+            value.startsWith('--') ||
+            seen.has(option)
+        ) {
+            throw new Error('Use --help for the supported arguments');
+        }
+        seen.add(option);
+        setters[option](value);
     }
-    const result = buildSite({ outputDirectory: args[1] });
+    const result = buildSite(options);
     process.stdout.write(
         JSON.stringify(
             {
@@ -261,6 +355,8 @@ function main() {
                 skillCount: result.skillCount,
                 languages: result.languages,
                 catalogSha256: result.catalogSha256,
+                mode: result.mode,
+                publicUrl: result.publicUrl,
                 publication: result.publication,
             },
             null,

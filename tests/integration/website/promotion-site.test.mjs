@@ -9,12 +9,19 @@ import { categories, messages } from '../../../website/content.mjs';
 import { buildSite, validateCatalog } from '../../../website/scripts/build.mjs';
 import { createPreviewServer } from '../../../website/scripts/preview.mjs';
 import { formatSkillCount, matchesSkill } from '../../../website/assets/catalog-state.mjs';
+import { languageDestination, suggestLanguage } from '../../../website/assets/language-state.mjs';
 
 function fixture(t) {
     const root = fs.mkdtempSync(path.join(fs.realpathSync(os.tmpdir()), 'i9-site-test-'));
     t.after(() => fs.rmSync(root, { recursive: true, force: true }));
     fs.mkdirSync(path.join(root, 'website/assets'), { recursive: true });
-    for (const name of ['site.css', 'site.mjs', 'catalog-state.mjs', 'hero-packages.webp']) {
+    for (const name of [
+        'site.css',
+        'site.mjs',
+        'catalog-state.mjs',
+        'language-state.mjs',
+        'hero-packages.webp',
+    ]) {
         fs.writeFileSync(path.join(root, 'website/assets', name), 'synthetic ' + name);
     }
     const catalog = {
@@ -64,7 +71,9 @@ test('build renders every canonical package in all locales, escapes source data 
     const f = fixture(t);
     const result = f.build();
     assert.equal(result.skillCount, 24);
-    assert.equal(result.publication, 'not-authorized');
+    assert.equal(result.publication, 'not-deployed');
+    assert.equal(result.mode, 'review');
+    assert.equal(result.publicUrl, null);
     for (const [file, locale] of [
         ['index.html', 'en'],
         ['en/index.html', 'en'],
@@ -72,6 +81,7 @@ test('build renders every canonical package in all locales, escapes source data 
         ['es/index.html', 'es'],
     ]) {
         const html = fs.readFileSync(path.join(f.output, file), 'utf8');
+        assert.equal(html.includes('data-language-suggestion='), file === 'index.html');
         assert.equal((html.match(/data-skill=/g) ?? []).length, 24);
         assert.equal((html.match(/<h1/g) ?? []).length, 1);
         assert.ok(html.includes(messages[locale].hero.title));
@@ -100,6 +110,69 @@ test('build renders every canonical package in all locales, escapes source data 
         fs.readFileSync(path.join(f.output, 'robots.txt'), 'utf8'),
         'User-agent: *\nDisallow: /\n',
     );
+});
+
+test('production metadata uses the selected HTTPS origin and review rebuild removes public sitemap', (t) => {
+    const f = fixture(t);
+    const options = {
+        projectRoot: f.root,
+        outputDirectory: f.output,
+        publicUrl: 'https://example.test',
+    };
+    const production = buildSite(options);
+    assert.equal(production.mode, 'production');
+    assert.equal(production.publication, 'not-deployed');
+    for (const locale of ['en', 'pt-br', 'es']) {
+        const html = fs.readFileSync(path.join(f.output, locale, 'index.html'), 'utf8');
+        assert.ok(html.includes('rel="canonical" href="https://example.test/' + locale + '/"'));
+        assert.ok(html.includes('name="robots" content="index, follow"'));
+        assert.ok(html.includes('hreflang="pt-BR" href="https://example.test/pt-br/"'));
+        assert.ok(
+            html.includes(
+                'property="og:image" content="https://example.test/assets/hero-packages.webp"',
+            ),
+        );
+        assert.ok(!html.includes('class="preview-notice"'));
+    }
+    assert.ok(
+        fs
+            .readFileSync(path.join(f.output, 'index.html'), 'utf8')
+            .includes('rel="canonical" href="https://example.test/en/"'),
+    );
+    const sitemap = fs.readFileSync(path.join(f.output, 'sitemap.xml'), 'utf8');
+    assert.equal((sitemap.match(/<loc>/g) ?? []).length, 3);
+    assert.ok(sitemap.includes('<loc>https://example.test/es/</loc>'));
+    assert.equal(
+        fs.readFileSync(path.join(f.output, 'robots.txt'), 'utf8'),
+        'User-agent: *\nAllow: /\nSitemap: https://example.test/sitemap.xml\n',
+    );
+    assert.deepEqual(buildSite(options).files, production.files);
+    f.build();
+    assert.ok(!fs.existsSync(path.join(f.output, 'sitemap.xml')));
+    assert.ok(
+        fs.readFileSync(path.join(f.output, 'index.html'), 'utf8').includes('content="noindex"'),
+    );
+});
+
+test('invalid public URLs are rejected before creating output', (t) => {
+    const f = fixture(t);
+    const authenticated = new URL('https://example.test');
+    authenticated.username = 'synthetic';
+    authenticated.password = ['fixture', 'sentinel'].join('-');
+    for (const publicUrl of [
+        'http://example.test',
+        authenticated.href,
+        'https://example.test/site/',
+        'https://example.test/?q=1',
+        'https://example.test/#fragment',
+        'not-a-url',
+        '',
+    ]) {
+        assert.throws(() =>
+            buildSite({ projectRoot: f.root, outputDirectory: f.output, publicUrl }),
+        );
+        assert.ok(!fs.existsSync(f.output));
+    }
 });
 
 test('search matches responsibilities and categories, and announces singular or plural in every locale', () => {
@@ -147,6 +220,36 @@ test('catalog drift, duplicates, unsafe paths and malformed tags fail before out
     assert.ok(!fs.existsSync(f.output));
 });
 
+test('language suggestions honor explicit routes and browser priority without redirecting', () => {
+    const availableLocales = ['en', 'pt-br', 'es'];
+    const suggest = (pathname, preferredLanguages) =>
+        suggestLanguage({ pathname, preferredLanguages, availableLocales });
+
+    assert.equal(suggest('/', ['pt-BR', 'en']), 'pt-br');
+    assert.equal(suggest('/index.html', ['pt-PT']), 'pt-br');
+    assert.equal(suggest('/', ['es-MX']), 'es');
+    assert.equal(suggest('/', ['fr-FR', 'es']), 'es');
+    assert.equal(suggest('/', ['en-US', 'pt-BR']), null);
+    assert.equal(suggest('/', ['fr-FR']), null);
+    assert.equal(suggest('/', []), null);
+    for (const route of ['/en', '/en/', '/pt-br/', '/es/index.html', '/unknown/']) {
+        assert.equal(suggest(route, ['pt-BR', 'es']), null);
+    }
+
+    assert.equal(
+        languageDestination('https://example.test/?q=snapshot&category=manage#catalog', 'pt-br'),
+        'https://example.test/pt-br/?q=snapshot&category=manage#catalog',
+    );
+    assert.equal(
+        languageDestination('https://example.test/index.html?q=clock#install', 'es'),
+        'https://example.test/es/?q=clock#install',
+    );
+    assert.throws(
+        () => languageDestination('https://example.test/', '//another.test'),
+        /Invalid language route/,
+    );
+});
+
 test('build refuses source targets and unowned or modified output, preserving all prior data', (t) => {
     const f = fixture(t);
     assert.throws(
@@ -176,6 +279,31 @@ test('build refuses source targets and unowned or modified output, preserving al
     assert.throws(f.build, /Previously generated output was changed/);
     assert.deepEqual(artifactBytes(f.output), before);
 });
+
+for (const scope of [
+    'src/site-preview',
+    'tests/site-preview',
+    '.github/site-preview',
+    '.pages/site-preview',
+    '.pages',
+    'docs/site-preview',
+]) {
+    for (const state of ['missing', 'empty']) {
+        test(`build preserves the ${state} reserved output scope ${scope}`, (t) => {
+            const f = fixture(t);
+            const output = path.join(f.root, scope);
+            if (state === 'empty') fs.mkdirSync(output, { recursive: true });
+
+            assert.throws(
+                () => buildSite({ projectRoot: f.root, outputDirectory: output }),
+                /overwrite source or published guide state/,
+            );
+            assert.equal(fs.existsSync(output), state === 'empty');
+            if (state === 'empty') assert.deepEqual(fs.readdirSync(output), []);
+            assert.ok(!fs.existsSync(path.join(output, '.i9-site-build.json')));
+        });
+    }
+}
 
 test('build rejects source/output symlinks and active icons before writing', (t) => {
     const f = fixture(t);

@@ -40,6 +40,34 @@ const link = (value, href, attributes = {}) => text('a', value, { href, ...attri
 const packageUrl = (name) =>
     repository + '/blob/main/.agents/skills/' + encodeURIComponent(name) + '/SKILL.md';
 
+function languageSuggestion() {
+    const options = Object.fromEntries(
+        languages.map((language) => [
+            language.key,
+            { tag: language.tag, ...messages[language.key].languageSuggestion },
+        ]),
+    );
+    return element(
+        'aside',
+        {
+            class: 'language-suggestion',
+            hidden: true,
+            role: 'status',
+            'data-language-suggestion': JSON.stringify(options),
+        },
+        element(
+            'div',
+            { class: 'container language-suggestion-inner' },
+            text('p', '', { 'data-language-message': true }) +
+                link('', '#', {
+                    'data-language-action': true,
+                    'data-language-link': true,
+                }) +
+                text('button', '', { type: 'button', 'data-language-dismiss': true }),
+        ),
+    );
+}
+
 function icon(kind = 'arrow') {
     const paths = {
         arrow: '<path d="M4 12h15m-6-6 6 6-6 6"/>',
@@ -388,7 +416,7 @@ function evidence(locale) {
     );
 }
 
-function footer(locale, prefix) {
+function footer(locale, prefix, publicUrl) {
     const m = messages[locale].footer;
     return element(
         'footer',
@@ -405,34 +433,50 @@ function footer(locale, prefix) {
                         link(m.license, repository + '/blob/main/LICENSE'),
                 ) +
                 languageLinks(locale, prefix),
-        ) + text('p', m.preview, { class: 'preview-notice' }),
+        ) + (publicUrl ? '' : text('p', m.preview, { class: 'preview-notice' })),
     );
 }
 
-export function renderPage({ locale, rootPage = false, skills }) {
+export function renderPage({ locale, rootPage = false, skills, publicUrl = null }) {
     const m = messages[locale];
     if (!m) throw new Error('Unsupported locale');
     const language = languages.find((value) => value.key === locale);
     const prefix = rootPage ? './' : '../';
+    const canonical = publicUrl ? new URL(locale + '/', publicUrl).href : null;
     const head = [
         element('meta', { charset: 'utf-8' }),
         element('meta', { name: 'viewport', content: 'width=device-width, initial-scale=1' }),
         text('title', m.title),
         element('meta', { name: 'description', content: m.description }),
-        element('meta', { name: 'robots', content: 'noindex' }),
+        element('meta', { name: 'robots', content: publicUrl ? 'index, follow' : 'noindex' }),
+        ...(publicUrl
+            ? [
+                  element('link', { rel: 'canonical', href: canonical }),
+                  element('meta', { property: 'og:type', content: 'website' }),
+                  element('meta', { property: 'og:title', content: m.title }),
+                  element('meta', { property: 'og:description', content: m.description }),
+                  element('meta', { property: 'og:url', content: canonical }),
+                  element('meta', {
+                      property: 'og:image',
+                      content: new URL('assets/hero-packages.webp', publicUrl).href,
+                  }),
+                  element('link', { rel: 'alternate', hreflang: 'x-default', href: publicUrl }),
+              ]
+            : []),
         element('meta', { name: 'theme-color', content: '#14231A' }),
         element('link', { rel: 'stylesheet', href: prefix + 'assets/site.css' }),
         ...languages.map((item) =>
             element('link', {
                 rel: 'alternate',
                 hreflang: item.tag,
-                href: prefix + item.key + '/',
+                href: publicUrl ? new URL(item.key + '/', publicUrl).href : prefix + item.key + '/',
             }),
         ),
         element('script', { type: 'module', src: prefix + 'assets/site.mjs' }),
     ].join('');
     const body =
         link(m.skip, '#main', { class: 'skip-link' }) +
+        (rootPage ? languageSuggestion() : '') +
         header(locale, prefix) +
         element(
             'main',
@@ -443,7 +487,7 @@ export function renderPage({ locale, rootPage = false, skills }) {
                 installation(locale) +
                 evidence(locale),
         ) +
-        footer(locale, prefix);
+        footer(locale, prefix, publicUrl);
     return (
         '<!doctype html>\n' +
         element(

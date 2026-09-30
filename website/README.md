@@ -1,8 +1,9 @@
 # I-9 Skills promotion site
 
-This is a local-review static site for the repository's meta-skill collection.
-It is not deployed. The existing Pages visual guides and their publishing
-workflow remain separate.
+This is a static site for the repository's meta-skill collection. Local builds
+support pull-request review; Cloudflare Pages supplies Git previews and production
+from `main` when configured. The existing GitHub Pages visual guides and their
+publishing workflow remain separate.
 
 ## Review locally
 
@@ -16,6 +17,10 @@ npm run site:preview
 Open http://127.0.0.1:4173/. English is available at / and /en/, Portuguese
 at /pt-br/, and Spanish at /es/. The preview listens on loopback only.
 Stop it with Ctrl-C.
+
+The unprefixed root offers a dismissible language suggestion when the browser's
+first supported language is Portuguese or Spanish. It preserves catalog query
+and section state, never redirects, and is suppressed on explicit locale URLs.
 
 The direct Node commands need no third-party site dependencies:
 
@@ -40,6 +45,8 @@ is ignored local evidence and must not be committed.
   clipboard feedback and finite reduced-motion-aware entrance.
 - assets/catalog-state.mjs owns search matching and localized result counts,
   shared with the renderer and synthetic regression tests.
+- assets/language-state.mjs owns browser-language matching and suggestion links,
+  without persisted preferences or automatic redirects.
 - scripts/build.mjs reads the actual skills-catalog.json and existing
   canonical package icons. It does not maintain a second inventory.
 - [design/README.md](design/README.md) records generated design references,
@@ -61,6 +68,10 @@ source fallback requires Git and preparation dependencies:
 npx --yes --allow-git=root github:i-9-ai/skills catalog overview
 ~~~
 
+The portable package command is `npx skills add i-9-ai/skills --yes`.
+`--yes` selects all available skills; `--skill '*'` adds no selection behavior.
+Use `--global` for the user's global scope and `--skill <name>` for a subset.
+
 ## Verification
 
 ~~~sh
@@ -80,13 +91,38 @@ query and section preservation, copy success/failure, keyboard, 375 px mobile,
 desktop, no JavaScript and reduced motion. Functional testing does not replace
 comparison with the selected design references.
 
-## Publication boundary
+## Cloudflare Git delivery
 
-The build includes noindex and a disallowing robots.txt because it is a review
-artifact. There is no deployment workflow, production origin, sitemap, tracking,
-form, account, payment or runtime backend.
+Use Cloudflare Pages' native GitHub integration for this repository. No custom
+upload workflow or repository deploy token is needed. Configure:
 
-Publication requires explicit human approval of the final rendered build and its
-target. That decision must cover build SHA, host/path, preservation of existing
-visual-guide URLs, canonical metadata/indexing and rollback. Merging this source
-does not authorize a site deployment.
+| Setting | Value |
+| --- | --- |
+| Build command | `npm run site:build` |
+| Output directory | `.work/website-preview` |
+| Production branch | `main`, automatic builds enabled |
+| Initial preview branch | `codex/catalog-promotion-site`, custom preview control |
+| Pull-request comments | Enabled |
+| Both environments | `NODE_VERSION=24.21.0`, `SKIP_DEPENDENCY_INSTALL=1` |
+| Production only | `I9_SITE_PUBLIC_URL=https://i9-skills.pages.dev` |
+| Preview environment | `I9_SITE_PUBLIC_URL` absent |
+
+Dependency installation can be skipped because the website build uses only Node
+built-ins. The source still uses explicit `npm ci` for contributor validation.
+Production URL selection enables canonical locales, share metadata, an allowing
+robots file and sitemap. Default local and PR builds remain `noindex`; their
+robots file disallows crawling. The ownership manifest says `not-deployed` in
+both modes because a build cannot prove deployment.
+
+Native Git previews are public and attach provider checks/comments to PRs. Verify
+the deployment's actual commit before sharing its URL. A project setting or
+successful local build does not prove a successful provider build. Production
+requires the website source to merge into `main`; keep PR #67 open for the
+maintainer's review. Do not deploy the current pre-website main tree.
+
+Hosting both previews and main production was explicitly authorized in the
+[delivery plan](../plans/2026-09-30-18-31-35-cloudflare-site-delivery.md).
+This does not authorize DNS changes or migration of existing GitHub Pages guides.
+There are no trackers, forms, accounts, payments or runtime backend. To stop
+delivery, disable branch build controls; retain the last verified deployment for
+rollback. Project deletion remains a separate action.

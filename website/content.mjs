@@ -4,7 +4,7 @@ export const documentation = repository + '/wiki';
 // The 0.1.0 registry release passed fresh-cache CLI and MCP consumer checks.
 export const toolkitSource = 'registry';
 export const commands = {
-    skills: "npx skills add https://github.com/i-9-ai/skills --skill '*' --yes",
+    skills: 'npx skills add i-9-ai/skills --yes',
     plugin:
         'codex plugin marketplace add i-9-ai/skills --ref main\n' +
         'codex plugin add i9-skills@i9-skills\n' +
@@ -58,6 +58,11 @@ export const messages = {
         skip: 'Skip to content',
         navigation: 'Main navigation',
         language: 'Choose language',
+        languageSuggestion: {
+            message: 'Your browser prefers English. View this page in English?',
+            action: 'View in English',
+            dismiss: 'Not now',
+        },
         nav: { workflow: 'Workflow', catalog: 'Catalog', install: 'Install', docs: 'Docs' },
         hero: {
             title: 'Better skills.',
@@ -178,6 +183,11 @@ export const messages = {
         skip: 'Ir para o conteúdo',
         navigation: 'Navegação principal',
         language: 'Escolher idioma',
+        languageSuggestion: {
+            message: 'Seu navegador prefere português. Quer ver esta página em português?',
+            action: 'Ver em português',
+            dismiss: 'Agora não',
+        },
         nav: { workflow: 'Fluxo', catalog: 'Catálogo', install: 'Instalar', docs: 'Docs' },
         hero: {
             title: 'Skills melhores.',
@@ -301,6 +311,11 @@ export const messages = {
         skip: 'Ir al contenido',
         navigation: 'Navegación principal',
         language: 'Elegir idioma',
+        languageSuggestion: {
+            message: 'Tu navegador prefiere español. ¿Quieres ver esta página en español?',
+            action: 'Ver en español',
+            dismiss: 'Ahora no',
+        },
         nav: { workflow: 'Flujo', catalog: 'Catálogo', install: 'Instalar', docs: 'Docs' },
         hero: {
             title: 'Mejores skills.',
