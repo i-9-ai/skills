@@ -41,6 +41,12 @@ submission, consumer installation or merging the generated PR.
   formatter auto-detection can execute a package-manager command and depends on
   local tooling; generated release artifacts must instead be reproducible with
   the pinned engine alone. Normal source formatting remains a separate check.
+- Normalize whitespace-only lines in newly generated changelog entries after
+  the pinned engine runs. Preserve prior release history verbatim, nonblank
+  Markdown hard breaks and code indentation. Apply the identical normalization
+  when recomputing expected release bytes; a manually altered blank line still
+  fails strict verification. This completes the original reproducible-artifact
+  boundary after the initial release exposed issue #61; it adds no formatter.
 - Reconstruct the expected changelog with an isolated temporary Git directory,
   detached at the immutable base and reading the existing object store through
   an alternate. Copy only bounded package, configuration, notes and changelog

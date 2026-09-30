@@ -125,6 +125,14 @@ export class ReleaseVersionRepository {
             writeFileSync(join(this.root, file), JSON.stringify(value, null, 2) + '\n');
     }
 
+    normalizeChangelog(previous?: string): void {
+        const generated = this.read('CHANGELOG.md');
+        writeFileSync(
+            join(this.root, 'CHANGELOG.md'),
+            this.canonicalChangelog(generated, previous),
+        );
+    }
+
     runVersion(root = this.root, environment = process.env): void {
         if (this.runner) {
             this.runner(root);
@@ -245,12 +253,10 @@ export class ReleaseVersionRepository {
             );
             for (const file of notes)
                 writeFileSync(join(temporary, file), this.git(['show', `${base}:${file}`]));
-            if (this.git(['ls-tree', '--name-only', base, '--', 'CHANGELOG.md']).trim()) {
-                writeFileSync(
-                    join(temporary, 'CHANGELOG.md'),
-                    this.git(['show', `${base}:CHANGELOG.md`]),
-                );
-            }
+            const previous = this.git(['ls-tree', '--name-only', base, '--', 'CHANGELOG.md']).trim()
+                ? this.git(['show', `${base}:CHANGELOG.md`])
+                : undefined;
+            if (previous !== undefined) writeFileSync(join(temporary, 'CHANGELOG.md'), previous);
 
             this.runVersion(temporary, environment);
             return {
@@ -259,11 +265,26 @@ export class ReleaseVersionRepository {
                         strictJson(readFileSync(join(temporary, 'package.json'))),
                     ),
                 ),
-                changelog: readFileSync(join(temporary, 'CHANGELOG.md'), 'utf8'),
+                changelog: this.canonicalChangelog(
+                    readFileSync(join(temporary, 'CHANGELOG.md'), 'utf8'),
+                    previous,
+                ),
             };
         } finally {
             rmSync(temporary, { recursive: true, force: true });
         }
+    }
+
+    private canonicalChangelog(generated: string, previous?: string): string {
+        const historyStart = previous?.match(/^## /mu)?.index;
+        const history = historyStart === undefined ? '' : previous!.slice(historyStart);
+        if (!generated.endsWith(history))
+            throw new Error('Changesets must preserve existing release history verbatim.');
+
+        // Changesets indents blank lines in multiline list entries. Remove only
+        // those new blank-line spaces; retain hard breaks, code and prior history.
+        const entries = generated.slice(0, generated.length - history.length);
+        return entries.replace(/^[\t ]+(?=\r?$)/gmu, '') + history;
     }
 
     /** Give Changesets the base history without sharing refs, config, index or working files. */

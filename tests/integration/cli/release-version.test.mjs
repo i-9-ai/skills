@@ -346,6 +346,29 @@ test('release preparation follows Changesets prerelease promotion instead of inv
     assert.equal(successful(cli(target, 'verify-release')).version, '0.1.0');
 });
 
+test('multiline release entries pass whitespace checks while preserving code and historical hard breaks', (t) => {
+    const history = '# Previous releases\n\n## 1.2.3\n\n- Keep historical spacing.  \n  \n';
+    const target = fixture(t, { changelog: history });
+    write(
+        target.root,
+        noteFile,
+        '---\n"@example/release-fixture": minor\n---\n\nAdd a command.\nExplain its input.\n\n```sh\n    example --help\n```\n',
+    );
+    git(target, ['init', '--quiet', '--initial-branch=main']);
+    const base = commit(target, 'Record multiline release intent');
+    successful(cli(target, 'prepare-version'));
+    const changelog = readFileSync(join(target.root, 'CHANGELOG.md'), 'utf8');
+    const historicalBytes = history.slice(history.indexOf('## 1.2.3'));
+    assert.ok(changelog.endsWith(historicalBytes));
+    const entries = changelog.slice(0, changelog.length - historicalBytes.length);
+    assert.doesNotMatch(entries, /^[\t ]+$/mu);
+    assert.match(changelog, /Keep historical spacing\. {2}\n/u);
+    assert.match(entries, /^ {6}example --help$/mu);
+    assert.equal(git(target, ['diff', '--check', base]), '');
+    commit(target, 'Prepare canonical multiline release');
+    assert.equal(successful(cli(target, 'verify-release', ['--base', base])).prepared, true);
+});
+
 test('a clean no-note preparation succeeds without invoking the version runner', (t) => {
     const target = fixture(t, { pending: false });
     const before = files(target.root);
@@ -663,6 +686,10 @@ test('prepared changelog verification rejects shallow source history without fet
 });
 
 const invalidPreparedChangelogs = [
+    [
+        'noncanonical generated blank-line whitespace',
+        ({ changelog }) => changelog.replace('\n\n', '\n  \n'),
+    ],
     [
         'removed prior history',
         ({ changelog }) => changelog.slice(0, changelog.indexOf('\n## 1.2.3\n')).trimEnd() + '\n',
