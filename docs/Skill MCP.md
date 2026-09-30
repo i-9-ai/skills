@@ -17,12 +17,12 @@ node bin/index.mjs mcp serve
 node bin/index.mjs mcp serve --db /absolute/local-data/skill-usage.db
 ```
 
-The [MCP Inspector walkthrough](MCP%20Inspector.md) shows a pinned client setup,
+The [MCP Inspector walkthrough](https://github.com/i-9-ai/skills/wiki/MCP-Inspector) shows a pinned client setup,
 tool listing, catalog search and selected Markdown reads against this checkout.
 It includes argument ordering, expected output, diagnostics and cleanup; the
 guide distinguishes source-checked instructions from an actual Inspector run.
 
-The [unified CLI](../bin/index.md) uses the same service and transport as the
+The [unified CLI](https://github.com/i-9-ai/skills/blob/main/bin/index.md) uses the same service and transport as the
 dependency-free `src/transport/PluginMcpServer.ts --host claude|codex|copilot` entrypoint.
 The host registrations are named `i9-skills` in their respective
 `mcp/claude.json`, `mcp/codex.json` and `mcp/copilot.json` files. The former `mcp usage`
@@ -41,16 +41,16 @@ not automatically provision the hook's data directory for MCP. Its process cwd
 is the installed plugin, so it cannot infer the consuming thread's project cwd.
 The operator must select data outside that consumer; the runtime still rejects
 relative, linked and plugin-contained locations. See the
-[native Codex MCP pilot](Codex%20MCP%20Pilot.md) for source and runtime proof.
+[native Codex MCP pilot](https://github.com/i-9-ai/skills/wiki/Codex-MCP-Pilot) for source and runtime proof.
 Copilot's legacy mapping similarly requires an explicitly supplied
 `COPILOT_PLUGIN_DATA` for evidence storage. It ignores the other hosts' data
 variables, provisions no directory automatically and cannot identify the
 consumer cwd from its plugin-root process. Its native session RPC loading and
-tool calls are recorded in the [Copilot MCP pilot](Copilot%20MCP%20Pilot.md).
+tool calls are recorded in the [Copilot MCP pilot](https://github.com/i-9-ai/skills/wiki/Copilot-MCP-Pilot).
 Both legacy adapters retain the explicit CLI configuration as a fallback.
 
 For an explicit public Git-source launch on Node 24 and npm 12, use the
-[distribution guide](Distribution%20Readiness.md#run-from-an-immutable-public-revision)
+[distribution guide](https://github.com/i-9-ai/skills/wiki/Distribution-Readiness#run-from-an-immutable-public-revision)
 to select and review the full source SHA, then run:
 
 ```sh
@@ -70,7 +70,7 @@ npx --yes --package='@i-9-ai/skills@<released-version>' i9-skills mcp serve
 
 This deliberately permits npm to obtain that pinned package; it is not an
 installation step performed by a hook. For current development use the checkout
-command above or the [local tarball test](Distribution%20Readiness.md). Never use
+command above or the [local tarball test](https://github.com/i-9-ai/skills/wiki/Distribution-Readiness). Never use
 an unpinned `latest` package as an implicit hook dependency.
 
 ## Search, then read
@@ -114,7 +114,7 @@ host usability and activation remain unverified, and the selected route is
 `unassessed` until a task is evaluated. Routing-entrypoint names are candidates,
 not proof of package identity. JSON-quoted entrypoint locators are relative to
 this installed collection; use `skill_resource_read` for actual content. See
-[routing guidance](Host%20Hooks.md#availability-and-routing-guidance) for route
+[routing guidance](https://github.com/i-9-ai/skills/wiki/Host-Hooks#availability-and-routing-guidance) for route
 choices and locator limits.
 
 All three tools reject unknown fields and incorrect types. The same operations
@@ -165,7 +165,7 @@ Call `skill_read_rankings` with optional canonical UTC `from`, exclusive `until`
 ## Explicit lifecycle and catalog observations
 
 Six additional tools share the closed schema-2 contracts in the
-[lifecycle guide](Lifecycle%20Evidence.md): `skill_lifecycle_record`,
+[lifecycle guide](https://github.com/i-9-ai/skills/wiki/Lifecycle-Evidence): `skill_lifecycle_record`,
 `skill_catalog_observe`, `skill_lifecycle_metrics`, `skill_routing_overlap`,
 `skill_catalog_inactivity` and `skill_catalog_history`. Records receive complete
 event objects; queries receive an explicit half-open UTC period and optional
@@ -183,7 +183,7 @@ complete event examples, retries, reason codes, query budgets and history paging
 `skill_bump_report` compares two caller-supplied pinned observations and an explicit
 assessment; `skill_onboarding` returns a versioned inert guide with complete
 synthetic examples. Both work without data storage. See
-[skill change reports](Skill%20Change%20Reports.md) for observation production,
+[skill change reports](https://github.com/i-9-ai/skills/wiki/Skill-Change-Reports) for observation production,
 review evidence, classification and the runnable installed walkthrough. Reports
 do not rerun submitted validation, infer compatibility from hashes, change versions
 or execute the guide. Requests are limited to 768 KiB; report output to 480 KiB
@@ -191,7 +191,7 @@ before the MCP envelope and guide output to 64 KiB.
 
 ## Storage and limits
 
-On the first explicit record, ordered checksum-verified migrations run in SQLite transactions. Inserts use `BEGIN IMMEDIATE` and a five-second busy timeout, preserving events from cooperating processes. No database replacement, history pruning, remote telemetry or prompt storage occurs. Database failures require operator diagnosis; there is no reset fallback. Use a stable, trusted local directory; path inspection does not promise race-proof filesystem confinement. A new database has mode 0600; pre-existing modes remain caller-owned. The [typed telemetry CLI](Skill%20Telemetry.md) shares this evidence store and adds explicit session/attempt events and trends.
+On the first explicit record, ordered checksum-verified migrations run in SQLite transactions. Inserts use `BEGIN IMMEDIATE` and a five-second busy timeout, preserving events from cooperating processes. No database replacement, history pruning, remote telemetry or prompt storage occurs. Database failures require operator diagnosis; there is no reset fallback. Use a stable, trusted local directory; path inspection does not promise race-proof filesystem confinement. A new database has mode 0600; pre-existing modes remain caller-owned. The [typed telemetry CLI](https://github.com/i-9-ai/skills/wiki/Skill-Telemetry) shares this evidence store and adds explicit session/attempt events and trends.
 
 **Use a dedicated evidence database.** Aggregate catalog helpers replace derived
 database files and refuse this evidence store, including reset/rebuild requests.

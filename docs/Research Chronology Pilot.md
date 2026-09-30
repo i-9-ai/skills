@@ -8,7 +8,7 @@ itself remained `blocked_external_research`.** One successful process check does
 not establish general pipeline readiness.
 
 This case addresses [issue #39](https://github.com/i-9-ai/skills/issues/39).
-The earlier [research pipeline pilot](Research%20Pipeline%20Pilot.md) and its
+The earlier [research pipeline pilot](https://github.com/i-9-ai/skills/wiki/Research-Pipeline-Pilot) and its
 failed process-fidelity result remain unchanged. This is a separate execution,
 not a retrospective repair of that run.
 

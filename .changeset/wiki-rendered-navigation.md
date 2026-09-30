@@ -5,3 +5,5 @@
 Make mirrored documentation links open rendered GitHub Wiki pages instead of raw
 Markdown. Preserve page-title spaces, fragments, references and code examples;
 keep copied assets and source-repository links at their existing destinations.
+Use canonical rendered Wiki links in the documentation source as well, without
+Markdown extensions or encoded spaces in page names.

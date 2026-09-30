@@ -5,7 +5,7 @@ It separates a session start, a read attempt and a successful read. None proves
 that a model followed a skill, and a missing observation does not prove non-use.
 No command installs hooks, sends data remotely or tracks task status.
 
-[Lifecycle evidence](Lifecycle%20Evidence.md) adds separate, explicit routing,
+[Lifecycle evidence](https://github.com/i-9-ai/skills/wiki/Lifecycle-Evidence) adds separate, explicit routing,
 activation and outcome assertions, complete catalog observations, cohort ratios,
 co-routing overlap and inactivity coverage. It documents schema 2 and the matching
 CLI/MCP calls; the read/session schema below remains supported without inferred
@@ -119,5 +119,5 @@ A successful database commit with a failed diagnostic write returns
 `log: "unavailable"`; retrying with a new event ID would double count. Malformed
 events and storage failures return nonzero. Logs never contain exception text,
 input payloads, file paths or skill bodies. Native host coverage and registration
-are separate from [host contracts](Host%20Hooks.md); the [MCP interface](Skill%20MCP.md)
+are separate from [host contracts](https://github.com/i-9-ai/skills/wiki/Host-Hooks); the [MCP interface](https://github.com/i-9-ai/skills/wiki/Skill-MCP)
 retains its explicit read protocol alongside read-only bundled catalog access.

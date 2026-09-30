@@ -4,7 +4,7 @@ The collection uses a portable maturity policy. It does not require a specific s
 
 Lifecycle state is review evidence, not inventory metadata. Record it in the target project's existing approval system or in the portable approval record below. `skills-catalog.json` deliberately contains no hand-maintained maturity field.
 
-The canonical operational policy is bundled with [`skill-lifecycle-review`](../.agents/skills/skill-lifecycle-review/references/lifecycle-policy.md). In a consumer project, the reviewer first identifies the system already used for evidence and approval. That may be a pull-request review, CI gate, issue tracker, change-control record, signed release process, local review procedure, or another declared mechanism.
+The canonical operational policy is bundled with [`skill-lifecycle-review`](https://github.com/i-9-ai/skills/blob/main/.agents/skills/skill-lifecycle-review/references/lifecycle-policy.md). In a consumer project, the reviewer first identifies the system already used for evidence and approval. That may be a pull-request review, CI gate, issue tracker, change-control record, signed release process, local review procedure, or another declared mechanism.
 
 If such a system exists and is authorized, the lifecycle decision records its identity, the reviewed revision, the decision, and any open findings. If it does not exist, the reviewer creates a portable approval record naming the candidate revision, evidence, acceptance owner, required decision, and next review trigger. Absence of a system never becomes implied approval.
 

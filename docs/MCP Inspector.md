@@ -3,13 +3,13 @@
 Use the MCP Inspector CLI to list this server's tools, search its installed
 catalog and read a selected skill. These operations require no evidence database
 and do not record usage, activate skills or run package scripts. The complete
-server contract is in [Skill MCP](Skill%20MCP.md).
+server contract is in [Skill MCP](https://github.com/i-9-ai/skills/wiki/Skill-MCP).
 
 This recipe pins `@modelcontextprotocol/inspector@2.8.0`. Its arguments and output
 were checked against official source text on 2026-09-29; Inspector was **not
 installed or executed** for this documentation change. Following the recipe
-produces new local evidence. Existing [native plugin proof](Native%20Plugin%20Pilot.md),
-[Codex proof](Codex%20MCP%20Pilot.md) and [Copilot proof](Copilot%20MCP%20Pilot.md)
+produces new local evidence. Existing [native plugin proof](https://github.com/i-9-ai/skills/wiki/Native-Plugin-Pilot),
+[Codex proof](https://github.com/i-9-ai/skills/wiki/Codex-MCP-Pilot) and [Copilot proof](https://github.com/i-9-ai/skills/wiki/Copilot-MCP-Pilot)
 remain separate from an Inspector run.
 
 ## Prepare a checkout
@@ -130,7 +130,7 @@ command; retain the Inspector options after `--`. Choose a dedicated location
 outside the checkout and installed plugin. Catalog calls still do not create a
 database. Evidence queries require existing valid storage and open it read-only;
 missing storage is unavailable, not empty history. Only a separate valid explicit
-record can create or migrate it. See [lifecycle evidence](Lifecycle%20Evidence.md)
+record can create or migrate it. See [lifecycle evidence](https://github.com/i-9-ai/skills/wiki/Lifecycle-Evidence)
 before choosing a write operation.
 
 ## Diagnose and clean up
@@ -192,7 +192,7 @@ Use that whole command before Inspector's `--`, followed by the same Inspector
 method and output options. In particular, the server's `--yes` and `--package`
 belong before the separator. This deliberately permits npm to fetch the pinned
 skills package; it is not the checkout procedure and has not been exercised by
-this guide. See [distribution readiness](Distribution%20Readiness.md) for the
+this guide. See [distribution readiness](https://github.com/i-9-ai/skills/wiki/Distribution-Readiness) for the
 current local tarball verification route.
 
 ## Source record and verification boundary

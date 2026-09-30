@@ -12,6 +12,13 @@ English only. Distinguish reviewed sources, implemented behavior, structural che
 ## Work guidance
 Keep shared policy here and task-specific procedure inside its package. Update consumers when interfaces change. Links to external sources record evidence rather than granting tool authority.
 
+Links between pages in `docs/` use the rendered GitHub Wiki URL and page title:
+`https://github.com/i-9-ai/skills/wiki/Authoring-Standards`. Omit the Markdown
+extension and replace title spaces with hyphens; preserve section anchors.
+References to repository source or upstream files use their actual file URLs.
+The mirror's relative-link conversion is a compatibility fallback, not the
+documentation authoring convention.
+
 ## Verification
 Run repository link and public-hygiene checks. Verify upstream revisions and scoped licenses before changing reuse decisions.
 

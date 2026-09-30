@@ -50,7 +50,7 @@ The Git-source call keeps `private: true`. The registry spellings
 `npx --package='@i-9-ai/skills@<reviewed-version>' i9-skills --help` require a
 separate npm publication; making GitHub public does not create that release.
 Skill package installation still uses the separate pinned Skills CLI shown in
-the [README](../README.md#install).
+the [README](https://github.com/i-9-ai/skills/blob/main/README.md#install).
 
 ## Consumer command mapping
 
@@ -75,13 +75,13 @@ working on the caller's project or collection need the explicit root shown
 above. Keep `node bin/index.mjs repo validate --project .`, version preparation
 and other contributor commands in their trusted source checkout with explicit
 `npm ci`; Git-source execution does not supply that repository's development
-state. See the [CLI guide](../bin/index.md) for each command's effects and limits.
+state. See the [CLI guide](https://github.com/i-9-ai/skills/blob/main/bin/index.md) for each command's effects and limits.
 
 Automatic session hooks use an already available local executable or the
 dependency-free installed plugin runtime. They do not run a download-capable
 `npx` command. Current generated project registrations target a prepared POSIX
 Git checkout; npm-installed hook registration needs a separately verified
-adapter. The [hook guide](Host%20Hooks.md) records that boundary.
+adapter. The [hook guide](https://github.com/i-9-ai/skills/wiki/Host-Hooks) records that boundary.
 
 ## Local package verification
 
@@ -117,7 +117,7 @@ and verifies production-only execution. To inspect an artifact manually, run
 `npm run build` and `npm pack --ignore-scripts --pack-destination '<scratch-directory>'`
 with an existing caller-owned scratch directory. The resulting tarball is a local
 test artifact, not an npm release. Its executable supports `mcp serve`; use the
-[MCP guide](Skill%20MCP.md) for explicit client configuration and pinned future npx
+[MCP guide](https://github.com/i-9-ai/skills/wiki/Skill-MCP) for explicit client configuration and pinned future npx
 syntax. Package preparation never installs a host plugin or changes a marketplace.
 
 ## Remaining external gates
@@ -125,16 +125,16 @@ syntax. Package preparation never installs a host plugin or changes a marketplac
 Before an authorized npm release, confirm ownership of the scoped identity, version and
 access, test actual target platforms and installation, inspect the packed files
 again, and deliberately remove private only in that release task. The
-[plugin preparation command](Plugin%20Preparation.md) creates an optional local
+[plugin preparation command](https://github.com/i-9-ai/skills/wiki/Plugin-Preparation) creates an optional local
 skills-only artifact with verified manifest formats and inert packages. The
 repository itself remains the root plugin, with one canonical package tree.
-Preview/write checks and the [isolated native pilot](Native%20Plugin%20Pilot.md)
+Preview/write checks and the [isolated native pilot](https://github.com/i-9-ai/skills/wiki/Native-Plugin-Pilot)
 are separate evidence; neither establishes marketplace acceptance or hosted updates.
 
 Before public visibility, separately inventory GitHub branches, PRs, issues,
 discussions, releases, Actions logs/artifacts, Wiki, Pages, collaborators,
 rulesets and secret names. Local clean-tree checks cannot establish remote
-surface readiness. The [dated readiness audit](Public%20Readiness.md) records the
+surface readiness. The [dated readiness audit](https://github.com/i-9-ai/skills/wiki/Public-Readiness) records the
 dated inventory and evidence gaps; repeat it before an external change. The
 existing Wiki workflow requires an initialized Wiki and uses `GITHUB_TOKEN`;
 the visual-guide workflow pushes docs/assets to gh-pages. Both select merged

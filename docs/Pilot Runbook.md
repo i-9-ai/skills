@@ -42,6 +42,6 @@ A successful pilot does not prove every host, model, or collection will behave i
 ## Related material
 
 - [Skill entry-path map](assets/skill-management-entry-paths.html)
-- [Pilot evaluation](Pilot%20Evaluation.md)
-- [Validation](Validation.md)
-- [Security policy](../SECURITY.md)
+- [Pilot evaluation](https://github.com/i-9-ai/skills/wiki/Pilot-Evaluation)
+- [Validation](https://github.com/i-9-ai/skills/wiki/Validation)
+- [Security policy](https://github.com/i-9-ai/skills/blob/main/SECURITY.md)
