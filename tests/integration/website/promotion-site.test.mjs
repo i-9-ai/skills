@@ -154,6 +154,30 @@ test('production metadata uses the selected HTTPS origin and review rebuild remo
     );
 });
 
+test('project-path hosting preserves canonical URLs, assets and language destinations', (t) => {
+    const f = fixture(t);
+    buildSite({
+        projectRoot: f.root,
+        outputDirectory: f.output,
+        publicUrl: 'https://example.test/skills',
+    });
+    const root = fs.readFileSync(path.join(f.output, 'index.html'), 'utf8');
+    const spanish = fs.readFileSync(path.join(f.output, 'es/index.html'), 'utf8');
+    assert.ok(root.includes('href="https://example.test/skills/en/"'));
+    assert.ok(root.includes('src="./assets/site.mjs"'));
+    assert.ok(spanish.includes('href="https://example.test/skills/es/"'));
+    assert.ok(spanish.includes('src="../assets/site.mjs"'));
+    assert.ok(
+        fs
+            .readFileSync(path.join(f.output, 'sitemap.xml'), 'utf8')
+            .includes('https://example.test/skills/pt-br/'),
+    );
+    assert.equal(
+        languageDestination('https://example.test/skills/?q=snapshot#catalog', 'pt-br'),
+        'https://example.test/skills/pt-br/?q=snapshot#catalog',
+    );
+});
+
 test('invalid public URLs are rejected before creating output', (t) => {
     const f = fixture(t);
     const authenticated = new URL('https://example.test');
@@ -162,7 +186,6 @@ test('invalid public URLs are rejected before creating output', (t) => {
     for (const publicUrl of [
         'http://example.test',
         authenticated.href,
-        'https://example.test/site/',
         'https://example.test/?q=1',
         'https://example.test/#fragment',
         'not-a-url',

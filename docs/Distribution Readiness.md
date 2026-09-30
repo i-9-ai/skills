@@ -181,8 +181,10 @@ rulesets and secret names. Local clean-tree checks cannot establish remote
 surface readiness. The [dated readiness audit](https://github.com/i-9-ai/skills/wiki/Public-Readiness) records the
 dated inventory and evidence gaps; repeat it before an external change. The
 existing Wiki workflow requires an initialized Wiki and uses `GITHUB_TOKEN`;
-the visual-guide workflow pushes docs/assets to gh-pages. Both select merged
-main. The audit could not establish Wiki initialization or active Pages hosting.
+the website workflow builds the catalog and includes verified visual guides in
+an official GitHub Pages artifact. Both select merged main. Pages uses the Actions
+source and supports the repository base path; existing guide filenames remain.
+The dated audit did not establish Wiki initialization or active Pages hosting.
 Their triggers must remain part of the explicit publication decision; this
 assessment does not dispatch or enable them. The readiness guide separates
 repository marketplaces, workspace installation and public directory submission,
