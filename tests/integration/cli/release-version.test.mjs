@@ -282,13 +282,20 @@ function workflowFixture(t, options) {
     return target;
 }
 
-function workflowStep(target, id, job = 'select-mode') {
+function workflowStep(target, id, job = 'select-mode', overrides = {}) {
     const step = workflow().jobs[job].steps.find((candidate) => candidate.id === id);
     assert.ok(step?.run, `the workflow must expose the ${id} selection step`);
     const output = join(target.temporary, `${id}-output`);
     const result = spawnSync('bash', ['--noprofile', '--norc', '-eo', 'pipefail', '-c', step.run], {
         cwd: target.root,
-        env: { ...target.environment, GITHUB_OUTPUT: output, RUNNER_TEMP: target.temporary },
+        env: {
+            ...target.environment,
+            GITHUB_SHA: git(target, ['rev-parse', 'HEAD']),
+            DEFAULT_BRANCH: 'main',
+            GITHUB_OUTPUT: output,
+            RUNNER_TEMP: target.temporary,
+            ...overrides,
+        },
         encoding: 'utf8',
         timeout: 30000,
     });
@@ -861,6 +868,14 @@ test('release workflow separates draft version review, checked artifacts and sco
     const selection = definition.jobs['select-mode'];
     assert.match(selection.if, /github\.ref.*github\.event\.repository\.default_branch/u);
     assert.match(selection.if, /inputs\.operation != 'backfill-0\.1\.0'/u);
+    const releaseBase = selection.steps.find((step) => step.id === 'release-base');
+    assert.deepEqual(releaseBase.env, {
+        DEFAULT_BRANCH: '${{ github.event.repository.default_branch }}',
+    });
+    assert.ok(
+        selection.steps.indexOf(releaseBase) <
+            selection.steps.findIndex((step) => step.id === 'plan'),
+    );
     assert.equal(
         selection.steps.find((step) => step.id === 'plan').if,
         "steps.notes.outputs.pending == 'true'",
@@ -978,6 +993,51 @@ test('publication preflight accepts a generated version and rejects a later unre
     commit(target, 'Record an unrelated change after version preparation');
     const rejected = workflowStep(target, 'verify', 'pack');
     assert.notEqual(rejected.status, 0, rejected.stdout);
+});
+
+for (const state of ['missing', 'stale']) {
+    test(`release planning pins a ${state} local base in a detached checkout`, (t) => {
+        const target = workflowFixture(t);
+        git(target, ['checkout', '--quiet', '--detach']);
+        if (state === 'missing') git(target, ['branch', '--delete', '--force', 'main']);
+        write(target.root, 'implementation.ts', 'export const behavior = 2;\n');
+        const source = commit(target, 'Record the exact synthetic workflow trigger');
+        const before = files(target.root);
+        target.environment.GITHUB_SHA = 'a'.repeat(40);
+        target.environment.DEFAULT_BRANCH = 'unrelated-caller-branch';
+
+        if (state === 'missing') {
+            const unavailable = workflowStep(target, 'plan');
+            assert.notEqual(unavailable.status, 0, unavailable.stdout);
+            assert.match(
+                unavailable.stdout + unavailable.stderr,
+                /Failed to find where HEAD diverged/u,
+            );
+        }
+
+        const prepared = workflowStep(target, 'release-base');
+        assert.equal(prepared.status, 0, prepared.stderr || prepared.stdout);
+        assert.equal(git(target, ['rev-parse', 'main']), source);
+        assert.equal(git(target, ['rev-parse', 'HEAD']), source);
+        assert.equal(git(target, ['rev-parse', '--abbrev-ref', 'HEAD']), 'HEAD');
+        const planned = workflowStep(target, 'plan');
+        assert.equal(planned.status, 0, planned.stderr || planned.stdout);
+        assert.equal(planned.outputs.version, 'true');
+        assert.deepEqual(files(target.root), before, 'only the local Git base ref changes');
+    });
+}
+
+test('release planning refuses to repoint its base when checkout differs from the trigger', (t) => {
+    const target = workflowFixture(t);
+    const original = git(target, ['rev-parse', 'main']);
+    git(target, ['checkout', '--quiet', '--detach']);
+    write(target.root, 'implementation.ts', 'export const behavior = 2;\n');
+    commit(target, 'Record a different checkout');
+    const result = workflowStep(target, 'release-base', 'select-mode', {
+        GITHUB_SHA: original,
+    });
+    assert.notEqual(result.status, 0, result.stdout);
+    assert.equal(git(target, ['rev-parse', 'main']), original);
 });
 
 for (const state of ['pre.json', 'pre']) {

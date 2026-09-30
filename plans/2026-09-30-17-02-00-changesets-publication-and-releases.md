@@ -27,6 +27,10 @@ Review public upstream implementations at Changesets action `ae32849d5ba541f9ae2
 
 Retain the candidate SHA, review, CI run IDs, npm publisher binding without secrets, npm version/integrity, anonymous consumer receipt, tag target and GitHub release URL outside tracked source. Structural tests are distinct from live OIDC publication evidence.
 
+### Detached-checkout recovery
+
+The first default-branch run exposed an Actions-specific failure: checkout by immutable SHA creates detached HEAD without a local `main` reference, which Changesets status requires. Before release planning, verify HEAD equals the workflow trigger and set the local default-branch reference to that exact SHA. Do not fetch a newer moving branch, switch checkout, push the temporary reference or change release input files. Synthetic regression tests must reproduce missing and stale local refs, prove successful planning from detached HEAD, and reject a checkout/trigger mismatch. Review and merge this focused correction before retrying the normal release flow.
+
 ## Rollback and recovery
 
 Disable the release workflow or revert it through a reviewed PR to stop future publication. Revoke only this npm trusted-publisher binding when removing the integration. Published versions remain immutable; use a new Changeset for corrections. Check registry state before retrying an ambiguous upload. Never move an existing version tag. If a tag exists without its release, the official tagging command emits no new event: recover the release separately from the verified tag and generated changelog, without re-uploading npm. A rerun after a successful historical backfill is a no-op.
