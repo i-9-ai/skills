@@ -41,6 +41,13 @@ jobs:
           package-manager-cache: false
       - name: Install locked dependencies without preparation
         run: npm ci --ignore-scripts
+      - name: Provide the local default branch for release planning
+        id: release-base
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git update-ref "refs/heads/$DEFAULT_BRANCH" "$GITHUB_SHA"
       - name: Check pending notes before invoking Changesets
         id: notes
         run: |
