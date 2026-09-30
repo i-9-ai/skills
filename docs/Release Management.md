@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This repository uses [Changesets](https://github.com/changesets/changesets) to record pending release notes and semantic version intent. It provides a reviewable path from an accepted change to a versioned changelog without treating a merged pull request as an automatic release.
+This repository uses [Changesets](https://github.com/changesets/changesets) to record pending release notes and semantic version intent. It separates contribution review, generated version review and publication: the reviewed version PR's protected merge triggers the authorized npm and GitHub release workflow.
 
 ## Normal contribution flow
 
@@ -14,87 +14,117 @@ This repository uses [Changesets](https://github.com/changesets/changesets) to r
 
 Changesets may be omitted only for changes that have no user-visible release note, such as purely local test-fixture maintenance. Explain that decision in the pull request.
 
-## Publish a reviewed package
+## Automated release flow
 
-Publication is a separate maintainer operation after the generated version PR
-has passed review and protected-branch checks. The manifest selects public npm
-access and `latest`; a merge or version-preparation workflow never uploads it.
-The initial upload is tracked in [issue #17](https://github.com/i-9-ai/skills/issues/17).
+The [Release packages workflow](https://github.com/i-9-ai/skills/blob/main/.github/workflows/release.yml)
+runs on default-branch pushes and explicit dispatches. A merged contribution with
+pending version intent creates or updates a **draft version PR**. After that PR
+passes review and protected-branch checks, its merge runs release verification,
+repository checks and compiled-package checks, publishes the official packed
+artifact to npm, and creates its Git tag and GitHub release from `CHANGELOG.md`.
 
-1. Authenticate the intended publisher with `npm login`, verify `npm whoami` and
-   `npm org ls i-9.ai`, and select the reviewed merged release commit in a clean
-   checkout with Node 24+. Do not place credentials in commands or receipts.
-2. Run explicit `npm ci`, `npm run check`, `npm run package:check` and
-   `npm run release:verify`. Build with `npm run build`, then pack into an
-   existing disposable directory selected as `RELEASE_DIRECTORY`:
+```mermaid
+flowchart LR
+    Notes[Contribution and Changeset] --> Main[Reviewed merge to main]
+    Main --> Version[Draft aligned version PR]
+    Version --> Review[Review and current-head checks]
+    Review --> Merge[Protected version merge]
+    Merge --> Pack[Verify, test and pack]
+    Pack --> Npm[npm Trusted Publishing]
+    Npm --> Release[Git tag and generated GitHub release]
+```
 
-   ```sh
-   npm pack --ignore-scripts --pack-destination "$RELEASE_DIRECTORY"
-   ```
+The official Changesets `select-mode`, `version`, `pack` and `publish` actions
+are pinned to `ae32849d5ba541f9ae29e40e22a623bc13562f51` (`v2.1.2`) for CLI
+`3.0.2`. Preparation uses `npm run release:prepare` to align package, lockfile
+and Codex/Claude/Copilot plugin versions. Publication verifies that the release
+at the triggering commit reproduces the preceding commit's pending notes;
+unrelated changes or fabricated versions fail. The official packed artifact is
+passed to the publish action rather than replacing its command or repacking a
+different checkout.
 
-3. Inspect the tarball's file list, version and integrity. It must contain the
-   compiled runtime, bundled skills and licenses, and exclude credentials,
-   development state and operational logs. Publish this exact inspected tarball:
+No pending notes and no unpublished version is a successful no-op. Notes without
+a package bump stay untouched. Linked notes, malformed intent and unsupported
+prerelease state are rejected before selecting an action. Runs on other branches
+or tags are skipped. Concurrent release runs are serialized.
 
-   ```sh
-   npm publish "$RELEASE_DIRECTORY/<packed-filename>.tgz" --access public --tag latest --ignore-scripts
-   ```
+### Publisher and repository prerequisites
 
-4. Verify the registry version, `latest` and integrity, then run
-   `npx --yes @i-9.ai/skills --help`, bundled catalog retrieval and the MCP
-   handshake from a disposable consumer with fresh HOME/cache and no credentials.
-   Only then describe registry distribution as available.
+Keep default workflow permissions read-only. Enable **Settings > Actions >
+General > Allow GitHub Actions to create and approve pull requests** so the
+version action can create its PR; the workflow does not approve reviews or merge
+PRs. Its version job has only `contents: write` and `pull-requests: write`.
+Only its publication job receives `id-token: write`.
 
-Retain sanitized source-commit, artifact-hash and consumer receipts outside the
-checkout. A published name/version cannot be overwritten: corrections require a
-new Changeset and version. A failed client response requires checking registry
-state before retrying. Unpublishing, deprecation, access changes and unattended
-future release automation require their own authorization. See npm's
-[public organization package guidance](https://docs.npmjs.com/creating-and-publishing-an-organization-scoped-package/).
+Configure npm Trusted Publishing for this exact binding:
 
-## Prepare a version pull request
+| Field | Value |
+| --- | --- |
+| Package | `@i-9.ai/skills` |
+| GitHub owner / repository | `i-9-ai/skills` |
+| Workflow filename | `release.yml` |
+| Environment | None |
+| Allowed operation | `npm publish` |
 
-The manual [Prepare version pull request workflow](https://github.com/i-9-ai/skills/blob/main/.github/workflows/release-preparation.yml)
-creates or updates one draft PR against the repository's default branch. Select
-that branch when dispatching it; runs from other branches or tags are skipped.
-Concurrent preparation runs are serialized. A local check reads pending Markdown
-notes and the official Changesets release plan without contacting a registry.
-No notes or no planned package bump means a successful no-op. Notes without a
-package bump remain untouched until a later release has a version to prepare.
+An authenticated package owner can configure it with npm 12:
 
-The workflow installs locked development dependencies and calls the version-only
-Changesets action pinned to `ae32849d5ba541f9ae29e40e22a623bc13562f51` (`v2.1.2`).
-It runs `npm run release:prepare`, which consumes the pending entries and updates:
+```sh
+npm trust github @i-9.ai/skills --file release.yml --repo i-9-ai/skills --allow-publish
+```
 
-- `package.json` and `CHANGELOG.md` through the pinned Changesets CLI;
-- the root version fields in `package-lock.json`;
-- versions in `.codex-plugin/plugin.json`, `.claude-plugin/plugin.json` and
-  `.github/plugin/plugin.json`.
+This administrative operation requires the owner's authentication. Do not store
+an `NPM_TOKEN` or weaken 2FA. npm exchanges the hosted workflow's OIDC identity
+for a short-lived publication credential. Node 24 and npm 11.5.1+ are required;
+the publish job uses a GitHub-hosted runner. The public package and matching
+repository metadata allow npm provenance for this supported flow. Tests or a
+configured binding do not prove a completed upload. See the
+[official npm contract](https://docs.npmjs.com/trusted-publishers/).
 
-Other manifest fields remain unchanged. The npm manifest permits public registry
-publication, but version preparation never uploads a package. This workflow
-has only `contents: write` and `pull-requests: write` permissions and contains no
-publication action. It does not create tags, GitHub releases, marketplace
-submissions or installations. Those remain separately authorized operations.
+According to the [GitHub trigger contract](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow),
+PR creation and updates with `GITHUB_TOKEN` create PR checks in an
+approval-required state. A maintainer with write access selects **Approve
+workflows to run** in the PR banner. Review the generated diff, wait for checks
+on its current commit, and mark the draft ready when appropriate. An updated
+version PR returns to draft so its new content is reviewed again. No stored
+GitHub App or personal token is required for this approval path.
 
-### Repository prerequisites and review
+### Verify publication and recover a failure
 
-The repository must permit GitHub Actions to create pull requests under
-**Settings > Actions > General > Workflow permissions**. A workflow cannot grant
-itself that repository permission; an unavailable setting or policy restriction
-requires the documented local preparation path below.
+Inspect the workflow result, registry version, `latest`, integrity, version tag
+target and generated GitHub release. Exercise `npx --yes @i-9.ai/skills --help`,
+catalog retrieval and the stdio MCP handshake from a disposable anonymous
+consumer with fresh HOME/cache and no publisher credentials. Keep sanitized
+commit, artifact and consumer receipts outside the checkout. Initial distribution
+and consumer evidence are recorded in
+[issue #17](https://github.com/i-9-ai/skills/issues/17).
 
-According to the [GitHub workflow-trigger contract](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow),
-PR creation and updates made with `GITHUB_TOKEN` create normal PR workflow runs
-in an approval-required state. A maintainer with write access selects
-**Approve workflows to run** in the PR banner. Review the generated diff, wait for
-checks on its current commit, and mark the draft ready when appropriate. An
-updated version PR returns to draft so its new content is reviewed again.
+A published name/version cannot be overwritten. Correct it with a new Changeset
+and version. Check registry state before retrying an ambiguous upload.
+Changesets skips versions already present in npm, so a retry after a successful
+upload does not automatically recover a missing GitHub tag/release. Never move
+an existing version tag. For a tag without its release, verify its target and
+recover the release from that version's generated changelog separately, without
+re-uploading npm. Unpublishing, deprecation, marketplace submission and consumer
+installation remain separately authorized operations.
 
-A created PR is not validation evidence. The regular collection, tests, packed
-CLI and official Agent Skills checks still apply. Missing or unapproved checks
-remain pending. No live dispatch or repository-setting change is required to
-test the implementation's fixtures.
+### Restore the original 0.1.0 GitHub release
+
+The first npm upload preceded this integrated automation. The explicit
+`backfill-0.1.0` dispatch restores only its missing GitHub metadata:
+
+```sh
+gh workflow run release.yml --ref main -f operation=backfill-0.1.0
+```
+
+The job checks out reviewed source commit
+`468de535b715c817a1eda72682f15f9e55e52fdc`, verifies aligned versions and no
+pending notes, then runs the official CLI `git-tag` through the pinned root
+Changesets action. Git CLI push preserves that historical target; the ordinary
+action API path would use the newer workflow commit. The job has only
+`contents: write`, no npm upload command and no OIDC publication permission.
+It creates `v0.1.0` and the release from its original generated changelog.
+A verified existing tag/release makes a rerun a no-op. An existing tag without
+a release fails for explicit recovery rather than moving it or re-uploading npm.
 
 ## Prepare locally
 

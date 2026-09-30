@@ -215,14 +215,18 @@ flowchart LR
     Compare --> Decision[Patch / minor / major / undetermined]
     Decision -.->|Maintainer decision| Changeset[Changeset release intent]
     Changeset -.->|Explicit version-preparation task| Prepare[Aligned release files for review]
+    Prepare --> VersionPR[Draft version PR]
+    VersionPR -->|Review and protected merge| Pack[Verified compiled package]
+    Pack -->|Scoped npm OIDC| Publish[npm version and GitHub release]
 ```
 
 Content identity alone cannot establish compatibility or a release category.
 Incomplete, conflicting or insufficient evidence stays `undetermined`; a report
 neither changes package versions nor creates release notes. An accepted result
 may inform a separately authored Changeset. The version-preparation command then
-updates release artifacts only when explicitly invoked; tags and publication
-remain separate actions. See [skill change reports](https://github.com/i-9-ai/skills/wiki/Skill-Change-Reports)
+updates release artifacts when invoked by the authorized workflow or a maintainer.
+The draft version PR is reviewed before the workflow publishes its protected
+merge and creates the version tag and GitHub release. See [skill change reports](https://github.com/i-9-ai/skills/wiki/Skill-Change-Reports)
 and [release management](https://github.com/i-9-ai/skills/wiki/Release-Management).
 
 ## Explicit collection maintenance
