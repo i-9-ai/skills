@@ -41,6 +41,13 @@ publication; it does not describe the GitHub repository's visibility.
   and the compiled package allowlist. No launcher or session hook runs setup.
   Validate this path on Node 24 in disposable source/cache/consumer directories
   and document its dependency download and lifecycle-execution boundary.
+- Give the existing validation job ten minutes. Run 36656453971 passed 631
+  platform-applicable tests (five platform skips). The package test reported
+  one pass and zero failures before its containing step was cancelled by the
+  five-minute job limit; official validation was not reached. Preserve
+  every check, individual test bound, permission and official-validator gate;
+  this change accommodates observed runner duration rather than suppressing a
+  failing test. Removing it restores the previous five-minute job limit.
 
 ## Acceptance and sequence
 
