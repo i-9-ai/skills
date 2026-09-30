@@ -1,7 +1,12 @@
 {
   "name": "@i-9.ai/skills",
   "version": "0.1.0-rc.1",
-  "private": true,
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/",
+    "tag": "latest"
+  },
   "description": "A portable collection of focused skills and its validation tooling.",
   "license": "Apache-2.0",
   "type": "module",

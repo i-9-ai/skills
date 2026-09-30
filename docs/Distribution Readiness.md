@@ -1,10 +1,12 @@
-# CLI distribution from Git source
+# CLI distribution
 
 The prepared npm identity is `@i-9.ai/skills`, with the executable `i9-skills`.
-The manifest currently sets `private:true`. No release, registry upload, marketplace
+The manifest permits public publication to `https://registry.npmjs.org/` with
+the `latest` tag. Public-access metadata does not itself publish a package.
+Initial publication evidence is tracked in [issue #17](https://github.com/i-9-ai/skills/issues/17).
+No release, registry upload, marketplace
 registration or global installation is authorized by a build or package test.
-This npm flag prevents registry publication and is independent of GitHub
-repository visibility.
+Registry publication is independent of GitHub repository visibility.
 The executable is the single `bin/index.mjs` launcher, exposed as `i9-skills`.
 Public Git-source consumption does not require registry publication.
 
@@ -14,6 +16,22 @@ JavaScript under dist. The packed allowlist excludes src and includes dist,
 the launcher, distributed skill resources and public documentation. The launcher
 chooses source in a checkout and built code in a packed installation; it never
 compiles, downloads or installs during command startup.
+
+## Run a published build
+
+With Node.js 24+ and npm, run:
+
+```sh
+npx --yes @i-9.ai/skills --help
+npx --yes @i-9.ai/skills catalog overview
+npx --yes @i-9.ai/skills mcp serve
+```
+
+Registry builds contain compiled JavaScript and require only production
+dependencies. They need no Git checkout, TypeScript compiler or global
+installation. The first call may download the package and its dependencies;
+stdout from `mcp serve` is reserved for protocol messages. Startup never builds
+the package. Use the source route below for an unreleased revision.
 
 ## Run directly from GitHub
 
@@ -44,8 +62,8 @@ used Node 24.21.0 and verified help, catalog search/read, project discovery and
 MCP resource retrieval from a production-only install; this is local Git-source
 evidence, separate from fetching the public GitHub URL after merge.
 
-The Git-source call keeps `private: true`. The registry command
-`npx @i-9.ai/skills --help` requires a separate npm publication; making GitHub
+The registry command
+`npx @i-9.ai/skills --help` requires npm publication; making GitHub
 public does not create that release. The `--package` flag is not required for
 either spelling because this package declares one executable.
 Skill package installation uses the separate unversioned Skills CLI shown in
@@ -128,7 +146,9 @@ syntax. Package preparation never installs a host plugin or changes a marketplac
 
 Before an authorized npm release, confirm ownership of the scoped identity, version and
 access, test actual target platforms and installation, inspect the packed files
-again, and deliberately remove private only in that release task. The
+again. The public-access metadata is prepared, but the upload remains an explicit
+release operation. Follow the [release procedure](https://github.com/i-9-ai/skills/wiki/Release-Management).
+The
 [plugin preparation command](https://github.com/i-9-ai/skills/wiki/Plugin-Preparation) creates an optional local
 skills-only artifact with verified manifest formats and inert packages. The
 repository itself remains the root plugin, with one canonical package tree.
