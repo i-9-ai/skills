@@ -244,7 +244,8 @@ before proposing installation; generation and fixture tests do not enable a host
 Run npm run build and npm run package:check for the allowlisted compiled artifact.
 The same launcher uses source TypeScript in the checkout and JavaScript in the
 packed package. Read [distribution preparation](../docs/Distribution%20Readiness.md)
-for actual coverage and the separate publication gate. The package stays private.
+for actual coverage and the separate publication gate. The npm manifest prevents
+registry publication; this does not require the GitHub repository to be private.
 
 `plugin prepare --output .work/plugin-preview/i9-skills` previews a separate
 inert plugin artifact. Create the staging parent explicitly; add `--write` to

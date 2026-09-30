@@ -25,7 +25,8 @@
     "release:prepare": "node bin/index.mjs repo prepare-version --project .",
     "release:verify": "node bin/index.mjs repo verify-release --project .",
     "build": "npm run typecheck && node -e \"require('node:fs').rmSync('dist', {recursive: true, force: true})\" && tsc --project tsconfig.build.json",
-    "package:check": "npm run build && node --test tests/packaging/cli-package.mjs"
+    "package:check": "npm run build && node --test tests/packaging/cli-package.mjs",
+    "prepare": "npm run build"
   },
   "oclif": {
     "bin": "i9-skills",

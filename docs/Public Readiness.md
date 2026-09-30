@@ -1,8 +1,11 @@
 # Public distribution readiness
 
 This assessment was refreshed on 2026-09-29. Source and native-plugin preparation
-have reviewable evidence; public distribution still requires the owner actions
-below. A scanner pass, private marketplace entry or green CI does not publish the
+have reviewable evidence. The maintainer authorized public Git hosting after
+this exposure review, followed by effective main protection and Wiki
+initialization/synchronization. Registry and
+directory publication retain their separate release boundaries below.
+A scanner pass, repository marketplace entry or green CI does not publish the
 project or certify every possible disclosure. The repository remains experimental.
 No visibility, billing, registry, release or directory setting was changed by this
 assessment.
@@ -17,11 +20,19 @@ notices. The derived HTML entity table retains its BSD license beside the data.
 Presence and consistency checks do not replace a legal review of every possible
 redistribution claim. General domain/tool packages are outside this collection.
 
-At local source commit d3f40a5f3d10e9d897c4c22ed58a6c96bba78f5f, Gitleaks 8.30.1
-scanned all locally reachable Git refs: 144 commits and approximately 5.37 MB,
-with zero alerts. It ignored inline allow comments, used the default detectors
-and fully redacted report values. Later uncommitted implementation, inaccessible
-history and subsequent commits are outside that scan. Pattern detection cannot
+At source commit b9db78b521cd2e949bde3e8264cb5b416f86d791, the independent refresh
+inspected 184 commits reachable from the current remote branches, all PR refs and
+referenced review commits. Its scanned superset contained 212 locally available
+commits, 1,776 unique blobs and 17,664,586 blob bytes. A separate Git diff scan
+covered 167 patch-bearing commits and 7,245,989 bytes. Gitleaks 8.30.1 returned zero
+alerts using default detectors, ignoring inline allow comments and fully
+redacting report values. Manual triage found no observed private-source,
+customer/personnel-record, real local-user-path or escaping-symlink blocker.
+The refresh checked 24 complete package licenses and recomputed five source
+aggregates from 41 recorded hashes; it did not re-fetch those 41 upstream files.
+The copied entity-data hash matched, and scoped entity-data and icon notices
+were retained.
+Inaccessible history and subsequent commits are outside this cutoff. Pattern detection cannot
 prove absence of encoded or unrecognized sensitive material. No history rewrite
 was performed.
 
@@ -54,27 +65,29 @@ update and model-selected tool use remain untested.
 
 ## Read-only GitHub exposure inventory
 
-The remote/Actions inventory cutoff was **2026-09-29 20:28:57 UTC**. Discussion
-capture finished at 20:31:56; the last already-selected run was confirmed complete
-at 20:32:42, and scanning finished at 20:32:55. This is a bounded observation,
+The remote/Actions inventory cutoff was **2026-09-30 01:15:31 UTC**
+(2026-09-29 in the maintainer's local timezone). This is a bounded observation,
 not an atomic snapshot or continuing monitor. The observed default branch was
-main at 49049ab3dd9e191bb6fe071dfdc9a17cceab94ba.
+main at b9db78b521cd2e949bde3e8264cb5b416f86d791. Before the authorized settings
+change, incrementally inspect the readiness PR and its new commits, discussions
+and workflow logs; do not extend this snapshot to those later records by inference.
 
 | Surface | Observed coverage | Disposition |
 | --- | --- | --- |
-| Issues and PRs | 27 issues, 7 PRs, 25 issue comments, 415 review comments, 245 review records | Zero Gitleaks alerts in extracted discussion content. Two illustrative paths in [an existing review comment](https://github.com/i-9-ai/skills/pull/2#discussion_r4002059581) were reviewed; no private-source or credential finding established. |
-| Actions | 140 selected archives; 364 files, 6,061,670 bytes; 125 successful and 15 failed runs | All selected archives downloaded and scanned. Zero log alerts; no unavailable, expired or skipped selected archive. Historical success is not current-head CI evidence. |
-| Refs and workflows | Eight remote branches; zero tags; four registered workflows | gh-pages exists, but branch existence does not prove an active site. Later commits and workflows need a new cutoff. |
+| Issues and PRs | 31 issues, 20 PRs, 43 issue comments, 415 review comments, 245 review records; zero commit comments/discussions | Zero alerts in 774 extracted discussion records (including duplicated PR bodies), 4,090,599 bytes. Illustrative review paths were triaged; no private-source or credential blocker was established. |
+| Actions | 238 selected run-attempt archives; 476 files, 11,144,695 decoded bytes | All 238 archives downloaded and scanned with zero alerts and zero selected-archive gaps. Historical success is not current-head CI evidence. |
+| Refs and workflows | Two remote branches, all 20 PR refs, zero tags and five registered workflows | Six files at gh-pages commit 2d748552 were inspected. Branch existence does not prove an active site. Later commits and workflows need an incremental audit. |
 | Artifacts, releases and deployments | Zero visible entries | No content required inspection; deleted or inaccessible historical content is not certified. |
 | Repository secrets, variables and environments | Zero visible entries | No secret values requested. Organization/enterprise configuration was outside scope. |
 | Collaborators | One visible collaborator | Identity details retained only in protected local evidence. |
-| Wiki | REST has_wiki:false; GraphQL hasWikiEnabled:true; authenticated ref lookup returned repository-not-found | Enablement and initialization remain unverified. No Wiki content could be audited; do not claim synchronization succeeded. |
+| Wiki | REST has_wiki:false; GraphQL hasWikiEnabled:true; authenticated ref lookup returned repository-not-found; five historical mirror runs failed | No Wiki content was accessible to audit. The maintainer now authorizes enablement, supported first-page initialization and verification of the existing mirror; [issue #52](https://github.com/i-9-ai/skills/issues/52) records actual results separately. |
 | Pages and private vulnerability reporting | Both APIs returned 404 | Availability unconfirmed. Existing [security guidance](../SECURITY.md) remains the reporting fallback. |
 | Main protection and rulesets | Provider returned 403 requiring a different account plan or public repository | Protection was not applied. [Issue #32](https://github.com/i-9-ai/skills/issues/32) records the requested policy and blocked configuration. |
 
-Raw administrative API snapshots contained generated clone-token fields. Those
-were not published source/discussion/log findings and were never copied into
-tracked evidence. Reports, API bodies and log archives stay outside the checkout,
+The earlier audit's raw administrative snapshots contained generated clone-token
+fields. This refresh omitted those fields before retaining API metadata; neither
+audit copied them into tracked evidence or treated them as published-content
+findings. Reports, API bodies and log archives stay outside the checkout,
 with private directory/file permissions. Ordinary hosted-runner paths were
 excluded from hygiene candidates. Scanner limitations, unavailable surfaces
 and future changes remain explicit rather than being counted as clean.
@@ -98,11 +111,11 @@ audit neither dispatches them nor changes their permissions.
 | Channel | Prepared here | Still required before that external action |
 | --- | --- | --- |
 | Local repository plugin | Root Codex/Claude/Copilot manifests and marketplace entries; Codex/Claude installation pilot and native Codex/Copilot MCP calls | Select the reviewed merged commit and authorize real-consumer installation. Persistent Copilot marketplace installation and hosted updates remain separate untested distribution steps; see [issue #12](https://github.com/i-9-ai/skills/issues/12). |
-| Repository-hosted marketplace | Canonical root path, identity and explicit source pinning | Private consumers need Git access. Confirm hosted fetching/update behavior at the selected revision; public visibility remains a separate owner decision. |
+| Repository-hosted marketplace | Canonical root path, identity and explicit source pinning | Consumers must be able to fetch the selected source. Confirm hosted fetching/update behavior at the selected revision; repository visibility and directory acceptance are separate decisions. |
 | npm executable | Scoped identity @i-9-ai/skills, i9-skills bin, compiled allowlist and packed-runtime tests | Verify registry scope/access and final tarball; authorize version preparation and publication separately. Keep private:true until that release task. See [issue #17](https://github.com/i-9-ai/skills/issues/17). |
 | Public OpenAI directory | Optional skills-only staging and provider-neutral package cores | Owner chooses submission mode, verifies publisher/access and listing/support/privacy details, runs required scans/review and explicitly publishes after acceptance. No listing or identity is fabricated here. |
 | Public Claude/Copilot listing | Repository marketplace manifests | Follow each host's current listing/review process; repository access or local validation does not imply directory acceptance. |
-| Public repository governance | Experimental notice, security policy, sanitized audit and requested main policy | Resolve [main protection](https://github.com/i-9-ai/skills/issues/32), refresh exposure evidence, verify Wiki/Pages/reporting settings and deliberately approve the visibility change. |
+| Public repository governance | Experimental notice, security policy, refreshed independent audit and explicit maintainer authorization | Apply and verify public access and [main protection](https://github.com/i-9-ai/skills/issues/32); enable, initialize and verify the [Wiki mirror](https://github.com/i-9-ai/skills/issues/52). Pages availability remains separate. |
 
 For OpenAI directory submission, the documented ordinary paths are skills-only
 or an accessible remote MCP service. This project's local stdio MCP is not a

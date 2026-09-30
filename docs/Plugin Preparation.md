@@ -197,8 +197,8 @@ The repository [marketplace manifest](../.agents/plugins/marketplace.json)
 references `./`, the repository root. After this
 branch is merged, an authorized consumer can import the marketplace with
 `codex plugin marketplace add i-9-ai/skills --ref main` and then install with
-`codex plugin add i9-skills@i9-skills`. A private repository requires Git access
-for that consumer. The checked-in manifests prepare those steps;
+`codex plugin add i9-skills@i9-skills`. The consumer must be able to fetch the
+selected Git source. The checked-in manifests prepare those steps;
 they do not execute them or make the repository public. The local source pilot
 does not establish hosted Git/version-cache update behavior.
 Before public marketplace use, verify the exact merged ref, plugin UI rendering,
@@ -210,7 +210,9 @@ files after a consumer explicitly adds this Git repository as a marketplace.
 Both entries select the root plugin, so they distribute the same canonical
 packages. Claude also maps the catalog/evidence MCP and installed hooks. Codex maps
 its own session hook and the MCP with explicit storage configuration; Copilot
-currently provides skills only. Marketplace
+maps the catalog/evidence MCP through its verified legacy plugin adapter with
+caller-selected external storage. See the [Copilot MCP pilot](Copilot%20MCP%20Pilot.md)
+for its native evidence and remaining installation/update limits. Marketplace
 metadata does not grant trust or establish native execution. Validate each
 host's marketplace loading, hook delivery and any MCP subprocess before claiming
 consumer support.

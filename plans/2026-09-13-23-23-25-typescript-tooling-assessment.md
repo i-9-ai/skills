@@ -31,7 +31,7 @@ Proceed first with typed boundary design and injected use cases. TypeScript is a
 | --- | --- | --- |
 | Existing JavaScript and Node built-ins | Maintains zero-install local validation; existing layers and tests remain usable | Add injection seams now; JSDoc can document boundaries, but checked JSDoc still needs a compiler for static guarantees |
 | TypeScript with native Node execution and built-in command handling | Explicit contracts without a runtime loader or build output | Candidate only if a later migration raises the runtime floor to at least Node 24.12 and restricts syntax to erasable types; static checking still needs an explicitly installed compiler |
-| TypeScript compiled with `tsc` | Supports an emitted JavaScript runtime | Adds build sequencing, generated-output handling, and stale-output risk; unnecessary for this private repository CLI unless older Node support is required |
+| TypeScript compiled with `tsc` | Supports an emitted JavaScript runtime | Adds build sequencing, generated-output handling, and stale-output risk; unnecessary for the assessed checkout-only CLI unless a distributable JavaScript runtime is required |
 | TypeScript with `tsx` | Convenient TypeScript execution | Adds a runtime loader/install dependency; no demonstrated requirement here |
 | Commander | Centralizes command declaration, help, parsing, and errors | Useful when options/subcommands grow; adds an installed runtime dependency and may change diagnostics/exit behavior; defer for the present three positional commands |
 | Node `util.parseArgs` | Built-in option parser if options are added | Does not provide an entire command framework; sufficient candidate before adding dependencies |

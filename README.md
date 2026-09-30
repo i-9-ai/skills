@@ -7,15 +7,17 @@ I-9 Skills is a toolkit for the full life of an agent skill: discover what alrea
 **24 focused skills. One responsibility each. One reviewable output each.**
 
 The working package version is recorded in [package.json](package.json). This is
-an experimental collection for explicit pilots; the npm package remains private
-and unpublished. Structural checks and fixture tests do not establish production
+an experimental collection for explicit pilots; the npm manifest blocks registry
+publication and the package remains unpublished. Structural checks and fixture tests do not establish production
 quality or universal host compatibility.
 
-The prepared CLI package name is `@i-9-ai/skills` and its executable is
-`i9-skills`. In a trusted checkout, run `npm ci`, then `npm run check` and
-`npm run package:check` on Node.js 24+. Read the
-[distribution preparation](docs/Distribution%20Readiness.md) for the local packed
-test and the separate future registry/plugin release boundaries. This repository
+The CLI package name is `@i-9-ai/skills` and its executable is
+`i9-skills`. A public Git revision can supply the CLI directly through `npx`;
+the npm registry name remains unpublished. In a trusted checkout, run `npm ci`,
+then `npm run check` and `npm run package:check` on Node.js 24+. The explicit
+`npm ci` also builds the distributable CLI through npm's `prepare` lifecycle.
+Read the [distribution guide](docs/Distribution%20Readiness.md) for Git-source
+execution, local packed tests and the separate registry/plugin release boundaries. This repository
 is itself a plugin for Codex, Claude Code and Copilot: their root manifests
 reference the one canonical `.agents/skills` collection. Its Codex marketplace
 entry is included for review; importing or installing remains a separate
@@ -45,6 +47,30 @@ immutable revision.
 
 The Skills CLI asks for a supported agent target when it cannot determine one. After installation, start a new agent session if its skill picker does not refresh automatically.
 
+## Run the toolkit CLI
+
+Installing the skill packages and running this repository's toolkit are separate
+operations. With Node.js 24+, npm and Git available, replace
+`<reviewed-full-commit-sha>` with the full SHA of a public revision containing the
+CLI preparation lifecycle, then run:
+
+```sh
+npx --yes --allow-git=root --package='git+https://github.com/i-9-ai/skills.git#<reviewed-full-commit-sha>' i9-skills --help
+npx --yes --allow-git=root --package='git+https://github.com/i-9-ai/skills.git#<reviewed-full-commit-sha>' i9-skills catalog overview
+npx --yes --allow-git=root --package='git+https://github.com/i-9-ai/skills.git#<reviewed-full-commit-sha>' i9-skills catalog read --skill skill-authoring
+```
+
+The first invocation explicitly downloads the reviewed Git source and build
+dependencies into npm's cache and compiles the CLI before packing it. The
+installed artifact runs compiled JavaScript with production dependencies;
+command startup performs no build. `private: true` continues to block npm
+publication. `npx @i-9-ai/skills` requires a separately published registry release.
+`--allow-git=root` permits the selected top-level Git source for this invocation;
+npm 12 requires that explicit setting. Git-source preparation was exercised with
+npm 11.19.1 and npm 12.0.2; the Node 24 consumer test used Node 24.21.0.
+See the [command mapping](docs/Distribution%20Readiness.md#consumer-command-mapping)
+for project discovery, collection maintenance and MCP examples.
+
 ## Available skills and optional session hook
 
 This source checkout includes a project-local Codex `SessionStart` adapter. After explicit `npm ci`, a trusted host can load a compact map from current project and global skill entrypoints at startup, resume, clear and compaction. Discovery reads bounded metadata, deduplicates canonical paths, and never installs packages or invokes a route.
@@ -62,8 +88,13 @@ project/plugin session registrations.
 Hosts without hooks, or projects where the user has not enabled hook trust, use the identical manual fallback:
 
 ```sh
-node bin/index.mjs context available-skills
+npx --yes --allow-git=root --package='git+https://github.com/i-9-ai/skills.git#<reviewed-full-commit-sha>' i9-skills context available-skills --project .
 ```
+
+Use the reviewed SHA selected above. In a prepared source checkout, the same
+manual command is `node bin/index.mjs context available-skills --project .`.
+Automatic hooks use their already available local runtime; the explicit `npx`
+download command is for manual use.
 
 The map lists discovered packages dynamically, labels their sources, and discloses omitted packages and incomplete coverage. Use `--no-global` for project-only discovery. Read the selected `SKILL.md` before use. The [CLI guide](bin/index.md) documents commands, limits, hooks and usage metrics.
 

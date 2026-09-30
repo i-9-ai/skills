@@ -1,6 +1,6 @@
 # Security
 
-This repository is designed for eventual public use. Treat every tracked byte, including history and test evidence, as potentially public. A private repository is not a reason to store secrets or personal material.
+This repository is designed for public use. Treat every tracked byte, including history and test evidence, as public-facing material. Never store secrets or personal material in repository content.
 
 ## Trust boundaries
 
