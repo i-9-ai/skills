@@ -30,7 +30,8 @@ guidance. Restore the index together with the plan if this preparation is revert
 
 1. Verify `npm whoami` and `npm org ls i-9.ai`; keep credentials out of receipts.
 2. Review and merge public-access metadata, its packaging assertion, release
-   intent and documentation that still identifies registry availability as pending.
+   intent and durable examples for published versus unreleased builds, without
+   claiming the upload or public consumer verification has already happened.
 3. On a separate dedicated branch, run `npm run release:prepare`. Consume pending
    Changesets into the generated version/changelog and align package, lockfile and
    host-plugin versions. Commit only generated release artifacts. Independently
@@ -44,8 +45,9 @@ guidance. Restore the index together with the plan if this preparation is revert
    weakening two-factor protection.
 5. Verify the registry version/integrity and public access. Use a fresh temporary
    HOME and cache with no npm credentials to run unversioned help, bundled catalog
-   retrieval and the MCP stdio handshake. Update ordinary README/docs commands to
-   the now-available registry spelling in a follow-up reviewed PR.
+   retrieval and the MCP stdio handshake. Record actual availability only after
+   that proof; the packaged README already explains the published command without
+   embedding transient "not published yet" text in the release artifact.
 6. Close issue #17 and the Beads task only with actual publication and anonymous
    consumer evidence. A successful dry-run or packed test is insufficient.
 

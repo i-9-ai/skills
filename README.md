@@ -71,8 +71,16 @@ The Skills CLI asks for a supported agent target when it cannot determine one. A
 ## Run the toolkit CLI
 
 Installing the skill packages and running this repository's toolkit are separate
-operations. With Node.js 24+, npm and Git available, run the current toolkit
-directly from GitHub:
+operations. Published builds require Node.js 24+ and npm, and run directly
+without a global installation:
+
+```sh
+npx --yes @i-9.ai/skills --help
+npx --yes @i-9.ai/skills catalog overview
+npx --yes @i-9.ai/skills catalog read --skill skill-authoring
+```
+
+To test an unreleased revision, use Git source with Git available:
 
 ```sh
 npx --yes --allow-git=root github:i-9-ai/skills --help
@@ -80,11 +88,12 @@ npx --yes --allow-git=root github:i-9-ai/skills catalog overview
 npx --yes --allow-git=root github:i-9-ai/skills catalog read --skill skill-authoring
 ```
 
-The first invocation downloads and prepares the package in npm's cache. npm
+The first invocation downloads the package into npm's cache. Git-source builds
+also install build dependencies and run preparation; registry builds already
+contain compiled code. npm
 selects the package's single executable, so `--package` is unnecessary.
-`--allow-git=root` permits this Git source on npm 12. Once the scoped package is
-published on npm, the registry command will be `npx @i-9.ai/skills --help`.
-That registry command is not available yet; progress is tracked in [#17](https://github.com/i-9-ai/skills/issues/17).
+`--allow-git=root` permits this Git source on npm 12. Initial registry publication
+and its consumer evidence are tracked in [#17](https://github.com/i-9-ai/skills/issues/17).
 See the [command mapping](docs/Distribution%20Readiness.md#consumer-command-mapping)
 for project discovery, collection maintenance and MCP examples.
 
@@ -105,7 +114,7 @@ project/plugin session registrations.
 Hosts without hooks, or projects where the user has not enabled hook trust, use the identical manual fallback:
 
 ```sh
-npx --yes --allow-git=root github:i-9-ai/skills context available-skills --project .
+npx --yes @i-9.ai/skills context available-skills --project .
 ```
 
 In a prepared source checkout, the same manual command is

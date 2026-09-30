@@ -180,8 +180,8 @@ This cleanup does not remove the npm cache or a caller-owned evidence database.
 
 ## Released npm package: a separate route
 
-The skills npm package is not published yet. After publication, the server
-portion of an Inspector CLI command can use:
+For a published skills build, the server portion of an Inspector CLI command
+can use:
 
 ```sh
 npx --yes @i-9.ai/skills mcp serve

@@ -7,7 +7,7 @@
     "quality_profile": "showcase",
     "views": [
       {"id": "skills", "label": "Use portable skills", "focus": ["task", "discovery", "instructions", "workflow", "result"], "note": "The host discovers installed packages; the agent reads selected instructions and follows a bounded workflow."},
-      {"id": "cli", "label": "Use the CLI", "focus": ["cli", "commands", "mcp", "instructions", "context"], "note": "An explicit Git-source download prepares the CLI. Commands provide catalog access, discovery, maintenance, reports and evidence operations."},
+      {"id": "cli", "label": "Use the CLI", "focus": ["cli", "commands", "mcp", "instructions", "context"], "note": "Registry builds contain compiled code; Git downloads prepare the CLI. Commands cover discovery, maintenance, reports and evidence."},
       {"id": "plugin", "label": "Use the root plugin", "focus": ["plugin", "manifests", "hooks", "context", "mcp"], "note": "Enabled host manifests load local Node 24 hooks and stdio MCP. Hook startup performs no download or build."}
     ]
   },
@@ -28,7 +28,7 @@
     {"id": "instructions", "lane": "use", "col": 2, "type": "database", "label": "Selected SKILL.md", "sublabel": "bounded references", "width": 154},
     {"id": "workflow", "lane": "use", "col": 3, "type": "backend", "label": "Meta-skill workflow", "sublabel": "research / create / improve", "width": 164},
     {"id": "result", "lane": "use", "col": 4, "type": "security", "label": "Reviewable output", "sublabel": "evidence and limits", "width": 154},
-    {"id": "cli", "lane": "tooling", "col": 0, "type": "external", "label": "Git-source CLI", "sublabel": "explicit npx download", "width": 140},
+    {"id": "cli", "lane": "tooling", "col": 0, "type": "external", "label": "npm / Git CLI", "sublabel": "explicit npx download", "width": 140},
     {"id": "commands", "lane": "tooling", "col": 1, "type": "backend", "label": "i9-skills commands", "sublabel": "prepared Node 24 CLI", "width": 148},
     {"id": "mcp", "lane": "tooling", "col": 2, "type": "messagebus", "label": "Local stdio MCP", "sublabel": "bundled catalog and tools", "width": 154},
     {"id": "plugin", "lane": "host", "col": 0, "type": "external", "label": "Root plugin", "sublabel": "reviewed repository copy", "width": 140},
@@ -41,7 +41,7 @@
     {"id": "discovery-instructions", "from": "discovery", "to": "instructions", "label": "select and read", "variant": "emphasis"},
     {"id": "instructions-workflow", "from": "instructions", "to": "workflow", "label": "guidance", "variant": "emphasis"},
     {"id": "workflow-result", "from": "workflow", "to": "result", "label": "verify", "variant": "emphasis"},
-    {"id": "cli-commands", "from": "cli", "to": "commands", "label": "prepare then run"},
+    {"id": "cli-commands", "from": "cli", "to": "commands", "label": "install then run"},
     {"id": "commands-mcp", "from": "commands", "to": "mcp", "label": "mcp serve"},
     {"id": "mcp-instructions", "from": "mcp", "to": "instructions", "label": "catalog read"},
     {"id": "plugin-manifests", "from": "plugin", "to": "manifests", "label": "enable in host"},
@@ -51,6 +51,6 @@
   ],
   "cards": [
     {"dot": "cyan", "title": "Explicit tooling", "items": ["CLI also offers catalog reads, collection maintenance and evidence queries", "MCP also offers onboarding, bump reports and explicit evidence tools"]},
-    {"dot": "amber", "title": "Current boundaries", "items": ["Registry npx @i-9.ai/skills is unpublished; use the Git-source CLI", "Context and catalog reads do not activate skills or record evidence"]}
+    {"dot": "amber", "title": "Current boundaries", "items": ["Registry builds use npx @i-9.ai/skills; Git builds prepare dependencies", "Context and catalog reads do not activate skills or record evidence"]}
   ]
 }

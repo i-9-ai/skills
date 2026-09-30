@@ -1,9 +1,10 @@
-# CLI distribution from Git source
+# CLI distribution
 
 The prepared npm identity is `@i-9.ai/skills`, with the executable `i9-skills`.
 The manifest permits public publication to `https://registry.npmjs.org/` with
-the `latest` tag. The initial registry upload is pending; public-access metadata
-does not itself publish a package. No release, registry upload, marketplace
+the `latest` tag. Public-access metadata does not itself publish a package.
+Initial publication evidence is tracked in [issue #17](https://github.com/i-9-ai/skills/issues/17).
+No release, registry upload, marketplace
 registration or global installation is authorized by a build or package test.
 Registry publication is independent of GitHub repository visibility.
 The executable is the single `bin/index.mjs` launcher, exposed as `i9-skills`.
@@ -15,6 +16,22 @@ JavaScript under dist. The packed allowlist excludes src and includes dist,
 the launcher, distributed skill resources and public documentation. The launcher
 chooses source in a checkout and built code in a packed installation; it never
 compiles, downloads or installs during command startup.
+
+## Run a published build
+
+With Node.js 24+ and npm, run:
+
+```sh
+npx --yes @i-9.ai/skills --help
+npx --yes @i-9.ai/skills catalog overview
+npx --yes @i-9.ai/skills mcp serve
+```
+
+Registry builds contain compiled JavaScript and require only production
+dependencies. They need no Git checkout, TypeScript compiler or global
+installation. The first call may download the package and its dependencies;
+stdout from `mcp serve` is reserved for protocol messages. Startup never builds
+the package. Use the source route below for an unreleased revision.
 
 ## Run directly from GitHub
 
@@ -46,7 +63,7 @@ MCP resource retrieval from a production-only install; this is local Git-source
 evidence, separate from fetching the public GitHub URL after merge.
 
 The registry command
-`npx @i-9.ai/skills --help` requires a separate npm publication; making GitHub
+`npx @i-9.ai/skills --help` requires npm publication; making GitHub
 public does not create that release. The `--package` flag is not required for
 either spelling because this package declares one executable.
 Skill package installation uses the separate unversioned Skills CLI shown in

@@ -60,8 +60,7 @@ The initial call downloads the source/build dependencies and runs preparation;
 stdout remains reserved for MCP protocol messages. This is an explicit client
 launch, not an automatic session setup hook.
 
-The npm package is not published yet. After publication, a client can launch the
-current registry package directly:
+A client using a published build can launch the registry package directly:
 
 ```sh
 npx --yes @i-9.ai/skills mcp serve
@@ -69,7 +68,7 @@ npx --yes @i-9.ai/skills mcp serve
 
 This explicitly permits npm to obtain the package; it is not an installation
 step performed by a hook. For a reproducible client configuration, append an
-exact verified release version to the package name. For current development use
+exact verified release version to the package name. For unreleased development use
 the checkout command above or the [local tarball test](https://github.com/i-9-ai/skills/wiki/Distribution-Readiness).
 Automatic hooks continue to use their installed local runtime.
 
