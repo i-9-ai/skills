@@ -17,6 +17,8 @@ Verify every requirement has an implementation and a check or an explicit limit.
 
 ## Child DOX index
 
+- [Initial npm publication](2026-09-30-14-43-53-initial-npm-publication.md): reviewed public package metadata and generated version preparation, followed by an authorized tarball upload and anonymous consumer verification; no unattended releases or host installation.
+
 - [Public repository governance](2026-09-30-01-12-53-public-repository-governance.md): conditionally authorized source/exposure review and GitHub visibility transition, followed by effective main protection; registry and directory publication remain separate.
 
 - [Skill memory inspection](2026-09-29-22-49-00-skill-memory-inspection.md): bounded summaries and cutoff inspection in one read-only evidence snapshot, without new storage or deletion authority.

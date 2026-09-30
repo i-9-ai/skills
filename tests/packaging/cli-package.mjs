@@ -134,7 +134,13 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
     }
     assert.equal(existsSync(join(modules, 'typescript')), false);
     assert.equal(existsSync(join(installed, 'src')), false);
-    assert.equal(JSON.parse(readFileSync(join(installed, 'package.json'))).private, true);
+    const installedManifest = JSON.parse(readFileSync(join(installed, 'package.json')));
+    assert.equal(installedManifest.private, false);
+    assert.deepEqual(installedManifest.publishConfig, {
+        access: 'public',
+        registry: 'https://registry.npmjs.org/',
+        tag: 'latest',
+    });
     const launcher = join(installed, 'bin/index.mjs');
     assert.match(run(process.execPath, [launcher, '--help'], root), /TOPICS/);
     for (const route of Object.keys(COMMANDS)) {

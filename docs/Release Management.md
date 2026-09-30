@@ -14,6 +14,44 @@ This repository uses [Changesets](https://github.com/changesets/changesets) to r
 
 Changesets may be omitted only for changes that have no user-visible release note, such as purely local test-fixture maintenance. Explain that decision in the pull request.
 
+## Publish a reviewed package
+
+Publication is a separate maintainer operation after the generated version PR
+has passed review and protected-branch checks. The manifest selects public npm
+access and `latest`; a merge or version-preparation workflow never uploads it.
+The initial upload is tracked in [issue #17](https://github.com/i-9-ai/skills/issues/17).
+
+1. Authenticate the intended publisher with `npm login`, verify `npm whoami` and
+   `npm org ls i-9.ai`, and select the reviewed merged release commit in a clean
+   checkout with Node 24+. Do not place credentials in commands or receipts.
+2. Run explicit `npm ci`, `npm run check`, `npm run package:check` and
+   `npm run release:verify`. Build with `npm run build`, then pack into an
+   existing disposable directory selected as `RELEASE_DIRECTORY`:
+
+   ```sh
+   npm pack --ignore-scripts --pack-destination "$RELEASE_DIRECTORY"
+   ```
+
+3. Inspect the tarball's file list, version and integrity. It must contain the
+   compiled runtime, bundled skills and licenses, and exclude credentials,
+   development state and operational logs. Publish this exact inspected tarball:
+
+   ```sh
+   npm publish "$RELEASE_DIRECTORY/<packed-filename>.tgz" --access public --tag latest --ignore-scripts
+   ```
+
+4. Verify the registry version, `latest` and integrity, then run
+   `npx --yes @i-9.ai/skills --help`, bundled catalog retrieval and the MCP
+   handshake from a disposable consumer with fresh HOME/cache and no credentials.
+   Only then describe registry distribution as available.
+
+Retain sanitized source-commit, artifact-hash and consumer receipts outside the
+checkout. A published name/version cannot be overwritten: corrections require a
+new Changeset and version. A failed client response requires checking registry
+state before retrying. Unpublishing, deprecation, access changes and unattended
+future release automation require their own authorization. See npm's
+[public organization package guidance](https://docs.npmjs.com/creating-and-publishing-an-organization-scoped-package/).
+
 ## Prepare a version pull request
 
 The manual [Prepare version pull request workflow](https://github.com/i-9-ai/skills/blob/main/.github/workflows/release-preparation.yml)
@@ -33,8 +71,8 @@ It runs `npm run release:prepare`, which consumes the pending entries and update
 - versions in `.codex-plugin/plugin.json`, `.claude-plugin/plugin.json` and
   `.github/plugin/plugin.json`.
 
-Other manifest fields remain unchanged. The npm manifest still blocks registry
-publication. This workflow
+Other manifest fields remain unchanged. The npm manifest permits public registry
+publication, but version preparation never uploads a package. This workflow
 has only `contents: write` and `pull-requests: write` permissions and contains no
 publication action. It does not create tags, GitHub releases, marketplace
 submissions or installations. Those remain separately authorized operations.

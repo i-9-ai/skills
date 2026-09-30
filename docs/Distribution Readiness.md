@@ -1,10 +1,11 @@
 # CLI distribution from Git source
 
 The prepared npm identity is `@i-9.ai/skills`, with the executable `i9-skills`.
-The manifest currently sets `private:true`. No release, registry upload, marketplace
+The manifest permits public publication to `https://registry.npmjs.org/` with
+the `latest` tag. The initial registry upload is pending; public-access metadata
+does not itself publish a package. No release, registry upload, marketplace
 registration or global installation is authorized by a build or package test.
-This npm flag prevents registry publication and is independent of GitHub
-repository visibility.
+Registry publication is independent of GitHub repository visibility.
 The executable is the single `bin/index.mjs` launcher, exposed as `i9-skills`.
 Public Git-source consumption does not require registry publication.
 
@@ -44,7 +45,7 @@ used Node 24.21.0 and verified help, catalog search/read, project discovery and
 MCP resource retrieval from a production-only install; this is local Git-source
 evidence, separate from fetching the public GitHub URL after merge.
 
-The Git-source call keeps `private: true`. The registry command
+The registry command
 `npx @i-9.ai/skills --help` requires a separate npm publication; making GitHub
 public does not create that release. The `--package` flag is not required for
 either spelling because this package declares one executable.
@@ -128,7 +129,9 @@ syntax. Package preparation never installs a host plugin or changes a marketplac
 
 Before an authorized npm release, confirm ownership of the scoped identity, version and
 access, test actual target platforms and installation, inspect the packed files
-again, and deliberately remove private only in that release task. The
+again. The public-access metadata is prepared, but the upload remains an explicit
+release operation. Follow the [release procedure](https://github.com/i-9-ai/skills/wiki/Release-Management).
+The
 [plugin preparation command](https://github.com/i-9-ai/skills/wiki/Plugin-Preparation) creates an optional local
 skills-only artifact with verified manifest formats and inert packages. The
 repository itself remains the root plugin, with one canonical package tree.
