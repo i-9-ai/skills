@@ -167,6 +167,29 @@ also a manual fallback and writes context only. `hook session-config --host code
 prints the Codex configuration; `hook verify --host codex` only compares its contents.
 Neither command enables or installs a hook.
 
+Both generation and verification accept `--executable` for an existing absolute
+local CLI executable, plus identical `--project`, `--global-root`, `--no-global`
+and `--max-entries` selections. Existing checkout defaults remain unchanged.
+Installed commands pass the selected project explicitly; absent `--project`,
+they use the hook working directory rather than the package directory. Select
+the consumer root explicitly when a host starts elsewhere or in a nested path.
+
+```sh
+i9-skills hook session-config --host codex \
+  --executable '/absolute/consumer/node_modules/.bin/i9-skills' \
+  --project '/absolute/consumer' --no-global > /absolute/scratch/session-hooks.json
+
+i9-skills hook verify --host codex --file /absolute/scratch/session-hooks.json \
+  --executable '/absolute/consumer/node_modules/.bin/i9-skills' \
+  --project '/absolute/consumer' --no-global
+```
+
+Executable links resolve to their installed target. Missing or non-executable
+runtime files fail generation and verification; cache removal requires explicit
+replacement. No global installation or event-time download is required. The
+selected executable and its Node 24 runtime must remain available; file checks
+do not establish dependency health, host trust or native hook delivery.
+
 `mcp serve` starts the single stdio server for bundled skill search, Markdown
 retrieval and overview plus explicit read, lifecycle and catalog evidence. Initialization and
 catalog calls require no data directory and create no state. A valid record opens

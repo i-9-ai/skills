@@ -145,7 +145,16 @@ installation do not become dependencies of the ordinary repository test suite.
 
 ## Evidence limits and references
 
-Native Read-tool telemetry, real-model skill selection/task quality, interactive
+The separate [2026-10-01 native read proof](https://github.com/i-9-ai/skills/blob/main/plans/2026-10-01-23-32-56-native-codex-read-evidence.md)
+adds installed Codex 0.159.3 SessionStart, PreToolUse and PostToolUse delivery for
+one literal synthetic entrypoint read. The actual returned bytes produced one
+attempt, one confirmed read and one distinct-session ranking through the local
+MCP. It used strict native hook trust and a confined unauthenticated loopback
+fixture; it did not use a real model or user profile. Its exact observer hashes
+and coverage limits are separate from the historical A/B/A results above.
+
+Native Read-tool telemetry was not exercised in the historical A/B/A round;
+real-model skill selection/task quality, interactive
 Claude trust, online dependency preparation, hosted updates, Windows behavior,
 Copilot runtime and public-directory acceptance were not exercised. Codex MCP
 mapping was outside this A/B/A round and is covered by the separate linked pilot.

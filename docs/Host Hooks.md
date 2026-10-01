@@ -1,15 +1,17 @@
 # Session hook adapters
 
-Project registrations use the prepared CLI below. [Installed plugin hooks](#installed-plugin-hooks)
+Project registrations use a prepared checkout or explicitly selected local CLI.
+[Installed plugin hooks](#installed-plugin-hooks)
 use a dependency-free runtime and explicit host manifests; the two surfaces have
 different launch and state selection rules.
 
-The unified checkout CLI renders available-skill context and adapts its output
+The unified CLI renders available-skill context and adapts its output
 for the selected host. Generation prints JSON only; it never writes settings,
 enables hooks, installs dependencies, or reads incoming prompts/transcripts.
 Antigravity/Hermes execution parses bounded lifecycle stdin to gate the first
 invocation; it discards all unrelated fields and never opens a transcript.
-Run Node 24 and explicit npm ci in a trusted checkout first.
+Prepare Node 24 and the selected runtime first; checkout execution requires
+explicit npm ci. Session events never install dependencies.
 
 | Host | Proposed project location | Event | Output | Timeout unit |
 | --- | --- | --- | --- | --- |
@@ -29,12 +31,46 @@ does not merge existing settings or certify unrelated settings. If installation
 is later authorized, merge the reviewed hook entry while preserving other host
 configuration. Remove that entry to disable the adapter.
 
-These generated commands target a POSIX Git checkout containing this CLI.
+Without selection flags, generated commands target a POSIX Git checkout containing this CLI.
 Git resolves its root even when the host starts in a nested directory. Windows,
-remote cloud sandboxes and npm-installed locations require separate verified
-invocation adapters; use the manual command until those are tested. A missing
+remote cloud sandboxes and other shell formats need separately tested invocation
+adapters. A missing
 Node executable, dependency or trusted checkout is a setup failure, never a
 reason to fetch software at session startup.
+
+For an already installed project-local or global CLI, select its absolute
+executable with `--executable`. The same selections must be supplied to verify:
+
+```sh
+i9-skills hook session-config --host claude \
+  --executable '/absolute/consumer/node_modules/.bin/i9-skills' \
+  --project '/absolute/consumer' --no-global > /absolute/scratch/session-hooks.json
+
+i9-skills hook verify --host claude --file /absolute/scratch/session-hooks.json \
+  --executable '/absolute/consumer/node_modules/.bin/i9-skills' \
+  --project '/absolute/consumer' --no-global
+```
+
+No global installation is required: an existing local executable or retained npm
+cache executable can be selected. Package-manager links resolve to their actual
+runtime file. Missing, directory, relative or non-executable selections fail
+generation and verification. Quoted paths, including spaces and apostrophes,
+remain literal. These checks establish current file access only; they do not
+prove executable contents, dependencies, host trust or future availability. A
+removed cache needs explicit runtime replacement and configuration regeneration.
+
+Installed commands always pass a consumer project explicitly. `--project`
+embeds its normalized absolute root; without it, the command uses the hook's
+working directory at execution via `"$PWD"`. It does not use the installed
+toolkit as the fallback project or capture the generator's working directory.
+When a host starts in a nested directory or a separate launcher directory,
+select the actual consumer root with `--project`. Global metadata remains
+enabled by default through shared agent state; `--no-global` selects only the
+project, `--global-root` embeds another selected global directory, and
+`--max-entries 1..100` sets the displayed package limit with omissions disclosed.
+Generation and verification accept these same flags, compare the complete
+standalone object and write no settings or evidence. Existing discovery and
+filesystem confinement rules still apply.
 
 Claude's matcher selects startup, resume, clear and compact. Gemini's lifecycle
 matcher is an exact value, so its adapter leaves the matcher absent to cover
@@ -49,7 +85,8 @@ Antigravity maps a hook name directly to event arrays; its invocation handler
 is a direct list, without a tool matcher. Hermes configuration is normally YAML;
 generation prints the equivalent standalone JSON object for review and merging.
 Hermes tokenizes its command without a shell, so this adapter explicitly invokes
-`sh -c` for the Git-root expression. Neither adapter grants tool permissions.
+`sh -c` for the selected POSIX command, including literal installed paths.
+Neither adapter grants tool permissions.
 Both skip subsequent invocations, read at most 1 MiB of strict JSON and retain
 none of the input. Missing lifecycle metadata fails instead of claiming startup.
 
@@ -102,6 +139,14 @@ These changing interfaces require rechecking before installation. Tests cover
 configuration, timeout units, context envelopes, mismatch failures and no
 configuration writes in disposable fixtures. Native host trust, enablement and
 execution have not been exercised. No cross-host runtime certification is made.
+
+The installed CLI selection in [issue #54](https://github.com/i-9-ai/skills/issues/54)
+was checked against the same official references on 2026-10-01. Disposable local
+executable fixtures exercise all six generated commands in a non-Git consumer,
+including quoted paths, explicit discovery selections and absent runtimes.
+These process tests are distinct from native host delivery and the historical
+plugin pilot. Host timeout units, context envelopes and opt-in trust remain
+unchanged; retain Node 24 and the selected executable for every session.
 
 OpenCode requires a plugin contract rather than these registrations. The
 [official V2 migration guide](https://opencode.ai/v2/docs/build/plugins/migrate-v1)
@@ -220,10 +265,10 @@ that could dispatch one host's payload to another adapter.
 For a diagnostic from disposable owned directories, explicitly select test state:
 
 ```sh
-printf '%s\\n' '{"hook_event_name":"SessionStart","source":"startup","session_id":"smoke-1","cwd":"/absolute/test-consumer"}' \\
+printf '%s\n' '{"hook_event_name":"SessionStart","source":"startup","session_id":"smoke-1","cwd":"/absolute/test-consumer"}' \
   | I9_AGENT_STATE_ROOT=/absolute/test-state node /absolute/plugin/src/transport/PluginHookRunner.ts --host codex
 
-printf '%s\\n' '{"hook_event_name":"SessionStart","source":"startup","session_id":"smoke-1","cwd":"/absolute/test-consumer"}' \\
+printf '%s\n' '{"hook_event_name":"SessionStart","source":"startup","session_id":"smoke-1","cwd":"/absolute/test-consumer"}' \
   | I9_SKILLS_USAGE_DB=/absolute/test-data/usage.db node /absolute/plugin/src/transport/PluginHookRunner.ts --host claude
 ```
 

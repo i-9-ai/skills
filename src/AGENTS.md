@@ -73,6 +73,8 @@ Run `npm run check` and inspect the required official workflow result for the ex
 - [Plugin ZIP repository](repository/PluginZipRepository.ts): bounded deterministic stored ZIP entries without shell execution or arbitrary archive paths.
 - [Aggregate catalog](repository/AggregateCatalogRepository.ts): derived multi-source state and history through explicit source/index selections.
 - [Host hook configuration](service/HostHookConfiguration.ts): verified per-host registration and context envelopes around the same discovery service.
+- [Session hook selections](config/SessionHookCommandConfiguration.ts): shared generation and verification flags for a retained executable and explicit consumer discovery.
+- [Selected hook runtime](repository/HookRuntimeRepository.ts): validate a canonical local executable without executing or installing it.
 - [Optional hook setup](service/HookInstallationService.ts): preview, explicitly merge, inspect and remove receipt-matched skill telemetry registrations while retaining unrelated settings and evidence.
 - [Selected hook settings](repository/HookSettingsRepository.ts): bounded regular-file reads and guarded replacement of an unchanged selected settings file.
 - [Skill read repository](repository/SkillReadRepository.ts): transactional observed-read storage and ranking projections.

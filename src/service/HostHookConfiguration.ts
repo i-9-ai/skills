@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { CodexHookConfiguration } from './CodexHookConfiguration.ts';
+import { ProjectConfiguration } from '../config/ProjectConfiguration.ts';
+import { HookRuntimeRepository } from '../repository/HookRuntimeRepository.ts';
 
 export const sessionHosts = [
     'codex',
@@ -10,24 +12,71 @@ export const sessionHosts = [
     'hermes',
 ] as const;
 export type SessionHost = (typeof sessionHosts)[number];
+export type SessionHookSelection = {
+    executable?: string;
+    project?: string;
+    global?: boolean;
+    globalRoot?: string;
+    maxEntries?: number;
+};
 
 /** Maps the same context capability to independently documented host contracts. */
 export class HostHookConfiguration {
-    private command(host: SessionHost): string {
-        return (
-            'node "$(git rev-parse --show-toplevel)/bin/index.mjs" hook session-index' +
-            ' --host ' +
-            host +
-            ' --project "$(git rev-parse --show-toplevel)"'
-        );
+    private command(host: SessionHost, selection: SessionHookSelection): string {
+        const checkout = 'node "$(git rev-parse --show-toplevel)/bin/index.mjs"';
+        const selected =
+            selection.executable !== undefined ||
+            selection.project !== undefined ||
+            selection.global === false ||
+            selection.globalRoot !== undefined ||
+            selection.maxEntries !== undefined;
+        if (!selected) {
+            return (
+                checkout +
+                ' hook session-index' +
+                (host === 'codex'
+                    ? ''
+                    : ' --host ' + host + ' --project "$(git rev-parse --show-toplevel)"')
+            );
+        }
+        const executable =
+            selection.executable === undefined
+                ? checkout
+                : this.quote(new HookRuntimeRepository().executable(selection.executable));
+        const project =
+            selection.project === undefined
+                ? selection.executable === undefined
+                    ? '"$(git rev-parse --show-toplevel)"'
+                    : '"$PWD"'
+                : this.quote(this.selectedRoot(selection.project));
+        let command = executable + ' hook session-index --host ' + host + ' --project ' + project;
+        if (selection.global === false) command += ' --no-global';
+        if (selection.globalRoot !== undefined) {
+            command += ' --global-root ' + this.quote(this.selectedRoot(selection.globalRoot));
+        }
+        if (selection.maxEntries !== undefined) {
+            if (
+                !Number.isInteger(selection.maxEntries) ||
+                selection.maxEntries < 1 ||
+                selection.maxEntries > 100
+            ) {
+                throw new Error('Select a maximum of 1–100 displayed skills.');
+            }
+            command += ' --max-entries ' + selection.maxEntries;
+        }
+        return command;
     }
 
-    sessionConfiguration(host: SessionHost): object {
-        if (host === 'codex') return new CodexHookConfiguration().codexSessionHook();
+    sessionConfiguration(host: SessionHost, selection: SessionHookSelection = {}): object {
+        if (!sessionHosts.includes(host)) {
+            throw new Error('Unsupported host; use context available-skills manually.');
+        }
+        const command = this.command(host, selection);
+        if (host === 'codex') return new CodexHookConfiguration().codexSessionHook(command);
         if (host === 'antigravity') {
             return {
                 'i9-available-skills': {
-                    PreInvocation: [{ type: 'command', command: this.command(host), timeout: 3 }],
+                    PreInvocation: [{ type: 'command', command, timeout: 3 }],
                 },
             };
         }
@@ -36,7 +85,7 @@ export class HostHookConfiguration {
             // shell explicitly so the existing checkout-root expansion is real.
             return {
                 hooks: {
-                    pre_llm_call: [{ command: "sh -c '" + this.command(host) + "'", timeout: 3 }],
+                    pre_llm_call: [{ command: 'sh -c ' + this.quote(command), timeout: 3 }],
                 },
             };
         }
@@ -44,7 +93,7 @@ export class HostHookConfiguration {
             return {
                 version: 1,
                 hooks: {
-                    sessionStart: [{ type: 'command', bash: this.command(host), timeoutSec: 3 }],
+                    sessionStart: [{ type: 'command', bash: command, timeoutSec: 3 }],
                 },
             };
         }
@@ -54,7 +103,7 @@ export class HostHookConfiguration {
                     SessionStart: [
                         {
                             matcher: 'startup|resume|clear|compact',
-                            hooks: [{ type: 'command', command: this.command(host), timeout: 3 }],
+                            hooks: [{ type: 'command', command, timeout: 3 }],
                         },
                     ],
                 },
@@ -69,7 +118,7 @@ export class HostHookConfiguration {
                                 {
                                     name: 'i9-available-skills',
                                     type: 'command',
-                                    command: this.command(host),
+                                    command,
                                     timeout: 3000,
                                     description: 'Load the installed skills overview.',
                                 },
@@ -109,7 +158,8 @@ export class HostHookConfiguration {
                 effect: 'read project and optional global skill metadata',
                 status: 'implemented; configuration and output fixture-tested',
                 hostExecution: 'not tested; trust and enablement remain external',
-                platforms: 'POSIX checkout with Node 24, Git and explicit npm ci',
+                platforms:
+                    'POSIX prepared checkout or explicit retained local CLI executable; Node 24 required',
             })),
             {
                 name: 'session-index',
@@ -145,5 +195,15 @@ export class HostHookConfiguration {
         if (host === 'antigravity') return 'PreInvocation (invocationNum=0)';
         if (host === 'hermes') return 'pre_llm_call (is_first_turn=true)';
         return 'SessionStart';
+    }
+
+    private selectedRoot(root: string): string {
+        return new ProjectConfiguration({ root, environment: {} }).root();
+    }
+
+    private quote(value: string): string {
+        if (/[\x00-\x1f\x7f]/.test(value))
+            throw new Error('Hook selections cannot contain control characters.');
+        return "'" + value.replaceAll("'", "'\"'\"'") + "'";
     }
 }

@@ -17,6 +17,8 @@ Verify every requirement has an implementation and a check or an explicit limit.
 
 ## Child DOX index
 
+- [Native Codex read evidence](2026-10-01-23-32-56-native-codex-read-evidence.md): trusted native pre/post delivery, one confirmed synthetic read and preserved local ranking evidence inside an OS sandbox; no real-model evaluation.
+- [Installed CLI session hooks](2026-10-01-23-20-01-installed-cli-session-hooks.md): explicit installed executable and consumer project selection for generated and verified session context; no settings installation or event-time download.
 - [Optional telemetry and public submission](2026-10-01-21-50-00-optional-telemetry-and-public-submission.md): explicit receipt-backed hook setup and a skills-only submission artifact with independent provider approval boundaries.
 - [Build Git source receipts](2026-10-01-22-13-33-git-source-receipts.md): bounded compiled-artifact source assertions and inventory verification, without caller Git inference or signature claims.
 - [Continuous credential detection](2026-10-01-22-14-29-continuous-secret-detection.md): native push protection and pinned redacted CI scans over actual candidate bytes.

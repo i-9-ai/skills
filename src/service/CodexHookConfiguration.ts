@@ -2,7 +2,7 @@
 
 /** Codex SessionStart registration; read telemetry remains a separate host adapter. */
 export class CodexHookConfiguration {
-    codexSessionHook() {
+    codexSessionHook(command?: string) {
         return {
             description: 'Discover a compact overview of installed project and global skills.',
             hooks: {
@@ -13,6 +13,7 @@ export class CodexHookConfiguration {
                             {
                                 type: 'command',
                                 command:
+                                    command ??
                                     'node "$(git rev-parse --show-toplevel)/bin/index.mjs" hook session-index',
                                 timeout: 3,
                                 statusMessage: 'Loading available skills overview',
