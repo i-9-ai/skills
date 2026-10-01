@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.2.0
+
+### Minor Changes
+
+- e094c79: Add an English, Portuguese and Spanish promotional site for the meta-skill catalog,
+  with canonical package descriptions/icons, exhaustive responsibility filters,
+  language and search URL-state preservation, a dismissible root-only browser-language
+  suggestion, simplified all-skills installation, manual package/plugin/toolkit
+  installation paths, and documented evidence limits. npm run site:build creates
+  an owned static review artifact, npm run site:preview serves it on loopback only,
+  and npm run site:test checks synthetic output and preview safety, including
+  reserved-path case aliases and preservation of dangling caller-owned links. Default builds
+  remain noindex. Explicit production URL configuration adds canonical locale links,
+  share metadata and a sitemap for native Cloudflare Git delivery; the builder never
+  deploys. Existing GitHub Pages visual-guide routing remains unchanged, and the
+  website PR stays open for human review before main production receives its source.
+
+### Patch Changes
+
+- 76652f2: Complete the Changesets release workflow: prepare aligned package/plugin versions in a draft PR, then publish the checked compiled artifact with npm Trusted Publishing and create its Git tag and GitHub release after the reviewed merge. Preserve bounded note validation and verify generated release content before publication.
+
+  Add an explicit recovery dispatch for the missing 0.1.0 GitHub release at its original reviewed commit, without uploading that npm version again. Update installation and release instructions to reflect the available public registry package and the exact workflow publisher binding.
+- 8fb6f72: Fix Changesets release planning in GitHub Actions when the triggering commit is checked out with detached HEAD. Resolve the local default-branch reference to that verified commit before planning, without moving the checkout or changing pending release notes.
+- 65fc634: Publish the multilingual catalog website through GitHub Pages Actions instead
+  of the visual-guide-only branch workflow. Preserve existing guide URLs and
+  support project-path canonical URLs and locale suggestions.
+
 ## 0.1.0
 
 ### Minor Changes
