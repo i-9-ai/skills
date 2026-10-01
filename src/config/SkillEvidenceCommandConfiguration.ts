@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
 import { Flags } from '@oclif/core';
+import { PluginDataConfiguration } from './PluginDataConfiguration.ts';
 
 /** Shared operator-facing bounds for read-only evidence queries. */
 export class SkillEvidenceCommandConfiguration {
     static periodFlags = {
         db: Flags.string({
-            required: true,
-            description: 'Existing absolute evidence database; queries never create or upgrade it.',
+            default: async () => new PluginDataConfiguration().usageDatabase(),
+            description:
+                'Existing evidence database; defaults to shared agent state. Queries never create or upgrade it.',
         }),
         from: Flags.string({
             required: true,

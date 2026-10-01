@@ -8,9 +8,6 @@
         "--host",
         "copilot"
       ],
-      "env": {
-        "COPILOT_PLUGIN_DATA": "${COPILOT_PLUGIN_DATA}"
-      },
       "tools": ["*"]
     }
   }

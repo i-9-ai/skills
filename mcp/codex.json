@@ -10,7 +10,9 @@
       ],
       "cwd": ".",
       "env_vars": [
-        "PLUGIN_DATA"
+        "PLUGIN_DATA",
+        "I9_AGENT_STATE_ROOT",
+        "I9_SKILLS_USAGE_DB"
       ]
     }
   }

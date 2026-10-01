@@ -251,6 +251,9 @@ export function buildSite({
     ]) {
         files.set('assets/' + name, sourceFile(root, 'website/assets/' + name));
     }
+    const favicon = sourceFile(root, 'website/assets/favicon.svg', 128 * 1024);
+    assertSafeSvg(favicon);
+    files.set('assets/favicon.svg', favicon);
     for (const skill of skills) {
         const bytes = sourceFile(root, skill.path + '/assets/icon.svg', 128 * 1024);
         assertSafeSvg(bytes);

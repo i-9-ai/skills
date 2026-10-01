@@ -446,6 +446,11 @@ export function renderPage({ locale, rootPage = false, skills, publicUrl = null 
     const head = [
         element('meta', { charset: 'utf-8' }),
         element('meta', { name: 'viewport', content: 'width=device-width, initial-scale=1' }),
+        element('link', {
+            rel: 'icon',
+            type: 'image/svg+xml',
+            href: prefix + 'assets/favicon.svg',
+        }),
         text('title', m.title),
         element('meta', { name: 'description', content: m.description }),
         element('meta', { name: 'robots', content: publicUrl ? 'index, follow' : 'noindex' }),

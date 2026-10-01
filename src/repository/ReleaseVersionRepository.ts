@@ -277,14 +277,15 @@ export class ReleaseVersionRepository {
 
     private canonicalChangelog(generated: string, previous?: string): string {
         const historyStart = previous?.match(/^#{1,6}\s+\d+\.\d+/mu)?.index;
+        const preamble = previous?.slice(0, historyStart ?? previous.length) ?? '';
         const history = historyStart === undefined ? '' : previous!.slice(historyStart);
-        if (!generated.endsWith(history))
-            throw new Error('Changesets must preserve existing release history verbatim.');
+        if (!generated.startsWith(preamble) || !generated.endsWith(history))
+            throw new Error('Changesets must preserve existing changelog bytes verbatim.');
 
         // Changesets indents blank lines in multiline list entries. Remove only
-        // those new blank-line spaces; retain hard breaks, code and prior history.
-        const entries = generated.slice(0, generated.length - history.length);
-        return entries.replace(/^[\t ]+(?=\r?$)/gmu, '') + history;
+        // those new blank-line spaces; retain preamble, hard breaks, code and history.
+        const entries = generated.slice(preamble.length, generated.length - history.length);
+        return preamble + entries.replace(/^[\t ]+(?=\r?$)/gmu, '') + history;
     }
 
     /** Give Changesets the base history without sharing refs, config, index or working files. */

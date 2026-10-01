@@ -74,11 +74,38 @@ npm trust github @i-9.ai/skills --file release.yml --repo i-9-ai/skills --allow-
 
 This administrative operation requires the owner's authentication. Do not store
 an `NPM_TOKEN` or weaken 2FA. npm exchanges the hosted workflow's OIDC identity
-for a short-lived publication credential. Node 24 and npm 11.5.1+ are required;
-the publish job uses a GitHub-hosted runner. The public package and matching
+for a short-lived publication credential. The repository selects Node 24;
+npm's OIDC minimum is Node 22.14.0 and npm 11.5.1. The publish job uses a
+GitHub-hosted runner. The public package and matching
 repository metadata allow npm provenance for this supported flow. Tests or a
 configured binding do not prove a completed upload. See the
 [official npm contract](https://docs.npmjs.com/trusted-publishers/).
+
+Before invoking the official publish action, a CI-only prerequisite helper checks
+the Node/npm versions, public manifest registry and repository, exact default
+branch workflow identity, and presence of the job's OIDC request variables.
+It rejects a stored publication-token fallback and never requests or prints a
+token. Its `server_binding_verified: false` result deliberately records that
+these local checks cannot inspect the npm package's configured publisher.
+The helper's success is prerequisite evidence, not authentication or publication.
+
+[Run 36925711979](https://github.com/i-9-ai/skills/actions/runs/36925711979)
+failed to upload `0.2.0` with `ENEEDAUTH` at commit
+`c5a981b947b934252ee3ac3b942828e62a71b72d`, despite Node `24.21.0` and npm
+`11.19.0` meeting the supported runtime. For this error, verify the exact
+case-sensitive owner, repository, workflow filename, optional environment and
+`npm publish` permission in the authenticated npm settings before retrying.
+The binding is not validated when saved. Do not infer a successful binding from
+runtime checks or replace it with a stored token. Check the registry version
+before retrying an ambiguous upload and retain the retry's actual result.
+
+The owner configured that exact publisher on 2026-10-01. The same run's retry
+then published `@i-9.ai/skills@0.2.0` through OIDC and created the
+[GitHub release](https://github.com/i-9-ai/skills/releases/tag/v0.2.0).
+An anonymous fresh-cache consumer independently retrieved that registry version
+and executed `catalog overview` on Node `24.21.0`. This verifies the completed
+workflow and CLI distribution for that release; later versions still require
+their own publication and consumer evidence.
 
 According to the [GitHub trigger contract](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow),
 PR creation and updates with `GITHUB_TOKEN` create PR checks in an

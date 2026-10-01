@@ -6,6 +6,7 @@ import { SkillTelemetryValidator } from '../validator/SkillTelemetryValidator.ts
 import { SkillEvidenceValidator } from '../validator/SkillEvidenceValidator.ts';
 import { SkillOperationError } from '../validator/SkillOperationError.ts';
 import { SkillEvidenceService } from './SkillEvidenceService.ts';
+import { PluginDataRepository } from '../repository/PluginDataRepository.ts';
 
 /** Composes explicit local operations; no host event or task status is inferred. */
 export class SkillTelemetryService {
@@ -35,10 +36,11 @@ export class SkillTelemetryService {
         }
         let store: SkillReadRepository | undefined;
         try {
+            const selected = new PluginDataRepository().prepareDatabase(database, []);
             const result =
                 event.schema_version === 2
-                    ? new SkillEvidenceService().recordLifecycle(database, event)
-                    : (store = new SkillReadRepository(database)).recordEvent(event);
+                    ? new SkillEvidenceService().recordLifecycle(selected, event)
+                    : (store = new SkillReadRepository(selected)).recordEvent(event);
             let logStatus = logFile ? 'written' : 'disabled';
             if (logFile) {
                 try {

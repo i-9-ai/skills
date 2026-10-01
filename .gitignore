@@ -9,3 +9,5 @@ dist/
 .env
 .env.*
 !.env.example
+# Owned hook registrations contain local runtime and evidence paths.
+*.i9-skills.json

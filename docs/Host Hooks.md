@@ -1,15 +1,17 @@
 # Session hook adapters
 
-Project registrations use the prepared CLI below. [Installed plugin hooks](#installed-plugin-hooks)
+Project registrations use a prepared checkout or explicitly selected local CLI.
+[Installed plugin hooks](#installed-plugin-hooks)
 use a dependency-free runtime and explicit host manifests; the two surfaces have
 different launch and state selection rules.
 
-The unified checkout CLI renders available-skill context and adapts its output
+The unified CLI renders available-skill context and adapts its output
 for the selected host. Generation prints JSON only; it never writes settings,
 enables hooks, installs dependencies, or reads incoming prompts/transcripts.
 Antigravity/Hermes execution parses bounded lifecycle stdin to gate the first
 invocation; it discards all unrelated fields and never opens a transcript.
-Run Node 24 and explicit npm ci in a trusted checkout first.
+Prepare Node 24 and the selected runtime first; checkout execution requires
+explicit npm ci. Session events never install dependencies.
 
 | Host | Proposed project location | Event | Output | Timeout unit |
 | --- | --- | --- | --- | --- |
@@ -29,12 +31,46 @@ does not merge existing settings or certify unrelated settings. If installation
 is later authorized, merge the reviewed hook entry while preserving other host
 configuration. Remove that entry to disable the adapter.
 
-These generated commands target a POSIX Git checkout containing this CLI.
+Without selection flags, generated commands target a POSIX Git checkout containing this CLI.
 Git resolves its root even when the host starts in a nested directory. Windows,
-remote cloud sandboxes and npm-installed locations require separate verified
-invocation adapters; use the manual command until those are tested. A missing
+remote cloud sandboxes and other shell formats need separately tested invocation
+adapters. A missing
 Node executable, dependency or trusted checkout is a setup failure, never a
 reason to fetch software at session startup.
+
+For an already installed project-local or global CLI, select its absolute
+executable with `--executable`. The same selections must be supplied to verify:
+
+```sh
+i9-skills hook session-config --host claude \
+  --executable '/absolute/consumer/node_modules/.bin/i9-skills' \
+  --project '/absolute/consumer' --no-global > /absolute/scratch/session-hooks.json
+
+i9-skills hook verify --host claude --file /absolute/scratch/session-hooks.json \
+  --executable '/absolute/consumer/node_modules/.bin/i9-skills' \
+  --project '/absolute/consumer' --no-global
+```
+
+No global installation is required: an existing local executable or retained npm
+cache executable can be selected. Package-manager links resolve to their actual
+runtime file. Missing, directory, relative or non-executable selections fail
+generation and verification. Quoted paths, including spaces and apostrophes,
+remain literal. These checks establish current file access only; they do not
+prove executable contents, dependencies, host trust or future availability. A
+removed cache needs explicit runtime replacement and configuration regeneration.
+
+Installed commands always pass a consumer project explicitly. `--project`
+embeds its normalized absolute root; without it, the command uses the hook's
+working directory at execution via `"$PWD"`. It does not use the installed
+toolkit as the fallback project or capture the generator's working directory.
+When a host starts in a nested directory or a separate launcher directory,
+select the actual consumer root with `--project`. Global metadata remains
+enabled by default through shared agent state; `--no-global` selects only the
+project, `--global-root` embeds another selected global directory, and
+`--max-entries 1..100` sets the displayed package limit with omissions disclosed.
+Generation and verification accept these same flags, compare the complete
+standalone object and write no settings or evidence. Existing discovery and
+filesystem confinement rules still apply.
 
 Claude's matcher selects startup, resume, clear and compact. Gemini's lifecycle
 matcher is an exact value, so its adapter leaves the matcher absent to cover
@@ -49,7 +85,8 @@ Antigravity maps a hook name directly to event arrays; its invocation handler
 is a direct list, without a tool matcher. Hermes configuration is normally YAML;
 generation prints the equivalent standalone JSON object for review and merging.
 Hermes tokenizes its command without a shell, so this adapter explicitly invokes
-`sh -c` for the Git-root expression. Neither adapter grants tool permissions.
+`sh -c` for the selected POSIX command, including literal installed paths.
+Neither adapter grants tool permissions.
 Both skip subsequent invocations, read at most 1 MiB of strict JSON and retain
 none of the input. Missing lifecycle metadata fails instead of claiming startup.
 
@@ -103,6 +140,14 @@ configuration, timeout units, context envelopes, mismatch failures and no
 configuration writes in disposable fixtures. Native host trust, enablement and
 execution have not been exercised. No cross-host runtime certification is made.
 
+The installed CLI selection in [issue #54](https://github.com/i-9-ai/skills/issues/54)
+was checked against the same official references on 2026-10-01. Disposable local
+executable fixtures exercise all six generated commands in a non-Git consumer,
+including quoted paths, explicit discovery selections and absent runtimes.
+These process tests are distinct from native host delivery and the historical
+plugin pilot. Host timeout units, context envelopes and opt-in trust remain
+unchanged; retain Node 24 and the selected executable for every session.
+
 OpenCode requires a plugin contract rather than these registrations. The
 [official V2 migration guide](https://opencode.ai/v2/docs/build/plugins/migrate-v1)
 replaces V1 lifecycle callbacks with scoped session/tool hooks; the two APIs are
@@ -110,119 +155,128 @@ not interchangeable. No native version, SDK dependency or plugin installation
 was selected and tested in this delivery. Use `context available-skills` manually
 until a versioned plugin adapter is prepared and reviewed.
 
-## Explicit read observation adapter
+## Native read observation adapters
 
-`hook telemetry-config --host claude --db /absolute/local-data/usage.db
---collection project=/absolute/project/.agents/skills` prints standalone Claude
-registrations for SessionStart, PreToolUse and PostToolUse. Repeat `--collection`
-for selected global or project roots. Merge only after reviewing the output and
-authorizing that host installation; this command itself creates no files.
-The generated command runs `hook observe --host claude` with the same options.
+`hook telemetry-config --host HOST --collection project=/absolute/project/.agents/skills`
+prints a reviewed host registration without writing settings. Supported telemetry
+hosts are `codex`, `claude`, `gemini` and `copilot`; repeat `--collection`
+for explicitly selected roots and use `--db` to override shared state. The
+generated command invokes `hook observe` with those same selections. Install
+only after reviewing the selected host's configuration and obtaining authority
+for that environment. This command itself creates no files.
 
-The Claude adapter counts startup/clear session observations, Read attempts and
-successful native Read operations on discovered `SKILL.md` entrypoints. Its
-official PostToolUse contract runs only after success; failure hooks, Bash,
-implicit loading, references and other tools are excluded. Partial Read calls
-count as one observed entrypoint read, not a complete-file or comprehension
-claim. Unknown/missing packages, removal after the read and incomplete discovery
-can reduce coverage; the adapter does not fabricate evidence to fill gaps.
+| Host | Attempt and observation | Evidence and limits |
+| --- | --- | --- |
+| Codex CLI 0.159.2 | Bash PreToolUse / PostToolUse | Literal `cat` or `sed -n 'START,ENDp'` on one discovered `SKILL.md`; exact returned text must match the current bounded selection |
+| Claude Code | Read PreToolUse / PostToolUse | Successful native Read result field; partial reads count one entrypoint observation |
+| Gemini CLI | read_file BeforeTool / AfterTool | `file_path`, native ISO timestamp, result with `llmContent` and no error |
+| Copilot CLI | view preToolUse / postToolUse | `toolArgs.path`, epoch-millisecond timestamp, successful `toolResult` with text |
 
-Documented session/tool occurrence IDs map to opaque deterministic UUIDv8
-occurrence/correlation identifiers. Attempt and result share correlation but
-have distinct occurrence IDs. Because the host payload has no event timestamp,
-`occurred_at` is the first committed receipt time; retries preserve that time
-and reject any other changed evidence. Revision remains `unknown`, since the
-current file cannot prove which bytes a past tool call read. Multiple collection
-labels for one real package select the lexicographically first label.
+Codex's [official hook reference](https://learn.chatgpt.com/docs/hooks) documents
+Bash command input and PostToolUse result values. The reviewed immutable
+[0.159.2 tool context implementation](https://github.com/openai/codex/blob/ff6aec96948b70d94983af2641a6b67c94faeff5/codex-rs/core/src/tools/context.rs)
+returns raw text for a completed Bash invocation, without an exit-code object.
+The adapter first identifies the entrypoint inside the selected collections,
+then opens and compares its bounded UTF-8 bytes. It supports an optional
+`rtk proxy` prefix, literal shell quoting, `cat -- FILE` and numeric sed ranges.
+It never executes the command. Pipelines, redirection, expansion, multiple files,
+compound commands, other programs, truncated/mismatching output and object-shaped
+responses remain unobserved. Empty selections do not count. PostToolUse proves
+only the returned selection at receipt time; it does not prove full-file reading,
+comprehension, arbitrary shell success or a historical revision.
 
-Raw payloads are limited to 1 MiB, parsed as strict JSON, and discarded. No
-prompt, result body, filename, transcript or original session/tool ID is stored.
-Storage contains only the [typed telemetry envelope](https://github.com/i-9-ai/skills/wiki/Skill-Telemetry). A
-successful or ignored hook emits `{}`; a collection/storage/input failure emits
-`{}` plus a fixed diagnostic and exits 1, Claude's nonblocking failure path.
-No decision fields, permissions, tool changes or exit-2 blocks are emitted.
+The [Claude hooks contract](https://code.claude.com/docs/en/hooks) supplies native
+tool-use IDs and successful Read events. Codex and Claude map these session/call
+IDs to opaque deterministic UUIDv8 identifiers: attempt and observation share
+correlation, retain distinct event IDs and deduplicate retries. Because these
+payloads lack an occurrence timestamp, the first committed receipt time is
+retained. Startup creates a session observation; Claude also counts clear.
+Resume, compact and fork may supply context without inventing a new start.
 
-Other hosts still require their own successful-read/occurrence mapping. Copilot
-and Gemini have distinct payload shapes; do not relabel them as Claude events.
-Use the explicit telemetry CLI or the separate MCP interface only when an emitter
-has established the actual observation. Fixture tests prove mapping and storage
-semantics, not native host enablement or complete usage measurement.
+The [Gemini hook reference](https://geminicli.com/docs/hooks/reference/) and
+[file-system tool reference](https://geminicli.com/docs/tools/file-system/) define
+its native read_file input, error/result envelope and ISO timestamp. The
+[Copilot hook reference](https://docs.github.com/en/copilot/reference/hooks-reference)
+defines the distinct CLI camelCase input and successful view result envelope.
+These adapters use bounded native timestamps and opaque session IDs. Their
+documented hooks lack a native tool-call ID: attempts and successful observations
+therefore have separate timestamp/event/path-derived identities and cannot be
+paired reliably. Retries with the same receipt deduplicate; two independent
+identical same-timestamp receipts can collapse. Counts do not conceal that
+coverage gap. Copilot snake_case/VS Code payloads and legacy payloads missing
+session IDs are unsupported rather than relabeled as Claude. Gemini accepts
+UTC ISO timestamps with seconds or milliseconds; unsupported timestamp precision
+or timezone shapes are ignored with a neutral diagnostic.
+
+Each host preserves revision `unknown`. The currently discovered package
+cannot prove a past call's revision. Missing/removed/unrecognized packages,
+implicit loading, references, failures and other tools reduce coverage. Multiple
+labels for one canonical package select the lexicographically first label.
+The CLI requires complete selected-collection discovery; the dependency-free
+plugin may identify a safe supported entrypoint despite warnings in unrelated
+foreign metadata, while reporting incomplete discovery.
+
+Raw hook input is strict JSON bounded at 1 MiB and discarded. Storage contains
+only the [typed metadata envelope](https://github.com/i-9-ai/skills/wiki/Skill-Telemetry):
+no prompts, bodies, paths, commands, transcripts or original native IDs.
+Codex observation output is empty; the other hosts receive `{}`. Invalid
+payloads, failed storage and unsupported events remain nonblocking, with fixed
+redacted diagnostics where applicable. No permission decisions or result
+modifications are emitted. Fixture tests prove mapping/storage behavior, not
+live native delivery, enablement or complete measurement.
 
 ## Installed plugin hooks
 
-The root plugin maps `hooks/codex.json` for Codex and `hooks/claude.json` for
-Claude Code. They invoke `src/transport/PluginHookRunner.ts --host HOST` directly
-with Node 24. No Git discovery, build, installed CLI, node_modules or automatic
-setup is required. The portable skills themselves remain independent of hooks.
+Root manifests explicitly select `hooks/codex.json`, `hooks/claude.json` or
+`hooks/copilot.json` for their respective hosts. The Gemini registration
+`hooks/gemini.json` is an example for a separately reviewed extension/settings
+integration; this repository does not declare a Gemini extension manifest.
+All registrations invoke `src/transport/PluginHookRunner.ts --host HOST`
+directly with Node 24. No Git lookup, build, installed CLI, node_modules or
+automatic setup runs at event time. Copilot's registration supplies `--event`
+because its CLI camelCase input does not include the native event name.
+Portable skills remain independent of these integrations.
 
-| Host baseline | Events | Launch form | Persistent metrics |
-| --- | --- | --- | --- |
-| Codex 0.159.0 | SessionStart startup/resume/clear/compact/fork | POSIX `node "$PLUGIN_ROOT/src/transport/PluginHookRunner.ts" --host codex` | No native read metrics claimed |
-| Claude Code 2.1.277 | SessionStart startup/resume/clear/compact; exact Read PreToolUse/PostToolUse | `command: "node"` with separate script-path and `--host`, `claude` arguments | Selected `CLAUDE_PLUGIN_DATA/skill-usage.db` |
+The runner requires a bounded absolute existing event `cwd` and discovers
+the caller's `.agents/skills`, the selected agent state's `skills/` and
+the installed plugin's own `.agents/skills`. It never rewrites catalogs.
+Duplicate real package paths merge while equal names at distinct paths remain
+separate. Context is capped at 24 entries and 4096 UTF-16 characters with complete
+rows and coverage information; serialized output stays within 16 KiB. Each
+host receives its own documented context envelope. Session context is retained
+when telemetry storage is unavailable.
 
-These are reviewed source/version baselines, not claims of support on every
-earlier version. [Pinned Codex discovery](https://github.com/openai/codex/blob/687a119f0fcaace47e1f1abcc77cec6c813fd6da/codex-rs/hooks/src/engine/discovery.rs)
-provides plugin root/data variables and requires trust. Claude's
-[executable-argument contract](https://code.claude.com/docs/en/hooks#command-hook-fields)
-substitutes path values as arguments without shell interpretation. Both adapters
-show `Loading available skills overview` during session context generation and
-have a ten-second host timeout. No Windows or remote-executor hook claim is made.
+All adapters use the shared default `~/.agents/skills-usage.db` even when a host
+automatically supplies a plugin DATA variable. `I9_AGENT_STATE_ROOT` selects
+another root; `I9_SKILLS_USAGE_DB` explicitly preserves any legacy filename.
+See [shared state and legacy preservation](https://github.com/i-9-ai/skills/wiki/Skill-Telemetry).
+A valid observation may create only its selected external data directories.
+Linked ancestors, database/sidecar links, overlap with the plugin/caller,
+unwritable state and invalid schemas are rejected without a reset fallback.
+Read-only queries never create or migrate storage. Path inspection assumes a
+stable owned workspace and does not promise race-proof confinement.
 
-The runner reads at most 1 MiB of strict JSON from stdin. A supported event must
-provide an absolute existing `cwd`; it selects the consumer collection even when
-the process starts elsewhere. The installed module locates the plugin's own
-`.agents/skills`; HOME selects the global `.agents/skills` read-only. No catalog
-is rewritten. Same real package paths merge; equal names at different paths
-remain separate. Context is limited to 24 entries and 4096 UTF-16 characters,
-preserving complete rows and coverage information; serialized output stays within
-16 KiB. Codex receives plain context and Claude the native SessionStart JSON
-envelope. Unknown or malformed events receive neutral output and fixed diagnostics
-where applicable, without permission decisions or payload contents.
+Missing Node is a host launch failure, so prepare Node 24 explicitly or use the
+prepared CLI manually. Hooks remain subject to the native host's trust and
+enablement controls. Avoid duplicate enabled registrations across plugin and
+project layers. There is deliberately no ambiguous `hooks/hooks.json` default
+that could dispatch one host's payload to another adapter.
 
-Plugin discovery uses the package-owned, dependency-free frontmatter parser.
-It supports canonical packages and common plain, quoted and block-scalar fields.
-Foreign metadata outside its supported grammar is skipped with a coverage warning;
-the ordinary prepared CLI keeps full YAML support. Neither successful discovery
-nor a displayed row means the host activated that skill.
-
-Claude session startup/clear, attempts and successful Read events reuse the
-explicit adapter's occurrence IDs and first-receipt deduplication. Resume/compact
-still provide context but do not fabricate a new session start. Missing successful
-response evidence, failure events, shell commands, other tools and references
-are not successful entrypoint reads. Codex has no mapped Read hook until its tool
-contract supplies reliable read identity. No prompt, transcript, raw result,
-filename or original host ID is stored.
-
-Unsupported metadata in an unrelated package does not prevent the plugin from
-counting a positively identified, safely read entrypoint. It still reports
-incomplete discovery and cannot count unrecognized packages. The explicit CLI
-adapter retains its stricter all-selected-collections validation default.
-
-Storage selects only the current host's DATA variable, with no fallback to the
-other host, the project, plugin bytes or a guessed home path. A validated missing
-host data directory can be created without replacing existing entries. Relative,
-linked, overlapping or unwritable state is rejected. Metrics failure preserves
-session context and emits a fixed diagnostic; it never blocks a tool or modifies
-its result. Missing Node is a host launch failure: prepare Node 24 explicitly or
-disable the hook and use the prepared CLI manually.
-
-For a direct diagnostic from a disposable consumer fixture, pipe a synthetic
-event to a reviewed installed copy. Replace the paths with owned test directories:
+For a diagnostic from disposable owned directories, explicitly select test state:
 
 ```sh
 printf '%s\n' '{"hook_event_name":"SessionStart","source":"startup","session_id":"smoke-1","cwd":"/absolute/test-consumer"}' \
-  | node /absolute/plugin/src/transport/PluginHookRunner.ts --host codex
+  | I9_AGENT_STATE_ROOT=/absolute/test-state node /absolute/plugin/src/transport/PluginHookRunner.ts --host codex
 
 printf '%s\n' '{"hook_event_name":"SessionStart","source":"startup","session_id":"smoke-1","cwd":"/absolute/test-consumer"}' \
-  | CLAUDE_PLUGIN_DATA=/absolute/test-data node /absolute/plugin/src/transport/PluginHookRunner.ts --host claude
+  | I9_SKILLS_USAGE_DB=/absolute/test-data/usage.db node /absolute/plugin/src/transport/PluginHookRunner.ts --host claude
 ```
 
-These calls test runtime envelopes and storage, not native hook delivery. Isolated
-tests additionally launch the checked-in configurations with spaces and shell
-metacharacters in the installed root. The [native pilot](https://github.com/i-9-ai/skills/wiki/Native-Plugin-Pilot)
-separately verifies Codex/Claude loading, SessionStart and local source rollback
-at named revisions; hosted updates and native Read telemetry remain untested.
-Do not create `hooks/hooks.json`: Claude
-can merge that default with an explicit file and invoke the same event twice.
-Do not duplicate an enabled project registration in the plugin layer. Disable
-the selected manifest mapping to roll back, preserving persistent metrics.
+These calls test runtime envelopes and storage, not native hook delivery.
+Synthetic tests launch configurations, exact read payloads, retries, malformed
+timestamps, unsupported commands and hostile installed-root spellings under
+disposable HOME. The [historical native pilot](https://github.com/i-9-ai/skills/wiki/Native-Plugin-Pilot)
+has its own named revisions and limits; it does not certify these new mappings.
+Disable only the selected registration to roll back, preserving every database.
+Reviewed official references above were checked on 2026-10-01; recheck changing
+host interfaces before installation.

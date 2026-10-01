@@ -73,6 +73,13 @@ test('installed provenance distinguishes content digests from unverified version
         source_ref: null,
         resolved_git_sha: null,
         catalog_sha256: digest(fs.readFileSync(join(target.installed, 'skills-catalog.json'))),
+        source_provenance: {
+            status: 'unavailable',
+            build_verification: 'unavailable',
+            integrity: 'unavailable',
+            reason: 'missing_receipt',
+            receipt_sha256: null,
+        },
     });
 });
 

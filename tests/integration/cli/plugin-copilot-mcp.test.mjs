@@ -29,7 +29,7 @@ function invoke(target, operations, hostEnvironment = {}) {
     const expand = (value) =>
         value.replace(/\$\{([^}]+)\}/g, (match, name) => values[name] ?? match);
     const environment = Object.fromEntries(
-        Object.entries(server.env).map(([name, value]) => [name, expand(value)]),
+        Object.entries(server.env ?? {}).map(([name, value]) => [name, expand(value)]),
     );
     const messages = [
         { jsonrpc: '2.0', id: 1, method: 'initialize', params: {} },
@@ -64,16 +64,12 @@ function unavailable(result) {
     assert.equal(result.structuredContent.error.code, 'storage_unavailable');
 }
 
-test('Copilot mapping resolves installed paths with spaces and has no implicit storage', (t) => {
+test('Copilot mapping resolves installed paths with spaces and queries never initialize shared state', (t) => {
     const target = catalogFixture(t, { runtime: true });
     const before = snapshot(target.root);
-    const [search, write, rankings] = invoke(
+    const [search, rankings] = invoke(
         target,
-        [
-            ['skill_catalog_search', { query: 'alpha-guide' }],
-            ['skill_read_record', observedRead],
-            ['skill_read_rankings'],
-        ],
+        [['skill_catalog_search', { query: 'alpha-guide' }], ['skill_read_rankings']],
         { PLUGIN_DATA: target.data, CLAUDE_PLUGIN_DATA: target.data, PLUGIN_ROOT: target.caller },
     );
     assert.equal(search.isError, undefined);
@@ -81,7 +77,6 @@ test('Copilot mapping resolves installed paths with spaces and has no implicit s
         search.structuredContent.skills.map((skill) => skill.name),
         ['alpha-guide'],
     );
-    unavailable(write);
     unavailable(rankings);
     assert.equal(fs.existsSync(target.data), false);
     assert.deepEqual(snapshot(target.root), before);
@@ -90,7 +85,10 @@ test('Copilot mapping resolves installed paths with spaces and has no implicit s
 test('Copilot explicit external evidence remains idempotent and query-only calls preserve bytes', (t) => {
     const target = catalogFixture(t, { runtime: true });
     const protectedBefore = [target.installed, target.caller, target.home].map(snapshot);
-    const environment = { COPILOT_PLUGIN_DATA: target.data, PLUGIN_DATA: target.installed };
+    const environment = {
+        I9_SKILLS_USAGE_DB: join(target.data, 'skill-usage.db'),
+        PLUGIN_DATA: target.installed,
+    };
     const [search, absentQuery] = invoke(
         target,
         [['skill_catalog_search'], ['skill_read_rankings']],
@@ -136,7 +134,10 @@ for (const location of ['installed', 'relative', 'linked', 'empty']) {
         const [write, search] = invoke(
             target,
             [['skill_read_record', observedRead], ['skill_catalog_search']],
-            { COPILOT_PLUGIN_DATA: data },
+            {
+                I9_SKILLS_USAGE_DB:
+                    !data || location === 'relative' ? data : join(data, 'skill-usage.db'),
+            },
         );
         unavailable(write);
         assert.equal(search.structuredContent.total, 5);

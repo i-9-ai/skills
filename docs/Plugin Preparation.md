@@ -14,11 +14,11 @@ The Codex, Claude Code and Copilot plugins declare the local `i9-skills` MCP in
 in `src/transport/PluginMcpServer.ts --host codex|claude|copilot`. It provides read-only bundled
 catalog search, selected Markdown resources and bounded overview without a data
 directory. Explicit `skill_read_record` and `skill_read_rankings` calls use a
-dedicated `skill-usage.db` in the selected host data directory, outside
+shared `~/.agents/skills-usage.db` by default, outside
 installed files and the caller's project. Initialization and catalog access never
 create it; rankings require existing valid state. Reading instructions through
 the MCP does not record evidence, infer activation or monitor tools. The plugin's
-separate Claude hooks observe the native Read events described below.
+separate native hooks observe only the reviewed entrypoint events described below.
 
 The old `i9-skill-usage` registration and usage-only entrypoint were replaced;
 update manually copied configurations. The [MCP guide](https://github.com/i-9-ai/skills/wiki/Skill-MCP) provides
@@ -31,31 +31,32 @@ explicit tool calls. The [Copilot MCP pilot](https://github.com/i-9-ai/skills/wi
 native session discovery and direct calls through an ephemeral plugin mount;
 it does not establish a persistent marketplace installation.
 
-Codex's legacy mapping resolves `cwd: "."` against the installed plugin and
-explicitly forwards a caller-provided `PLUGIN_DATA`. It does not inherit automatic
-hook data provisioning. Without this variable, catalog/report/guide calls work
-and storage operations report unavailable. Choose an absolute data directory
-outside both installed files and consumer projects. The runtime rejects relative,
-linked and plugin-contained locations, but cannot infer the original consumer
-cwd from this legacy server process; that exclusion remains the operator's duty.
+Codex's mapping resolves `cwd: "."` against the installed plugin and forwards
+`I9_AGENT_STATE_ROOT` and `I9_SKILLS_USAGE_DB`. CLI and native hooks/MCP share
+`~/.agents/skills-usage.db`, regardless of automatically supplied `PLUGIN_DATA`
+or host-prefixed DATA variables. An explicit database override wins; select an
+old `skill-usage.db` filename explicitly to retain legacy history. No store is
+renamed, merged or deleted. Keep selected state outside installed files and
+consumer projects. The runtime rejects relative, linked and plugin-contained
+locations, but the MCP process cannot infer the original consumer cwd; that
+exclusion remains the operator's duty.
 
-Copilot's legacy mapping expands `${PLUGIN_ROOT}` for the server path and passes
-an explicitly supplied `COPILOT_PLUGIN_DATA` through its environment mapping.
-It does not provide automatic data storage or a consumer cwd. The same external
-path selection duty applies; an unset or invalid value leaves storage unavailable
-while bundled catalog/report/guide calls continue working. Host data variables
-are isolated: the Copilot adapter does not fall back to Codex or Claude values.
+Copilot's mapping expands `${PLUGIN_ROOT}` for the server path and uses the same
+shared configuration. It does not pass an unresolved DATA placeholder or infer
+the consumer cwd. Valid records can create safe selected state directories;
+catalog/report/guide calls and read-only queries never create or upgrade storage.
 
-Claude Code can remove the persistent data directory on final plugin uninstall.
-Use its `--keep-data` option when the observed-read history must remain available
-after removal; an external database selected by the CLI's `--db` belongs to its
-caller instead.
+The shared database remains caller-owned rather than plugin-owned. If an
+explicit override selects a native plugin's own legacy DATA directory, follow
+that host's uninstall data-preservation procedure; the shared default does not
+depend on the host retaining that directory.
 
-The Codex and Claude manifests declare their respective `hooks/codex.json` and
-`hooks/claude.json` files. Both call `PluginHookRunner.ts` directly on Node 24,
+The Codex, Claude and Copilot manifests declare their respective
+`hooks/codex.json`, `hooks/claude.json` and `hooks/copilot.json` files.
+They call `PluginHookRunner.ts` directly on Node 24,
 without Git, oclif, YAML dependencies, a build or a globally installed CLI.
-Codex receives session context; Claude receives session context and maps native
-Read attempts/successes to local metrics. Host trust and plugin enablement still
+Each receives session context; native telemetry maps only Codex literal cat/sed
+Bash, Claude Read and Copilot CLI view receipts. Host trust and plugin enablement still
 control execution. The runtime never fetches dependencies or changes permissions.
 
 Session context discovers the installed plugin's canonical collection, the
@@ -67,11 +68,13 @@ quoted and block-scalar summaries; unsupported foreign YAML is skipped with a
 coverage warning. The prepared CLI retains its full YAML parser. Descriptions
 are discovery hints; read the chosen SKILL.md before applying its instructions.
 
-Claude hook metrics use `CLAUDE_PLUGIN_DATA/skill-usage.db`. Only the selected
-host's absolute data directory may be initialized, outside installed plugin and
-consumer paths. Missing or unsafe storage produces a fixed diagnostic and skips
-metrics while retaining useful session context. Codex hooks do not claim tool
-read metrics: no reliable native file-read identity was verified for its tools.
+Native metrics use the same shared usage default and explicit overrides as MCP.
+Only safe selected state outside plugin/consumer paths may be initialized.
+Unavailable storage produces a fixed diagnostic and skips metrics while retaining
+session context. Codex requires exact current-file/output agreement; Copilot and
+Gemini native timestamps cannot reliably pair attempts with observations.
+`hooks/gemini.json` is available as a reviewed configuration example, without
+claiming a Gemini extension installation.
 See [host hooks](https://github.com/i-9-ai/skills/wiki/Host-Hooks#installed-plugin-hooks) for launch examples,
 supported events, state constraints and failure behavior.
 

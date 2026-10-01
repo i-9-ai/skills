@@ -24,6 +24,10 @@ function fixture(t) {
     ]) {
         fs.writeFileSync(path.join(root, 'website/assets', name), 'synthetic ' + name);
     }
+    fs.writeFileSync(
+        path.join(root, 'website/assets/favicon.svg'),
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M6 6h20v20H6z"/></svg>',
+    );
     const catalog = {
         schema_version: 1,
         skills: Object.values(categories)
@@ -70,7 +74,7 @@ function artifactBytes(output) {
 test('build renders every canonical package in all locales, escapes source data and remains deterministic', (t) => {
     const f = fixture(t);
     const result = f.build();
-    assert.equal(result.skillCount, 24);
+    assert.equal(result.skillCount, f.catalog.skills.length);
     assert.equal(result.publication, 'not-deployed');
     assert.equal(result.mode, 'review');
     assert.equal(result.publicUrl, null);
@@ -82,7 +86,7 @@ test('build renders every canonical package in all locales, escapes source data 
     ]) {
         const html = fs.readFileSync(path.join(f.output, file), 'utf8');
         assert.equal(html.includes('data-language-suggestion='), file === 'index.html');
-        assert.equal((html.match(/data-skill=/g) ?? []).length, 24);
+        assert.equal((html.match(/data-skill=/g) ?? []).length, f.catalog.skills.length);
         assert.equal((html.match(/<h1/g) ?? []).length, 1);
         assert.ok(html.includes(messages[locale].hero.title));
         assert.ok(html.includes('lang="' + (locale === 'pt-br' ? 'pt-BR' : locale) + '"'));
@@ -100,8 +104,17 @@ test('build renders every canonical package in all locales, escapes source data 
         const prefix = file === 'index.html' ? './' : '../';
         assert.ok(html.includes('href="' + prefix + 'pt-br/"'));
         assert.ok(html.includes('src="' + prefix + 'assets/site.mjs"'));
+        assert.ok(
+            html.includes(
+                'rel="icon" type="image/svg+xml" href="' + prefix + 'assets/favicon.svg"',
+            ),
+        );
         if (locale !== 'en') assert.ok(html.includes(messages[locale].catalog.sourceDescription));
     }
+    assert.equal(
+        fs.readFileSync(path.join(f.output, 'assets/favicon.svg'), 'utf8'),
+        fs.readFileSync(path.join(f.root, 'website/assets/favicon.svg'), 'utf8'),
+    );
     const before = artifactBytes(f.output);
     const second = f.build();
     assert.deepEqual(second.files, result.files);

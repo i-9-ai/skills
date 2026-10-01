@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
-import { isAbsolute, join, resolve } from 'node:path';
+import { AgentStateConfiguration } from './AgentStateConfiguration.ts';
 
-/** Selects persistent plugin data without writing into the installed package. */
+/** Names shared usage state; native plugin-data variables never choose telemetry storage. */
 export class PluginDataConfiguration {
     private readonly environment: NodeJS.ProcessEnv;
 
@@ -9,21 +9,13 @@ export class PluginDataConfiguration {
         this.environment = environment;
     }
 
-    usageDatabase(host?: 'codex' | 'claude' | 'copilot'): string {
-        const directory = this.dataDirectory(host);
-
-        if (!directory || !isAbsolute(directory) || directory.includes('\0')) {
-            throw new Error('A host-provided absolute plugin data directory is required.');
+    usageDatabase(host?: 'codex' | 'claude' | 'copilot' | 'gemini'): string {
+        if (host !== undefined && !['codex', 'claude', 'copilot', 'gemini'].includes(host)) {
+            throw new Error('Unsupported plugin data host');
         }
-
-        return join(resolve(directory), 'skill-usage.db');
-    }
-
-    private dataDirectory(host?: 'codex' | 'claude' | 'copilot'): string | undefined {
-        if (host === 'codex') return this.environment.PLUGIN_DATA;
-        if (host === 'claude') return this.environment.CLAUDE_PLUGIN_DATA;
-        if (host === 'copilot') return this.environment.COPILOT_PLUGIN_DATA;
-        if (host !== undefined) throw new Error('Unsupported plugin data host');
-        return this.environment.PLUGIN_DATA ?? this.environment.CLAUDE_PLUGIN_DATA;
+        if (this.environment.I9_SKILLS_USAGE_DB !== undefined) {
+            return AgentStateConfiguration.absolute(this.environment.I9_SKILLS_USAGE_DB);
+        }
+        return new AgentStateConfiguration(this.environment).usageDatabase();
     }
 }

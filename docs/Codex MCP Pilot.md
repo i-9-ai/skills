@@ -25,31 +25,34 @@ overlaid in that disposable clone: `.codex-plugin/plugin.json` added
 
 ```json
 {
-  "mcpServers": {
-    "i9-skills": {
-      "type": "stdio",
-      "command": "node",
-      "args": ["src/transport/PluginMcpServer.ts", "--host", "codex"],
-      "cwd": ".",
-      "env_vars": ["PLUGIN_DATA"]
+    "mcpServers": {
+        "i9-skills": {
+            "type": "stdio",
+            "command": "node",
+            "args": ["src/transport/PluginMcpServer.ts", "--host", "codex"],
+            "cwd": ".",
+            "env_vars": ["PLUGIN_DATA"]
+        }
     }
-  }
 }
 ```
 
 This run proves that candidate configuration against the named base. The PR
 records a fresh exact-commit rerun and its complete tool count before merge;
 the later bump/onboarding tools have separate implementation tests. This initial
-candidate evidence remains distinct from that rerun. The canonical manifest
-field order may differ from the initial overlay; mapping semantics do not.
+candidate evidence remains distinct from that rerun. The JSON and hashes here
+describe the historical overlay. The current `mcp/codex.json` additionally
+forwards `I9_AGENT_STATE_ROOT` and `I9_SKILLS_USAGE_DB`; the runtime ignores
+`PLUGIN_DATA` when choosing evidence storage. This change has repository test
+coverage and is not established by the historical native run.
 
-| Candidate source file | SHA-256 |
-| --- | --- |
-| `.codex-plugin/plugin.json` | `0147fc210bc9f10b1649dcd1c696c5ed81033068cbd0113d0d1ad85a6069d95b` |
-| `mcp/codex.json` | `e66bfeb645db670af4bac9732fb21bbac65cb6e61cd90fdd209a6dc97b40b614` |
+| Candidate source file              | SHA-256                                                            |
+| ---------------------------------- | ------------------------------------------------------------------ |
+| `.codex-plugin/plugin.json`        | `0147fc210bc9f10b1649dcd1c696c5ed81033068cbd0113d0d1ad85a6069d95b` |
+| `mcp/codex.json`                   | `e66bfeb645db670af4bac9732fb21bbac65cb6e61cd90fdd209a6dc97b40b614` |
 | `src/transport/PluginMcpServer.ts` | `6ebd608a092f227dbf38c1c48cc50b604156bf0e1d9cd4550d26b641faee6362` |
-| `src/service/SkillMcpService.ts` | `c0d0c4347e64b4150b8ec67884c99b0db74babdffb8f0f760dc2769046a64d08` |
-| `skills-catalog.json` | `ea9d297818c7ba3ff83513a128c46c74bec2826f9dcf76319e074e675ee350fd` |
+| `src/service/SkillMcpService.ts`   | `c0d0c4347e64b4150b8ec67884c99b0db74babdffb8f0f760dc2769046a64d08` |
+| `skills-catalog.json`              | `ea9d297818c7ba3ff83513a128c46c74bec2826f9dcf76319e074e675ee350fd` |
 
 ## Independent host-source evidence
 
@@ -107,7 +110,7 @@ returned `skill-design` from the installed bundle; overview reported 24 distinct
 packages. No direct manual launch of `PluginMcpServer.ts` underlies these native
 claims.
 
-Without `PLUGIN_DATA`, both `skill_read_record` and `skill_read_rankings` returned
+In the historical candidate, without `PLUGIN_DATA`, both `skill_read_record` and `skill_read_rankings` returned
 `isError: true` with `storage_unavailable`. With `PLUGIN_DATA` set to the selected
 external fixture directory, `skill_read_record` returned `recorded: true` and
 rankings returned one read in one synthetic session.
@@ -138,32 +141,43 @@ as a native plugin failure.
 
 The mapping needs Node 24 but no CLI dependencies, build or global installation.
 It shares the [MCP service](https://github.com/i-9-ai/skills/wiki/Skill-MCP) with the CLI and Claude plugin. Catalog
-access, onboarding and reports need no data directory. For explicit records,
-select a stable external directory and supply it to the host launch:
+access, onboarding and reports do not initialize evidence storage. The current
+default is `~/.agents/skills-usage.db`; `I9_AGENT_STATE_ROOT` changes the shared
+root, and an explicit absolute `I9_SKILLS_USAGE_DB` takes precedence. Native
+plugin-data variables do not select storage. Preserve an earlier database by
+selecting its exact filename; no automatic migration or history merge occurs.
+See [shared storage](https://github.com/i-9-ai/skills/wiki/Skill-Telemetry).
+
+For a new replay, create disposable home, Codex configuration and data directories
+outside the source and consumer, then select them explicitly:
 
 ```sh
-PLUGIN_DATA='/absolute/local-data/i9-skills' codex
+env -i PATH="$PATH" HOME=/absolute/disposable-home \
+  CODEX_HOME=/absolute/disposable-home/.codex \
+  I9_SKILLS_USAGE_DB=/absolute/disposable-data/skills-usage.db codex
 ```
 
 Use a reviewed configuration for the host actually running the plugin. A desktop
-process may not inherit a terminal's environment. No cwd/home fallback is used.
-Only a valid explicit record may initialize `skill-usage.db`; discovery and
+process may not inherit a terminal's environment. This example selects isolated
+storage; repeat the pilot's OS sandbox and constructed configuration for its
+network, authentication and write-isolation claims. Only a valid record may
+initialize the selected database; discovery and
 read-only catalog calls never create it. Follow the
 [native pilot plan](https://github.com/i-9-ai/skills/blob/main/plans/2026-09-29-19-38-34-native-plugin-pilot.md) with a fresh
 isolated profile for reproduction. Keep raw host logs outside the repository.
 
-Five dedicated offline mapping tests pass under Node 24.21.0: path-with-spaces
+At the pilot revision, five dedicated offline mapping tests passed under Node 24.21.0: path-with-spaces
 catalog access and no data fallback; explicit external data with idempotent
 recording and read-only rankings; rejection of installed, relative and linked
-data paths. The repository-root manifest test also passes. These fixture tests
+data paths. The repository-root manifest test also passed. Those fixture tests
 exercise the resolved mapping; they do not simulate native host compatibility.
 
 The legacy mapping sets process cwd to the installed plugin. The runtime cannot
 infer the consuming thread's separate cwd; the operator must select data outside
 that consumer. It remains accurate to claim rejection of plugin-contained,
 relative or linked data, but not independent enforcement of an unknown consumer
-path. `PLUGIN_DATA` is explicitly forwarded, not automatically provisioned by
-this legacy host mapping.
+path. The historical mapping explicitly forwarded `PLUGIN_DATA` instead of
+relying on host provisioning; the current runtime ignores it for storage.
 
 This lane proves local native registration, tool discovery and direct MCP tool
 execution only. It does not prove model-selected tool use, skill activation,

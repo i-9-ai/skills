@@ -1,7 +1,7 @@
 export const repository = 'https://github.com/i-9-ai/skills';
 export const documentation = repository + '/wiki';
 
-// The 0.1.0 registry release passed fresh-cache CLI and MCP consumer checks.
+// Registry releases passed anonymous fresh-cache CLI checks; the initial release also passed MCP checks.
 export const toolkitSource = 'registry';
 export const commands = {
     skills: 'npx skills add i-9-ai/skills --yes',
@@ -33,6 +33,7 @@ export const categories = {
     ],
     manage: [
         'skill-routing',
+        'skills-usage-setup',
         'skills-audit',
         'skills-catalog',
         'skills-catalog-index',

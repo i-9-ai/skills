@@ -1,0 +1,7 @@
+interface:
+  display_name: 'Skills Usage Setup'
+  short_description: 'Set up optional skill-read observations safely'
+  icon_small: './assets/icon.svg'
+  icon_large: './assets/icon.png'
+  brand_color: '#0F766E'
+  default_prompt: 'Use $skills-usage-setup to preview, inspect, or remove optional skill-read observations for my selected skill collections.'

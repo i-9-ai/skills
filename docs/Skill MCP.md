@@ -33,21 +33,24 @@ Initialization, tool listing, search, resource reads and overview require no dat
 directory and create no database. Only an explicit valid record may initialize
 the selected dedicated usage database. Evidence queries require existing valid storage
 and open it read-only. Missing state is reported as unavailable, not empty history.
-An explicit CLI `--db` selects a caller-owned absolute path; plugin state uses
-the selected host's absolute persistent data directory outside both the installed
-plugin and caller project. No automatic cwd/home fallback is used for storage.
-Codex's legacy mapping forwards an explicitly supplied `PLUGIN_DATA`; it does
-not automatically provision the hook's data directory for MCP. Its process cwd
+An explicit CLI `--db` selects a caller-owned absolute path. Otherwise CLI and
+plugin MCP use the shared `~/.agents/skills-usage.db`; `I9_AGENT_STATE_ROOT`
+selects another state root, and `I9_SKILLS_USAGE_DB` overrides the database alone.
+Automatic native DATA variables never select a different store. A valid record
+may create safe non-linked parent directories; initialization and queries never
+do. Explicitly select an old `skill-usage.db` filename to preserve a legacy store:
+no database is moved, merged, reset or deleted by changing the default.
+Codex's mapping forwards the shared state/database overrides. Its process cwd
 is the installed plugin, so it cannot infer the consuming thread's project cwd.
-The operator must select data outside that consumer; the runtime still rejects
-relative, linked and plugin-contained locations. See the
+Keep selected state outside that consumer; the runtime rejects relative, linked
+and plugin-contained locations. See the
 [native Codex MCP pilot](https://github.com/i-9-ai/skills/wiki/Codex-MCP-Pilot) for source and runtime proof.
-Copilot's legacy mapping similarly requires an explicitly supplied
-`COPILOT_PLUGIN_DATA` for evidence storage. It ignores the other hosts' data
-variables, provisions no directory automatically and cannot identify the
-consumer cwd from its plugin-root process. Its native session RPC loading and
+Copilot's mapping uses the same shared configuration and does not forward an
+unresolved plugin DATA placeholder. It cannot identify the consumer cwd from
+its plugin-root process. Its historical native session RPC loading and
 tool calls are recorded in the [Copilot MCP pilot](https://github.com/i-9-ai/skills/wiki/Copilot-MCP-Pilot).
-Both legacy adapters retain the explicit CLI configuration as a fallback.
+Both adapters retain explicit CLI configuration as a fallback. The linked pilots
+describe earlier revisions and do not certify the new shared-default behavior.
 
 For an explicit public Git-source launch on Node 24 and npm 12, use the
 [distribution guide](https://github.com/i-9-ai/skills/wiki/Distribution-Readiness#run-directly-from-github), then run:
@@ -136,9 +139,14 @@ confinement against hostile concurrent filesystem mutation.
 
 Each result carries `provenance`: logical collection, package name/version,
 repository, catalog SHA-256 and separate `source_ref` and `resolved_git_sha` fields.
-Clean package files do not independently prove a Git revision, so those fields
-are `null` unless such evidence is available. A version or content digest is not
-a resolved source SHA. Resource responses additionally hash their returned bytes.
+An explicit clean Git build can retain these fields in a bounded build receipt.
+Runtime `source_provenance` reports that revision as `asserted`, separately from
+the recorded `build_verification` and verified installed-file integrity. The
+receipt is unsigned: it cannot authenticate a coherently rewritten artifact.
+Missing, altered, archive-built or dirty-source receipts return `null` source
+fields and an explicit evidence gap. Runtime reads never inspect the caller's
+Git checkout. A version or content digest is not a resolved source SHA.
+Resource responses additionally hash their returned bytes.
 These digests describe content consistency; they are not signatures or legal,
 behavioral or publication approval.
 

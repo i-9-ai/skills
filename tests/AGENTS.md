@@ -22,6 +22,7 @@ Run `npm test` from the repository root. Tests make no network requests and leav
 ## Child DOX index
 - [Federated consumer pilot](integration/collection/federated-consumer.test.mjs): real catalog helpers and test-only bounded handoffs across fictional independent owners; no semantic routing or model evaluation claim.
 - [Packed CLI verification](packaging/cli-package.mjs): allowlist and runtime checks under a disposable node_modules tree using only already-installed production dependencies.
+- [Packed Git source receipt](packaging/git-source-receipt.mjs): real clean synthetic Git builds retain asserted source provenance after packaging removes Git metadata.
 
 - [Configuration unit tests](unit/config): root precedence, stable named paths and invalid-input rejection without filesystem effects.
 

@@ -8,14 +8,14 @@ import { SkillCatalogQueryValidator } from '../validator/SkillCatalogQueryValida
 import { SkillOperationError } from '../validator/SkillOperationError.ts';
 import { CollectionCatalogRepository } from './CollectionCatalogRepository.ts';
 import type { CollectionCatalogEntry } from './CollectionCatalogRepository.ts';
+import { BuildSourceReceiptRepository } from './BuildSourceReceiptRepository.ts';
+import type { InstalledSourceProvenance } from './BuildSourceReceiptRepository.ts';
 
-export type InstalledCollectionProvenance = {
+export type InstalledCollectionProvenance = InstalledSourceProvenance & {
     collection: 'i9-skills';
     package_name: '@i-9.ai/skills';
     package_version: string;
     repository: 'https://github.com/i-9-ai/skills';
-    source_ref: null;
-    resolved_git_sha: null;
     catalog_sha256: string;
 };
 export type InstalledSkillCatalog = {
@@ -88,9 +88,11 @@ export class InstalledSkillRepository {
                     package_name: '@i-9.ai/skills',
                     package_version: version,
                     repository: 'https://github.com/i-9-ai/skills',
-                    source_ref: null,
-                    resolved_git_sha: null,
                     catalog_sha256: digest(checked.bytes),
+                    ...new BuildSourceReceiptRepository(this.configuration).read(
+                        version,
+                        digest(checked.bytes),
+                    ),
                 },
             });
         } catch (error) {

@@ -31,7 +31,16 @@ test('native Read hooks distinguish attempts/success, stable retries and privacy
         'project=' + collection,
     ];
     const run = (payload) =>
-        spawnSync(process.execPath, args, { input: JSON.stringify(payload), encoding: 'utf8' });
+        spawnSync(process.execPath, args, {
+            input: JSON.stringify(payload),
+            encoding: 'utf8',
+            env: {
+                PATH: process.env.PATH,
+                HOME: path.join(root, 'synthetic-home'),
+                USERPROFILE: path.join(root, 'synthetic-home'),
+                NODE_NO_WARNINGS: '1',
+            },
+        });
     const base = {
         session_id: 'opaque-host-session',
         tool_name: 'Read',
@@ -76,7 +85,7 @@ test('native Read hooks distinguish attempts/success, stable retries and privacy
     }
     const before = fs.readFileSync(db);
     const malformed = run({ ...base, hook_event_name: 'PostToolUse', tool_use_id: undefined });
-    assert.equal(malformed.status, 1);
+    assert.equal(malformed.status, 0);
     assert.deepEqual(JSON.parse(malformed.stdout), {});
     assert.ok(!malformed.stderr.includes(root));
     assert.deepEqual(fs.readFileSync(db), before);

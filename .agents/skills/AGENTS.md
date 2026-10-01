@@ -37,6 +37,7 @@ Run each package's safe commands and the repository validation suite. Behavioral
 - [skill-naming/SKILL.md](skill-naming/SKILL.md): choose domain-first names with justified cardinality and scoped collision evidence.
 - [skill-evolution/SKILL.md](skill-evolution/SKILL.md): evolve one package from supported new evidence.
 - [skill-evidence-collection/SKILL.md](skill-evidence-collection/SKILL.md): organize bounded evidence for a later skill decision.
+- [skills-usage-setup/SKILL.md](skills-usage-setup/SKILL.md): preview, explicitly enable, inspect or remove owned skill-read registrations while retaining unrelated settings and evidence.
 - [skill-optimization/SKILL.md](skill-optimization/SKILL.md): improve one package from scored rollouts and held-out validation.
 - [skill-icon-design/SKILL.md](skill-icon-design/SKILL.md): design one distinctive and accessible skill icon.
 - [skill-installation/SKILL.md](skill-installation/SKILL.md): install one approved package and return a receipt.

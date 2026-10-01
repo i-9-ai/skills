@@ -353,7 +353,10 @@ test('release preparation follows Changesets prerelease promotion instead of inv
 
 for (const heading of ['##', '###']) {
     test(`multiline release entries preserve policy preambles and ${heading} version history while passing whitespace checks`, (t) => {
-        const history = `# Previous releases\n\n## Release policy\n\nKeep existing compatibility.\n\n${heading} 1.2.3\n\n- Keep historical spacing.  \n  \n`;
+        const preamble =
+            '# Previous releases\n \t \n## Release policy\n  \nKeep existing compatibility.\n\t\n';
+        const historicalBytes = `${heading} 1.2.3\n\n- Keep historical spacing.  \n  \n#### 1.2.2\n\t \n- Retain the older heading depth.\n`;
+        const history = preamble + historicalBytes;
         const target = fixture(t, { changelog: history });
         write(
             target.root,
@@ -364,16 +367,30 @@ for (const heading of ['##', '###']) {
         const base = commit(target, 'Record multiline release intent');
         successful(cli(target, 'prepare-version'));
         const changelog = readFileSync(join(target.root, 'CHANGELOG.md'), 'utf8');
-        const historicalBytes = history.slice(history.indexOf(`${heading} 1.2.3`));
-        assert.match(changelog, /## Release policy\n\nKeep existing compatibility\./u);
+        assert.ok(changelog.startsWith(preamble));
         assert.ok(changelog.endsWith(historicalBytes));
-        const entries = changelog.slice(0, changelog.length - historicalBytes.length);
+        const entries = changelog.slice(preamble.length, changelog.length - historicalBytes.length);
         assert.doesNotMatch(entries, /^[\t ]+$/mu);
         assert.match(changelog, /Keep historical spacing\. {2}\n/u);
         assert.match(entries, /^ {6}example --help$/mu);
         assert.equal(git(target, ['diff', '--check', base]), '');
         commit(target, 'Prepare canonical multiline release');
-        assert.equal(successful(cli(target, 'verify-release', ['--base', base])).prepared, true);
+        const before = files(target.root);
+        for (let run = 0; run < 2; run++)
+            assert.equal(
+                successful(cli(target, 'verify-release', ['--base', base])).prepared,
+                true,
+            );
+        assert.deepEqual(files(target.root), before, 'strict verification preserves every byte');
+        write(
+            target.root,
+            'CHANGELOG.md',
+            changelog.replace(preamble, preamble.replace(' \t \n', '\n')),
+        );
+        commit(target, 'Record altered policy preamble whitespace');
+        const invalid = cli(target, 'verify-release', ['--base', base]);
+        assert.notEqual(invalid.status, 0);
+        assert.match(invalid.stderr, /changelog/iu);
     });
 }
 

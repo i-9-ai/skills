@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
 import { Command, Flags } from '@oclif/core';
 import { SkillTelemetryService } from '../../service/SkillTelemetryService.ts';
+import { PluginDataConfiguration } from '../../config/PluginDataConfiguration.ts';
 
 export const telemetryPeriodFlags = {
     db: Flags.string({
-        required: true,
+        default: async () => new PluginDataConfiguration().usageDatabase(),
         description: 'Existing absolute usage database; queries never create or migrate it.',
     }),
     from: Flags.string({ description: 'Inclusive canonical UTC timestamp.' }),

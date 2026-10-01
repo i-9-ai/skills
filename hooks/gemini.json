@@ -1,0 +1,7 @@
+{
+  "hooks": {
+    "SessionStart": [{ "hooks": [{ "type": "command", "name": "i9-skills-context", "command": "node \"${extensionPath}/src/transport/PluginHookRunner.ts\" --host gemini", "timeout": 10000 }] }],
+    "BeforeTool": [{ "matcher": "^read_file$", "hooks": [{ "type": "command", "name": "i9-skills-attempt", "command": "node \"${extensionPath}/src/transport/PluginHookRunner.ts\" --host gemini", "timeout": 10000 }] }],
+    "AfterTool": [{ "matcher": "^read_file$", "hooks": [{ "type": "command", "name": "i9-skills-read", "command": "node \"${extensionPath}/src/transport/PluginHookRunner.ts\" --host gemini", "timeout": 10000 }] }]
+  }
+}

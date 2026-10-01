@@ -5,6 +5,29 @@ It separates a session start, a read attempt and a successful read. None proves
 that a model followed a skill, and a missing observation does not prove non-use.
 No command installs hooks, sends data remotely or tracks task status.
 
+CLI telemetry and installed plugin hooks share `~/.agents/skills-usage.db` by
+default. `I9_AGENT_STATE_ROOT=/absolute/agent-state` selects another state root
+and names its `skills-usage.db`, `skills/` and `skills-catalog.json` resources.
+`I9_SKILLS_USAGE_DB=/absolute/data/usage.db` overrides only the usage database;
+an explicit CLI `--db` wins over both environment defaults. Configuration lookup
+does not create storage. Catalog storage and observed usage remain separate.
+
+Native hosts can automatically set `PLUGIN_DATA`, `CLAUDE_PLUGIN_DATA`,
+`COPILOT_PLUGIN_DATA` or `GEMINI_PLUGIN_DATA`. Those variables never override the
+shared usage default. To keep an existing legacy store, explicitly select its
+original filename, including its singular spelling when applicable:
+
+```sh
+I9_SKILLS_USAGE_DB=/absolute/legacy-plugin-data/skill-usage.db node bin/index.mjs telemetry rankings
+node bin/index.mjs telemetry rankings --db /absolute/legacy-plugin-data/skill-usage.db
+```
+
+The default change does not move, merge, reset or delete legacy databases. Their
+old observations do not appear in the shared store automatically. Query the old
+store explicitly; do not copy its tables into a different schema. Compatible
+schema upgrades occur only when a valid record explicitly opens that selected
+store for writing. Read-only inspection preserves its bytes.
+
 [Lifecycle evidence](https://github.com/i-9-ai/skills/wiki/Lifecycle-Evidence) adds separate, explicit routing,
 activation and outcome assertions, complete catalog observations, cohort ratios,
 co-routing overlap and inactivity coverage. It documents schema 2 and the matching
@@ -13,8 +36,9 @@ activation.
 
 ## Record one observation
 
-Create an existing local data directory with access limited to its owner. Select
-the database explicitly; the parent must be an absolute canonical path. Use
+Select an absolute canonical local data path; a valid explicit record may create
+missing non-linked parent directories with mode 0700. Validation occurs before
+directory creation. Omitting `--db` selects the shared usage default above. Use
 Node.js 24+ and the prepared checkout or packed CLI. Write `event.json`:
 
 ```json
