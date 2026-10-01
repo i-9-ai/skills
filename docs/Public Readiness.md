@@ -52,16 +52,24 @@ checks, official skills-ref results and packed-runtime acceptance apply to their
 exact PR heads; obtain fresh results for the final release commit.
 
 The separate [Codex MCP pilot](https://github.com/i-9-ai/skills/wiki/Codex-MCP-Pilot) adds native plugin tool
-discovery and explicit catalog/read-evidence calls. Its legacy mapping requires
-caller-selected external `PLUGIN_DATA` for storage and cannot infer the original
+discovery and explicit catalog/read-evidence calls. That pinned pilot used the
+earlier caller-selected external `PLUGIN_DATA` mapping and could not infer the original
 consumer cwd. This does not establish a hosted marketplace update or a public
 directory's remote-MCP acceptance.
 
 The [Copilot MCP pilot](https://github.com/i-9-ai/skills/wiki/Copilot-MCP-Pilot) adds native session discovery and
 direct catalog/read-evidence calls through an ephemeral legacy plugin mount.
-It requires explicit external `COPILOT_PLUGIN_DATA` for storage and likewise
-cannot infer the consumer cwd. Persistent marketplace installation, hosted
+That pinned pilot used the earlier explicit external `COPILOT_PLUGIN_DATA`
+mapping and likewise could not infer the consumer cwd. Persistent marketplace installation, hosted
 update and model-selected tool use remain untested.
+
+The subsequent [shared storage contract](https://github.com/i-9-ai/skills/wiki/Skill-Telemetry)
+supersedes those storage selectors: current adapters default to
+`~/.agents/skills-usage.db`, accept `I9_AGENT_STATE_ROOT` and the higher-priority
+explicit `I9_SKILLS_USAGE_DB`, and ignore native plugin-data variables. New pilot
+replays must use disposable homes and explicitly selected databases as described
+in the pilot pages. This documentation reconciliation does not extend the dated
+audit or supply new native compatibility evidence.
 
 ## Read-only GitHub exposure inventory
 
@@ -72,17 +80,17 @@ main at b9db78b521cd2e949bde3e8264cb5b416f86d791. Before the authorized settings
 change, incrementally inspect the readiness PR and its new commits, discussions
 and workflow logs; do not extend this snapshot to those later records by inference.
 
-| Surface | Observed coverage | Disposition |
-| --- | --- | --- |
-| Issues and PRs | 31 issues, 20 PRs, 43 issue comments, 415 review comments, 245 review records; zero commit comments/discussions | Zero alerts in 774 extracted discussion records (including duplicated PR bodies), 4,090,599 bytes. Illustrative review paths were triaged; no private-source or credential blocker was established. |
-| Actions | 238 selected run-attempt archives; 476 files, 11,144,695 decoded bytes | All 238 archives downloaded and scanned with zero alerts and zero selected-archive gaps. Historical success is not current-head CI evidence. |
-| Refs and workflows | Two remote branches, all 20 PR refs, zero tags and five registered workflows | Six files at gh-pages commit 2d748552 were inspected. Branch existence does not prove an active site. Later commits and workflows need an incremental audit. |
-| Artifacts, releases and deployments | Zero visible entries | No content required inspection; deleted or inaccessible historical content is not certified. |
-| Repository secrets, variables and environments | Zero visible entries | No secret values requested. Organization/enterprise configuration was outside scope. |
-| Collaborators | One visible collaborator | Identity details retained only in protected local evidence. |
-| Wiki | REST has_wiki:false; GraphQL hasWikiEnabled:true; authenticated ref lookup returned repository-not-found; five historical mirror runs failed | No Wiki content was accessible to audit. The maintainer now authorizes enablement, supported first-page initialization and verification of the existing mirror; [issue #52](https://github.com/i-9-ai/skills/issues/52) records actual results separately. |
-| Pages and private vulnerability reporting | Both APIs returned 404 | Availability unconfirmed. Existing [security guidance](https://github.com/i-9-ai/skills/blob/main/SECURITY.md) remains the reporting fallback. |
-| Main protection and rulesets | Provider returned 403 requiring a different account plan or public repository | Protection was not applied. [Issue #32](https://github.com/i-9-ai/skills/issues/32) records the requested policy and blocked configuration. |
+| Surface                                        | Observed coverage                                                                                                                            | Disposition                                                                                                                                                                                                                                                |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Issues and PRs                                 | 31 issues, 20 PRs, 43 issue comments, 415 review comments, 245 review records; zero commit comments/discussions                              | Zero alerts in 774 extracted discussion records (including duplicated PR bodies), 4,090,599 bytes. Illustrative review paths were triaged; no private-source or credential blocker was established.                                                        |
+| Actions                                        | 238 selected run-attempt archives; 476 files, 11,144,695 decoded bytes                                                                       | All 238 archives downloaded and scanned with zero alerts and zero selected-archive gaps. Historical success is not current-head CI evidence.                                                                                                               |
+| Refs and workflows                             | Two remote branches, all 20 PR refs, zero tags and five registered workflows                                                                 | Six files at gh-pages commit 2d748552 were inspected. Branch existence does not prove an active site. Later commits and workflows need an incremental audit.                                                                                               |
+| Artifacts, releases and deployments            | Zero visible entries                                                                                                                         | No content required inspection; deleted or inaccessible historical content is not certified.                                                                                                                                                               |
+| Repository secrets, variables and environments | Zero visible entries                                                                                                                         | No secret values requested. Organization/enterprise configuration was outside scope.                                                                                                                                                                       |
+| Collaborators                                  | One visible collaborator                                                                                                                     | Identity details retained only in protected local evidence.                                                                                                                                                                                                |
+| Wiki                                           | REST has_wiki:false; GraphQL hasWikiEnabled:true; authenticated ref lookup returned repository-not-found; five historical mirror runs failed | No Wiki content was accessible to audit. The maintainer now authorizes enablement, supported first-page initialization and verification of the existing mirror; [issue #52](https://github.com/i-9-ai/skills/issues/52) records actual results separately. |
+| Pages and private vulnerability reporting      | Both APIs returned 404                                                                                                                       | Availability unconfirmed. Existing [security guidance](https://github.com/i-9-ai/skills/blob/main/SECURITY.md) remains the reporting fallback.                                                                                                             |
+| Main protection and rulesets                   | Provider returned 403 requiring a different account plan or public repository                                                                | Protection was not applied. [Issue #32](https://github.com/i-9-ai/skills/issues/32) records the requested policy and blocked configuration.                                                                                                                |
 
 The earlier audit's raw administrative snapshots contained generated clone-token
 fields. This refresh omitted those fields before retaining API metadata; neither
@@ -110,14 +118,14 @@ audit neither dispatches them nor changes their permissions.
 
 ## Distribution channels and owner actions
 
-| Channel | Prepared here | Still required before that external action |
-| --- | --- | --- |
-| Local repository plugin | Root Codex/Claude/Copilot manifests and marketplace entries; Codex/Claude installation pilot and native Codex/Copilot MCP calls | Select the reviewed merged commit and authorize real-consumer installation. Persistent Copilot marketplace installation and hosted updates remain separate untested distribution steps; see [issue #12](https://github.com/i-9-ai/skills/issues/12). |
-| Repository-hosted marketplace | Canonical root path, identity and explicit source pinning | Consumers must be able to fetch the selected source. Confirm hosted fetching/update behavior at the selected revision; repository visibility and directory acceptance are separate decisions. |
-| npm executable | Public @i-9.ai/skills@0.1.0, i9-skills bin, compiled allowlist and verified anonymous CLI/catalog/MCP consumer | Future versions require a reviewed generated version PR and the scoped workflow publisher. Verify actual registry and GitHub results after each release. See [initial distribution](https://github.com/i-9-ai/skills/issues/17) and [release automation](https://github.com/i-9-ai/skills/issues/66). |
-| Public OpenAI directory | Optional skills-only staging and provider-neutral package cores | Owner chooses submission mode, verifies publisher/access and listing/support/privacy details, runs required scans/review and explicitly publishes after acceptance. No listing or identity is fabricated here. |
-| Public Claude/Copilot listing | Repository marketplace manifests | Follow each host's current listing/review process; repository access or local validation does not imply directory acceptance. |
-| Public repository governance | Experimental notice, security policy, refreshed independent audit and explicit maintainer authorization | Apply and verify public access and [main protection](https://github.com/i-9-ai/skills/issues/32); enable, initialize and verify the [Wiki mirror](https://github.com/i-9-ai/skills/issues/52). Pages availability remains separate. |
+| Channel                       | Prepared here                                                                                                                   | Still required before that external action                                                                                                                                                                                                                                                            |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Local repository plugin       | Root Codex/Claude/Copilot manifests and marketplace entries; Codex/Claude installation pilot and native Codex/Copilot MCP calls | Select the reviewed merged commit and authorize real-consumer installation. Persistent Copilot marketplace installation and hosted updates remain separate untested distribution steps; see [issue #12](https://github.com/i-9-ai/skills/issues/12).                                                  |
+| Repository-hosted marketplace | Canonical root path, identity and explicit source pinning                                                                       | Consumers must be able to fetch the selected source. Confirm hosted fetching/update behavior at the selected revision; repository visibility and directory acceptance are separate decisions.                                                                                                         |
+| npm executable                | Public @i-9.ai/skills, i9-skills bin, compiled allowlist and anonymous consumer checks; 0.2.0 published through the scoped OIDC workflow | Future versions require a reviewed generated version PR and the scoped workflow publisher. Verify actual registry and GitHub results after each release. See [initial distribution](https://github.com/i-9-ai/skills/issues/17) and [release automation](https://github.com/i-9-ai/skills/issues/66). |
+| Public OpenAI directory       | Optional skills-only staging and provider-neutral package cores                                                                 | Owner chooses submission mode, verifies publisher/access and listing/support/privacy details, runs required scans/review and explicitly publishes after acceptance. No listing or identity is fabricated here.                                                                                        |
+| Public Claude/Copilot listing | Repository marketplace manifests                                                                                                | Follow each host's current listing/review process; repository access or local validation does not imply directory acceptance.                                                                                                                                                                         |
+| Public repository governance  | Experimental notice, security policy, refreshed independent audit and explicit maintainer authorization                         | Apply and verify public access and [main protection](https://github.com/i-9-ai/skills/issues/32); enable, initialize and verify the [Wiki mirror](https://github.com/i-9-ai/skills/issues/52). Pages availability remains separate.                                                                   |
 
 For OpenAI directory submission, the documented ordinary paths are skills-only
 or an accessible remote MCP service. This project's local stdio MCP is not a

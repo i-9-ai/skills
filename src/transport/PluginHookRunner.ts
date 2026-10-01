@@ -12,14 +12,23 @@ export class PluginHookRunner {
 
         try {
             const host = PluginHookConfiguration.hostArgument(process.argv.slice(2));
-            neutral = host === 'claude' ? '{}' : '';
+            neutral = host === 'codex' ? '' : '{}';
             const configuration = new PluginHookConfiguration(host);
             const payload = await new TelemetryInputRepository().read(
                 '-',
                 process.stdin,
                 1_048_576,
             );
-            const result = await new PluginHookService(configuration).run(payload);
+            const event = process.argv.slice(2)[3];
+            const input =
+                host === 'copilot' &&
+                event &&
+                payload &&
+                typeof payload === 'object' &&
+                !Array.isArray(payload)
+                    ? { ...payload, hook_event_name: event }
+                    : payload;
+            const result = await new PluginHookService(configuration).run(input);
             const output = result.output ? `${result.output}\n` : '';
             if (Buffer.byteLength(output, 'utf8') > configuration.maxOutputBytes) {
                 throw new Error('Hook output exceeds its bound');

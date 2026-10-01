@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { Command, Flags } from '@oclif/core';
 import { SkillEvidenceService } from '../../service/SkillEvidenceService.ts';
+import { PluginDataConfiguration } from '../../config/PluginDataConfiguration.ts';
 export default class TelemetryCatalogObserveCommand extends Command {
     static description =
         'Record one complete redacted catalog observation without changing a source catalog.';
@@ -9,7 +10,7 @@ export default class TelemetryCatalogObserveCommand extends Command {
     ];
     static flags = {
         db: Flags.string({
-            required: true,
+            default: async () => new PluginDataConfiguration().usageDatabase(),
             description: 'Absolute caller-owned evidence database; creates or upgrades explicitly.',
         }),
         file: Flags.string({

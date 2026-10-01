@@ -22,6 +22,21 @@ export class PluginPreparationService {
     }
 
     prepare(configuration: ProjectConfiguration, output: string, write = false) {
+        const { files, file_count, ...artifact } = this.derive(configuration);
+        const destination = this.repository.emit(output, files, write);
+        return {
+            written: write,
+            output: destination,
+            ...artifact,
+            files: file_count,
+            effects: write
+                ? 'Created a new local staging artifact.'
+                : 'Preview only; no files written.',
+        };
+    }
+
+    /** Reuse the same validated projection without staging or executing its files. */
+    derive(configuration: ProjectConfiguration) {
         const source = this.repository.read(configuration);
         const identity = {
             name: 'i9-skills',
@@ -80,17 +95,12 @@ export class PluginPreparationService {
         ) {
             throw new Error('Complete plugin artifact exceeds its file count or byte bounds.');
         }
-        const destination = this.repository.emit(output, files, write);
         return {
-            written: write,
-            output: destination,
+            files,
             manifest,
             packages: source.skills.length,
-            files: inventory.length + 1,
+            file_count: inventory.length + 1,
             inventory_sha256: receipt.inventory_sha256,
-            effects: write
-                ? 'Created a new local staging artifact.'
-                : 'Preview only; no files written.',
         };
     }
 }

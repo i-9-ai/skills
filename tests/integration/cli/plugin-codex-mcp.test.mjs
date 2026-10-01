@@ -63,16 +63,12 @@ function unavailable(result) {
     assert.equal(result.structuredContent.error.code, 'storage_unavailable');
 }
 
-test('Codex mapping reads the installed catalog with spaces and never invents a data location', (t) => {
+test('Codex mapping reads the installed catalog with spaces and queries never initialize shared state', (t) => {
     const target = catalogFixture(t, { runtime: true });
     const before = snapshot(target.root);
-    const [search, write, rankings] = invoke(
+    const [search, rankings] = invoke(
         target,
-        [
-            ['skill_catalog_search', { query: 'alpha-guide' }],
-            ['skill_read_record', observedRead],
-            ['skill_read_rankings'],
-        ],
+        [['skill_catalog_search', { query: 'alpha-guide' }], ['skill_read_rankings']],
         { CLAUDE_PLUGIN_DATA: target.data, PLUGIN_ROOT: target.caller },
     );
     assert.equal(search.isError, undefined);
@@ -80,7 +76,6 @@ test('Codex mapping reads the installed catalog with spaces and never invents a 
         search.structuredContent.skills.map((skill) => skill.name),
         ['alpha-guide'],
     );
-    unavailable(write);
     unavailable(rankings);
     assert.equal(fs.existsSync(target.data), false);
     assert.deepEqual(snapshot(target.root), before);
@@ -96,7 +91,7 @@ test('Codex mapping writes only to explicitly forwarded external data and preser
             ['skill_read_record', observedRead],
             ['skill_read_rankings'],
         ],
-        { PLUGIN_DATA: target.data, CLAUDE_PLUGIN_DATA: target.installed },
+        { I9_SKILLS_USAGE_DB: join(target.data, 'skill-usage.db'), PLUGIN_DATA: target.installed },
     );
     assert.equal(first.isError, undefined);
     assert.equal(first.structuredContent.recorded, true);
@@ -105,7 +100,9 @@ test('Codex mapping writes only to explicitly forwarded external data and preser
     assert.equal(rankings.structuredContent.rows[0].sessions, 1);
     assert.deepEqual(fs.readdirSync(target.data), ['skill-usage.db']);
     const beforeQuery = snapshot(target.data);
-    const [later] = invoke(target, [['skill_read_rankings']], { PLUGIN_DATA: target.data });
+    const [later] = invoke(target, [['skill_read_rankings']], {
+        I9_SKILLS_USAGE_DB: join(target.data, 'skill-usage.db'),
+    });
     assert.equal(later.structuredContent.rows[0].reads, 1);
     assert.deepEqual(snapshot(target.data), beforeQuery);
     assert.deepEqual([target.installed, target.caller, target.home].map(snapshot), protectedBefore);
@@ -126,7 +123,7 @@ for (const location of ['installed', 'relative', 'linked']) {
         const [write, search] = invoke(
             target,
             [['skill_read_record', observedRead], ['skill_catalog_search']],
-            { PLUGIN_DATA: data },
+            { I9_SKILLS_USAGE_DB: location === 'relative' ? data : join(data, 'skill-usage.db') },
         );
         unavailable(write);
         assert.equal(search.structuredContent.total, 5);

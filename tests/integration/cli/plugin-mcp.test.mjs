@@ -164,7 +164,7 @@ test('invalid recording and unavailable rankings never initialize a selected DAT
             call('skill_read_rankings'),
             call('skill_catalog_search', {}),
         ],
-        { CLAUDE_PLUGIN_DATA: target.data },
+        { I9_SKILLS_USAGE_DB: join(target.data, 'skill-usage.db') },
     );
     error(rows[1], 'invalid_input');
     error(rows[2], 'storage_unavailable');
@@ -176,7 +176,10 @@ test('invalid recording and unavailable rankings never initialize a selected DAT
 test('explicit observed reads initialize safe data once and later rankings leave it unchanged', (t) => {
     const target = catalogFixture(t, { runtime: true });
     const protectedBefore = [target.installed, target.caller, target.home].map(snapshot);
-    const environment = { CLAUDE_PLUGIN_DATA: target.data, PLUGIN_DATA: target.installed };
+    const environment = {
+        I9_SKILLS_USAGE_DB: join(target.data, 'skill-usage.db'),
+        PLUGIN_DATA: target.installed,
+    };
     const first = run(
         target,
         [
@@ -216,14 +219,14 @@ test('an invalid existing database is unavailable rather than reset or reported 
     fs.writeFileSync(join(target.data, 'skill-usage.db'), 'Preserve this non-database sentinel.\n');
     const before = snapshot(target.root);
     const rows = run(target, [call('skill_read_rankings'), call('skill_catalog_search')], {
-        CLAUDE_PLUGIN_DATA: target.data,
+        I9_SKILLS_USAGE_DB: join(target.data, 'skill-usage.db'),
     });
     error(rows[1], 'storage_unavailable');
     assert.equal(successful(rows[2]).total, 5);
     assert.deepEqual(snapshot(target.root), before);
 });
 
-for (const location of ['plugin', 'caller', 'linked', 'relative', 'missing']) {
+for (const location of ['plugin', 'caller', 'linked', 'relative', 'empty']) {
     test(`plugin recording rejects ${location} DATA without affecting catalog access`, (t) => {
         const target = catalogFixture(t, { runtime: true });
         let data = join(
@@ -237,12 +240,18 @@ for (const location of ['plugin', 'caller', 'linked', 'relative', 'missing']) {
             fs.symlinkSync(outside, data, 'dir');
         }
         if (location === 'relative') data = 'relative-state';
-        if (location === 'missing') data = undefined;
+        if (location === 'empty') data = '';
         const before = snapshot(target.root);
         const rows = run(
             target,
             [call('skill_read_record', observedRead), call('skill_catalog_search')],
-            data === undefined ? {} : { CLAUDE_PLUGIN_DATA: data },
+            {
+                I9_SKILLS_USAGE_DB: data
+                    ? location === 'relative'
+                        ? data
+                        : join(data, 'skill-usage.db')
+                    : data,
+            },
         );
         error(rows[1], 'storage_unavailable');
         assert.equal(successful(rows[2]).total, 5);

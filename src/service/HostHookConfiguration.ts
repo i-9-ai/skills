@@ -117,18 +117,24 @@ export class HostHookConfiguration {
                 status: 'unimplemented; requires a separately reviewed plugin adapter',
                 fallback: 'context available-skills',
             },
-            {
+            ...(['claude', 'codex', 'gemini', 'copilot'] as const).map((host) => ({
                 name: 'skill-read-metrics',
-                host: 'claude',
-                status: 'implemented; native Read and session metadata fixture-tested',
-                command: 'hook observe --host claude',
+                host,
+                status: 'implemented; native payload mapping and metadata storage fixture-tested',
+                command: 'hook observe --host ' + host,
                 hostExecution: 'not tested; no registration installed',
-                coverage: 'SKILL.md only; no Bash, implicit loading or reference files',
-            },
+                coverage: {
+                    claude: 'SKILL.md native Read only; paired tool-use identifiers; no implicit loading or reference files',
+                    codex: 'SKILL.md literal cat/sed Bash only; exact returned text verified after collection confinement; no arbitrary shell execution',
+                    gemini: 'SKILL.md read_file only; successful AfterTool receipt; timestamp identities cannot pair attempts and observations',
+                    copilot:
+                        'SKILL.md CLI view only; successful postToolUse receipt; timestamp identities cannot pair attempts and observations',
+                }[host],
+            })),
             {
                 name: 'skill-read-metrics',
                 host: 'other',
-                status: 'unimplemented; occurrence identity and successful-read mapping need host-specific verification',
+                status: 'unimplemented for other hosts; successful-read mapping requires a reviewed native contract',
                 fallback: 'telemetry record or mcp serve with explicit observed evidence',
             },
         ];

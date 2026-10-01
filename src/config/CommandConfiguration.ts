@@ -20,8 +20,12 @@ import HookVerifyCommand from '../command/hook/HookVerifyCommand.ts';
 import SessionConfigCommand from '../command/hook/SessionConfigCommand.ts';
 import SessionIndexHookCommand from '../command/hook/SessionIndexHookCommand.ts';
 import TelemetryConfigCommand from '../command/hook/TelemetryConfigCommand.ts';
+import TelemetryEnableCommand from '../command/hook/TelemetryEnableCommand.ts';
+import TelemetryStatusCommand from '../command/hook/TelemetryStatusCommand.ts';
+import TelemetryDisableCommand from '../command/hook/TelemetryDisableCommand.ts';
 import ServeMcpCommand from '../command/mcp/ServeMcpCommand.ts';
 import PluginPrepareCommand from '../command/plugin/PluginPrepareCommand.ts';
+import PluginSubmissionCommand from '../command/plugin/PluginSubmissionCommand.ts';
 import OfficialSkillsValidateCommand from '../command/repo/OfficialSkillsValidateCommand.ts';
 import PrepareVersionCommand from '../command/repo/PrepareVersionCommand.ts';
 import RepositoryValidateCommand from '../command/repo/RepositoryValidateCommand.ts';
@@ -69,8 +73,12 @@ export class CommandConfiguration {
         'hook:session-config': SessionConfigCommand,
         'hook:session-index': SessionIndexHookCommand,
         'hook:telemetry-config': TelemetryConfigCommand,
+        'hook:telemetry-enable': TelemetryEnableCommand,
+        'hook:telemetry-status': TelemetryStatusCommand,
+        'hook:telemetry-disable': TelemetryDisableCommand,
         'mcp:serve': ServeMcpCommand,
         'plugin:prepare': PluginPrepareCommand,
+        'plugin:submission': PluginSubmissionCommand,
         'repo:validate-official': OfficialSkillsValidateCommand,
         'repo:validate': RepositoryValidateCommand,
         'repo:prepare-version': PrepareVersionCommand,

@@ -20,6 +20,7 @@ preparing distribution, and evolving focused agent skills.
 ## Deeper references
 - [CLI distribution](https://github.com/i-9-ai/skills/wiki/Distribution-Readiness): immutable Git-source `npx` calls, preparation, packed CLI verification and remaining registry publication gates.
 - [Plugin preparation](https://github.com/i-9-ai/skills/wiki/Plugin-Preparation): inspect the repository-root host manifests and marketplace entry, and learn the post-merge installation path.
+- [Public plugin submission](https://github.com/i-9-ai/skills/wiki/Public-Plugin-Submission): prepare a skills-only ZIP and follow the independent directory identity and review process.
 - [Native plugin pilot](https://github.com/i-9-ai/skills/wiki/Native-Plugin-Pilot): measured Codex/Claude installation, session hooks, Claude MCP, local update/rollback and cleanup, with reproducible isolation boundaries.
 - [Codex MCP pilot](https://github.com/i-9-ai/skills/wiki/Codex-MCP-Pilot): native tool discovery, catalog access and explicit external evidence storage without a model turn.
 - [Copilot MCP pilot](https://github.com/i-9-ai/skills/wiki/Copilot-MCP-Pilot): native legacy-plugin discovery and direct MCP calls with explicit external data and an ephemeral mount.
@@ -31,6 +32,8 @@ preparing distribution, and evolving focused agent skills.
 - [Skill MCP](https://github.com/i-9-ai/skills/wiki/Skill-MCP): bundled skill search, Markdown retrieval and overview plus explicit observed-read evidence and rankings.
 - [MCP Inspector](https://github.com/i-9-ai/skills/wiki/MCP-Inspector): a pinned checkout walkthrough for tool discovery, catalog search and selected Markdown reads, with expected output and cleanup.
 - [Local skill telemetry](https://github.com/i-9-ai/skills/wiki/Skill-Telemetry): typed session, attempt and read observations, period trends and bounded diagnostic logs.
+- [Optional skill telemetry](https://github.com/i-9-ai/skills/wiki/Optional-Skill-Telemetry): explicit selected-host enable, status and receipt-backed disable with shared local evidence.
+- [Credential detection](https://github.com/i-9-ai/skills/wiki/Credential-Detection): native push protection and bounded CI secret detection without printing matched values.
 - [Lifecycle evidence](https://github.com/i-9-ai/skills/wiki/Lifecycle-Evidence): explicit route, activation and outcome events, catalog history, cohort denominators and coverage-aware inactivity through CLI/MCP.
 - [Skill memory inspection](https://github.com/i-9-ai/skills/wiki/Skill-Memory): compact evidence summaries and optional cutoff counts from the same read-only store, with explicit identity and retention limits.
 - [Planning protocol](https://github.com/i-9-ai/skills/wiki/Planning-Protocol): durable planning for material work.

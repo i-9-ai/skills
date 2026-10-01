@@ -4,7 +4,7 @@
 
 I-9 Skills is a toolkit for the full life of an agent skill: discover what already works, design one clear responsibility, author a complete package, validate it, publish it deliberately, and evolve it from real evidence. Every package is written in English, includes its own Apache-2.0 `LICENSE`, and works without assuming Codex, Claude, Copilot, OpenCode, or any other specific agent.
 
-**24 focused skills. One responsibility each. One reviewable output each.**
+**25 focused skills. One responsibility each. One reviewable output each.**
 
 This collection is experimental; feedback is welcome. Structural checks and
 fixture tests do not establish production quality or universal host compatibility.
@@ -28,7 +28,7 @@ codex plugin list
 ```
 
 This uses our GitHub marketplace and does not require a listing in OpenAI's
-public plugin directory. The plugin includes all 24 skills, the session hook
+public plugin directory. The plugin includes all 25 skills, the session hook
 and the catalog MCP. Start a new Codex session after installation. For desktop
 clients, restart the app and select **I9 Skills** in the plugin marketplace
 picker; availability remains subject to the client's workspace policy.
@@ -108,13 +108,21 @@ This source checkout includes a project-local Codex `SessionStart` adapter. Afte
 
 The repository-root Codex and Claude plugins also bundle their own Node 24
 session adapters, runnable without preparing the checkout. They discover plugin,
-project and global skills. Claude additionally records supported native Read
-attempts and successes in its host-provided plugin data directory. These counts
-do not prove skill activation. See [installed plugin hooks](docs/Host%20Hooks.md#installed-plugin-hooks)
+project and global skills. Supported Codex, Claude, Copilot and Gemini read
+adapters record bounded metadata in the shared `~/.agents/skills-usage.db`.
+These counts do not prove skill activation. See [installed plugin hooks](docs/Host%20Hooks.md#installed-plugin-hooks)
 for supported versions, trust, storage and parser limits. The [native pilot](docs/Native%20Plugin%20Pilot.md)
 records isolated Codex/Claude installation, SessionStart and local source rollback;
 it does not establish real-model behavior or hosted updates. Avoid duplicate
 project/plugin session registrations.
+
+For a skills-only installation, the optional [`skills-usage-setup`](.agents/skills/skills-usage-setup/SKILL.md)
+package can guide explicit registration, inspection and removal of skill-read
+observations. [Optional telemetry](docs/Optional%20Skill%20Telemetry.md) explains
+the toolkit commands, settings preservation and measured coverage. The
+[public submission profile](docs/Public%20Plugin%20Submission.md) prepares a
+skills-only ZIP without automatic hooks or local MCP; upload and directory
+approval are separate provider steps.
 
 Hosts without hooks, or projects where the user has not enabled hook trust, use the identical manual fallback:
 
@@ -178,6 +186,7 @@ Consult [`skills-catalog.json`](skills-catalog.json) for the generated machine-r
 | [`skill-migration`](.agents/skills/skill-migration/SKILL.md) | Move one skill between collections | Migrated package and migration record |
 | [`skills-catalog`](.agents/skills/skills-catalog/SKILL.md) | Derive and validate a collection inventory | `skills-catalog.json` |
 | [`skills-catalog-index`](.agents/skills/skills-catalog-index/SKILL.md) | Query explicit collections and retain local changes/evolution evidence | Local aggregate index and history |
+| [`skills-usage-setup`](.agents/skills/skills-usage-setup/SKILL.md) | Explicitly register, inspect and remove local skill-read observations | Owned observation registration receipt |
 
 ## Current entry paths
 
@@ -185,13 +194,16 @@ Consult [`skills-catalog.json`](skills-catalog.json) for the generated machine-r
 flowchart LR
     Task[User task] --> Native[Host skill discovery]
     Native --> Read[Selected SKILL.md and references]
-    Git[Reviewed Git-source npx] --> CLI[i9-skills CLI]
+    Registry[npm or reviewed Git-source npx] --> CLI[i9-skills CLI]
     CLI -->|catalog search / read / overview| Catalog[Bundled catalog]
     CLI -->|mcp serve| MCP[Local stdio MCP]
     Root[Repository-root plugin] --> Host[Codex / Claude / Copilot manifests]
     Host -->|native stdio| MCP
-    Host -->|Codex / Claude SessionStart| Hook[Local Node 24 hook]
+    Host -->|trusted lifecycle events| Hook[Local Node 24 hook]
     Hook --> Context[Bounded metadata context]
+    Hook -->|verified read receipts| Evidence[Shared local agents evidence]
+    CLI -->|explicit enable / status / disable| Hook
+    Public[Public skills-only plugin] --> Native
     MCP -->|catalog tools| Catalog
     Catalog --> Read
     Read --> Work[Portable meta-skill workflow]
@@ -202,8 +214,13 @@ code before execution. The enabled root plugin starts its local hooks and MCP
 with Node 24; session startup performs no download or build. Hooks discover
 plugin, project and global packages, while MCP catalog tools read only the
 bundled collection. Context and catalog retrieval do not activate skills or
-record evidence. Registry `npx @i-9.ai/skills` remains unavailable until a separate
-npm publication.
+record evidence. Supported native tool reads record bounded observations in
+`~/.agents/skills-usage.db`; no prompts or file bodies are stored. The public
+submission variant includes portable skills and excludes hooks and local MCP.
+Optional telemetry requires explicit setup and host trust, documented in
+[Optional Skill Telemetry](docs/Optional%20Skill%20Telemetry.md). Registry
+`npx @i-9.ai/skills` uses the latest published version; unreleased features
+remain available only from their reviewed source revision until publication.
 
 ## From idea to durable skill system
 
@@ -326,9 +343,12 @@ or native skill discovery. The [MCP guide](docs/Skill%20MCP.md) includes tool ca
 bounded resource retrieval, provenance and optional explicit usage metrics.
 
 Codex, Claude and Copilot root plugins register that shared MCP directly, without
-CLI dependencies. The legacy Codex and Copilot mappings need explicitly selected
-external `PLUGIN_DATA` and `COPILOT_PLUGIN_DATA` directories, respectively, for
-storage; reads of catalog/guide/report data do not need one. The
+CLI dependencies. Telemetry and plugin hooks/MCP share `~/.agents/skills-usage.db`
+by default. `I9_AGENT_STATE_ROOT` changes the state root; `I9_SKILLS_USAGE_DB`
+and explicit CLI `--db` select a database. Automatic native plugin DATA variables
+never override the shared store. Legacy stores remain preserved and require
+their exact filename to be selected explicitly. Catalog/guide/report reads and
+read-only usage queries never initialize storage. The
 [Codex MCP pilot](docs/Codex%20MCP%20Pilot.md) and
 [Copilot MCP pilot](docs/Copilot%20MCP%20Pilot.md) document native tool calls,
 isolation and the operator's responsibility for the consumer path.

@@ -7,8 +7,9 @@
     "quality_profile": "showcase",
     "views": [
       {"id": "skills", "label": "Use portable skills", "focus": ["task", "discovery", "instructions", "workflow", "result"], "note": "The host discovers installed packages; the agent reads selected instructions and follows a bounded workflow."},
-      {"id": "cli", "label": "Use the CLI", "focus": ["cli", "commands", "mcp", "instructions", "context"], "note": "Registry builds contain compiled code; Git downloads prepare the CLI. Commands cover discovery, maintenance, reports and evidence."},
-      {"id": "plugin", "label": "Use the root plugin", "focus": ["plugin", "manifests", "hooks", "context", "mcp"], "note": "Enabled host manifests load local Node 24 hooks and stdio MCP. Hook startup performs no download or build."}
+      {"id": "cli", "label": "Use the CLI", "focus": ["cli", "commands", "mcp", "instructions", "context"], "note": "Registry builds include compiled code; Git downloads prepare it. Explicit setup merges settings; hook events never download."},
+      {"id": "plugin", "label": "Use the root plugin", "focus": ["plugin", "manifests", "hooks", "context", "mcp"], "note": "Trusted Git plugins load local hooks and stdio MCP. Read receipts share ~/.agents/skills-usage.db; startup never downloads."},
+      {"id": "public", "label": "Public skills-only plugin", "focus": ["discovery", "instructions", "workflow", "result"], "note": "Public ZIPs include skills without hooks or local MCP. Telemetry needs separate explicit setup and host trust."}
     ]
   },
   "lanes": [
@@ -33,8 +34,8 @@
     {"id": "mcp", "lane": "tooling", "col": 2, "type": "messagebus", "label": "Local stdio MCP", "sublabel": "bundled catalog and tools", "width": 154},
     {"id": "plugin", "lane": "host", "col": 0, "type": "external", "label": "Root plugin", "sublabel": "reviewed repository copy", "width": 140},
     {"id": "manifests", "lane": "host", "col": 1, "type": "frontend", "label": "Host manifests", "sublabel": "Codex / Claude / Copilot", "width": 148},
-    {"id": "hooks", "lane": "host", "col": 2, "type": "backend", "label": "Local session hooks", "sublabel": "Codex / Claude adapters", "width": 156},
-    {"id": "context", "lane": "host", "col": 3, "type": "database", "label": "Bounded context", "sublabel": "plugin / project / global", "width": 154}
+    {"id": "hooks", "lane": "host", "col": 2, "type": "backend", "label": "Lifecycle hooks", "sublabel": "startup / read receipts", "width": 156},
+    {"id": "context", "lane": "host", "col": 3, "type": "database", "label": "Context / evidence", "sublabel": "shared agent state", "width": 154}
   ],
   "edges": [
     {"id": "task-discovery", "from": "task", "to": "discovery", "label": "native inventory", "variant": "emphasis"},
@@ -46,11 +47,11 @@
     {"id": "mcp-instructions", "from": "mcp", "to": "instructions", "label": "catalog read"},
     {"id": "plugin-manifests", "from": "plugin", "to": "manifests", "label": "enable in host"},
     {"id": "manifests-mcp", "from": "manifests", "to": "mcp", "label": "native stdio"},
-    {"id": "manifests-hooks", "from": "manifests", "to": "hooks", "label": "SessionStart"},
-    {"id": "hooks-context", "from": "hooks", "to": "context", "label": "metadata only"}
+    {"id": "manifests-hooks", "from": "manifests", "to": "hooks", "label": "trusted events"},
+    {"id": "hooks-context", "from": "hooks", "to": "context", "label": "read / context"}
   ],
   "cards": [
-    {"dot": "cyan", "title": "Explicit tooling", "items": ["CLI also offers catalog reads, collection maintenance and evidence queries", "MCP also offers onboarding, bump reports and explicit evidence tools"]},
-    {"dot": "amber", "title": "Current boundaries", "items": ["Registry builds use npx @i-9.ai/skills; Git builds prepare dependencies", "Context and catalog reads do not activate skills or record evidence"]}
+    {"dot": "cyan", "title": "Explicit tooling", "items": ["CLI offers catalog reads, maintenance and optional telemetry setup", "Local MCP offers catalog, reports and explicit evidence tools"]},
+    {"dot": "amber", "title": "Current boundaries", "items": ["Public submission is skills-only; full Git plugins retain hooks and MCP", "Read receipts are demand signals, never proof of activation"]}
   ]
 }

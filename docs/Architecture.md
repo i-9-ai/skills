@@ -17,8 +17,12 @@ flowchart LR
     CLI -->|mcp serve| MCP[Local stdio MCP]
     Root[Repository-root plugin] --> Host[Codex / Claude / Copilot manifests]
     Host -->|native stdio| MCP
-    Host -->|Codex / Claude SessionStart| Hook[Local Node 24 hook]
+    Host -->|native session and read events| Hook[Local Node 24 hook]
+    Gemini[Explicit Gemini registration] --> Hook
     Hook --> Context[Bounded metadata context]
+    Hook -->|verified metadata observations| Evidence[Shared usage database]
+    CLI -->|optional setup preview / explicit write| Settings[Selected host settings and receipt]
+    CLI -->|plugin submission preview / explicit write| Submission[Skills-only folder and ZIP]
     MCP -->|catalog tools| Catalog
     Catalog --> Read
     Read --> Work[Portable meta-skill workflow]
@@ -29,9 +33,10 @@ runs its explicit preparation lifecycle. An explicit full commit SHA selects an
 immutable revision when reproducibility is needed. Published registry builds use
 `npx @i-9.ai/skills` with already compiled code. Hook context discovers plugin,
 project and global
-packages. MCP
+packages through the shared state configuration. MCP
 catalog access uses the installed bundled catalog and returns selected Markdown.
-Neither context nor retrieval activates a skill or records evidence. The CLI
+Context display and catalog retrieval do not establish a read or activation;
+native session/read receipts are validated separately. The CLI
 also exposes explicit collection maintenance, observations, reports and evidence
 queries; the MCP exposes the catalog, onboarding, bump reports and explicit
 evidence tools. See [CLI distribution](https://github.com/i-9-ai/skills/wiki/Distribution-Readiness),
@@ -72,6 +77,45 @@ flowchart LR
 
 Validators do not launch processes or read files. Services coordinate validators and repositories; commands own parsing/output. A thin `bin/index.mjs` launches the CLI. The [source index](https://github.com/i-9-ai/skills/blob/main/src/AGENTS.md) records these boundaries. Python is installed only by the workflow for the upstream `skills-ref` command; no repository-owned validation logic is implemented in Python.
 
+## Path ownership and shared agent state
+
+`AgentStateConfiguration` names the host-independent global resources without
+filesystem effects. The root is `I9_AGENT_STATE_ROOT` when explicitly supplied,
+otherwise `HOME/.agents` (with the platform home fallback). CLI available-skills
+and session commands and the native plugin discovery adapter use its `skills/`
+directory. An explicit CLI `--global-root` wins; `--no-global` skips global
+discovery entirely. `SkillDiscoveryRepository` still accepts only selected
+source directories: it does not independently choose a home or scan plugin caches.
+Live metadata discovery does not depend on a catalog being fresh or readable.
+
+| Resource | Path owner and default | Material boundary |
+| --- | --- | --- |
+| Repository skill inventory | `<collection>/skills-catalog.json` | Canonical source-owned inventory; repository layout reads `.agents/skills/` |
+| Global skill inventory | `<agent-state>/skills-catalog.json` | Explicit global catalog operation; reads that root's `skills/`; discovery itself never rewrites it |
+| Read/lifecycle evidence | `<agent-state>/skills-usage.db` | Shared CLI/plugin default; `I9_SKILLS_USAGE_DB` overrides it, and explicit `--db` wins |
+| Derived catalog index | `<caller-index>/skills-catalog.db` or `skills-catalog.index.json` | Explicit output outside every source catalog directory; independent schema and history |
+| Snapshot and installation records | Caller-selected operation state | Keep outside discovery/source roots under the selected package's recovery contract |
+
+Native plugin DATA variables do not select telemetry storage. Config lookup and
+read-only queries never create state. Valid explicit records and verified native
+observations may initialize safe selected parents and compatible schema history.
+The default change never renames, merges, resets or deletes old stores; select an
+old filename explicitly to inspect its original evidence.
+
+The aggregate index intentionally has no compulsory home default. Its package
+accepts explicit source catalogs and confines output outside each source catalog's
+directory. If the global source catalog is `<agent-state>/skills-catalog.json`,
+placing the derived index inside that same agent-state root would violate the
+existing confinement contract. Choose an owned sibling or other external output,
+for example source `/data/agent-state/skills-catalog.json` with output
+`/data/catalog-index/`. The usage database is never an aggregate destination.
+Do not present a JSON fallback or new path as a history migration.
+
+Distributed catalog, catalog-index, snapshot and installation packages retain
+their explicit caller-owned roots and package-relative helpers. Shared home
+defaults belong to repository/host configuration adapters; portable skills do
+not require this checkout, these environment variables or a plugin cache path.
+
 ## Execution contract
 
 The [creator's handoff protocol](https://github.com/i-9-ai/skills/blob/main/.agents/skills/skill-authoring/references/handoff-protocol.md) owns the run format. Specialists can be installed and used alone through their local inputs/outputs; they need no repository root files. The creator locates separately available companions through the host's inventory or trusted explicit paths and wraps their returned artifacts in ordered stages with SHA-256 evidence. Resource paths belong to the installed package; outputs belong to the caller's selected workspace.
@@ -110,12 +154,14 @@ coverage. Context and observed-read persistence have independent failure paths.
 flowchart LR
     Codex[Codex SessionStart] --> Runner[PluginHookRunner]
     Claude[Claude SessionStart] --> Runner
-    Read[Claude native Read attempt / success] --> Runner
+    Copilot[Copilot CLI sessionStart] --> Runner
+    Gemini[Explicit Gemini SessionStart] --> Runner
+    Read[Supported native read attempt / observation] --> Runner
     Runner --> Discovery[Shared skill discovery]
     Collections[Plugin / project / global packages] --> Discovery
     Discovery --> Overview[Bounded host context]
-    Runner -->|verified Claude observations| Telemetry[Shared telemetry service]
-    Telemetry --> Data[Host-owned plugin data]
+    Runner -->|validated native observations| Telemetry[Shared telemetry service]
+    Telemetry --> Data[Shared agent usage database]
 ```
 
 Data stays outside installed bytes and the consumer project. A storage failure
@@ -123,6 +169,22 @@ does not suppress the available-skills overview. Read observations are counts,
 not evidence of activation or a separate source of skill instructions. Native
 host trust and event delivery require their own consumer tests; direct transport
 tests and manifest validation establish a narrower boundary.
+
+Codex accepts only bounded literal cat/sed Bash reads whose returned text matches
+the selected current entrypoint after collection confinement. Claude accepts
+native successful Read receipts. Gemini read_file and Copilot CLI view receipts
+use bounded native timestamps, but their documented payloads cannot reliably pair
+attempts with observations. Same-timestamp indistinguishable receipts may collapse.
+No adapter infers activation, stores raw commands/bodies, or executes a read command.
+See [native hook limits](https://github.com/i-9-ai/skills/wiki/Host-Hooks).
+
+Optional telemetry setup is a separate explicit operation. Enable previews a
+merge into a selected host file; `--write` records exact owned entries and a
+sibling receipt. Status inspects registration/runtime availability, and disable
+removes only unchanged owned entries after review. Setup never grants native host
+trust, runs an agent or modifies the evidence database. Public submission
+preparation similarly writes only its selected inert folder/ZIP; publication
+remains a separate human-operated boundary.
 
 ## Installed MCP and read-only guidance
 

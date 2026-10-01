@@ -38,10 +38,12 @@ Run command integration tests under `tests/integration/cli/`, strict type checki
 - [Catalog access](../../docs/Skill%20MCP.md): installed `catalog search/read/overview` contracts shared with MCP; read-only and independent of project/global discovery.
 - [Collection maintenance](../../docs/Collection%20Maintenance.md): explicit audit and plan selection, preview-first evolution, catalog-only supported writes and verified recovery.
 - [Telemetry operator guide](../../docs/Skill%20Telemetry.md): explicit record, rankings and trend commands with metadata-only diagnostics.
+- [Optional skill telemetry](../../docs/Optional%20Skill%20Telemetry.md): explicit enable, read-only status and receipt-backed disable for selected native hook settings.
 - [Lifecycle evidence](../../docs/Lifecycle%20Evidence.md): explicit lifecycle/catalog records, cohort queries, overlap, inactivity coverage and paged history through the same evidence store.
 - [Available skills](context/AvailableSkillsCommand.ts): reusable project/global overview with bounded discovery.
 - [Repository validation](repo/RepositoryValidateCommand.ts): local collection validation through `repo validate`.
 - [Plugin preparation](plugin/PluginPrepareCommand.ts): preview or create an explicit new staging artifact; never registers or installs it.
+- [Public plugin submission](plugin/PluginSubmissionCommand.ts): preview or create a skills-only directory submission ZIP; provider identity, review and upload remain separate.
 - [Official skills validation](repo/OfficialSkillsValidateCommand.ts): pinned Agent Skills conformance through `repo validate-official` in prepared CI.
 - [Version preparation](repo/PrepareVersionCommand.ts): `repo prepare-version` writes local release artifacts and returns a no-note no-op; never commits or publishes.
 - [Release verification](repo/VerifyReleaseCommand.ts): `repo verify-release` checks version alignment and optional base-commit release evidence without changing the selected checkout.

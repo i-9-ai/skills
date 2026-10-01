@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "source": {
+    "repository": "https://github.com/google/material-design-icons",
+    "revision": "40a7a292a79d9394157e1ea24f83d52d5e17c556",
+    "path": "src/toggle/toggle_on/materialicons/24px.svg",
+    "url": "https://raw.githubusercontent.com/google/material-design-icons/40a7a292a79d9394157e1ea24f83d52d5e17c556/src/toggle/toggle_on/materialicons/24px.svg",
+    "sha256": "5b2cea3a0c4439affcdcfe34e6ed89722c09c174d0a4e5af790e73a38fa388bf",
+    "license": "Apache-2.0",
+    "license_path": "LICENSE"
+  },
+  "reuse": "adapt",
+  "comparison": "exact path text",
+  "changes": "Preserved toggle_on path; added a teal frame, ledger strokes and receipt-status dot.",
+  "notice": "Material Icons by Google, Apache-2.0; full license and attribution are bundled."
+}

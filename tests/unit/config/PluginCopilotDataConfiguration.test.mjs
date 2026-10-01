@@ -3,31 +3,34 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { PluginDataConfiguration } from '../../../src/config/PluginDataConfiguration.ts';
 
-test('Copilot selects only its explicitly supplied data directory', () => {
+test('every supported host selects the shared database despite native DATA variables', () => {
     const configuration = new PluginDataConfiguration({
+        HOME: '/data/agent',
         PLUGIN_DATA: '/codex-data',
         CLAUDE_PLUGIN_DATA: '/claude-data',
         COPILOT_PLUGIN_DATA: '/copilot data',
     });
-    assert.equal(configuration.usageDatabase('copilot'), '/copilot data/skill-usage.db');
-    assert.equal(configuration.usageDatabase('codex'), '/codex-data/skill-usage.db');
-    assert.equal(configuration.usageDatabase('claude'), '/claude-data/skill-usage.db');
-    assert.equal(configuration.usageDatabase(), '/codex-data/skill-usage.db');
+    for (const host of [undefined, 'codex', 'claude', 'copilot', 'gemini']) {
+        assert.equal(configuration.usageDatabase(host), '/data/agent/.agents/skills-usage.db');
+    }
 });
 
-test('Copilot missing, unresolved and invalid data cannot fall back to another host', () => {
+test('invalid automatically supplied DATA values cannot override the shared default', () => {
     for (const value of [undefined, '', '${COPILOT_PLUGIN_DATA}', './relative', '/bad\0data']) {
         const configuration = new PluginDataConfiguration({
+            HOME: '/data/agent',
             PLUGIN_DATA: '/codex-data',
             CLAUDE_PLUGIN_DATA: '/claude-data',
             COPILOT_PLUGIN_DATA: value,
         });
-        assert.throws(() => configuration.usageDatabase('copilot'), /absolute/);
+        assert.equal(configuration.usageDatabase('copilot'), '/data/agent/.agents/skills-usage.db');
     }
 });
 
-test('Copilot does not extend automatic host selection or permit unknown selectors', () => {
-    const configuration = new PluginDataConfiguration({ COPILOT_PLUGIN_DATA: '/copilot-data' });
-    assert.throws(() => configuration.usageDatabase(), /absolute/);
+test('host selectors remain explicit and unknown selectors are rejected', () => {
+    const configuration = new PluginDataConfiguration({
+        HOME: '/data/agent',
+        COPILOT_PLUGIN_DATA: '/copilot-data',
+    });
     assert.throws(() => configuration.usageDatabase('copilot-preview'), /Unsupported/);
 });

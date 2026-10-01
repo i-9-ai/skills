@@ -69,7 +69,11 @@ test('repository-root plugin manifests reference the canonical collection', () =
             assert.equal(server.command, 'node');
             assert.deepEqual(server.args, ['src/transport/PluginMcpServer.ts', '--host', 'codex']);
             assert.equal(server.cwd, '.');
-            assert.deepEqual(server.env_vars, ['PLUGIN_DATA']);
+            assert.deepEqual(server.env_vars, [
+                'PLUGIN_DATA',
+                'I9_AGENT_STATE_ROOT',
+                'I9_SKILLS_USAGE_DB',
+            ]);
             assert.equal(server.env, undefined);
         } else {
             assert.equal(manifest.mcpServers, './mcp/copilot.json');
@@ -82,7 +86,7 @@ test('repository-root plugin manifests reference the canonical collection', () =
                 '--host',
                 'copilot',
             ]);
-            assert.deepEqual(server.env, { COPILOT_PLUGIN_DATA: '${COPILOT_PLUGIN_DATA}' });
+            assert.equal(server.env, undefined);
             assert.deepEqual(server.tools, ['*']);
             assert.equal(server.cwd, undefined);
         }

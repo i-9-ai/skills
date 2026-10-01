@@ -117,6 +117,7 @@ function environment(target, host, options = {}) {
     const data = Object.hasOwn(options, 'data') ? options.data : target.data;
     if (data !== null) result[hostData[host]] = data;
     else delete result[hostData[host]];
+    if (data !== null) result.I9_SKILLS_USAGE_DB = data ? join(data, 'skill-usage.db') : data;
     return result;
 }
 
@@ -254,7 +255,7 @@ for (const host of ['codex', 'claude']) {
             assert.match(context(result, host), /plugin-guide/u);
             assert.deepEqual(snapshot(target.plugin), pluginBefore);
             assert.deepEqual(snapshot(target.project), projectBefore);
-            assert.equal(events(target).length, host === 'claude' ? 1 : 0);
+            assert.equal(events(target).length, 1);
         });
     }
 
@@ -298,12 +299,12 @@ for (const host of ['codex', 'claude']) {
         assert.deepEqual(snapshot(target.project), projectBefore);
         assert.equal(
             fs.existsSync(join(target.data, 'skill-usage.db')),
-            host === 'claude',
-            'only the host with proven telemetry initializes safe host data',
+            true,
+            'native session observations initialize the explicit database',
         );
         assert.equal(
             events(target).filter((event) => event.event_type === 'session.started').length,
-            host === 'claude' ? 1 : 0,
+            1,
         );
     });
 
@@ -319,14 +320,14 @@ for (const host of ['codex', 'claude']) {
         }
     });
 
-    test(`${host} keeps its documented telemetry storage boundary when both host data variables exist`, (t) => {
+    test(`${host} explicit database selection wins when both host data variables exist`, (t) => {
         const target = fixture(t);
         const otherHost = host === 'claude' ? 'codex' : 'claude';
         const result = run(target, host, session(target), {
             environment: { [hostData[otherHost]]: target.plugin },
         });
         assert.match(context(result, host), /project-guide/u);
-        assert.equal(fs.existsSync(join(target.data, 'skill-usage.db')), host === 'claude');
+        assert.equal(fs.existsSync(join(target.data, 'skill-usage.db')), true);
         assert.equal(fs.existsSync(join(target.plugin, 'skill-usage.db')), false);
     });
 }
@@ -461,7 +462,7 @@ test('Claude installed Read hooks distinguish attempt, success, failure and firs
     }
 });
 
-test('Codex does not invent file-read telemetry from Read-shaped or successful shell payloads', (t) => {
+test('Codex rejects Read-shaped events and does not observe object-shaped Bash responses', (t) => {
     const target = fixture(t);
     context(run(target, 'codex', session(target)), 'codex');
     for (const event of ['PreToolUse', 'PostToolUse']) {
@@ -479,13 +480,12 @@ test('Codex does not invent file-read telemetry from Read-shaped or successful s
     }
     assert.equal(
         events(target).filter((event) => event.event_type.startsWith('skill.read.')).length,
-        0,
+        1,
     );
     assert.equal(reads(target).length, 0);
 });
 
 const unavailableData = [
-    ['missing data', () => null],
     ['relative data', () => 'relative-state'],
     ['plugin-contained data', (target) => join(target.plugin, 'runtime-data')],
     ['project-contained data', (target) => join(target.project, 'runtime-data')],
@@ -546,7 +546,7 @@ for (const [label, configure] of unavailableData) {
             const before = snapshot(target.root);
             const result = run(target, host, session(target), { data });
             assert.match(context(result, host), /project-guide/u);
-            if (host === 'claude') assert.match(result.stderr, /telemetry|data|observation/iu);
+            assert.match(result.stderr, /telemetry|data|observation/iu);
             assert.equal(
                 result.stderr.includes(target.root),
                 false,
@@ -568,7 +568,7 @@ test('unwritable plugin data cannot prevent a valid session context', (t) => {
         for (const host of ['codex', 'claude']) {
             const result = run(target, host, session(target));
             assert.match(context(result, host), /project-guide/u);
-            if (host === 'claude') assert.match(result.stderr, /telemetry|data|observation/iu);
+            assert.match(result.stderr, /telemetry|data|observation/iu);
         }
         assert.deepEqual(snapshot(target.root), before);
     } finally {
@@ -598,7 +598,7 @@ for (const protectedRoot of ['plugin', 'project']) {
             assert.match(context(result, host), /project-guide/u);
             assert.equal(fs.existsSync(join(canonical, 'uncreated')), false);
             assert.deepEqual(snapshot(target.root), before);
-            if (host === 'claude') assert.match(result.stderr, /telemetry|data|observation/iu);
+            assert.match(result.stderr, /telemetry|data|observation/iu);
         }
     });
 }
@@ -651,7 +651,13 @@ for (const host of ['codex', 'claude']) {
         assert.equal(handler.statusMessage, 'Loading available skills overview');
         assert.equal(handler.timeout, 10);
         if (host === 'codex') {
-            assert.deepEqual(Object.keys(configuration.hooks), ['SessionStart']);
+            assert.deepEqual(Object.keys(configuration.hooks), [
+                'SessionStart',
+                'PreToolUse',
+                'PostToolUse',
+            ]);
+            for (const event of ['PreToolUse', 'PostToolUse'])
+                assert.equal(configuration.hooks[event][0].matcher, '^Bash$');
             assert.equal(
                 handler.command,
                 'node "$PLUGIN_ROOT/src/transport/PluginHookRunner.ts" --host codex',

@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import { Command, Flags } from '@oclif/core';
-import { homedir } from 'node:os';
-import { join } from 'node:path';
+import { AgentStateConfiguration } from '../../config/AgentStateConfiguration.ts';
 import { ProjectConfiguration } from '../../config/ProjectConfiguration.ts';
 import { AvailableSkillsService } from '../../service/AvailableSkillsService.ts';
 
@@ -44,7 +43,7 @@ export default class AvailableSkillsCommand extends Command {
         'max-entries': number;
     }): string {
         const globalRoot = flags.global
-            ? (flags['global-root'] ?? join(homedir(), '.agents', 'skills'))
+            ? (flags['global-root'] ?? new AgentStateConfiguration().skills())
             : undefined;
 
         return new AvailableSkillsService().renderAvailableSkills({

@@ -124,6 +124,11 @@ editorial rules, deliberate decisions and restrained motion. It does not replace
 the corporate identity or imply a new approved organizational logo. The brand
 mark is ordinary code-native text, **I-9 Skills**.
 
+The favicon is an original package outline in acid-lime on a rounded forest-ink
+tile. Keep the silhouette legible at 16 and 32 pixels, with no lettering, external
+resources or active SVG content. It identifies this product rather than replacing
+the organizational logo.
+
 Selected design inputs are the generated opening, lifecycle, catalog,
 installation/evidence and mobile concepts. These are design references, not
 screenshots proving a running product. The underlying pages remain ordinary

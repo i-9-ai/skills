@@ -5,6 +5,7 @@ import { CatalogObservationRepository } from '../repository/CatalogObservationRe
 import { TelemetryInputRepository } from '../repository/TelemetryInputRepository.ts';
 import { SkillEvidenceValidator } from '../validator/SkillEvidenceValidator.ts';
 import { SkillOperationError } from '../validator/SkillOperationError.ts';
+import { PluginDataRepository } from '../repository/PluginDataRepository.ts';
 
 type DatabaseSelection = string | (() => string);
 export type EvidenceQueryKind = 'lifecycle' | 'overlap' | 'inactivity' | 'history';
@@ -55,8 +56,9 @@ export class SkillEvidenceService {
     ): T {
         let connection: SkillEvidenceDatabaseRepository | undefined;
         try {
+            const database = typeof selection === 'string' ? selection : selection();
             connection = new SkillEvidenceDatabaseRepository(
-                typeof selection === 'string' ? selection : selection(),
+                readOnly ? database : new PluginDataRepository().prepareDatabase(database, []),
                 { readOnly },
             );
             return operation(connection);

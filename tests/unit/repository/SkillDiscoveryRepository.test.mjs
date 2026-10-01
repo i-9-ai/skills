@@ -35,12 +35,26 @@ function packageAt(directory, name, description = 'A focused implementation refe
     );
 }
 
-function cli(args, cwd = repository) {
-    return spawnSync(process.execPath, [join(repository, 'bin/index.mjs'), ...args], {
-        cwd,
-        encoding: 'utf8',
-        timeout: 10_000,
-    });
+function cli(args, cwd = repository, environment = {}) {
+    const temporaryHome = environment.HOME
+        ? undefined
+        : realpathSync(mkdtempSync(join(tmpdir(), 'i9-discovery-cli-home-')));
+    try {
+        return spawnSync(process.execPath, [join(repository, 'bin/index.mjs'), ...args], {
+            cwd,
+            encoding: 'utf8',
+            timeout: 10_000,
+            env: {
+                PATH: process.env.PATH,
+                HOME: temporaryHome,
+                USERPROFILE: temporaryHome,
+                NODE_NO_WARNINGS: '1',
+                ...environment,
+            },
+        });
+    } finally {
+        if (temporaryHome) rmSync(temporaryHome, { recursive: true, force: true });
+    }
 }
 
 test('discovery reads current project/global entrypoints, nested packages, aliases and collisions', (t) => {
@@ -147,6 +161,64 @@ test('fresh disk metadata is used even when catalog JSON is stale or malformed',
     const result = cli(['context', 'available-skills', '--project', root, '--no-global']);
     assert.equal(result.status, 0, result.stderr);
     assert.match(result.stdout, /new-skill \[project\]/);
+});
+
+test('CLI global discovery follows shared state root and ignores native plugin DATA', (t) => {
+    const root = fixture(t);
+    const project = join(root, 'project');
+    const home = join(root, 'home');
+    const state = join(root, 'selected-agent-state');
+    const hostData = join(root, 'automatic-host-data');
+    mkdirSync(project);
+    packageAt(join(home, '.agents/skills/home-guide'), 'home-guide');
+    packageAt(join(state, 'skills/state-guide'), 'state-guide');
+    packageAt(join(hostData, 'skills/cache-guide'), 'cache-guide');
+    writeFileSync(join(state, 'skills-catalog.json'), '{stale synthetic catalog');
+    const environment = {
+        HOME: home,
+        USERPROFILE: home,
+        PLUGIN_DATA: hostData,
+        CLAUDE_PLUGIN_DATA: hostData,
+    };
+    const fromHome = cli(
+        ['context', 'available-skills', '--project', project],
+        project,
+        environment,
+    );
+    assert.equal(fromHome.status, 0, fromHome.stderr);
+    assert.match(fromHome.stdout, /home-guide \[global\]/);
+    assert.doesNotMatch(fromHome.stdout, /state-guide|cache-guide/);
+    const fromState = cli(['context', 'available-skills', '--project', project], project, {
+        ...environment,
+        I9_AGENT_STATE_ROOT: state,
+    });
+    assert.equal(fromState.status, 0, fromState.stderr);
+    assert.match(fromState.stdout, /state-guide \[global\]/);
+    assert.doesNotMatch(fromState.stdout, /home-guide|cache-guide/);
+    assert.equal(
+        readFileSync(join(state, 'skills-catalog.json'), 'utf8'),
+        '{stale synthetic catalog',
+    );
+});
+
+test('explicit global-root and no-global retain caller selection over shared defaults', (t) => {
+    const root = fixture(t);
+    const project = join(root, 'project');
+    const selected = join(root, 'explicit-collection');
+    mkdirSync(project);
+    packageAt(join(selected, 'chosen-guide'), 'chosen-guide');
+    const environment = {
+        HOME: join(root, 'unused-home'),
+        I9_AGENT_STATE_ROOT: 'invalid-ignored-default',
+    };
+    const args = ['context', 'available-skills', '--project', project, '--global-root', selected];
+    const explicit = cli(args, project, environment);
+    assert.equal(explicit.status, 0, explicit.stderr);
+    assert.match(explicit.stdout, /chosen-guide \[global\]/);
+    const disabled = cli([...args, '--no-global'], project, environment);
+    assert.equal(disabled.status, 0, disabled.stderr);
+    assert.doesNotMatch(disabled.stdout, /chosen-guide/);
+    assert.match(disabled.stdout, /No readable skill entrypoints discovered/);
 });
 
 test('depth-limited discovery reports incomplete coverage while keeping ordinary packages', (t) => {

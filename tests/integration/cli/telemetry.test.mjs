@@ -10,11 +10,14 @@ test('telemetry CLI records stdin explicitly and reports read-only trends with l
     const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'telemetry-cli-')));
     t.after(() => fs.rmSync(root, { recursive: true, force: true }));
     const db = path.join(root, 'usage.db');
+    const home = path.join(root, 'home');
+    fs.mkdirSync(home);
     const log = path.join(root, 'diagnostics.jsonl');
     const run = (args, input) =>
         spawnSync(process.execPath, ['bin/index.mjs', 'telemetry', ...args], {
             encoding: 'utf8',
             input,
+            env: { PATH: process.env.PATH, HOME: home, USERPROFILE: home, NODE_NO_WARNINGS: '1' },
         });
     const event = {
         schema_version: 1,

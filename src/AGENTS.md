@@ -34,10 +34,11 @@ Run `npm run check` and inspect the required official workflow result for the ex
 - [Snapshot observation repository](repository/SkillSnapshotObservationRepository.ts): bounded schema-2 snapshot verification and portable inventory export without capture or restore.
 - [Bump report service](service/SkillBumpReportService.ts): pure comparison and explicit-evidence classification, preserving uncertainty and paged display.
 - [Onboarding service](service/SkillOnboardingService.ts): versioned installed command data, complete synthetic fixtures and examples; no automatic execution.
-- [Plugin data](config/PluginDataConfiguration.ts): select a persistent host-owned usage database without writing into the installed plugin.
+- [Shared agent state](config/AgentStateConfiguration.ts): resolve the common agent state root and named catalog/evidence paths without creating them.
+- [Plugin data](config/PluginDataConfiguration.ts): select the shared agent evidence database or an explicit override without writing into the installed plugin.
 - [Plugin MCP entrypoint](transport/PluginMcpServer.ts): dependency-free Node 24 launch of catalog access and explicit usage operations; no state on initialization.
 - [Installed plugin hooks](transport/PluginHookRunner.ts): bounded native event ingress and neutral diagnostics without CLI dependencies, Git lookup or automatic setup.
-- [Plugin hook orchestration](service/PluginHookService.ts): shared discovery and host context plus proven Claude observations; storage failure cannot suppress session context.
+- [Plugin hook orchestration](service/PluginHookService.ts): shared discovery and host context plus supported native observations; storage failure cannot suppress session context.
 - [Plugin hook configuration](config/PluginHookConfiguration.ts): separate installed resources, caller collections and explicit host data selection without installation effects.
 - [Plugin data filesystem](repository/PluginDataRepository.ts): validate external host-owned storage and preserve protected plugin/caller paths before opening a writer.
 - [Project configuration](config/ProjectConfiguration.ts): one validated root selection and named project paths without filesystem effects.
@@ -46,6 +47,9 @@ Run `npm run check` and inspect the required official workflow result for the ex
 - [Skill MCP](command/mcp/ServeMcpCommand.md): bounded bundled instructions and explicit observed-read metrics through one stdio server; no activation inference.
 - [Installed collection configuration](config/InstalledCollectionConfiguration.ts): select resources relative to the running package independently of the caller's project or home.
 - [Installed skill repository](repository/InstalledSkillRepository.ts): validate bundled catalog identity/freshness and read confined Markdown resources with content provenance.
+- [Build source receipt](repository/BuildSourceReceiptRepository.ts): capture clean owned Git build identity and inspect bounded installed inventory without consulting caller Git.
+- [Source receipt validator](validator/BuildSourceReceiptValidator.ts): distinguish asserted source revisions, build evidence and inventory integrity from unavailable or invalid provenance.
+- [Build receipt runner](transport/BuildSourceReceiptRunner.ts): append an explicit receipt to compiled distribution, marking dirty or archive sources unavailable.
 - [Catalog queries](service/SkillCatalogService.ts): read-only metadata search, resource retrieval and overview using the existing collection contracts.
 - [Collection audit](service/CollectionAuditService.ts): bounded structural findings and baseline evidence for an explicitly selected collection, separate from official or behavioral validation.
 - [Collection remediation](service/CollectionRemediationService.ts): reviewable plans and explicit catalog-only application, preserving unresolved semantic handoffs and recovery evidence.
@@ -65,8 +69,12 @@ Run `npm run check` and inspect the required official workflow result for the ex
 - [Skill discovery](repository/SkillDiscoveryRepository.ts): bounded project/global metadata discovery and canonical deduplication.
 - [Collection catalog](repository/CollectionCatalogRepository.ts): explicit collection inspection, checking and synchronization through the self-contained package helper.
 - [Plugin preparation](service/PluginPreparationService.ts): deterministic manifests and integrity receipt for a new inert local artifact, without installation or registration.
+- [Public plugin submission](service/PluginSubmissionService.ts): derive a skills-only folder, ZIP and integrity summary for separately approved directory submission.
+- [Plugin ZIP repository](repository/PluginZipRepository.ts): bounded deterministic stored ZIP entries without shell execution or arbitrary archive paths.
 - [Aggregate catalog](repository/AggregateCatalogRepository.ts): derived multi-source state and history through explicit source/index selections.
 - [Host hook configuration](service/HostHookConfiguration.ts): verified per-host registration and context envelopes around the same discovery service.
+- [Optional hook setup](service/HookInstallationService.ts): preview, explicitly merge, inspect and remove receipt-matched skill telemetry registrations while retaining unrelated settings and evidence.
+- [Selected hook settings](repository/HookSettingsRepository.ts): bounded regular-file reads and guarded replacement of an unchanged selected settings file.
 - [Skill read repository](repository/SkillReadRepository.ts): transactional observed-read storage and ranking projections.
 - [Evidence database](repository/SkillEvidenceDatabaseRepository.ts): shared dedicated SQLite connection and transactional boundaries; read-only queries never create or migrate storage.
 - [Lifecycle repository](repository/SkillLifecycleRepository.ts): explicit attempt invariants, cohort projections and co-routing counts without inferred activation.

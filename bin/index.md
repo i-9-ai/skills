@@ -53,6 +53,10 @@ node bin/index.mjs hook list
 node bin/index.mjs hook session-config --host codex
 node bin/index.mjs hook verify --host codex --file .codex/hooks.json
 node bin/index.mjs hook session-index
+node bin/index.mjs hook telemetry-enable --host claude --file /project/.claude/settings.json --collection project=/project/.agents/skills
+node bin/index.mjs hook telemetry-enable --host claude --file /project/.claude/settings.json --collection project=/project/.agents/skills --executable /usr/local/bin/i9-skills --write
+node bin/index.mjs hook telemetry-status --host claude --file /project/.claude/settings.json
+node bin/index.mjs hook telemetry-disable --host claude --file /project/.claude/settings.json
 node bin/index.mjs catalog search --query authoring --limit 10
 node bin/index.mjs catalog read --skill skill-authoring
 node bin/index.mjs catalog overview --max-entries 12
@@ -64,6 +68,7 @@ node bin/index.mjs telemetry trends --db /absolute/local-data/skill-usage.db --i
 node bin/index.mjs telemetry catalog-observe --db /absolute/local-data/skill-usage.db --file catalog.json
 node bin/index.mjs telemetry lifecycle --db /absolute/local-data/skill-usage.db --from 2026-09-01T00:00:00.000Z --until 2026-10-01T00:00:00.000Z
 node bin/index.mjs plugin prepare --output .work/plugin-preview/i9-skills
+node bin/index.mjs plugin submission --output .work/public-candidate/i9-skills
 ```
 
 Use each command's `--help`. Project resolution: the command's explicit root flag
@@ -73,8 +78,11 @@ resolves that selection once and derives its local skill, Codex hook and catalog
 paths without reading or creating them. Bundled `catalog search/read/overview` and
 MCP access instead select the running installed package, ignoring that project
 override and cwd. Filesystem validation remains in repositories. Global discovery defaults
-to the current user's `.agents/skills`; `--global-root` overrides it and
-`--no-global` disables it. Tests use synthetic paths only.
+to the shared agent state's `skills/`: `I9_AGENT_STATE_ROOT` selects that root,
+otherwise the current user's `.agents` root is used. `--global-root` explicitly
+overrides the skill directory; `--no-global` disables global discovery, including
+default path resolution. Native plugin DATA variables do not alter discovery.
+Tests use synthetic paths only.
 
 `repo validate --project PATH` runs local collection checks after `npm ci`, without
 Python or additional downloads. `repo validate-official` also runs the pinned
@@ -164,12 +172,14 @@ retrieval and overview plus explicit read, lifecycle and catalog evidence. Initi
 catalog calls require no data directory and create no state. A valid record opens
 the selected dedicated SQLite database and applies migrations; evidence queries open
 existing valid storage read-only. A missing database is unavailable, not zero
-history. The CLI accepts an absolute `--db`; the installed plugin selects its
-host data outside installed files and the caller's project. The legacy Codex and
-Copilot MCP mappings forward explicitly configured `PLUGIN_DATA` and
-`COPILOT_PLUGIN_DATA`, respectively. Their plugin cwd cannot identify the
-consuming project, so the caller owns that exclusion. Neither mapping provisions
-data automatically or falls back to another host's storage variable.
+history. CLI telemetry and plugin hooks/MCP default to the shared
+`~/.agents/skills-usage.db`. `I9_AGENT_STATE_ROOT` selects another state root;
+`I9_SKILLS_USAGE_DB` selects a database; explicit `--db` wins. Native plugin DATA
+variables never silently replace that default. Select a legacy `skill-usage.db`
+explicitly to keep its history; no stores are moved, merged or deleted. A valid
+record can create safe missing parents, while queries never initialize state.
+Keep plugin state outside installed files and the consuming project. Legacy MCP
+processes start in the plugin and cannot infer that consumer exclusion.
 Standard output contains protocol messages only. Read the
 [MCP contract](../docs/Skill%20MCP.md) for all tools, bounds and provenance.
 The former `mcp usage` route is removed before the first release; manually copied
@@ -200,12 +210,34 @@ tiers, limits and the distinction between inspection and deletion.
 
 `hook telemetry-config --host claude --db /absolute/local-data/usage.db
 --collection project=/absolute/project/.agents/skills` prints an optional
-observation registration. `hook observe` maps native Claude Read events into
-the shared event store: attempts and successes remain distinct, stable host
-occurrences deduplicate, and first receipt time survives retries. It records
-entrypoint reads only; Bash, implicit loading and reference files are outside
-coverage. The [host contract](../docs/Host%20Hooks.md) explains failure behavior.
+observation registration. `hook observe` maps reviewed Codex Bash, Claude Read,
+Gemini read_file or Copilot CLI view events into the shared store. Codex verifies
+only literal cat/sed output after collection identity confinement. Claude/Codex
+native call IDs pair attempts and reads; first receipt time survives retries.
+Gemini/Copilot use their bounded native timestamps without claiming reliable
+pre/post pairing. All adapters count only discovered SKILL.md entrypoints.
+Implicit loading, reference files and unsupported tool/response shapes remain
+outside coverage. The [host contract](../docs/Host%20Hooks.md) explains limits
+and nonblocking failure.
 No host registration is installed or enabled by these commands.
+
+`hook telemetry-enable --host HOST --file ABSOLUTE_SETTINGS --collection
+LABEL=ABSOLUTE_SKILLS` previews optional setup for Codex, Claude, Copilot or
+Gemini. The settings parent must already exist and be canonical. Add `--write`
+only for an authorized reviewed merge; a sibling ownership receipt records the
+exact inserted entries. The default invocation uses the current Node executable
+and CLI launcher. `--executable ABSOLUTE_PATH` instead selects a stable installed
+CLI. A launcher resolved from an npx cache requires that cache to remain available;
+status reports missing runtime paths. No install or network request runs at hook
+time, and setup creates no evidence database.
+
+`hook telemetry-status --host HOST --file ABSOLUTE_SETTINGS` inspects owned
+registration and runtime availability without changing settings or proving host
+trust/event delivery. `hook telemetry-disable` previews removal; `--write`
+removes only exact unchanged owned entries. It preserves unrelated settings and
+the usage database. Modified entries or receipts require review and are not
+silently overwritten. Native host trust remains a separate user action. See the
+[telemetry setup guide](../docs/Skill%20Telemetry.md).
 
 ## Failures and the single entrypoint
 
@@ -234,6 +266,16 @@ is the default and sync preserves history; --format json retains current state
 only. Rebuild rejects existing SQLite history without --reset-history. There is
 no aggregate dry-run: inspect/check and a verified backup precede explicit writes.
 
+The shared global catalog default is `<agent-state>/skills-catalog.json`; global
+catalog maintenance still requires explicit `--collection` and `--layout global`.
+Do not silently relocate a caller's catalog. Aggregate output remains explicitly
+selected and outside every source catalog directory. For a global source at
+`/data/agent-state/skills-catalog.json`, choose another owned directory such as
+`/data/catalog-index`; its `skills-catalog.db` must stay separate from both source
+inventories and `skills-usage.db`. JSON fallback is current lookup, not a migration
+of SQLite history. The [architecture path map](../docs/Architecture.md#path-ownership-and-shared-agent-state)
+records these distinct owners.
+
 ## Host adapters and packed distribution
 
 Use hook session-config --host codex|claude|copilot|gemini|antigravity|hermes and hook verify
@@ -244,8 +286,9 @@ before proposing installation; generation and fixture tests do not enable a host
 Run npm run build and npm run package:check for the allowlisted compiled artifact.
 The same launcher uses source TypeScript in the checkout and JavaScript in the
 packed package. Read [distribution preparation](../docs/Distribution%20Readiness.md)
-for actual coverage and the separate publication gate. The npm manifest prevents
-registry publication; this does not require the GitHub repository to be private.
+for actual coverage and the separate publication gate. The public npm manifest
+does not authorize publishing; the reviewed release workflow and maintainer
+authority govern that action separately.
 
 `plugin prepare --output .work/plugin-preview/i9-skills` previews a separate
 inert plugin artifact. Create the staging parent explicitly; add `--write` to
@@ -253,3 +296,12 @@ create its new child. Existing destinations are refused. Read the
 [plugin guide](../docs/Plugin%20Preparation.md) for manifests, integrity receipts,
 bounded inputs and retained partial-write recovery. It never registers a
 marketplace, installs a consumer or enables an integration.
+
+`plugin submission --output .work/public-candidate/i9-skills` previews a
+skills-only manual-submission candidate. Create the neutral staging parent
+explicitly, then add `--write` to create the new folder, sibling ZIP and integrity
+summary. Existing outputs are refused. The projection excludes telemetry hooks,
+MCP, executable repository tooling and host state; it is distinct from an optional
+local runtime plugin. Preparation does not upload, register, approve or publish
+the candidate. Read the [plugin preparation guide](../docs/Plugin%20Preparation.md)
+before carrying out the separate human submission.

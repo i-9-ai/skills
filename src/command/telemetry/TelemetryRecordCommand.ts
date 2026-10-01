@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
 import { Command, Flags } from '@oclif/core';
 import { SkillTelemetryService } from '../../service/SkillTelemetryService.ts';
+import { PluginDataConfiguration } from '../../config/PluginDataConfiguration.ts';
 
 export default class TelemetryRecordCommand extends Command {
     static description = 'Record a schema-1 observation or explicit schema-2 lifecycle event.';
     static examples = ['<%= config.bin %> telemetry record --db /data/usage.db --file event.json'];
     static flags = {
         db: Flags.string({
-            required: true,
+            default: async () => new PluginDataConfiguration().usageDatabase(),
             description: 'Absolute caller-owned usage database; creates or upgrades explicitly.',
         }),
         file: Flags.string({

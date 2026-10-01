@@ -1,0 +1,8 @@
+Skills Usage Setup
+Original implementation and instructions by i-9-ai.
+
+The icon adapts Material Icons toggle_on by Google, distributed under Apache-2.0.
+Source: google/material-design-icons at 40a7a292a79d9394157e1ea24f83d52d5e17c556,
+src/toggle/toggle_on/materialicons/24px.svg.
+The original path is preserved; framing, color and receipt-status details are
+modified by i-9-ai. No affiliation or endorsement is implied.

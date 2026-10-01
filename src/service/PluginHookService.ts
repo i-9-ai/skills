@@ -42,17 +42,13 @@ export class PluginHookService {
             result.output = new HostHookConfiguration().sessionOutput(configuration.host, context);
         }
 
-        // Codex currently supplies context only. Successful shell execution is
-        // insufficient evidence of a particular skill read or session activation.
-        if (configuration.host !== 'claude') return result;
-
         try {
             const { HookTelemetryService } = await import('./HookTelemetryService.ts');
             const identities = new SkillReadIdentityRepository(this.discovery, {
                 allowIncompleteDiscovery: true,
             });
             const telemetry = new HookTelemetryService(identities);
-            const event = telemetry.observation(input.payload, sources);
+            const event = telemetry.observation(input.payload, sources, configuration.host);
             if (!event) return result;
 
             const database = directories.prepareDatabase(configuration.usageDatabase(), [
@@ -70,6 +66,6 @@ export class PluginHookService {
     }
 
     private neutralOutput(): string {
-        return this.configuration.host === 'claude' ? '{}' : '';
+        return this.configuration.host === 'codex' ? '' : '{}';
     }
 }

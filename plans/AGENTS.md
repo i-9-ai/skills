@@ -17,6 +17,12 @@ Verify every requirement has an implementation and a check or an explicit limit.
 
 ## Child DOX index
 
+- [Optional telemetry and public submission](2026-10-01-21-50-00-optional-telemetry-and-public-submission.md): explicit receipt-backed hook setup and a skills-only submission artifact with independent provider approval boundaries.
+- [Build Git source receipts](2026-10-01-22-13-33-git-source-receipts.md): bounded compiled-artifact source assertions and inventory verification, without caller Git inference or signature claims.
+- [Continuous credential detection](2026-10-01-22-14-29-continuous-secret-detection.md): native push protection and pinned redacted CI scans over actual candidate bytes.
+- [Workflow publisher checks](2026-10-01-22-14-29-01-workflow-runtime-and-publisher-checks.md): compatible immutable workflow pins and explicit npm trusted-publisher prerequisites without token fallback.
+- [Shared agent telemetry](2026-09-30-20-40-11-shared-agent-telemetry.md): common agent state and supported native read adapters with metadata-only evidence and nonblocking failure.
+
 - [Website GitHub Pages delivery](2026-09-30-20-27-20-website-github-pages.md): catalog website and verified legacy guides in one Pages artifact; release waits for verified deployment.
 
 - [Cloudflare catalog site delivery](2026-09-30-18-31-35-cloudflare-site-delivery.md): authorized native Git previews and main production, with separate indexing modes; website merge approval and existing guide URLs remain independent.

@@ -244,6 +244,16 @@
         "skills",
         "synthesis"
       ]
+    },
+    {
+      "name": "skills-usage-setup",
+      "path": ".agents/skills/skills-usage-setup",
+      "description": "Use to preview, explicitly enable, inspect, or remove optional skill-read observations for selected skill collections while preserving unrelated host settings and local evidence.",
+      "tags": [
+        "observations",
+        "setup",
+        "skills"
+      ]
     }
   ]
 }

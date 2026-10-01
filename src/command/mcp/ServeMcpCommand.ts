@@ -14,7 +14,7 @@ export default class ServeMcpCommand extends Command {
     static flags = {
         db: Flags.string({
             description:
-                'Absolute path to a caller-owned dedicated usage database; defaults to plugin data when supplied by the host.',
+                'Absolute dedicated usage database; defaults to shared agent state. Queries never initialize storage.',
         }),
     };
 

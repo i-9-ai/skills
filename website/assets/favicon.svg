@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <title>I-9 Skills</title>
+  <rect width="32" height="32" rx="7" fill="#14231A"/>
+  <g fill="none" stroke="#D7F46B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m16 6 10 5v10l-10 5-10-5V11Z"/>
+    <path d="m6 11 10 5 10-5M16 16v10M11 8.5l10 5"/>
+  </g>
+</svg>

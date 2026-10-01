@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import {
     cpSync,
     existsSync,
@@ -95,6 +96,7 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
     assert.equal(packed?.name, '@i-9.ai/skills');
     const names = packed.files.map((file) => file.path);
     assert.ok(names.includes('dist/index.js'));
+    assert.ok(names.includes('dist/source-receipt.json'));
     assert.ok(names.includes('bin/index.mjs'));
     const sourceCatalog = JSON.parse(readFileSync(join(repository, 'skills-catalog.json')));
     for (const skill of sourceCatalog.skills) {
@@ -104,7 +106,7 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
         assert.ok(!name.startsWith('/') && !name.split('/').includes('..'), name);
         assert.match(
             name,
-            /^(?:bin\/index\.(?:mjs|md)|dist\/.*\.js|\.agents\/skills\/|skills-catalog\.json|docs\/|package\.json|README\.md|LICENSE|NOTICE)/,
+            /^(?:bin\/index\.(?:mjs|md)|dist\/(?:.*\.js|source-receipt\.json)|\.agents\/skills\/|skills-catalog\.json|docs\/|package\.json|README\.md|LICENSE|NOTICE)/,
         );
         assert.doesNotMatch(name, /^(?:src|tests|\.work|tmp|\.codex|\.github|node_modules)\//);
         assert.ok(!name.endsWith('.ts'), name);
@@ -189,6 +191,15 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
         ['skill-authoring'],
     );
     assert.equal(search.provenance.resolved_git_sha, null);
+    assert.deepEqual(search.provenance.source_provenance, {
+        status: 'unavailable',
+        build_verification: 'unavailable',
+        integrity: 'unavailable',
+        reason: 'not_git_source',
+        receipt_sha256: createHash('sha256')
+            .update(readFileSync(join(installed, 'dist/source-receipt.json')))
+            .digest('hex'),
+    });
     const resource = JSON.parse(
         run(process.execPath, [launcher, 'catalog', 'read', '--skill', 'skill-authoring'], root),
     );
