@@ -1,5 +1,64 @@
 # Changelog
 
+## 0.3.0
+
+### Minor Changes
+
+- 1c16cb8: Add `--executable`, `--project`, `--global-root`, `--no-global` and `--max-entries`
+  to `hook session-config` and `hook verify`. Generate opt-in POSIX session hooks
+  for a retained local CLI executable and resolve its consumer project explicitly
+  or from the hook working directory. Reject missing or non-executable selections;
+  preserve existing checkout and plugin defaults. Generation and verification do
+  not enable hooks, install dependencies or prove native host delivery.
+- 1c16cb8: Add explicit `hook telemetry-enable`, `hook telemetry-status` and
+  `hook telemetry-disable` commands. They preview or merge supported Codex,
+  Claude, Copilot and Gemini registrations into a selected settings file,
+  preserve unrelated hooks, and use a local ownership receipt for idempotent
+  setup and exact-entry removal. Observations use the shared agent evidence
+  database by default. Hook events never install or download a runtime, and
+  disabling observations retains evidence. POSIX settings registration requires
+  an existing canonical parent directory and an already available executable;
+  native host trust remains a separate prerequisite.
+- 1c16cb8: Add `plugin submission` to preview or explicitly write a portable skills-only plugin folder, deterministic ZIP and SHA-256 integrity summary under a new neutral staging parent. The public projection includes complete packages, assets and licenses while excluding repository hooks, local MCP, apps and local state. Preparation performs no installation, portal upload or publication and does not establish provider approval; changed skills or package files require a newly prepared ZIP for manual submission.
+- 1c16cb8: Share native and CLI skill-read evidence at `~/.agents/skills-usage.db` by
+  default, with explicit `I9_AGENT_STATE_ROOT`, `I9_SKILLS_USAGE_DB` and command
+  database overrides. Automatic plugin data variables no longer split evidence
+  by host. Existing databases are never moved, merged or deleted implicitly.
+
+  Add bounded Codex literal shell-read verification and Gemini/Copilot read
+  adapters alongside Claude observations. Queries remain read-only; explicit
+  writers initialize selected safe state lazily. Store opaque identities and
+  bounded metadata, without raw prompts, commands or file content. Receipt
+  counts signal demand rather than activation. Gemini and Copilot receipts do
+  not establish reliable pre/post call correlation, and supported payload tests
+  do not prove universal native-host delivery or trust.
+- 1c16cb8: Add the portable `skills-usage-setup` meta-skill for previewing, explicitly enabling,
+  inspecting and removing optional skill-read observations for selected collections.
+  Its bundled Node 24 helper preserves unrelated settings and local evidence with
+  receipt-owned registration, a metadata-only JSONL sink and complete synthetic
+  examples. Native host adapters are optional; installation never enables capture,
+  and read observations do not prove skill activation or effectiveness.
+
+### Patch Changes
+
+- 1c16cb8: Add a read-only credential-pattern check for pull requests and main updates using
+  checksum-pinned Gitleaks 8.30.1, isolated synthetic detector checks, complete event
+  commit ranges and tracked-head blob inspection. Fail on missing history or stated
+  resource limits; discard matched-value output and provide no automatic exception,
+  rotation or history rewrite. Manual history audits stop at the newest 500 commits.
+
+  Refresh official checkout, Node setup and Python setup actions to immutable Node
+  24 releases. Verify local runtime, manifest and OIDC identity prerequisites before
+  the official packed npm publication, while explicitly leaving the server-side
+  trusted publisher binding and successful upload to provider verification.
+- 1c16cb8: Retain a bounded source receipt when a compiled package is prepared from a clean Git checkout of the collection. Installed `catalog search`, `catalog read`, `catalog overview` and their MCP equivalents expose the exact source revision as a build assertion after verifying distributed file digests. Missing, modified, archive or dirty-source receipts report unavailable Git provenance; receipt hashes do not authenticate the publisher, and runtime reads never infer a revision from the caller's repository.
+- 1c16cb8: Preserve existing changelog preamble and historical release bytes during `repo prepare-version`, including indented blank lines and mixed version-heading depths. Normalize only newly generated entries and reproduce the same output in repeated read-only `repo verify-release --base` checks.
+- 1c16cb8: Update the interactive entry-path map and README diagram to distinguish shared
+  agent evidence, explicit optional telemetry setup and skills-only public plugin
+  submissions from full repository-root plugins with hooks and local MCP.
+- 1c16cb8: Add an original package favicon to the catalog website, with paths that work from
+  the root, translated pages and a GitHub Pages project subdirectory.
+
 ## 0.2.0
 
 ### Minor Changes
