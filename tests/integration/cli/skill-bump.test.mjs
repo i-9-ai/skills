@@ -214,13 +214,17 @@ function relocate(target) {
         globalconfig = path.join(target.root, 'global.npmrc');
     fs.writeFileSync(userconfig, '');
     fs.writeFileSync(globalconfig, '');
+    // npm supplies its own CLI path in npm-run tests; it need not live beside Node.
+    const npmEntry = process.env.npm_execpath;
+    const npmArgs = ['ls', '--omit=dev', '--all', '--parseable'];
     const npm = spawnSync(
-        path.join(path.dirname(process.execPath), 'npm'),
-        ['ls', '--omit=dev', '--all', '--parseable'],
+        npmEntry ? process.execPath : 'npm',
+        npmEntry ? [npmEntry, ...npmArgs] : npmArgs,
         {
             cwd: repository,
             env: {
                 ...target.environment,
+                PATH: process.env.PATH ?? target.environment.PATH,
                 npm_config_userconfig: userconfig,
                 npm_config_globalconfig: globalconfig,
                 npm_config_update_notifier: 'false',

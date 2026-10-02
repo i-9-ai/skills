@@ -75,6 +75,38 @@ exact verified release version to the package name. For unreleased development u
 the checkout command above or the [local tarball test](https://github.com/i-9-ai/skills/wiki/Distribution-Readiness).
 Automatic hooks continue to use their installed local runtime.
 
+For an explicitly selected Codex CLI registration, the corresponding command is:
+
+```sh
+codex mcp add i9-skills -- npx --yes @i-9.ai/skills mcp serve
+```
+
+That command changes the user's MCP configuration, so run it only when the user
+requests registration. Alternatively, place the following in the caller's
+selected Codex `config.toml` after reviewing the command:
+
+```toml
+[mcp_servers.i9-skills]
+command = "npx"
+args = ["--yes", "@i-9.ai/skills", "mcp", "serve"]
+startup_timeout_sec = 60
+```
+
+The first launch may download the npm package into the client machine's cache.
+Node 24+ and npm are prerequisites. Configuration alone does not prove that a
+host started the server; inspect initialization and tool discovery separately.
+Do not add a second registration when the repository plugin already provides
+`i9-skills`. The [official MCP guide](https://learn.chatgpt.com/docs/extend/mcp?surface=cli)
+documents stdio commands and npx registrations; this local configuration does
+not attach a server to a public-directory submission.
+
+The [public submission profile](https://github.com/i-9-ai/skills/wiki/Public-Plugin-Submission)
+deliberately contains only skills. The public portal requires a remote HTTPS
+MCP endpoint, and adding MCP to an existing skills-only plugin is currently
+unsupported. Launching with npx is local execution, not hosting or portal
+registration. A future remote catalog service would need a separate reviewed
+architecture; the caller's local evidence database would remain local.
+
 ## Search, then read
 
 Use `skill_catalog_search` to shortlist metadata:
@@ -130,6 +162,12 @@ node bin/index.mjs catalog overview --max-entries 12
 ```
 
 ## Installed identity and provenance
+
+The initialization response reports `serverInfo.name = i9-skills` and the
+validated installed package version. That version is separate from the MCP
+protocol version `2025-11-25`. Initialization reads only the installed manifest;
+it does not discover the catalog, inspect the caller's Git checkout or open an
+evidence database. Invalid installed identity stops server startup.
 
 Catalog operations resolve package resources from the running installed module,
 not cwd, `I9_SKILLS_PROJECT_ROOT` or global skills. The existing catalog validator

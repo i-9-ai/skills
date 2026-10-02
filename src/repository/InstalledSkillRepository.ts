@@ -42,6 +42,14 @@ export class InstalledSkillRepository {
         return this.withCatalog((_root, catalog) => catalog);
     }
 
+    /** Validates installed package metadata without reading the catalog or opening state. */
+    identity(): Pick<InstalledCollectionProvenance, 'package_name' | 'package_version'> {
+        return this.withRoot((root) => ({
+            package_name: '@i-9.ai/skills',
+            package_version: this.packageVersion(root),
+        }));
+    }
+
     read(skill: string, resource = 'SKILL.md') {
         const query = new SkillCatalogQueryValidator().read({ skill, resource });
         return this.withCatalog((root, catalog) => {
@@ -70,9 +78,7 @@ export class InstalledSkillRepository {
     }
 
     private withCatalog<T>(read: (root: SafeRoot, catalog: InstalledSkillCatalog) => T): T {
-        let root: SafeRoot | undefined;
-        try {
-            root = new SafeRoot(this.configuration.root());
+        return this.withRoot((root) => {
             const version = this.packageVersion(root);
             const checked = this.catalogs.read({ collection: root.path, layout: 'repository' });
             if (
@@ -95,6 +101,14 @@ export class InstalledSkillRepository {
                     ),
                 },
             });
+        });
+    }
+
+    private withRoot<T>(read: (root: SafeRoot) => T): T {
+        let root: SafeRoot | undefined;
+        try {
+            root = new SafeRoot(this.configuration.root());
+            return read(root);
         } catch (error) {
             if (error instanceof SkillOperationError) throw error;
             throw new SkillOperationError('catalog_unavailable');

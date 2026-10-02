@@ -8,10 +8,17 @@ read evidence is not task effectiveness.
 An October 2 public-submission screen reported a generic security-risk flag for
 this package without identifying a rule or offending file. Independent local
 inspection found a security-sensitive persistent command-registration capability,
-not network exfiltration or privilege elevation in the bundled helper. The revised
-helper exposes exact registration contents before a write and requires their
-reviewed digest. This is a content-binding safeguard, not command validation,
-host trust, authorization proof or evidence that the portal warning is resolved.
+not network exfiltration or privilege elevation in the bundled helper. The initial
+revision exposed exact registration contents and required their reviewed digest.
+The October 2 hardening replaces arbitrary automatic command input with a closed
+metadata-observer descriptor. It derives native syntax, binds the running Node
+and retained read-only helper bytes, and preserves generic configuration only
+as a manual preview and legacy exact-owned removal path. The optional toolkit
+additionally binds a retained read-only runtime inventory and requires local
+production dependencies. This is bounded capability and content binding, not
+host trust, consent authentication, a race-proof sandbox or evidence that the
+portal warning is resolved. Public directory artifacts continue to omit this
+package pending supported capability and provider review.
 
 Current [plugin guidelines](https://developers.openai.com/plugins/plugin-guidelines)
 and [security and privacy guidance](https://developers.openai.com/plugins/guides/security-privacy)

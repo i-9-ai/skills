@@ -77,6 +77,7 @@ Run `npm run check` and inspect the required official workflow result for the ex
 - [Session hook selections](config/SessionHookCommandConfiguration.ts): shared generation and verification flags for a retained executable and explicit consumer discovery.
 - [Selected hook runtime](repository/HookRuntimeRepository.ts): validate a canonical local executable without executing or installing it.
 - [Optional hook setup](service/HookInstallationService.ts): preview, explicitly merge, inspect and remove receipt-matched skill telemetry registrations while retaining unrelated settings and evidence.
+- [Observer runtime](repository/HookObserverRuntimeRepository.ts): bind the running Node and installed launcher/import inventory to the reviewed registration; no execution, download or event-time sandbox claim.
 - [Selected hook settings](repository/HookSettingsRepository.ts): bounded regular-file reads and guarded replacement of an unchanged selected settings file.
 - [Skill read repository](repository/SkillReadRepository.ts): transactional observed-read storage and ranking projections.
 - [Evidence database](repository/SkillEvidenceDatabaseRepository.ts): shared dedicated SQLite connection and transactional boundaries; read-only queries never create or migrate storage.

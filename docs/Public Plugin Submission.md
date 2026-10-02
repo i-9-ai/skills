@@ -81,6 +81,11 @@ with lifecycle hooks or app references are currently unsupported; local MCP
 requires an OpenAI-specific support path. These constraints were checked on
 2026-10-02. The skills-only artifact excludes those components structurally.
 The portal's “No MCPs connected” message is expected for this distribution.
+Launching `npx @i-9.ai/skills mcp serve` is supported for an explicitly configured
+local client; it does not create the remote HTTPS endpoint required by the
+public portal or attach one to the submitted plugin. See the
+[local MCP configuration](https://github.com/i-9-ai/skills/wiki/Skill-MCP#start)
+for registration and duplicate-server limits.
 The local catalog/evidence server remains in the full repository plugin; it is
 not a remote endpoint. The current submission process also does not support
 adding MCP to an existing skills-only plugin. A hosted service or supported local

@@ -42,5 +42,6 @@ preparing distribution, and evolving focused agent skills.
 - [Research pipeline pilot](https://github.com/i-9-ai/skills/wiki/Research-Pipeline-Pilot): current seven-stage task comparison, exact evidence and the failed process-fidelity criterion.
 - [Research chronology pilot](https://github.com/i-9-ai/skills/wiki/Research-Chronology-Pilot): a fresh, independently inspected planning-before-retrieval case with a separate incomplete-research result.
 - [Federated collections pilot](https://github.com/i-9-ai/skills/wiki/Federated-Collections-Pilot): two-owner synthetic discovery, qualified identity and bounded artifact handoff, including explicit refusal cases.
+- [Collection modules](https://github.com/i-9-ai/skills/wiki/Collection-Modules): admission evidence, source-qualified identity, supported catalogs, resource and update boundaries, and standalone interoperability across independent owners.
 - [Upstream research](https://github.com/i-9-ai/skills/wiki/Upstream-Research): reviewed sources, adoption decisions, and provenance.
 - [Security policy](https://github.com/i-9-ai/skills/blob/main/SECURITY.md): disclosure boundaries and security reporting.

@@ -36,7 +36,11 @@ function transport() {
             calls.push(['close']);
         },
     };
-    const done = new SkillMcpTransport().startServer(store, input, output);
+    const done = new SkillMcpTransport({ name: 'i9-skills', version: '4.5.6-test' }).startServer(
+        store,
+        input,
+        output,
+    );
     return {
         input,
         done,
@@ -44,6 +48,19 @@ function transport() {
         responses: () => text.trim().split('\n').filter(Boolean).map(JSON.parse),
     };
 }
+
+test('initialize advertises supplied implementation identity independently of protocol version', async () => {
+    const running = transport();
+    running.input.end('{"jsonrpc":"2.0","id":1,"method":"initialize"}\n');
+    await running.done;
+
+    assert.deepEqual(running.responses()[0].result, {
+        protocolVersion: '2025-11-25',
+        capabilities: { tools: {} },
+        serverInfo: { name: 'i9-skills', version: '4.5.6-test' },
+    });
+    assert.deepEqual(running.calls, [['close']]);
+});
 
 test('protocol state prevents storage calls before initialization and closes once', async () => {
     const running = transport();
@@ -131,7 +148,7 @@ test('oversized tool output becomes a bounded error without losing the following
     output.on('data', (chunk) => {
         text += chunk;
     });
-    const done = new SkillMcpTransport().startServer(
+    const done = new SkillMcpTransport({ name: 'i9-skills', version: '4.5.6-test' }).startServer(
         {
             record() {
                 assert.fail('unexpected recording');
@@ -213,7 +230,7 @@ test('a stalled output peer pauses requests and resumes in order when it drains'
     let rankings = 0;
     let closed = 0;
     const ready = once(output, 'readable');
-    const done = new SkillMcpTransport().startServer(
+    const done = new SkillMcpTransport({ name: 'i9-skills', version: '4.5.6-test' }).startServer(
         {
             record() {
                 assert.fail('unexpected record');
@@ -270,7 +287,7 @@ test('closing a stalled output rejects the server and closes storage exactly onc
     const output = new PassThrough({ highWaterMark: 1 });
     let closed = 0;
     const ready = once(output, 'readable');
-    const done = new SkillMcpTransport().startServer(
+    const done = new SkillMcpTransport({ name: 'i9-skills', version: '4.5.6-test' }).startServer(
         {
             record() {
                 assert.fail('unexpected record');
@@ -303,7 +320,10 @@ for (const failure of ['error', 'premature close']) {
             const calls = [];
             const ready = once(output, 'readable');
             t.after(() => output.destroy());
-            const done = new SkillMcpTransport().startServer(
+            const done = new SkillMcpTransport({
+                name: 'i9-skills',
+                version: '4.5.6-test',
+            }).startServer(
                 {
                     record() {
                         calls.push('record');
@@ -364,7 +384,10 @@ for (const failure of ['error', 'premature close']) {
             });
             t.after(() => output.destroy());
             let closed = 0;
-            const done = new SkillMcpTransport().startServer(
+            const done = new SkillMcpTransport({
+                name: 'i9-skills',
+                version: '4.5.6-test',
+            }).startServer(
                 {
                     record() {
                         assert.fail('unexpected record');
@@ -412,7 +435,10 @@ for (const timing of ['synchronous', 'microtask', 'immediate']) {
                     fail();
                 },
             });
-            const done = new SkillMcpTransport().startServer(
+            const done = new SkillMcpTransport({
+                name: 'i9-skills',
+                version: '4.5.6-test',
+            }).startServer(
                 {
                     record() {
                         assert.fail('unexpected record');
@@ -451,7 +477,10 @@ test(
                 started.resolve();
             },
         });
-        const done = new SkillMcpTransport().startServer(
+        const done = new SkillMcpTransport({
+            name: 'i9-skills',
+            version: '4.5.6-test',
+        }).startServer(
             {
                 record() {
                     assert.fail('unexpected record');
@@ -495,7 +524,10 @@ test(
             },
         });
         let closed = 0;
-        const done = new SkillMcpTransport().startServer(
+        const done = new SkillMcpTransport({
+            name: 'i9-skills',
+            version: '4.5.6-test',
+        }).startServer(
             {
                 record() {
                     assert.fail('unexpected record');
@@ -533,7 +565,7 @@ test(
         for (let attempt = 0; attempt < 3; attempt += 1) {
             const input = Readable.from(['{"jsonrpc":"2.0","id":1,"method":"ping"}\n']);
             await assert.rejects(
-                new SkillMcpTransport().startServer(
+                new SkillMcpTransport({ name: 'i9-skills', version: '4.5.6-test' }).startServer(
                     {
                         record() {
                             assert.fail('unexpected record');
@@ -592,7 +624,7 @@ async function stdioFixture(t, { cancel, initializeStdout, windowsFallback = fal
                     },
                     close() { closed += 1; }
                 };
-                const done = new SkillMcpTransport().startServer(store);
+                const done = new SkillMcpTransport({ name: 'i9-skills', version: '4.5.6-test' }).startServer(store);
                 ${cancel ? 'await assert.rejects(done, /Synthetic input failure/);' : 'await done;'}
                 await nextTurn();
                 assert.equal(closed, 1);

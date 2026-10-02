@@ -2,6 +2,10 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import {
+    chmodSync,
+    cpSync,
+    lstatSync,
+    readdirSync,
     existsSync,
     mkdirSync,
     mkdtempSync,
@@ -16,11 +20,58 @@ import { fileURLToPath } from 'node:url';
 import { DatabaseSync } from 'node:sqlite';
 import test from 'node:test';
 
-const launcher = fileURLToPath(new URL('../../../bin/index.mjs', import.meta.url));
+const repositoryRoot = fileURLToPath(new URL('../../../', import.meta.url));
+const mutableLauncher = join(repositoryRoot, 'bin/index.mjs');
+
+function cleanup(root) {
+    const unseal = (directory) => {
+        chmodSync(directory, 0o755);
+        for (const name of readdirSync(directory)) {
+            const selected = join(directory, name);
+            const info = lstatSync(selected);
+            if (info.isDirectory() && !info.isSymbolicLink()) unseal(selected);
+        }
+    };
+    unseal(root);
+    rmSync(root, { recursive: true, force: true });
+}
+
+function retainedLauncher(root) {
+    const retained = join(root, 'retained-runtime');
+    mkdirSync(retained);
+    for (const relative of [
+        'package.json',
+        'bin',
+        'src',
+        'dist',
+        '.agents/skills',
+        'skills-catalog.json',
+        'node_modules',
+    ]) {
+        const source = join(repositoryRoot, relative);
+        if (existsSync(source)) cpSync(source, join(retained, relative), { recursive: true });
+    }
+    const seal = (directory) => {
+        for (const name of readdirSync(directory)) {
+            const selected = join(directory, name);
+            const info = lstatSync(selected);
+            if (info.isSymbolicLink()) continue;
+            if (info.isDirectory()) {
+                seal(selected);
+                continue;
+            }
+            chmodSync(selected, info.mode & ~0o222);
+        }
+        chmodSync(directory, 0o555);
+    };
+    seal(retained);
+    return join(retained, 'bin/index.mjs');
+}
 
 test('optional setup dispatch uses installed resources independently of selected caller project', (t) => {
     const fixture = realpathSync(mkdtempSync(join(tmpdir(), 'i9-optional-cli-')));
-    t.after(() => rmSync(fixture, { recursive: true, force: true }));
+    t.after(() => cleanup(fixture));
+    const launcher = retainedLauncher(fixture);
     const file = join(fixture, 'settings.json');
     const selection = ['--host', 'claude', '--file', file];
     const enable = [...selection, '--collection', 'project=' + fixture];
@@ -44,9 +95,26 @@ test('optional setup dispatch uses installed resources independently of selected
         assert.equal(result.status, 0, result.stderr);
         return JSON.parse(result.stdout);
     };
-    assert.equal(run('telemetry-enable', enable).written, false);
+    const preview = run('telemetry-enable', enable);
+    assert.equal(preview.written, false);
+    assert.match(preview.registration_digest, /^[a-f0-9]{64}$/);
     assert.equal(existsSync(file), false);
-    assert.equal(run('telemetry-enable', [...enable, '--write']).written, true);
+    const unreviewed = spawnSync(
+        process.execPath,
+        [launcher, 'hook', 'telemetry-enable', ...enable, '--write'],
+        { cwd: fixture, env, encoding: 'utf8', timeout: 15000 },
+    );
+    assert.equal(unreviewed.status, 1);
+    assert.equal(existsSync(file), false);
+    assert.equal(
+        run('telemetry-enable', [
+            ...enable,
+            '--write',
+            '--reviewed-registration',
+            preview.registration_digest,
+        ]).written,
+        true,
+    );
     const receipt = JSON.parse(readFileSync(file + '.i9-skills.json'));
     assert.deepEqual(receipt.runtime, [realpathSync(process.execPath), realpathSync(launcher)]);
     assert.equal(receipt.database, join(fixture, 'agent-state', 'skills-usage.db'));
@@ -60,7 +128,8 @@ for (const host of ['claude', 'codex', 'gemini', 'copilot']) {
         host + ': generated hooks execute attempts and successful reads in a disposable home',
         (t) => {
             const root = realpathSync(mkdtempSync(join(tmpdir(), 'i9-generated-hook-')));
-            t.after(() => rmSync(root, { recursive: true, force: true }));
+            t.after(() => cleanup(root));
+            const launcher = retainedLauncher(root);
             const home = join(root, 'synthetic home');
             const collection = join(root, "collection with spaces and ' quote");
             const skillFile = join(collection, 'example-skill', 'SKILL.md');
@@ -78,21 +147,33 @@ for (const host of ['claude', 'codex', 'gemini', 'copilot']) {
                 NODE_NO_WARNINGS: '1',
                 NODE_DISABLE_COMPILE_CACHE: '1',
             };
+            const argumentsForSelection = [
+                launcher,
+                'hook',
+                'telemetry-enable',
+                '--host',
+                host,
+                '--file',
+                file,
+                '--db',
+                database,
+                '--collection',
+                'project=' + collection,
+            ];
+            const preview = spawnSync(process.execPath, argumentsForSelection, {
+                cwd: root,
+                env,
+                encoding: 'utf8',
+                timeout: 15000,
+            });
+            assert.equal(preview.status, 0, preview.stderr);
             const enabled = spawnSync(
                 process.execPath,
                 [
-                    launcher,
-                    'hook',
-                    'telemetry-enable',
-                    '--host',
-                    host,
-                    '--file',
-                    file,
-                    '--db',
-                    database,
-                    '--collection',
-                    'project=' + collection,
+                    ...argumentsForSelection,
                     '--write',
+                    '--reviewed-registration',
+                    JSON.parse(preview.stdout).registration_digest,
                 ],
                 {
                     cwd: root,
@@ -208,7 +289,8 @@ test(
     { skip: process.platform === 'win32' },
     (t) => {
         const root = realpathSync(mkdtempSync(join(tmpdir(), 'i9-invalid-hook-runtime-')));
-        t.after(() => rmSync(root, { recursive: true, force: true }));
+        t.after(() => cleanup(root));
+        const launcher = mutableLauncher;
         const executable = join(root, 'not-executable');
         const file = join(root, 'settings.json');
         writeFileSync(executable, '#!/bin/sh\nexit 0\n', { mode: 0o600 });
@@ -242,7 +324,7 @@ test(
         );
         assert.ifError(result.error);
         assert.equal(result.status, 1);
-        assert.match(result.stderr, /must be executable/);
+        assert.match(result.stderr, /must be executable|running Node/);
         assert.equal(existsSync(file), false);
         assert.equal(existsSync(file + '.i9-skills.json'), false);
         assert.equal(existsSync(join(root, '.agents')), false);

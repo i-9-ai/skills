@@ -137,6 +137,9 @@ jobs:
         with:
           node-version: '24'
           package-manager-cache: false
+      - name: Retain a private Node foundation for observer checks
+        # Observer checks must not use a group-writable shared tool-cache binary.
+        run: node .github/scripts/isolate-node-runtime.mjs
       - name: Install locked dependencies and build
         run: npm ci
       - name: Verify the generated release at the reviewed merge
