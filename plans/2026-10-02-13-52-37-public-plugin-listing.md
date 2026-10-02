@@ -8,7 +8,10 @@ Use the current portable root manifest's OpenAI interface extension and retain
 the complete compatibility listing. Bundle one existing product mark as a
 square PNG; provide public privacy and license-based terms pages on the current
 GitHub Pages site. The support channel remains the repository issue tracker.
-The user confirmed `https://skills.i-9.ai` as the public site domain.
+The user confirmed `https://skills.i-9.ai` as the public site domain. Set the
+existing Cloudflare Pages production build URL to this confirmed domain; retain
+the existing GitHub Pages publication and Cloudflare native Git deployment.
+This changes generated canonical links, not DNS, access controls or hosting.
 
 The user subsequently supplied a portal security-risk finding for
 `skills-usage-setup`, with no diagnostic cause. Its generic configuration writer

@@ -23,6 +23,8 @@ export class BuildSourceReceiptValidator {
     static readonly rootFiles = [
         'package.json',
         'skills-catalog.json',
+        '.codex-plugin/plugin.json',
+        'assets/plugin-icon.png',
         'bin/index.mjs',
         'bin/index.md',
         'README.md',
@@ -100,9 +102,14 @@ export class BuildSourceReceiptValidator {
         }
         if (
             source.status === 'verified' &&
-            ['package.json', 'skills-catalog.json', 'bin/index.mjs', 'dist/index.js'].some(
-                (path) => !files.some((file) => file.path === path),
-            )
+            [
+                'package.json',
+                'skills-catalog.json',
+                '.codex-plugin/plugin.json',
+                'assets/plugin-icon.png',
+                'bin/index.mjs',
+                'dist/index.js',
+            ].some((path) => !files.some((file) => file.path === path))
         )
             throw new Error('Invalid package source receipt.');
         return receipt as BuildSourceReceipt;
