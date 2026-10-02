@@ -302,6 +302,7 @@ export function setup({
     file,
     registration,
     write = false,
+    reviewedRegistrationDigest,
     provider = jsonArrayMapProvider,
 }) {
     safePath(file);
@@ -336,10 +337,19 @@ export function setup({
         validate(registration, file, provider, true);
         if (!runtimeAvailable(registration))
             throw new Error('Selected runtime file is unavailable.');
+        const registrationDigest = hash(canonical(registration));
+        if (write && reviewedRegistrationDigest !== registrationDigest)
+            throw new Error('Explicit enablement requires the exact reviewed registration digest.');
         if (owned.active) {
             if (!matched || !same(owned.registration, registration))
                 throw new Error('Owned setup changed; reconcile or remove before reconfiguration.');
-            return { enabled: true, written: false };
+            return {
+                enabled: true,
+                written: false,
+                preview: !write,
+                registration_digest: registrationDigest,
+                registration: structuredClone(registration),
+            };
         }
     }
     const selected = action === 'enable' ? registration : owned.registration;
@@ -374,6 +384,12 @@ export function setup({
         preview: !write,
         entries: Object.values(selected.events).reduce((sum, entries) => sum + entries.length, 0),
         evidence_retained: true,
+        registration_digest: next.registration_digest,
+        registration: structuredClone(selected),
+        settings: file,
+        ownership_receipt: file + '.skills-usage.json',
+        effects:
+            'Changes selected event registrations only. A native host can execute their commands automatically with user authority; the helper does not verify command safety or trust them.',
     };
 }
 
@@ -446,7 +462,7 @@ export function record({ store, value, write = false }) {
 export async function main(args = process.argv.slice(2)) {
     if (!args.length || args.includes('--help'))
         return {
-            usage: 'node usage_setup.mjs enable|status|disable --file ABSOLUTE [--registration ABSOLUTE] [--write]; observe --store ABSOLUTE [--write] < metadata.json',
+            usage: 'node usage_setup.mjs enable|status|disable --file ABSOLUTE [--registration ABSOLUTE] [--write --reviewed-registration SHA256]; observe --store ABSOLUTE [--write] < metadata.json',
             effects:
                 'Preview by default; status never writes. No runtime installation or hook execution.',
         };
@@ -456,7 +472,7 @@ export async function main(args = process.argv.slice(2)) {
         const key = options[index];
         if (key === '--write' && !input.write) input.write = true;
         else if (
-            ['--file', '--registration', '--store'].includes(key) &&
+            ['--file', '--registration', '--store', '--reviewed-registration'].includes(key) &&
             !input[key.slice(2)] &&
             options[index + 1]
         )
@@ -464,7 +480,8 @@ export async function main(args = process.argv.slice(2)) {
         else throw new Error('Unsupported or duplicated option.');
     }
     if (action === 'observe') {
-        if (input.file || input.registration) throw new Error('Unsupported observation option.');
+        if (input.file || input.registration || input['reviewed-registration'])
+            throw new Error('Unsupported observation option.');
         let bytes = 0;
         const chunks = [];
         for await (const chunk of process.stdin) {
@@ -480,10 +497,12 @@ export async function main(args = process.argv.slice(2)) {
     if (
         input.store ||
         (action !== 'enable' && input.registration) ||
+        (input['reviewed-registration'] && (action !== 'enable' || !input.write)) ||
         (action === 'status' && input.write)
     )
         throw new Error('Unsupported option for the selected operation.');
     if (input.registration) input.registration = json(input.registration).value;
+    input.reviewedRegistrationDigest = input['reviewed-registration'];
     return setup(input);
 }
 

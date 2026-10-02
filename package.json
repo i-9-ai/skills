@@ -120,6 +120,8 @@
   },
   "homepage": "https://github.com/i-9-ai/skills",
   "files": [
+    ".codex-plugin/plugin.json",
+    "assets/plugin-icon.png",
     "bin/index.mjs",
     "bin/index.md",
     "dist/**/*.js",

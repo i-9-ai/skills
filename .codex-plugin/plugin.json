@@ -13,10 +13,16 @@
   "mcpServers": "./mcp/codex.json",
   "interface": {
     "displayName": "I-9 Skills",
-    "shortDescription": "Author and maintain portable agent skills",
+    "shortDescription": "Author and maintain skills",
     "longDescription": "Focused workflows for designing, authoring, validating, evolving and distributing reusable agent skills.",
     "developerName": "I-9 AI",
     "category": "Developer Tools",
+    "websiteURL": "https://skills.i-9.ai/",
+    "supportURL": "https://github.com/i-9-ai/skills/issues",
+    "privacyPolicyURL": "https://skills.i-9.ai/privacy/",
+    "termsOfServiceURL": "https://skills.i-9.ai/terms/",
+    "logo": "./assets/plugin-icon.png",
+    "composerIcon": "./assets/plugin-icon.png",
     "capabilities": [
       "Skills"
     ],

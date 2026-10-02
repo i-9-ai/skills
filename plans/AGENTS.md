@@ -17,6 +17,8 @@ Verify every requirement has an implementation and a check or an explicit limit.
 
 ## Child DOX index
 
+- [Public plugin listing](2026-10-02-13-52-37-public-plugin-listing.md): complete presentation metadata, product icon and public policies, with transparent omission of optional persistent-command setup from the public profile; no provider approval claim.
+
 - [Native Codex read evidence](2026-10-01-23-32-56-native-codex-read-evidence.md): trusted native pre/post delivery, one confirmed synthetic read and preserved local ranking evidence inside an OS sandbox; no real-model evaluation.
 - [Installed CLI session hooks](2026-10-01-23-20-01-installed-cli-session-hooks.md): explicit installed executable and consumer project selection for generated and verified session context; no settings installation or event-time download.
 - [Optional telemetry and public submission](2026-10-01-21-50-00-optional-telemetry-and-public-submission.md): explicit receipt-backed hook setup and a skills-only submission artifact with independent provider approval boundaries.

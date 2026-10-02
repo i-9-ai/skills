@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
 import { PluginPreparationService } from '../../../src/service/PluginPreparationService.ts';
 import { ProjectConfiguration } from '../../../src/config/ProjectConfiguration.ts';
 
@@ -13,6 +14,9 @@ test('final relative path length is validated before the artifact writer is call
         homepage: 'https://example.com',
         repository: 'https://example.com/skills.git',
         license: 'Apache-2.0',
+        listing: JSON.parse(
+            readFileSync(new URL('../../../.codex-plugin/plugin.json', import.meta.url)),
+        ).interface,
         skills: ['example-skill'],
         files: [
             {

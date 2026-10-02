@@ -72,6 +72,8 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
     for (const path of [
         'package.json',
         'package-lock.json',
+        '.codex-plugin/plugin.json',
+        'assets/plugin-icon.png',
         'tsconfig.json',
         'tsconfig.build.json',
         'src',
@@ -106,7 +108,7 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
         assert.ok(!name.startsWith('/') && !name.split('/').includes('..'), name);
         assert.match(
             name,
-            /^(?:bin\/index\.(?:mjs|md)|dist\/(?:.*\.js|source-receipt\.json)|\.agents\/skills\/|skills-catalog\.json|docs\/|package\.json|README\.md|LICENSE|NOTICE)/,
+            /^(?:bin\/index\.(?:mjs|md)|dist\/(?:.*\.js|source-receipt\.json)|\.codex-plugin\/plugin\.json$|assets\/plugin-icon\.png$|\.agents\/skills\/|skills-catalog\.json|docs\/|package\.json|README\.md|LICENSE|NOTICE)/,
         );
         assert.doesNotMatch(name, /^(?:src|tests|\.work|tmp|\.codex|\.github|node_modules)\//);
         assert.ok(!name.endsWith('.ts'), name);

@@ -18,6 +18,11 @@ Open http://127.0.0.1:4173/. English is available at / and /en/, Portuguese
 at /pt-br/, and Spanish at /es/. The preview listens on loopback only.
 Stop it with Ctrl-C.
 
+The English privacy policy and license-based terms are available at `/privacy/`
+and `/terms/`. These pages work without JavaScript, and localized footer labels
+identify their language. Their canonical URLs follow the configured production
+URL, including a project prefix such as `/skills/`.
+
 The unprefixed root offers a dismissible language suggestion when the browser's
 first supported language is Portuguese or Spanish. It preserves catalog query
 and section state, never redirects, and is suppressed on explicit locale URLs.
@@ -40,6 +45,8 @@ is ignored local evidence and must not be committed.
   category assignments and documented manual install commands.
 - render.mjs produces semantic HTML, escaped descriptions, native language and
   source links, and a complete no-JavaScript catalog.
+- policies.mjs owns the English public privacy and license-based terms content,
+  including local observation storage and separate hosting/provider boundaries.
 - assets/site.css implements [DESIGN.md](DESIGN.md).
 - assets/site.mjs adds filtering, URL/language-state preservation,
   clipboard feedback and finite reduced-motion-aware entrance.

@@ -35,8 +35,9 @@ writing. Locale message key/type coverage must match.
 ## Output and side effects
 
 Creates complete root/English, PT-BR and Spanish HTML, shared local assets,
-current icons, robots.txt and .i9-site-build.json. Review output disallows indexing;
-production output adds canonical locale URLs, public share metadata and sitemap.xml.
+English privacy and terms pages, current icons, robots.txt and .i9-site-build.json.
+Review output disallows indexing; production output adds canonical locale and
+policy URLs, public share metadata and sitemap.xml.
 The marker records catalog/file hashes, count, locales, mode, selected public URL
 and publication: not-deployed. It contains
 no private source path.

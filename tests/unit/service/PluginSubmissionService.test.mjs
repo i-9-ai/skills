@@ -2,10 +2,12 @@
 import assert from 'node:assert/strict';
 import {
     existsSync,
+    cpSync,
     mkdirSync,
     readFileSync,
     readdirSync,
     symlinkSync,
+    unlinkSync,
     writeFileSync,
 } from 'node:fs';
 import { join } from 'node:path';
@@ -15,6 +17,7 @@ import { PluginSubmissionService } from '../../../src/service/PluginSubmissionSe
 import { PluginZipRepository } from '../../../src/repository/PluginZipRepository.ts';
 import { submissionFixture } from '../fixture/PluginSubmissionFixture.mjs';
 import { snapshot } from '../fixture/InstalledCatalogFixture.mjs';
+import { syncCatalog } from '../../../.agents/skills/skills-catalog/scripts/catalog_tools.mjs';
 
 test('public projection previews exact ZIP integrity without writes and omits root hooks/MCP/apps/state', (t) => {
     const target = submissionFixture(t);
@@ -39,6 +42,7 @@ test('public projection previews exact ZIP integrity without writes and omits ro
         '.codex-plugin',
         'LICENSE',
         'artifact-receipt.json',
+        'assets',
         'plugin.json',
         'skills',
     ]);
@@ -59,10 +63,79 @@ test('public projection previews exact ZIP integrity without writes and omits ro
     );
     assert.ok(existsSync(join(target.output, 'skills/skill-design/assets/icon.png')));
     assert.ok(existsSync(join(target.output, 'skills/skill-design/LICENSE')));
+    const manifest = JSON.parse(readFileSync(join(target.output, 'plugin.json')));
+    const compatibility = JSON.parse(
+        readFileSync(join(target.output, '.codex-plugin/plugin.json')),
+    );
+    assert.deepEqual(manifest.extensions['com.openai'].interface, compatibility.interface);
+    assert.ok(existsSync(join(target.output, manifest.extensions['com.openai'].interface.logo)));
     assert.deepEqual(snapshot(target.source), sourceBefore);
     const generated = snapshot(target.root);
     assert.throws(() => service.prepare(configuration, target.output, true), /already exists/u);
     assert.deepEqual(snapshot(target.root), generated);
+});
+
+test('public profile transparently omits optional persistent-command setup while retaining canonical source', (t) => {
+    const target = submissionFixture(t);
+    const canonical = new URL('../../../.agents/skills/skills-usage-setup', import.meta.url);
+    cpSync(canonical, join(target.source, '.agents/skills/skills-usage-setup'), {
+        recursive: true,
+    });
+    syncCatalog(target.source, { layout: 'repository' });
+    const sourceBefore = snapshot(target.source);
+    const result = new PluginSubmissionService().prepare(
+        new ProjectConfiguration({ root: target.source }),
+        target.output,
+        true,
+    );
+    assert.equal(result.integrity.packages, 1);
+    assert.deepEqual(
+        result.integrity.excluded_skills.map((entry) => entry.name),
+        ['skills-usage-setup'],
+    );
+    assert.match(result.integrity.excluded_skills[0].reason, /persistent host-command/u);
+    assert.equal(existsSync(join(target.output, 'skills/skills-usage-setup')), false);
+    const receipt = JSON.parse(readFileSync(join(target.output, 'artifact-receipt.json')));
+    assert.deepEqual(receipt.excluded_skills, result.integrity.excluded_skills);
+    assert.ok(receipt.files.every((entry) => !entry.path.startsWith('skills/skills-usage-setup/')));
+    assert.deepEqual(snapshot(target.source), sourceBefore);
+});
+
+test('missing, linked or corrupted public icon and invalid listing are rejected without outputs', (t) => {
+    const changes = [
+        (target) => {
+            unlinkSync(join(target.source, 'assets/plugin-icon.png'));
+        },
+        (target) => {
+            const icon = join(target.source, 'assets/plugin-icon.png');
+            const outside = join(target.root, 'outside-icon.png');
+            writeFileSync(outside, readFileSync(icon));
+            unlinkSync(icon);
+            symlinkSync(outside, icon);
+        },
+        (target) => {
+            writeFileSync(join(target.source, 'assets/plugin-icon.png'), 'not png');
+        },
+        (target) => {
+            const path = join(target.source, '.codex-plugin/plugin.json');
+            const value = JSON.parse(readFileSync(path));
+            value.interface.shortDescription = 'x'.repeat(31);
+            writeFileSync(path, JSON.stringify(value));
+        },
+    ];
+    for (const change of changes) {
+        const target = submissionFixture(t);
+        change(target);
+        const before = snapshot(target.root);
+        assert.throws(() =>
+            new PluginSubmissionService().prepare(
+                new ProjectConfiguration({ root: target.source }),
+                target.output,
+                true,
+            ),
+        );
+        assert.deepEqual(snapshot(target.root), before);
+    }
 });
 
 for (const name of ['i9-skills.zip', 'i9-skills-submission.json']) {
