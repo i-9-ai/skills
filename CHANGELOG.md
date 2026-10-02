@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.3
+
+### Patch Changes
+
+- fafab9f: Avoid falsely refusing concurrent evidence writers when SQLite removes a journal
+  while its pathname inspection returns a detached regular inode. Inspect that
+  sidecar pathname once more and validate any current replacement with the same
+  regular, single-link file rules. Keep the primary database strict, reject unsafe
+  replacements and repeated invalid observations, and preserve the five-second
+  SQLite lock timeout without retrying writes or resetting evidence.
+
 ## 0.3.2
 
 ### Patch Changes
