@@ -224,6 +224,7 @@ function relocate(target) {
             cwd: repository,
             env: {
                 ...target.environment,
+                PATH: process.env.PATH ?? target.environment.PATH,
                 npm_config_userconfig: userconfig,
                 npm_config_globalconfig: globalconfig,
                 npm_config_update_notifier: 'false',

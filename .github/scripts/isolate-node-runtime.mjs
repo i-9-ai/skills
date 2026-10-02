@@ -10,7 +10,7 @@ import {
     readFileSync,
     realpathSync,
 } from 'node:fs';
-import { isAbsolute, join } from 'node:path';
+import { isAbsolute, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 /** Retain the selected CI foundation without changing the shared tool cache. */
@@ -56,7 +56,7 @@ export class IsolatedNodeRuntime {
     }
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === realpathSync(process.argv[1])) {
+if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
     const { RUNNER_TEMP: directory, GITHUB_PATH: pathFile } = process.env;
     if (!directory || !pathFile) throw new Error('Run this preparation inside GitHub Actions.');
     const retained = new IsolatedNodeRuntime().retain(directory);

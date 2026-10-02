@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import {
     chmodSync,
     lstatSync,
@@ -44,4 +45,15 @@ test('CI runtime isolation rejects a linked temporary root and non-file source',
     const runtime = new IsolatedNodeRuntime();
     assert.throws(() => runtime.retain(alias, source), /canonical/);
     assert.throws(() => runtime.retain(root, root), /bounded existing/);
+});
+
+test('importing CI runtime preparation from stdin does not run its entrypoint', () => {
+    const module = new URL('../../../.github/scripts/isolate-node-runtime.mjs', import.meta.url);
+    const child = spawnSync(process.execPath, ['--input-type=module', '-'], {
+        input: `await import(${JSON.stringify(module.href)});`,
+        encoding: 'utf8',
+        timeout: 10000,
+    });
+    assert.equal(child.status, 0, child.stderr);
+    assert.equal(child.stdout, '');
 });
