@@ -381,6 +381,51 @@ test('missing capability returns scoped none and a missing selected companion bl
     assert.deepEqual(snapshot(join(target.root, 'sources')), target.before);
 });
 
+test('module admission rejects an unsupported catalog without replacing prior discovery or evidence', async (t) => {
+    const target = await fixture(t);
+    const retainedIndex = fs.readFileSync(target.indexFile);
+    const catalog = join(target.sources.get('meadow'), 'skills-catalog.json');
+    const unsupported = JSON.parse(fs.readFileSync(catalog, 'utf8'));
+    unsupported.schema_version = 2;
+    fs.writeFileSync(catalog, jsonBytes(unsupported));
+    const before = snapshot(join(target.root, 'sources'));
+
+    assert.throws(
+        () => readSourceCatalog({ id: 'meadow', filename: catalog }),
+        /catalog schema_version must be 1/,
+    );
+    await assert.rejects(
+        rebuildAggregateIndex({
+            sources: target.sourceArguments,
+            output: target.output,
+            format: 'json',
+        }),
+        /catalog schema_version must be 1/,
+    );
+    assert.deepEqual(fs.readFileSync(target.indexFile), retainedIndex);
+    assert.deepEqual(fs.readdirSync(target.evidence), []);
+    assert.deepEqual(snapshot(join(target.root, 'sources')), before);
+});
+
+test('module admission rejects duplicate source identities instead of collapsing independent owners', async (t) => {
+    const target = await fixture(t);
+    const retainedIndex = fs.readFileSync(target.indexFile);
+    await assert.rejects(
+        rebuildAggregateIndex({
+            sources: [
+                target.sourceArguments[0],
+                `cedar=${join(target.sources.get('meadow'), 'skills-catalog.json')}`,
+            ],
+            output: target.output,
+            format: 'json',
+        }),
+        /source ids must be distinct/,
+    );
+    assert.deepEqual(fs.readFileSync(target.indexFile), retainedIndex);
+    assert.deepEqual(fs.readdirSync(target.evidence), []);
+    assert.deepEqual(snapshot(join(target.root, 'sources')), target.before);
+});
+
 for (const [label, change, reason] of [
     [
         'name-only collision',

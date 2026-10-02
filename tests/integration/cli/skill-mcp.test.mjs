@@ -85,9 +85,16 @@ test('CLI MCP initialization, catalog calls and invalid recording do not create 
     );
     assert.equal(result.status, 0, result.stderr);
     const rows = result.stdout.trim().split('\n').map(JSON.parse);
+    const packageVersion = JSON.parse(fs.readFileSync(join(repository, 'package.json'))).version;
+    assert.equal(rows[0].result.serverInfo.version, packageVersion);
+    assert.equal(rows[0].result.protocolVersion, '2025-11-25');
     assert.deepEqual(
         rows[2].result.structuredContent.skills.map((skill) => skill.name),
         ['skill-authoring'],
+    );
+    assert.equal(
+        rows[0].result.serverInfo.version,
+        rows[2].result.structuredContent.provenance.package_version,
     );
     assert.equal(rows[3].result.structuredContent.error.code, 'invalid_input');
     assert.equal(rows[4].result.structuredContent.error.code, 'storage_unavailable');

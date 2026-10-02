@@ -3,11 +3,14 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import {
+    chmodSync,
     cpSync,
     existsSync,
+    lstatSync,
     mkdirSync,
     mkdtempSync,
     readFileSync,
+    readdirSync,
     realpathSync,
     rmSync,
     symlinkSync,
@@ -31,7 +34,23 @@ const repository = fileURLToPath(new URL('../../', import.meta.url));
 
 test('clean source prepares an allowlisted artifact that runs from node_modules without development dependencies', (t) => {
     const root = realpathSync(mkdtempSync(join(tmpdir(), 'i9-packed-cli-')));
-    t.after(() => rmSync(root, { recursive: true, force: true }));
+    let retainedRuntime;
+    const runtimeModes = (file, readonly) => {
+        const info = lstatSync(file);
+        assert.equal(info.isSymbolicLink(), false, 'Retained runtime must not follow links');
+        if (info.isDirectory()) {
+            // Restore directory writes before traversing for disposable cleanup.
+            if (!readonly) chmodSync(file, 0o700);
+            for (const name of readdirSync(file)) runtimeModes(join(file, name), readonly);
+            if (readonly) chmodSync(file, 0o500);
+            return;
+        }
+        chmodSync(file, readonly ? 0o400 : 0o600);
+    };
+    t.after(() => {
+        if (retainedRuntime && existsSync(retainedRuntime)) runtimeModes(retainedRuntime, false);
+        rmSync(root, { recursive: true, force: true });
+    });
     const config = join(root, 'user.npmrc');
     const globalConfig = join(root, 'global.npmrc');
     const home = join(root, 'home');
@@ -253,11 +272,66 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
     });
     assert.equal(mcp.status, 0, mcp.stderr);
     const responses = mcp.stdout.trim().split('\n').map(JSON.parse);
+    assert.equal(responses[0].result.serverInfo.version, installedManifest.version);
+    assert.equal(responses[0].result.protocolVersion, '2025-11-25');
+    assert.equal(
+        responses[0].result.serverInfo.version,
+        responses[1].result.structuredContent.provenance.package_version,
+    );
     assert.equal(responses[1].result.structuredContent.skills[0].name, 'skill-authoring');
     assert.equal(responses[2].result.structuredContent.content, resource.content);
     assert.equal(responses[3].result.structuredContent.error.code, 'storage_unavailable');
     for (const directory of [installed, root, home])
         assert.equal(existsSync(join(directory, 'skill-usage.db')), false);
+
+    const identityDatabase = join(root, 'identity-check', 'usage.db');
+    const manifestPath = join(installed, 'package.json');
+    const manifestBytes = readFileSync(manifestPath);
+    try {
+        writeFileSync(
+            manifestPath,
+            JSON.stringify({ ...installedManifest, repository: { url: 'https://example.test/' } }),
+        );
+        const rejectedIdentity = spawnSync(
+            process.execPath,
+            [launcher, 'mcp', 'serve', '--db', identityDatabase],
+            {
+                cwd: root,
+                env: environment,
+                encoding: 'utf8',
+                timeout: 30000,
+                input:
+                    [
+                        { jsonrpc: '2.0', id: 1, method: 'initialize' },
+                        { jsonrpc: '2.0', method: 'notifications/initialized' },
+                        {
+                            jsonrpc: '2.0',
+                            id: 2,
+                            method: 'tools/call',
+                            params: {
+                                name: 'skill_read_record',
+                                arguments: {
+                                    event_id: 'synthetic-malformed-identity',
+                                    collection: 'synthetic',
+                                    skill: 'skill-authoring',
+                                    revision: 'sha256:synthetic',
+                                    session: 'synthetic-identity-session',
+                                    occurred_at: '2026-10-02T12:00:00.000Z',
+                                },
+                            },
+                        },
+                    ]
+                        .map((message) => JSON.stringify(message))
+                        .join('\n') + '\n',
+            },
+        );
+        assert.ifError(rejectedIdentity.error);
+        assert.notEqual(rejectedIdentity.status, 0);
+        assert.equal(rejectedIdentity.stdout, '');
+        assert.equal(existsSync(dirname(identityDatabase)), false);
+    } finally {
+        writeFileSync(manifestPath, manifestBytes);
+    }
 
     const evidenceRoot = join(root, 'evidence');
     mkdirSync(evidenceRoot);
@@ -585,4 +659,102 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
     assert.equal(existsSync(join(plugin, 'src')), false);
     assert.equal(existsSync(join(plugin, '.agents')), false);
     assert.equal(existsSync(join(root, '.agents/plugins/marketplace.json')), false);
+
+    // npx/node_modules remain valid MCP consumers, but persistent observers need
+    // a separately selected, read-only runtime with its own dependency closure.
+    runtimeModes(installed, true);
+    const hoistedSettings = join(root, 'hoisted-observer-settings.json');
+    const hoistedObserver = spawnSync(
+        process.execPath,
+        [
+            launcher,
+            'hook',
+            'telemetry-enable',
+            '--host',
+            'claude',
+            '--file',
+            hoistedSettings,
+            '--collection',
+            `selected=${join(installed, '.agents/skills')}`,
+            '--db',
+            join(root, 'hoisted-observer-evidence.db'),
+        ],
+        { cwd: root, env: environment, encoding: 'utf8', timeout: 30000 },
+    );
+    runtimeModes(installed, false);
+    assert.notEqual(hoistedObserver.status, 0);
+    assert.equal(existsSync(hoistedSettings), false);
+    assert.equal(existsSync(hoistedSettings + '.i9-skills.json'), false);
+    assert.equal(existsSync(join(root, 'hoisted-observer-evidence.db')), false);
+
+    retainedRuntime = join(root, 'retained-observer');
+    cpSync(installed, retainedRuntime, { recursive: true });
+    for (const source of [...new Set(dependencies)]) {
+        const target = join(retainedRuntime, 'node_modules', relative(sourceModules, source));
+        mkdirSync(dirname(target), { recursive: true });
+        cpSync(source, target, { recursive: true });
+    }
+    runtimeModes(retainedRuntime, true);
+    const retainedLauncher = join(retainedRuntime, 'bin/index.mjs');
+    const settings = join(root, 'observer-settings.json');
+    const observerDatabase = join(root, 'observer-evidence.db');
+    const observerSelection = [
+        'hook',
+        'telemetry-enable',
+        '--host',
+        'claude',
+        '--file',
+        settings,
+        '--collection',
+        `selected=${join(installed, '.agents/skills')}`,
+        '--db',
+        observerDatabase,
+    ];
+    const preview = JSON.parse(
+        run(process.execPath, [retainedLauncher, ...observerSelection], root),
+    );
+    assert.match(preview.registration_digest, /^[a-f0-9]{64}$/u);
+    assert.equal(preview.runtime_identity.inventory.root, retainedRuntime);
+    assert.equal(existsSync(settings), false);
+    assert.equal(existsSync(observerDatabase), false);
+    const enabled = JSON.parse(
+        run(
+            process.execPath,
+            [
+                retainedLauncher,
+                ...observerSelection,
+                '--write',
+                '--reviewed-registration',
+                preview.registration_digest,
+            ],
+            root,
+        ),
+    );
+    assert.equal(enabled.enabled, true);
+    const status = JSON.parse(
+        run(
+            process.execPath,
+            [retainedLauncher, 'hook', 'telemetry-status', '--host', 'claude', '--file', settings],
+            root,
+        ),
+    );
+    assert.equal(status.runtime_available, true);
+    const disabled = JSON.parse(
+        run(
+            process.execPath,
+            [
+                retainedLauncher,
+                'hook',
+                'telemetry-disable',
+                '--host',
+                'claude',
+                '--file',
+                settings,
+                '--write',
+            ],
+            root,
+        ),
+    );
+    assert.equal(disabled.enabled, false);
+    assert.equal(existsSync(observerDatabase), false);
 });

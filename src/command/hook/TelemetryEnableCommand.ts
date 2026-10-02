@@ -7,7 +7,7 @@ import { join } from 'node:path';
 
 export default class TelemetryEnableCommand extends Command {
     static description =
-        'Preview or explicitly merge optional skill-read telemetry into selected host settings.';
+        'Preview or explicitly merge skill-read telemetry from a retained read-only runtime.';
     static flags = {
         host: Flags.string({ required: true, options: ['codex', 'claude', 'copilot', 'gemini'] }),
         file: Flags.string({
@@ -24,7 +24,12 @@ export default class TelemetryEnableCommand extends Command {
         }),
         executable: Flags.string({
             description:
-                'Absolute installed CLI executable; otherwise use this running Node and launcher.',
+                'Absolute path resolving to this running Node; other executables are rejected.',
+        }),
+        'reviewed-registration': Flags.string({
+            dependsOn: ['write'],
+            description:
+                'Exact registration SHA-256 from the inspected preview; required for writes.',
         }),
         write: Flags.boolean({
             default: false,
@@ -33,7 +38,7 @@ export default class TelemetryEnableCommand extends Command {
     };
     static examples = [
         '<%= config.bin %> hook telemetry-enable --host claude --file /project/.claude/settings.json --collection project=/project/.agents/skills',
-        '<%= config.bin %> hook telemetry-enable --host claude --file /project/.claude/settings.json --collection project=/project/.agents/skills --executable /usr/local/bin/i9-skills --write',
+        '<%= config.bin %> hook telemetry-enable --host claude --file /project/.claude/settings.json --collection project=/project/.agents/skills --write --reviewed-registration <preview-digest>',
     ];
 
     async run(): Promise<void> {
@@ -45,9 +50,8 @@ export default class TelemetryEnableCommand extends Command {
                 database: flags.db ?? new PluginDataConfiguration().usageDatabase(),
                 collections: flags.collection,
                 executable: flags.executable,
-                launcher: flags.executable
-                    ? undefined
-                    : join(new InstalledCollectionConfiguration().root(), 'bin/index.mjs'),
+                launcher: join(new InstalledCollectionConfiguration().root(), 'bin/index.mjs'),
+                reviewedRegistrationDigest: flags['reviewed-registration'],
             },
             flags.write,
         );

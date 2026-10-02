@@ -297,12 +297,13 @@ function runtimeAvailable(registration) {
     });
 }
 
-export function setup({
+function managedSetup({
     action,
     file,
     registration,
     write = false,
     reviewedRegistrationDigest,
+    observerDescriptor,
     provider = jsonArrayMapProvider,
 }) {
     safePath(file);
@@ -329,7 +330,9 @@ export function setup({
         return {
             enabled: matched,
             registration_changed: Boolean(owned.active && !matched),
-            runtime_available: owned.active ? runtimeAvailable(owned.registration) : null,
+            runtime_available: owned.active ? observerRuntimeAvailable(owned) : null,
+            legacy_runtime_unbound: Boolean(owned.active && !owned.observer_descriptor),
+            observer_descriptor: owned.observer_descriptor ?? null,
             written: false,
         };
     if (action === 'disable' && !owned.active) return { enabled: false, written: false };
@@ -337,11 +340,12 @@ export function setup({
         validate(registration, file, provider, true);
         if (!runtimeAvailable(registration))
             throw new Error('Selected runtime file is unavailable.');
-        const registrationDigest = hash(canonical(registration));
+        const registrationDigest = hash(canonical({ registration, observer_descriptor: observerDescriptor ?? null }));
         if (write && reviewedRegistrationDigest !== registrationDigest)
             throw new Error('Explicit enablement requires the exact reviewed registration digest.');
         if (owned.active) {
-            if (!matched || !same(owned.registration, registration))
+            if (!matched || !same(owned.registration, registration) ||
+                !same(owned.observer_descriptor ?? null, observerDescriptor ?? null))
                 throw new Error('Owned setup changed; reconcile or remove before reconfiguration.');
             return {
                 enabled: true,
@@ -349,6 +353,7 @@ export function setup({
                 preview: !write,
                 registration_digest: registrationDigest,
                 registration: structuredClone(registration),
+                observer_descriptor: observerDescriptor ?? null,
             };
         }
     }
@@ -357,6 +362,11 @@ export function setup({
         action === 'enable'
             ? provider.merge(settings.value, selected)
             : provider.remove(settings.value, selected);
+    if (action === 'enable' && observerDescriptor?.host === 'copilot') {
+        if (result.version !== undefined && result.version !== 1)
+            throw new Error('Copilot CLI hooks require version 1.');
+        result.version = 1;
+    }
     const next = {
         schema_version: 1,
         owner: 'skills-usage-setup',
@@ -365,9 +375,11 @@ export function setup({
         active: action === 'enable',
         registration: selected,
         registration_digest: hash(canonical(selected)),
+        ...(observerDescriptor ? { observer_descriptor: observerDescriptor } : owned.observer_descriptor ? { observer_descriptor: owned.observer_descriptor } : {}),
     };
     if (write)
         locked(file + '.skills-usage.lock', () => {
+            if (action === 'enable' && observerDescriptor) validateObserver(observerDescriptor, file);
             const written = replace(settings, encode(result));
             try {
                 replace(receipt, encode(next));
@@ -384,13 +396,185 @@ export function setup({
         preview: !write,
         entries: Object.values(selected.events).reduce((sum, entries) => sum + entries.length, 0),
         evidence_retained: true,
-        registration_digest: next.registration_digest,
+        registration_digest: hash(canonical({ registration: selected, observer_descriptor: next.observer_descriptor ?? null })),
+        observer_descriptor: next.observer_descriptor ?? null,
         registration: structuredClone(selected),
         settings: file,
         ownership_receipt: file + '.skills-usage.json',
         effects:
-            'Changes selected event registrations only. A native host can execute their commands automatically with user authority; the helper does not verify command safety or trust them.',
+            'Changes selected event registrations only. A native host can execute their commands automatically with user authority; the helper derives closed metadata-observer commands but does not grant host trust or authenticate consent.',
     };
+}
+
+/** Build one deliberately selected metadata observer; no caller command text or argument array. */
+export function createObserverDescriptor({ host, script, collections, store }) {
+    const executable = fs.realpathSync(process.execPath);
+    const descriptor = {
+        schema_version: 1, kind: 'skill-metadata-observer', host,
+        runtime: {
+            executable, executable_sha256: runtimeIdentity(executable, false),
+            script, script_sha256: runtimeIdentity(script, true),
+        },
+        collections, store,
+    };
+    validateObserver(descriptor);
+    return descriptor;
+}
+
+function runtimeIdentity(file, script) {
+    const state = read(file, script ? MAX_FILE : 160 * 1024 * 1024);
+    if (!state.bytes) throw new Error('Selected observer runtime is unavailable.');
+    if (state.mode & (script ? 0o222 : 0o022))
+        throw new Error('Retain a read-only observer script and a non-shared-writable Node executable.');
+    fs.accessSync(file, script ? fs.constants.R_OK : fs.constants.X_OK);
+    return hash(state.bytes);
+}
+
+function closed(value, fields) {
+    return object(value) && Object.keys(value).length === fields.length &&
+        Object.keys(value).every((key) => fields.includes(key));
+}
+
+function validateObserver(descriptor, settings) {
+    if (!closed(descriptor, ['schema_version', 'kind', 'host', 'runtime', 'collections', 'store']) ||
+        descriptor.schema_version !== 1 || descriptor.kind !== 'skill-metadata-observer' ||
+        !['claude', 'gemini', 'copilot'].includes(descriptor.host) ||
+        !closed(descriptor.runtime, ['executable', 'executable_sha256', 'script', 'script_sha256']))
+        throw new Error('Select a supported closed metadata-observer descriptor.');
+    const runtime = descriptor.runtime;
+    if (runtime.executable !== fs.realpathSync(process.execPath))
+        throw new Error('Only this running Node executable may launch the observer.');
+    for (const field of ['executable_sha256', 'script_sha256'])
+        if (typeof runtime[field] !== 'string' || !/^[a-f0-9]{64}$/u.test(runtime[field]))
+            throw new Error('Observer runtime requires reviewed SHA-256 identities.');
+    if (runtimeIdentity(runtime.executable, false) !== runtime.executable_sha256 ||
+        runtimeIdentity(runtime.script, true) !== runtime.script_sha256)
+        throw new Error('Observer runtime changed; retain and review its exact bytes again.');
+    if (runtime.script_sha256 !== hash(read(fileURLToPath(import.meta.url)).bytes))
+        throw new Error('Select the retained bundled metadata observer, not an unrelated script.');
+    if (!object(descriptor.collections) || !Object.keys(descriptor.collections).length ||
+        Object.keys(descriptor.collections).length > 16)
+        throw new Error('Select one to sixteen skill collections explicitly.');
+    safePath(descriptor.store);
+    for (const [label, root] of Object.entries(descriptor.collections)) {
+        if (!slug.test(label)) throw new Error('Collection labels must be safe slugs.');
+        safePath(root, true);
+        if (inside(root, descriptor.store) || (settings && inside(root, settings)))
+            throw new Error('Settings and observations must stay outside skill-discovery roots.');
+    }
+    const paths = [runtime.executable, runtime.script, descriptor.store];
+    if (settings) paths.push(settings, settings + '.skills-usage.json', settings + '.skills-usage.lock');
+    if (new Set(paths).size !== paths.length)
+        throw new Error('Select distinct runtime, settings, receipt and evidence paths.');
+    if (inside(packageRoot, descriptor.store) || (settings && inside(packageRoot, settings)))
+        throw new Error('Keep state outside the installed package.');
+    const retainedRoot = dirname(dirname(runtime.script));
+    if (inside(retainedRoot, descriptor.store) || (settings && inside(retainedRoot, settings)))
+        throw new Error('Keep state outside the retained observer package.');
+}
+
+function observerRuntimeAvailable(owned) {
+    if (!owned.observer_descriptor) return false;
+    try {
+        validateObserver(owned.observer_descriptor, owned.settings);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+function observerRegistration(descriptor, file) {
+    validateObserver(descriptor, file);
+    const quote = (value) => "'" + value.replaceAll("'", "'\"'\"'") + "'";
+    const command = [descriptor.runtime.executable, descriptor.runtime.script, 'observe-host', '--file', file]
+        .map(quote).join(' ');
+    const handler = { type: 'command', command, timeout: descriptor.host === 'gemini' ? 10000 : 10 };
+    const events = descriptor.host === 'copilot'
+        ? Object.fromEntries(['preToolUse', 'postToolUse'].map((event) => [event,
+            [{ type: 'command', bash: command + ' --event ' + event, timeoutSec: 10 }]]))
+        : Object.fromEntries((descriptor.host === 'gemini' ? ['BeforeTool', 'AfterTool'] : ['PreToolUse', 'PostToolUse'])
+            .map((event) => [event, [{ matcher: descriptor.host === 'gemini' ? '^read_file$' : '^Read$', hooks: [handler] }]]));
+    return {
+        provider: 'json-array-map', hook_path: ['hooks'], events,
+        runtime_files: [descriptor.runtime.executable, descriptor.runtime.script],
+        collections: descriptor.collections, store: descriptor.store,
+    };
+}
+
+export function setup(input) {
+    if (input.action !== 'enable') return managedSetup(input);
+    if (input.registration?.kind !== 'skill-metadata-observer') {
+        if (input.write) throw new Error('Generic command registrations are manual-only; use a closed observer descriptor.');
+        return { ...managedSetup(input), manual_only: true,
+            effects: 'Manual configuration reference only; no automatic registration write is supported.' };
+    }
+    if (input.provider && input.provider !== jsonArrayMapProvider)
+        throw new Error('Closed observers use only the verified bundled host adapters.');
+    return managedSetup({ ...input,
+        registration: observerRegistration(input.registration, input.file),
+        observerDescriptor: structuredClone(input.registration),
+    });
+}
+
+/** Map supported native entrypoint reads to metadata; never retain raw input or read bodies. */
+export function observeHost({ file, value, event }) {
+    const owned = json(file + '.skills-usage.json').value;
+    if (!owned.active || owned.owner !== 'skills-usage-setup' || owned.settings !== file ||
+        !owned.observer_descriptor || !observerRuntimeAvailable(owned))
+        return { recorded: false, coverage_gap: 'observer-unavailable' };
+    const descriptor = owned.observer_descriptor;
+    if (!object(value)) return { recorded: false, coverage_gap: 'unsupported-payload' };
+    const host = descriptor.host;
+    const name = host === 'copilot' ? event : value.hook_event_name;
+    const session = host === 'copilot' ? value.sessionId : value.session_id;
+    if (typeof session !== 'string' || !session || session.length > 256 || /[\x00-\x1f\x7f]/u.test(session))
+        return { recorded: false, coverage_gap: 'session-unavailable' };
+    let filename;
+    let kind;
+    if (host === 'claude') {
+        if (value.tool_name !== 'Read' || !['PreToolUse', 'PostToolUse'].includes(name) ||
+            !object(value.tool_input)) return { recorded: false, coverage_gap: 'unsupported-tool' };
+        if (name === 'PostToolUse' && (!Object.hasOwn(value, 'tool_response') || value.tool_response?.is_error === true))
+            return { recorded: false, coverage_gap: 'success-unavailable' };
+        filename = value.tool_input.file_path;
+        kind = name === 'PreToolUse' ? 'read_attempt' : 'read_confirmed';
+    }
+    if (host === 'gemini') {
+        if (value.tool_name !== 'read_file' || !['BeforeTool', 'AfterTool'].includes(name) ||
+            !object(value.tool_input)) return { recorded: false, coverage_gap: 'unsupported-tool' };
+        if (name === 'AfterTool' && (!object(value.tool_response) || value.tool_response.error !== undefined ||
+            value.tool_response.llmContent === undefined || value.tool_response.llmContent === null))
+            return { recorded: false, coverage_gap: 'success-unavailable' };
+        filename = value.tool_input.file_path;
+        if (typeof filename === 'string' && !isAbsolute(filename) && typeof value.cwd === 'string' && isAbsolute(value.cwd))
+            filename = resolve(value.cwd, filename);
+        kind = name === 'BeforeTool' ? 'read_attempt' : 'read_confirmed';
+    }
+    if (host === 'copilot') {
+        if (value.toolName !== 'view' || !['preToolUse', 'postToolUse'].includes(name))
+            return { recorded: false, coverage_gap: 'unsupported-tool' };
+        const args = typeof value.toolArgs === 'string' ? JSON.parse(value.toolArgs) : value.toolArgs;
+        if (!object(args)) return { recorded: false, coverage_gap: 'unsupported-tool' };
+        if (name === 'postToolUse' && (!object(value.toolResult) || value.toolResult.resultType !== 'success' ||
+            typeof value.toolResult.textResultForLlm !== 'string'))
+            return { recorded: false, coverage_gap: 'success-unavailable' };
+        filename = args.path;
+        if (typeof filename === 'string' && !isAbsolute(filename) && typeof value.cwd === 'string' && isAbsolute(value.cwd))
+            filename = resolve(value.cwd, filename);
+        kind = name === 'preToolUse' ? 'read_attempt' : 'read_confirmed';
+    }
+    if (typeof filename !== 'string' || !isAbsolute(filename) || basename(filename) !== 'SKILL.md')
+        return { recorded: false, coverage_gap: 'outside-selection' };
+    safePath(filename);
+    const stat = fs.lstatSync(filename);
+    if (!stat.isFile() || stat.nlink !== 1) return { recorded: false, coverage_gap: 'unsafe-entrypoint' };
+    const selected = Object.entries(descriptor.collections).filter(([, root]) => dirname(dirname(filename)) === root);
+    const skill = basename(dirname(filename));
+    if (selected.length !== 1 || !slug.test(skill)) return { recorded: false, coverage_gap: 'outside-selection' };
+    return record({ store: descriptor.store, write: true, value: {
+        collection: selected[0][0], skill, kind,
+        session_key: hash(host + ':' + session), observed_at: new Date().toISOString(),
+    } });
 }
 
 export function record({ store, value, write = false }) {
@@ -472,15 +656,17 @@ export async function main(args = process.argv.slice(2)) {
         const key = options[index];
         if (key === '--write' && !input.write) input.write = true;
         else if (
-            ['--file', '--registration', '--store', '--reviewed-registration'].includes(key) &&
+            ['--file', '--registration', '--store', '--reviewed-registration', '--event'].includes(key) &&
             !input[key.slice(2)] &&
             options[index + 1]
         )
             input[key.slice(2)] = options[++index];
         else throw new Error('Unsupported or duplicated option.');
     }
-    if (action === 'observe') {
-        if (input.file || input.registration || input['reviewed-registration'])
+    if (action === 'observe' || action === 'observe-host') {
+        if ((action === 'observe' && (input.file || input.event)) ||
+            (action === 'observe-host' && (input.store || input.write)) ||
+            input.registration || input['reviewed-registration'])
             throw new Error('Unsupported observation option.');
         let bytes = 0;
         const chunks = [];
@@ -489,13 +675,12 @@ export async function main(args = process.argv.slice(2)) {
             if (bytes > 16 * 1024) throw new Error('Observation input exceeds 16 KiB.');
             chunks.push(chunk);
         }
-        return record({
-            ...input,
-            value: JSON.parse(Buffer.concat(chunks).toString('utf8')),
-        });
+        const value = JSON.parse(Buffer.concat(chunks).toString('utf8'));
+        if (action === 'observe-host') return observeHost({ ...input, value });
+        return record({ ...input, value });
     }
     if (
-        input.store ||
+        input.event || input.store ||
         (action !== 'enable' && input.registration) ||
         (input['reviewed-registration'] && (action !== 'enable' || !input.write)) ||
         (action === 'status' && input.write)
@@ -508,11 +693,13 @@ export async function main(args = process.argv.slice(2)) {
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
     try {
-        console.log(JSON.stringify(await main()));
+        const result = await main();
+        // Native hooks receive neutral output; inspect the selected local sink for evidence.
+        console.log(JSON.stringify(process.argv[2] === 'observe-host' ? {} : result));
     } catch {
         console.error(
             'Operation failed; inspect selected paths, metadata, ownership and runtime without exposing settings content.',
         );
-        if (process.argv[2] !== 'observe') process.exitCode = 1;
+        if (!['observe', 'observe-host'].includes(process.argv[2])) process.exitCode = 1;
     }
 }

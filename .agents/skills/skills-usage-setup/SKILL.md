@@ -2,7 +2,7 @@
 name: skills-usage-setup
 description: Use to preview, explicitly enable, inspect, or remove optional skill-read observations for selected skill collections while preserving unrelated host settings and local evidence.
 license: Apache-2.0
-compatibility: The bundled reference helper requires Node.js 24+ and an owned stable local filesystem; the manual procedure needs only JSON editing and trusted observation capabilities.
+compatibility: The bundled reference helper requires Node.js 24+ and an owned stable POSIX filesystem; unsupported native hosts retain a manual metadata-only fallback.
 metadata:
   author: i-9-ai
   tags: 'skills, observations, setup'
@@ -18,7 +18,7 @@ metadata:
 Produce one inspected optional skill-read registration and its local ownership
 receipt, enabled or deliberately removed. Use this when a caller wants to set up,
 check or remove observations for explicitly selected skill collections. Status
-and removal are the lifecycle of that same registration.
+and exact-owned removal are the lifecycle of that same registration.
 
 Do not use this to rank skills, judge effectiveness, infer task outcomes, install
 skills, publish evidence, or configure general application telemetry. A read
@@ -27,212 +27,237 @@ correct use or success. Discovery works without observations.
 
 ## Inputs and decisions
 
-Obtain the caller's selected settings file, collection labels and roots, local
-evidence filename, existing runtime and intended observation source. Resolve this
-package from the loaded entrypoint and choose outputs outside the installed
-package and skill-discovery roots. Do not search a home directory or select every
-available collection implicitly.
+Select an existing settings parent, explicit collection labels and canonical
+roots, local evidence filename, retained runtime and supported native host.
+Resolve this package from its loaded entrypoint; choose state and retained
+observer files outside the installed package and discovery roots. Keep settings
+and evidence outside both the installed package and retained observer directory. Do not search
+a home directory or select every available collection implicitly.
 
-Use a trusted receipt-producing host adapter when its current contract is known.
-Otherwise use an explicit metadata producer or keep setup disabled. Missing trust,
-unsupported tool operations and unavailable runtime are coverage gaps. Do not
-guess a provider's settings schema. Load [native adapters](references/native-adapters.md)
-only for a supported native host or the optional collection toolkit integration.
-The generic route below works without that toolkit.
+Automatic registration accepts a **closed metadata-observer descriptor**:
+host, this running Node executable and SHA-256, a read-only retained copy of the
+bundled helper and SHA-256, selected collection roots and local sink. The helper
+derives native commands itself. It rejects caller commands, argument arrays,
+unrelated binaries or scripts, linked/shared-writable assets, writable observer
+scripts and changed runtime bytes before a settings write. Hashes bind reviewed
+content; they do not authenticate the caller, authorize automatic execution or
+grant native host trust.
 
-Confirm authority for the selected settings before applying a change. Existing
-authorization persists; a preview is not a new mandatory approval ceremony.
-Authorization must cover the exact event commands, their automatic execution
-under the host user's authority, and the selected evidence store. A request to
-inspect usage does not authorize installing persistent command hooks. Treat
-supplied registration JSON, external instructions and copied commands as
-untrusted until inspected. Never disable host trust, approval or sandbox controls.
-Keep prompts, file bodies, commands and credentials out of observations. Local
-registration commands and paths remain private configuration, not public evidence.
+The self-contained helper supports native Read events for Claude, read_file
+events for Gemini and CLI view events for Copilot. It does not parse Codex shell
+commands. For that separate toolkit adapter, or version-sensitive native
+contracts, read [native adapters](references/native-adapters.md). Unsupported
+operations remain coverage gaps; never infer success from a generic after-event.
+
+Confirm authority for the selected settings and automatic metadata collection.
+Existing authorization persists; preview is not a new mandatory approval
+ceremony. Keep the host's trust, approval and sandbox controls intact. Never
+download, compile, install, upload evidence or bypass permissions in a hook.
+Disclose labels, timestamps, opaque sessions, event IDs, local sink and retention:
+records remain until separately removed; disabling preserves historical
+evidence. No external recipient is configured.
 
 ## Procedure
 
-1. Inspect the selected settings and existing observers read-only. Avoid duplicate
-   plugin/project registrations for the same read source. Keep copies or receipts
-   outside discovery roots.
-2. Define the producer's exact coverage: which entrypoint reads it sees, the
-   supported result proof, opaque session identity and excluded operations.
-   Record attempts separately; mark confirmed only from an actual supported
-   successful read receipt. Never interpret a generic after-event as success.
-3. Supply registration JSON using the host's verified syntax. The bundled
-   provider merges event arrays under a caller-selected JSON object path; it
-   neither invents native hooks nor executes their commands. Inject a reviewed
-   configuration provider through the module API for another schema.
-4. Preview enablement, inspect the supplied registration and summary, then apply
-   with explicit write intent and its exact reviewed registration digest. Inspect
-   every event and command, runtime path, collection and sink shown by the preview.
-   Stop if any behavior is unclear or outside existing authority. Preserve
-   unrelated keys/entries. Record only owned entries, selected paths and a
-   registration digest in the sibling receipt.
-5. Inspect status and perform one synthetic source operation. Verify one expected
-   metadata record and absence of payload fields. A generated registration or
-   receipt alone does not prove native execution or trust.
-6. To remove, preview and remove only exact receipt-matched entries. Refuse
-   changed, duplicated or missing ownership; reconcile manually. Keep evidence
-   and the inactive receipt. Never erase or migrate historical observations as
-   part of setup.
+1. Inspect selected settings and observers read-only. Avoid duplicated
+   plugin/project observers. Keep recovery material outside discovery roots.
+2. Describe exact read coverage, successful result fields, opaque session
+   identity and excluded operations. Attempts and confirmed reads stay separate.
+3. Deliberately retain the reviewed self-contained helper under a stable local
+   observer directory, with no write bits. Create the closed descriptor below;
+   no registration JSON may supply shell text or executable providers.
+4. Preview descriptor and derived native entries. Inspect runtime paths/hashes,
+   source roots, sink, settings, receipt and exact commands. Apply within existing
+   authority using the identical reviewed digest and explicit write intent.
+   Preserve unrelated entries; refuse matching unowned registrations.
+5. Inspect status and perform one synthetic supported read. Verify expected
+   metadata without prompts, bodies, commands, credentials or local paths.
+   A settings file or receipt alone does not establish real host execution.
+6. Preview removal; remove only exact receipt-matched entries. Changed, missing
+   or duplicated ownership requires manual reconciliation. Preserve evidence
+   and the inactive receipt. Legacy exact-owned removal remains supported,
+   but old availability inventories do not establish bound runtime identity.
 
-## Minimal complete local example
+## Complete local example
 
-Requires an existing Node 24+ runtime. Set `PACKAGE` to this installed package
-and `WORKSPACE` to a new caller-owned demonstration directory. This synthetic
-JSON hook schema is an inert example, not a native-host registration:
+Requires existing Node 24+ and a new caller-owned demonstration directory.
+Set PACKAGE to this installed skill. The selected native settings below are
+synthetic fixtures; creating them does not configure an installed host.
 
-```sh
+~~~sh
 export PACKAGE="/absolute/installed/skills-usage-setup"
 export WORKSPACE="$PWD/skill-read-demo"
 mkdir "$WORKSPACE"
+
 node --input-type=module <<'NODE'
 import fs from 'node:fs';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
+
 const workspace = fs.realpathSync(process.env.WORKSPACE);
-const packagePath = fs.realpathSync(process.env.PACKAGE);
-fs.mkdirSync(path.join(workspace, 'skills', 'example-skill'), { recursive: true });
-fs.writeFileSync(path.join(workspace, 'skills', 'example-skill', 'SKILL.md'), '# Synthetic skill\n');
-fs.writeFileSync(path.join(workspace, 'settings.json'), JSON.stringify({ theme: 'retain', hooks: { SkillRead: [{ command: 'retain-existing' }] } }));
-fs.writeFileSync(path.join(workspace, 'registration.json'), JSON.stringify({
-  provider: 'json-array-map', hook_path: ['hooks'],
-  events: { SkillRead: [{ command: 'reviewed-metadata-producer' }] },
-  runtime_files: [process.execPath],
-  collections: { demo: path.join(workspace, 'skills') },
-  store: path.join(workspace, 'reads.jsonl')
-}, null, 2));
+const helper = path.join(fs.realpathSync(process.env.PACKAGE), 'scripts', 'usage_setup.mjs');
+const { createObserverDescriptor } = await import(pathToFileURL(helper).href);
+const collection = path.join(workspace, 'skills');
+fs.mkdirSync(path.join(collection, 'example-skill'), { recursive: true });
+fs.writeFileSync(path.join(collection, 'example-skill', 'SKILL.md'), '# Synthetic skill\n');
+
+const retained = path.join(workspace, 'observer', 'scripts', 'usage_setup.mjs');
+fs.mkdirSync(path.dirname(retained), { recursive: true });
+fs.copyFileSync(helper, retained, fs.constants.COPYFILE_EXCL);
+fs.chmodSync(retained, 0o444);
+
+fs.writeFileSync(path.join(workspace, 'settings.json'), JSON.stringify({ theme: 'retain' }));
+const descriptor = createObserverDescriptor({
+    host: 'claude',
+    script: retained,
+    collections: { demo: collection },
+    store: path.join(workspace, 'reads.jsonl'),
+});
+fs.writeFileSync(path.join(workspace, 'registration.json'), JSON.stringify(descriptor, null, 2));
 NODE
-node "$PACKAGE/scripts/usage_setup.mjs" enable --file "$WORKSPACE/settings.json" --registration "$WORKSPACE/registration.json" > "$WORKSPACE/preview.json"
+
+node "$PACKAGE/scripts/usage_setup.mjs" enable \
+  --file "$WORKSPACE/settings.json" \
+  --registration "$WORKSPACE/registration.json" > "$WORKSPACE/preview.json"
 cat "$WORKSPACE/preview.json"
-```
+~~~
 
-Inspect the displayed registration. This demonstration uses an inert event and
-does not authorize native registration. For real hooks, verify the exact commands
-and their current host trust requirements before continuing within the caller's
-authorization. The digest binds the write to these inspected bytes; it is not a
-signature, a command safety check or evidence of user consent.
+The descriptor contains only this closed schema; values are deliberately selected
+local paths or measured hashes:
 
-```sh
+~~~json
+{
+  "schema_version": 1,
+  "kind": "skill-metadata-observer",
+  "host": "claude",
+  "runtime": {
+    "executable": "/absolute/selected/node",
+    "executable_sha256": "<64 lowercase hex characters>",
+    "script": "/absolute/caller/observer/scripts/usage_setup.mjs",
+    "script_sha256": "<64 lowercase hex characters>"
+  },
+  "collections": { "demo": "/absolute/caller/skills" },
+  "store": "/absolute/caller/reads.jsonl"
+}
+~~~
+
+Inspect preview.observer_descriptor and preview.registration. The latter
+contains derived native event commands; it is output, never arbitrary writable
+input. Do not apply until the exact automatic observer is understood and
+authorized. Preview creates no settings, receipt, locks or evidence; this
+example explicitly saves its private summary.
+
+~~~sh
 REVIEWED_REGISTRATION="$(node --input-type=module -e 'import fs from "node:fs"; console.log(JSON.parse(fs.readFileSync(process.env.WORKSPACE + "/preview.json", "utf8")).registration_digest)')"
-node "$PACKAGE/scripts/usage_setup.mjs" enable --file "$WORKSPACE/settings.json" --registration "$WORKSPACE/registration.json" --write --reviewed-registration "$REVIEWED_REGISTRATION"
+
+node "$PACKAGE/scripts/usage_setup.mjs" enable \
+  --file "$WORKSPACE/settings.json" \
+  --registration "$WORKSPACE/registration.json" \
+  --write --reviewed-registration "$REVIEWED_REGISTRATION"
+
 node "$PACKAGE/scripts/usage_setup.mjs" status --file "$WORKSPACE/settings.json"
-```
+~~~
 
-The helper's preview creates no settings, receipt, lock or evidence; the example
-shell explicitly saves its private summary for inspection. Applying preserves
-`theme` and the existing entry; repeating it changes nothing. Now connect a
-complete generic producer: this controlled reader emits metadata only after its
-synthetic entrypoint read succeeds, without forwarding the file body:
+Enablement preserves theme and unrelated hooks. The sibling receipt records
+exact owned entries, descriptor and digests. Repeating the same reviewed request
+changes nothing. A script or Node upgrade requires new review and deliberate
+reconfiguration.
 
-```sh
+Exercise the retained observer with a synthetic native successful read:
+
+~~~sh
 node --input-type=module <<'NODE'
 import fs from 'node:fs';
 import path from 'node:path';
-import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
+
 const workspace = fs.realpathSync(process.env.WORKSPACE);
-fs.readFileSync(path.join(workspace, 'skills', 'example-skill', 'SKILL.md'), 'utf8');
-const event = {
-  collection: 'demo', skill: 'example-skill', kind: 'read_confirmed',
-  session_key: createHash('sha256').update('synthetic-session').digest('hex'),
-  observed_at: new Date().toISOString()
-};
-const result = spawnSync(process.execPath, [
-  path.join(process.env.PACKAGE, 'scripts', 'usage_setup.mjs'), 'observe',
-  '--store', path.join(workspace, 'reads.jsonl'), '--write'
-], { input: JSON.stringify(event), encoding: 'utf8' });
-if (result.status !== 0 || !JSON.parse(result.stdout || '{}').recorded) {
-  throw new Error('Synthetic coverage gap; no native-host claim.');
-}
-const recorded = JSON.parse(fs.readFileSync(path.join(workspace, 'reads.jsonl'), 'utf8').trim());
-if (recorded.skill !== 'example-skill' || recorded.kind !== 'read_confirmed' ||
-    Object.hasOwn(recorded, 'content')) throw new Error('Unexpected metadata record.');
+const descriptor = JSON.parse(fs.readFileSync(path.join(workspace, 'registration.json'), 'utf8'));
+const result = spawnSync(descriptor.runtime.executable, [
+    descriptor.runtime.script, 'observe-host', '--file', path.join(workspace, 'settings.json'),
+], {
+    encoding: 'utf8',
+    input: JSON.stringify({
+        hook_event_name: 'PostToolUse',
+        session_id: 'synthetic-session',
+        tool_name: 'Read',
+        tool_input: { file_path: path.join(workspace, 'skills', 'example-skill', 'SKILL.md') },
+        tool_response: { content: 'Synthetic result: never retained.' },
+    }),
+});
+if (result.status !== 0) throw new Error('Synthetic observer failed.');
+const observed = JSON.parse(fs.readFileSync(descriptor.store, 'utf8').trim());
+if (observed.skill !== 'example-skill' || observed.kind !== 'read_confirmed' ||
+    Object.hasOwn(observed, 'content')) throw new Error('Unexpected metadata.');
 NODE
+
 node "$PACKAGE/scripts/usage_setup.mjs" disable --file "$WORKSPACE/settings.json"
 node "$PACKAGE/scripts/usage_setup.mjs" disable --file "$WORKSPACE/settings.json" --write
 node "$PACKAGE/scripts/usage_setup.mjs" status --file "$WORKSPACE/settings.json"
-```
+~~~
 
-Verify that the original hook remains, status is disabled, and `reads.jsonl`
-still contains the observation. The example exercises managed configuration and
-the local sink; replace the inert registration with a verified adapter before
-claiming automatic host capture.
+Verify theme remains, owned hooks disappear, status is disabled and reads.jsonl
+retains the record. This validates fixture wiring, not a live host. Native trust
+and actual delivery require separately authorized provider testing.
 
 ## Prerequisites and setup
 
+Use Node.js 24+ on an owned stable POSIX filesystem. Select existing canonical
+state parents and deliberately retain the reviewed observer outside discovery
+roots. The complete example above uses synthetic settings; actual host
+configuration needs authority for those settings and the disclosed metadata.
+
 ### Explicit setup
 
-`scripts/usage_setup.mjs` is the complete zero-dependency reference
-implementation. `enable`, `status`, `disable` and `observe` are
-noninteractive; `--help` prints their interface. Setup defaults to preview;
-`enable --write` also requires `--reviewed-registration SHA256` from the inspected
-preview. The module API requires the same `reviewedRegistrationDigest` value.
-Missing, changed or mismatched digests are refused before creating any state,
-including an identical enable request. Preview shows the full selected
-registration, settings and receipt paths; keep this output private. Runtime
-availability proves only that selected runtime files are present. It does not
-bind them to commands, verify command behavior, grant host trust or authorize
-execution. The operator must review those independently.
-Status never writes. `observe` reads one metadata object from stdin and defaults
-to preview. JSON summaries go to stdout; fixed failure diagnostics go to stderr
-without echoing settings or input. Setup errors return 1. Observation errors
-return 0 with no success receipt so optional capture does not block the original
-operation. Callers must inspect `recorded` rather than equating exit 0 with
-evidence.
-
-The five observation inputs are `collection` and `skill` slugs,
-`kind` (`read_attempt` or `read_confirmed`), an opaque 64-hex
-`session_key`, and canonical UTC `observed_at`. The sink adds a random
-`event_id` and schema version. It appends local JSONL, creates no network
-connection, and rejects unknown payload fields. Do not derive a session key from
-prompts, a username or other personal content. The reference sink does not
-deduplicate, aggregate, authenticate producer claims or inspect native results.
-
-Before enabling observations, disclose the collection and skill labels, timestamps,
-opaque session identifiers and generated event IDs being retained locally, the
-purpose, selected store and retention choice. No external recipient is configured
-by this reference. Records remain until the caller deliberately removes them;
-disable stops the owned future observation source but retains past evidence.
-Provide meaningful enable, status and disable controls. Do not silently export
-records, change retention, or include local receipt paths and commands in public
-reports. Evidence deletion or publication is a separate authorized operation.
+scripts/usage_setup.mjs is the complete zero-dependency implementation. Its
+enable, status, disable and observe commands are noninteractive; --help shows
+the interface. Setup defaults to preview; enable --write requires the exact
+reviewed-registration digest, including runtime identity. CLI failures return 1
+with fixed diagnostics that do not echo inputs. observe and observe-host fail
+without blocking the original operation; native output is neutral. Inspect the
+sink for evidence rather than treating exit 0 as successful capture.
 
 ### Idempotence and side effects
 
-An identical active registration returns without writing. Explicit enablement
-changes only the selected settings and sibling receipt; observation writes append
-only to the selected evidence store. Explicit removal retains evidence and an
-inactive receipt. Commands use temporary sibling files and cooperating locks,
-and never modify this installed package or install a runtime.
+The sink's five inputs are collection and skill slugs, kind (read_attempt or
+read_confirmed), an opaque 64-hex session_key and canonical UTC observed_at.
+It adds event_id and schema_version. JSONL appends are local, bounded and retain
+existing bytes. Unknown payload fields are refused. Native input is transient;
+only this metadata persists. The observer never reads skill bodies itself.
+There is no deduplication, ranking, upload or proof of effectiveness. Do not
+derive identities from prompts or personal information.
 
-Configuration is capped at 128 KiB, stdin at 16 KiB and evidence at 4 MiB.
-Select existing normalized parent directories. Files must be regular and
-unlinked; ancestor links and observed concurrent changes are rejected. A local
-exclusive lock serializes cooperating writers; occupied locks are never deleted
-automatically. These checks assume stable caller-owned directories and are not
-a sandbox against malicious concurrent replacement or a crash-proof transaction.
-Non-regular files are rejected before opening; nonblocking no-follow opens and
-descriptor checks also reject a FIFO substituted during opening.
-Platforms without these file primitives fail explicitly; execution was tested on
-POSIX, and Windows behavior remains unverified.
-Two-file settings/receipt writes attempt rollback without overwriting a changed
-settings file. Keep a preimage separately for operator recovery after a crash.
+Settings are capped at 128 KiB, host input at 16 KiB and evidence at 4 MiB. Runtime
+hashing is bounded at 160 MiB for Node and 128 KiB for the standalone script.
+Only existing canonical parents and regular unlinked files qualify. The retained
+script is read-only, byte-identical to this bundled reference and checked again
+before enablement. Its native observer rechecks receipt-bound runtime identity
+on invocation. Node may remain owner-updatable, but shared write permissions
+are refused and changed bytes invalidate the descriptor. These measures assume
+stable caller-owned directories; they are not a sandbox against malicious
+replacement or a crash-proof two-file transaction.
 
-If ownership drift appears, stop mutation and inspect the current entry and
-receipt. If a runtime disappears, status reports it; restore an explicitly
-selected runtime or remove the registration. If storage fills or is unwritable,
-retain evidence, report a coverage gap and select another explicit store.
-Never download a runtime during a hook event.
+Occupied cooperating locks remain. Settings/receipt failures attempt rollback
+without overwriting another writer. Missing runtime, changed script, unsupported
+read proof or full storage is a coverage gap; retain evidence and reconcile
+explicitly. Exact-owned removal still works after runtime or collections
+disappear. Disabling never deletes observer scripts, changes permission controls,
+migrates evidence or alters retention.
 
 ### Fallback
 
-For another provider, load [implementation wiring](references/implementation.md)
-for the injected provider interface, file layout, complete configuration and
-limits. Without Node or trusted hooks, manually preserve the same ownership
-receipt and metadata schema in caller-selected files; inspect changes first,
-remove only exact owned entries, and report automatic capture as unavailable.
-Installation, discovery and activation never run this skill's setup entrypoint.
+Arbitrary host command JSON can be previewed as a manual configuration reference;
+enable --write is refused, even with a digest. Custom executable providers are
+not accepted by automatic setup. Existing generic receipts remain inspectable
+and exactly removable. Read [implementation wiring](references/implementation.md)
+for the complete schema, manual route and legacy boundaries.
 
-For provenance or redistribution review, load the
+Without a supported host or trusted runtime, use explicit controlled read
+metadata with observe, or keep automatic observation unavailable. Discovery,
+installation and activation never run this setup entrypoint. A separately
+selected toolkit retains its SQLite/native adapter capability; verify its actual
+identity, local dependencies and read-only retained runtime instead of trusting
+a mutable cache or sibling package.
+
+For source and redistribution decisions, read the
 [research and reuse record](references/provenance.md).

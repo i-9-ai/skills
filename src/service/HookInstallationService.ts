@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
-import { accessSync, constants, lstatSync, realpathSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { isAbsolute, resolve } from 'node:path';
+import { HookObserverRuntimeRepository } from '../repository/HookObserverRuntimeRepository.ts';
 import { HookSettingsRepository } from '../repository/HookSettingsRepository.ts';
 import { TelemetryHookConfiguration } from './TelemetryHookConfiguration.ts';
 
@@ -11,14 +12,20 @@ export type HookInstallationInput = {
     collections?: string[];
     executable?: string;
     launcher?: string;
+    reviewedRegistrationDigest?: string;
 };
 
 /** Owns explicit registration lifecycle; observations and evidence storage stay separate. */
 export class HookInstallationService {
     private readonly repository: HookSettingsRepository;
+    private readonly runtimeRepository: HookObserverRuntimeRepository;
 
-    constructor(repository = new HookSettingsRepository()) {
+    constructor(
+        repository = new HookSettingsRepository(),
+        runtimeRepository = new HookObserverRuntimeRepository(),
+    ) {
         this.repository = repository;
+        this.runtimeRepository = runtimeRepository;
     }
 
     status(input: HookInstallationInput) {
@@ -36,13 +43,17 @@ export class HookInstallationService {
                 configured.filter((value: any) => this.same(value, entry)).length === 1
             );
         });
-        const runtime_available = this.runtimeAvailable(registration.runtime);
+        const runtime_available = registration.runtime_identity
+            ? this.runtimeRepository.matches(registration.runtime_identity)
+            : false;
         return {
             enabled: matched,
             file: settings.file,
             host: input.host,
             registration_changed: !matched,
             runtime_available,
+            runtime_identity: registration.runtime_identity ?? null,
+            legacy_runtime_unbound: !registration.runtime_identity,
             database: registration.database,
             effects: 'Read only; database was not opened.',
         };
@@ -54,9 +65,8 @@ export class HookInstallationService {
         if (!input.database || !input.collections?.length) {
             throw new Error('Enable requires a database and explicit collection roots.');
         }
-        const selectedRuntime = [input.executable ?? process.execPath];
-        if (input.launcher) selectedRuntime.push(input.launcher);
-        const runtime = selectedRuntime.map((path, index) => this.runtimeFile(path, index));
+        const runtimeIdentity = this.runtimeRepository.inspect(input.executable, input.launcher);
+        const runtime = [runtimeIdentity.executable.file, runtimeIdentity.launcher.file];
         const prefix = runtime.map((path) => this.quote(path)).join(' ');
         const generated = new TelemetryHookConfiguration().configuration(
             input.database,
@@ -64,6 +74,17 @@ export class HookInstallationService {
             input.host,
             prefix,
         );
+        const registrationDigest = this.digest({
+            host: input.host,
+            file: settings.file,
+            database: input.database,
+            collections: input.collections,
+            runtime_identity: runtimeIdentity,
+            hooks: generated.hooks,
+        });
+        if (write && input.reviewedRegistrationDigest !== registrationDigest) {
+            throw new Error('Explicit enablement requires the exact reviewed registration digest.');
+        }
         if (receipt.value.active) {
             const status = this.status(input);
             if (!status.enabled) {
@@ -72,13 +93,19 @@ export class HookInstallationService {
             if (
                 !this.same(receipt.value.hooks, generated.hooks) ||
                 !this.same(receipt.value.runtime, runtime) ||
+                !this.same(receipt.value.runtime_identity, runtimeIdentity) ||
                 receipt.value.database !== input.database
             ) {
                 throw new Error(
                     'Registration options changed; explicitly disable before enabling the new selection.',
                 );
             }
-            return { ...status, written: false, effects: 'Already enabled; no files changed.' };
+            return {
+                ...status,
+                written: false,
+                registration_digest: registrationDigest,
+                effects: 'Already enabled; no files changed.',
+            };
         }
         const value = structuredClone(settings.value);
         if (
@@ -112,9 +139,19 @@ export class HookInstallationService {
             active: true,
             database: input.database,
             runtime,
+            runtime_identity: runtimeIdentity,
+            registration_digest: registrationDigest,
+            collections: input.collections,
             hooks: generated.hooks,
         };
-        if (write) this.persist(settings, value, receipt, registration);
+        if (write) {
+            if (!this.runtimeRepository.matches(runtimeIdentity)) {
+                throw new Error(
+                    'Observer runtime changed; inspect its bytes again before writing.',
+                );
+            }
+            this.persist(settings, value, receipt, registration);
+        }
         return {
             enabled: write,
             written: write,
@@ -122,6 +159,8 @@ export class HookInstallationService {
             host: input.host,
             database: input.database,
             receipt: receipt.file,
+            registration_digest: registrationDigest,
+            runtime_identity: runtimeIdentity,
             configuration: generated,
             effects: write
                 ? 'Merged selected hooks and recorded ownership; database retained.'
@@ -211,33 +250,8 @@ export class HookInstallationService {
         return JSON.stringify(left) === JSON.stringify(right);
     }
 
-    private runtimeAvailable(runtime: string[]): boolean {
-        try {
-            return runtime.every((path, index) => this.runtimeFile(path, index) === path);
-        } catch {
-            return false;
-        }
-    }
-
-    private runtimeFile(path: string, index: number): string {
-        if (!isAbsolute(path) || /[\r\n\0]/.test(path)) {
-            throw new Error('Select existing absolute runtime files.');
-        }
-        // Package-manager executable links resolve to the installed runtime.
-        const canonical = realpathSync(path);
-        if (!lstatSync(canonical).isFile()) {
-            throw new Error('Select existing absolute runtime files.');
-        }
-        try {
-            accessSync(canonical, index === 0 ? constants.X_OK : constants.R_OK);
-        } catch {
-            throw new Error(
-                index === 0
-                    ? 'Selected runtime must be executable.'
-                    : 'Selected launcher must be readable.',
-            );
-        }
-        return canonical;
+    private digest(value: unknown): string {
+        return createHash('sha256').update(JSON.stringify(value)).digest('hex');
     }
 
     private quote(value: string): string {

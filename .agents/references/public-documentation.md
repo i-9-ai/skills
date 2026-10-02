@@ -23,6 +23,7 @@ documentation authoring convention.
 Run repository link and public-hygiene checks. Verify upstream revisions and scoped licenses before changing reuse decisions.
 
 ## Child DOX index
+- [Collection Modules.md](../../docs/Collection%20Modules.md): reviewed module admission, independent ownership, collision and update boundaries; no automatic module installer or publisher authentication.
 - [Architecture.md](../../docs/Architecture.md): responsibilities, handoffs, failure, and scope.
 - [Authoring Standards.md](../../docs/Authoring%20Standards.md): contributor requirements and single responsibility.
 - [Upstream Research.md](../../docs/Upstream%20Research.md): pinned source comparison and reuse decisions.

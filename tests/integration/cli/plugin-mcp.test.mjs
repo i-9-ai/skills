@@ -127,6 +127,8 @@ test('a clean installed MCP discovers and reads only its bundled catalog without
         call('skill_catalog_search', { query: 'decoy-guide' }),
     ]);
     assert.equal(rows[0].result.serverInfo.name, 'i9-skills');
+    assert.equal(rows[0].result.serverInfo.version, '9.8.7');
+    assert.equal(rows[0].result.protocolVersion, '2025-11-25');
     assert.deepEqual(rows[1].result.tools.map((tool) => tool.name).sort(), tools);
     const listed = Object.fromEntries(rows[1].result.tools.map((tool) => [tool.name, tool]));
     for (const name of ['skill_catalog_search', 'skill_resource_read', 'skill_catalog_overview']) {
@@ -143,6 +145,7 @@ test('a clean installed MCP discovers and reads only its bundled catalog without
         ['alpha-guide'],
     );
     assert.equal(search.provenance.package_version, '9.8.7');
+    assert.equal(rows[0].result.serverInfo.version, search.provenance.package_version);
     assert.equal(search.provenance.resolved_git_sha, null);
     assert.match(successful(rows[3]).content, /ação, café/u);
     assert.match(successful(rows[4]).overview, /additional packages omitted/u);
@@ -153,6 +156,56 @@ test('a clean installed MCP discovers and reads only its bundled catalog without
         assert.equal(fs.existsSync(join(target.installed, directory)), false);
     assert.deepEqual(snapshot(target.root), before);
 });
+
+test('plugin MCP initialization succeeds without a catalog and creates no selected state', (t) => {
+    const target = catalogFixture(t, { runtime: true });
+    fs.rmSync(join(target.installed, 'skills-catalog.json'));
+    const before = snapshot(target.root);
+    const rows = run(target, [{ method: 'tools/list' }], {
+        I9_SKILLS_USAGE_DB: join(target.data, 'skills-usage.db'),
+    });
+
+    assert.equal(rows[0].result.serverInfo.version, '9.8.7');
+    assert.equal(rows[0].result.protocolVersion, '2025-11-25');
+    assert.deepEqual(rows[1].result.tools.map((tool) => tool.name).sort(), tools);
+    assert.equal(fs.existsSync(target.data), false);
+    assert.deepEqual(snapshot(target.root), before);
+});
+
+for (const [label, changes] of [
+    ['version', { version: 'malformed-version' }],
+    ['package', { name: '@unrelated/skills' }],
+    ['repository', { repository: { url: 'https://example.test/unrelated.git' } }],
+]) {
+    test(`plugin MCP rejects malformed installed ${label} before accepting explicit writes`, (t) => {
+        const target = catalogFixture(t, { runtime: true });
+        const manifest = JSON.parse(fs.readFileSync(join(target.installed, 'package.json')));
+        write(target.installed, 'package.json', JSON.stringify({ ...manifest, ...changes }));
+        const before = snapshot(target.root);
+        const result = spawnSync(
+            process.execPath,
+            [join(target.installed, 'src/transport/PluginMcpServer.ts'), '--host', 'claude'],
+            {
+                cwd: target.caller,
+                env: {
+                    ...target.environment,
+                    I9_SKILLS_USAGE_DB: join(target.data, 'skills-usage.db'),
+                },
+                input: messages([call('skill_read_record', observedRead)]),
+                encoding: 'utf8',
+                timeout: 10000,
+            },
+        );
+
+        assert.ifError(result.error);
+        assert.equal(result.status, 1);
+        assert.equal(result.stdout, '');
+        assert.match(result.stderr, /verify the runtime and host selector/);
+        assert.equal(result.stderr.includes(target.root), false);
+        assert.equal(fs.existsSync(target.data), false);
+        assert.deepEqual(snapshot(target.root), before);
+    });
+}
 
 test('invalid recording and unavailable rankings never initialize a selected DATA directory', (t) => {
     const target = catalogFixture(t, { runtime: true });

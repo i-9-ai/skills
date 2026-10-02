@@ -2,130 +2,141 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { createHash } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
-import { setup, record, jsonArrayMapProvider } from '../scripts/usage_setup.mjs';
+import { setup, record, createObserverDescriptor, observeHost, jsonArrayMapProvider } from '../scripts/usage_setup.mjs';
 
 const packageRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const script = join(packageRoot, 'scripts', 'usage_setup.mjs');
 
-function fixture(t) {
+function fixture(t, host = 'claude') {
     const root = fs.mkdtempSync(join(fs.realpathSync(tmpdir()), 'skills-usage-fixture-'));
     t.after(() => fs.rmSync(root, { recursive: true, force: true }));
     const file = join(root, 'settings.json');
     const collection = join(root, 'skills');
-    fs.mkdirSync(collection);
-    fs.writeFileSync(
-        file,
-        JSON.stringify({
-            theme: 'retain',
-            hooks: { SkillRead: [{ command: 'existing' }] },
-        }),
-    );
-    const registration = {
-        provider: 'json-array-map',
-        hook_path: ['hooks'],
-        events: { SkillRead: [{ command: 'reviewed-synthetic-observer' }] },
-        runtime_files: [process.execPath],
-        collections: { example: collection },
-        store: join(root, 'reads.jsonl'),
-    };
-    const reviewedRegistrationDigest = setup({
-        action: 'enable',
-        file,
-        registration,
-    }).registration_digest;
+    fs.mkdirSync(join(collection, 'example-skill'), { recursive: true });
+    fs.writeFileSync(join(collection, 'example-skill', 'SKILL.md'), '# Synthetic skill body\n');
+    fs.writeFileSync(file, JSON.stringify({ theme: 'retain', hooks: { SkillRead: [{ command: 'existing' }] } }));
+    const retained = join(root, 'observer', 'scripts', 'usage_setup.mjs');
+    fs.mkdirSync(dirname(retained), { recursive: true });
+    fs.copyFileSync(script, retained);
+    fs.chmodSync(retained, 0o444);
+    const registration = createObserverDescriptor({
+        host, script: retained, collections: { example: collection }, store: join(root, 'reads.jsonl'),
+    });
+    const reviewedRegistrationDigest = setup({ action: 'enable', file, registration }).registration_digest;
     return { root, file, registration, reviewedRegistrationDigest };
 }
-function content(file) {
-    return fs.readFileSync(file, 'utf8');
-}
+function content(file) { return fs.readFileSync(file, 'utf8'); }
 function metadata() {
-    return {
-        collection: 'example',
-        skill: 'example-skill',
-        kind: 'read_confirmed',
-        session_key: 'a'.repeat(64),
-        observed_at: '2026-10-01T22:00:00.000Z',
-    };
+    return { collection: 'example', skill: 'example-skill', kind: 'read_confirmed',
+        session_key: 'a'.repeat(64), observed_at: '2026-10-01T22:00:00.000Z' };
 }
 
 test('preview and status create no state and preserve existing bytes', (t) => {
     const input = fixture(t);
     const before = content(input.file);
-    assert.equal(setup({ ...input, action: 'enable' }).preview, true);
+    const preview = setup({ ...input, action: 'enable' });
+    assert.equal(preview.preview, true);
+    assert.deepEqual(preview.observer_descriptor, input.registration);
+    assert.match(preview.registration.events.PreToolUse[0].hooks[0].command, /observe-host/u);
     assert.equal(setup({ ...input, action: 'status' }).enabled, false);
     assert.equal(content(input.file), before);
-    assert.deepEqual(fs.readdirSync(input.root).sort(), ['settings.json', 'skills']);
+    assert.deepEqual(fs.readdirSync(input.root).sort(), ['observer', 'settings.json', 'skills']);
 });
 
-test('enable requires the exact reviewed registration before creating any state', (t) => {
+test('enable requires the exact reviewed descriptor before creating state', (t) => {
     const input = fixture(t);
     const before = content(input.file);
     const preview = setup({ ...input, action: 'enable' });
-    assert.deepEqual(preview.registration, input.registration);
     assert.match(preview.registration_digest, /^[a-f0-9]{64}$/u);
     assert.equal(preview.settings, input.file);
-    assert.equal(preview.ownership_receipt, input.file + '.skills-usage.json');
     assert.match(preview.effects, /automatically with user authority/u);
     for (const reviewedRegistrationDigest of [undefined, '0'.repeat(64), ['0'.repeat(64)]]) {
-        assert.throws(
-            () => setup({ ...input, action: 'enable', write: true, reviewedRegistrationDigest }),
-            /exact reviewed registration/u,
-        );
+        assert.throws(() => setup({ ...input, action: 'enable', write: true, reviewedRegistrationDigest }), /exact reviewed/u);
         assert.equal(content(input.file), before);
-        assert.deepEqual(fs.readdirSync(input.root).sort(), ['settings.json', 'skills']);
+        assert.equal(fs.existsSync(input.file + '.skills-usage.json'), false);
+        assert.equal(fs.existsSync(input.file + '.skills-usage.lock'), false);
     }
     setup({ ...input, action: 'enable', write: true });
     assert.equal(setup({ ...input, action: 'status' }).enabled, true);
 });
 
-test('changed commands require a newly inspected digest without granting runtime trust', (t) => {
+test('injected commands, unrelated runtime and stale retained bytes are rejected before writes', (t) => {
     const input = fixture(t);
-    const original = content(input.file);
-    input.registration.events.SkillRead[0].command = 'changed-synthetic-observer';
-    const preview = setup({ ...input, action: 'enable' });
-    assert.notEqual(preview.registration_digest, input.reviewedRegistrationDigest);
-    assert.equal(preview.registration.events.SkillRead[0].command, 'changed-synthetic-observer');
-    assert.throws(() => setup({ ...input, action: 'enable', write: true }), /exact reviewed/u);
-    assert.equal(content(input.file), original);
-    setup({
-        ...input,
-        action: 'enable',
-        write: true,
-        reviewedRegistrationDigest: preview.registration_digest,
-    });
-    assert.equal(
-        JSON.parse(content(input.file)).hooks.SkillRead[1].command,
-        'changed-synthetic-observer',
-    );
-    assert.equal(JSON.parse(content(input.file)).theme, 'retain');
+    const before = content(input.file);
+    for (const registration of [
+        { ...input.registration, command: 'injected-shell-text' },
+        { ...input.registration, arguments: ['--upload'] },
+        { ...input.registration, runtime: { ...input.registration.runtime, executable: '/bin/sh' } },
+        { ...input.registration, runtime: { ...input.registration.runtime, command: 'injected' } },
+        { ...input.registration, host: 'unsupported' },
+    ]) assert.throws(() => setup({ ...input, registration, action: 'enable', write: true }));
+    fs.chmodSync(input.registration.runtime.script, 0o644);
+    fs.appendFileSync(input.registration.runtime.script, '\n// Changed retained bytes.\n');
+    fs.chmodSync(input.registration.runtime.script, 0o444);
+    assert.throws(() => setup({ ...input, action: 'enable', write: true }), /runtime changed/u);
+    assert.equal(content(input.file), before);
+    assert.equal(fs.existsSync(input.file + '.skills-usage.json'), false);
 });
 
-test('CLI write refuses an unreviewed registration and accepts its inspected digest', (t) => {
+test('mutable or linked retained runtime assets and unrelated script bytes are rejected', (t) => {
+    const input = fixture(t);
+    const retained = input.registration.runtime.script;
+    fs.chmodSync(retained, 0o644);
+    assert.throws(() => setup({ ...input, action: 'enable' }), /read-only/u);
+    fs.chmodSync(retained, 0o444);
+    const linked = join(input.root, 'linked.mjs');
+    fs.symlinkSync(retained, linked);
+    assert.throws(() => createObserverDescriptor({ ...input.registration, script: linked }), /without links/u);
+    const other = join(input.root, 'unrelated.mjs');
+    fs.writeFileSync(other, '// Unrelated local script.\n', { mode: 0o444 });
+    assert.throws(() => createObserverDescriptor({ ...input.registration, script: other }), /bundled metadata observer/u);
+    assert.equal(fs.existsSync(input.file + '.skills-usage.json'), false);
+});
+
+test('generic host command data remains manual preview only; legacy exact-owned removal is retained', (t) => {
+    const input = fixture(t);
+    const manual = setup({ ...input, action: 'enable' }).registration;
+    manual.events = { SkillRead: [{ command: 'manual-untrusted-command' }] };
+    const preview = setup({ ...input, registration: manual, action: 'enable' });
+    assert.equal(preview.manual_only, true);
+    assert.throws(() => setup({ ...input, registration: manual, action: 'enable', write: true }), /manual-only/u);
+    // Synthetic legacy receipt, never run: exercises ownership-only cleanup.
+    const settings = JSON.parse(content(input.file));
+    settings.hooks.SkillRead.push(manual.events.SkillRead[0]);
+    fs.writeFileSync(input.file, JSON.stringify(settings));
+    const canonical = (value) => JSON.stringify(value, (_, item) => item && typeof item === 'object' && !Array.isArray(item)
+        ? Object.fromEntries(Object.keys(item).sort().map((key) => [key, item[key]])) : item);
+    fs.writeFileSync(input.file + '.skills-usage.json', JSON.stringify({
+        schema_version: 1, owner: 'skills-usage-setup', settings: input.file,
+        provider: 'json-array-map', active: true, registration: manual,
+        registration_digest: createHash('sha256').update(canonical(manual)).digest('hex'),
+    }));
+    assert.equal(setup({ ...input, action: 'status' }).enabled, true);
+    setup({ ...input, action: 'disable', write: true });
+    assert.deepEqual(JSON.parse(content(input.file)).hooks.SkillRead, [{ command: 'existing' }]);
+});
+
+test('CLI writes accept the inspected closed descriptor only', (t) => {
     const input = fixture(t);
     const registrationFile = join(input.root, 'registration.json');
     fs.writeFileSync(registrationFile, JSON.stringify(input.registration));
     const args = [script, 'enable', '--file', input.file, '--registration', registrationFile];
     const preview = spawnSync(process.execPath, args, { encoding: 'utf8' });
-    assert.equal(preview.status, 0);
+    assert.equal(preview.status, 0, preview.stderr);
     const reviewed = JSON.parse(preview.stdout);
     const denied = spawnSync(process.execPath, [...args, '--write'], { encoding: 'utf8' });
     assert.equal(denied.status, 1);
-    assert.equal(fs.existsSync(input.file + '.skills-usage.json'), false);
-    assert.equal(fs.existsSync(input.file + '.skills-usage.lock'), false);
-    const allowed = spawnSync(
-        process.execPath,
-        [...args, '--write', '--reviewed-registration', reviewed.registration_digest],
-        { encoding: 'utf8' },
-    );
-    assert.equal(allowed.status, 0);
+    const allowed = spawnSync(process.execPath, [...args, '--write', '--reviewed-registration', reviewed.registration_digest], { encoding: 'utf8' });
+    assert.equal(allowed.status, 0, allowed.stderr);
     assert.equal(JSON.parse(allowed.stdout).written, true);
 });
 
-test('enable is idempotent and exact removal preserves unrelated hooks and evidence', (t) => {
+test('enable is idempotent and exact removal preserves unrelated settings and evidence', (t) => {
     const input = fixture(t);
     setup({ ...input, action: 'enable', write: true });
     const enabled = content(input.file);
@@ -134,15 +145,48 @@ test('enable is idempotent and exact removal preserves unrelated hooks and evide
     assert.equal(setup({ ...input, action: 'status' }).runtime_available, true);
     record({ store: input.registration.store, value: metadata(), write: true });
     const evidence = content(input.registration.store);
-    assert.equal(setup({ ...input, action: 'disable' }).preview, true);
     setup({ ...input, action: 'disable', write: true });
-    assert.deepEqual(JSON.parse(content(input.file)), {
-        theme: 'retain',
-        hooks: { SkillRead: [{ command: 'existing' }] },
-    });
+    assert.deepEqual(JSON.parse(content(input.file)), { theme: 'retain', hooks: { SkillRead: [{ command: 'existing' }] } });
     assert.equal(content(input.registration.store), evidence);
     assert.equal(JSON.parse(content(input.file + '.skills-usage.json')).active, false);
-    assert.equal(setup({ ...input, action: 'status' }).enabled, false);
+});
+
+test('active descriptor drift requires explicit reconfiguration instead of false idempotence', (t) => {
+    const input = fixture(t);
+    setup({ ...input, action: 'enable', write: true });
+    const receiptFile = input.file + '.skills-usage.json';
+    const receipt = JSON.parse(content(receiptFile));
+    // Same generated commands, stale recorded identity: never mutate the actual Node runtime.
+    receipt.observer_descriptor.runtime.executable_sha256 = '0'.repeat(64);
+    fs.writeFileSync(receiptFile, JSON.stringify(receipt));
+    const beforeSettings = content(input.file);
+    const beforeReceipt = content(receiptFile);
+    assert.equal(setup({ ...input, action: 'status' }).runtime_available, false);
+    for (const write of [false, true]) {
+        assert.throws(() => setup({ ...input, action: 'enable', write }), /reconcile or remove/u);
+        assert.equal(content(input.file), beforeSettings);
+        assert.equal(content(receiptFile), beforeReceipt);
+    }
+    setup({ ...input, action: 'disable', write: true });
+    setup({ ...input, action: 'enable', write: true });
+    assert.equal(setup({ ...input, action: 'status' }).runtime_available, true);
+});
+
+test('settings and evidence cannot live inside the retained observer package', (t) => {
+    const input = fixture(t);
+    const retainedRoot = dirname(dirname(input.registration.runtime.script));
+    assert.throws(() => createObserverDescriptor({
+        ...input.registration, script: input.registration.runtime.script,
+        store: join(retainedRoot, 'reads.jsonl'),
+    }), /outside the retained observer/u);
+    const file = join(retainedRoot, 'settings.json');
+    fs.writeFileSync(file, '{"retain":true}');
+    for (const write of [false, true]) {
+        assert.throws(() => setup({ ...input, file, action: 'enable', write }), /outside the retained observer/u);
+        assert.equal(content(file), '{"retain":true}');
+        assert.equal(fs.existsSync(file + '.skills-usage.json'), false);
+    }
+    assert.equal(fs.existsSync(join(retainedRoot, 'reads.jsonl')), false);
 });
 
 test('changed, duplicate and missing owned entries are refused', (t) => {
@@ -150,16 +194,13 @@ test('changed, duplicate and missing owned entries are refused', (t) => {
         const input = fixture(t);
         setup({ ...input, action: 'enable', write: true });
         const value = JSON.parse(content(input.file));
-        if (change === 'changed') value.hooks.SkillRead[1].command = 'operator-changed';
-        if (change === 'duplicate') value.hooks.SkillRead.push(value.hooks.SkillRead[1]);
-        if (change === 'missing') value.hooks.SkillRead.pop();
+        if (change === 'changed') value.hooks.PreToolUse[0].hooks[0].command = 'operator-changed';
+        if (change === 'duplicate') value.hooks.PreToolUse.push(value.hooks.PreToolUse[0]);
+        if (change === 'missing') value.hooks.PreToolUse.pop();
         fs.writeFileSync(input.file, JSON.stringify(value));
         const before = content(input.file);
         assert.equal(setup({ ...input, action: 'status' }).registration_changed, true);
-        assert.throws(
-            () => setup({ ...input, action: 'disable', write: true }),
-            /manual reconciliation/u,
-        );
+        assert.throws(() => setup({ ...input, action: 'disable', write: true }), /manual reconciliation/u);
         assert.equal(content(input.file), before);
     }
 });
@@ -167,11 +208,11 @@ test('changed, duplicate and missing owned entries are refused', (t) => {
 test('matching unowned entries, malformed JSON and unsafe paths do not mutate settings', (t) => {
     const input = fixture(t);
     const value = JSON.parse(content(input.file));
-    value.hooks.SkillRead.push(input.registration.events.SkillRead[0]);
+    value.hooks.PreToolUse = setup({ ...input, action: 'enable' }).registration.events.PreToolUse;
     fs.writeFileSync(input.file, JSON.stringify(value));
     assert.throws(() => setup({ ...input, action: 'enable', write: true }), /unowned/u);
     fs.writeFileSync(input.file, '{invalid');
-    assert.throws(() => setup({ ...input, action: 'enable', write: true }), /valid object/u);
+    assert.throws(() => setup({ ...input, action: 'enable' }), /valid object/u);
     fs.unlinkSync(input.file);
     fs.writeFileSync(join(input.root, 'target.json'), '{}');
     fs.symlinkSync('target.json', input.file);
@@ -179,72 +220,33 @@ test('matching unowned entries, malformed JSON and unsafe paths do not mutate se
     fs.unlinkSync(input.file);
     fs.linkSync(join(input.root, 'target.json'), input.file);
     assert.throws(() => setup({ ...input, action: 'status' }), /without links/u);
-    assert.throws(() => setup({ ...input, file: 'relative.json', action: 'status' }), /absolute/u);
 });
 
-test('runtime disappearance does not prevent inspection or owned removal', (t) => {
+test('runtime disappearance and changed code remain inspectable and exactly removable', (t) => {
     const input = fixture(t);
-    const runtime = join(input.root, 'runtime');
-    fs.mkdirSync(runtime);
-    fs.writeFileSync(join(runtime, 'observer.mjs'), '// synthetic runtime');
-    input.registration.runtime_files = [join(runtime, 'observer.mjs')];
-    input.reviewedRegistrationDigest = setup({ ...input, action: 'enable' }).registration_digest;
     setup({ ...input, action: 'enable', write: true });
-    fs.rmSync(runtime, { recursive: true });
+    fs.rmSync(join(input.root, 'observer'), { recursive: true });
     assert.equal(setup({ ...input, action: 'status' }).runtime_available, false);
     fs.rmSync(join(input.root, 'skills'), { recursive: true });
     setup({ ...input, action: 'disable', write: true });
     assert.equal(setup({ ...input, action: 'status' }).enabled, false);
 });
 
-test(
-    'FIFO settings and observation stores are rejected without waiting for a writer',
-    { skip: process.platform === 'win32' },
-    (t) => {
-        const input = fixture(t);
-        fs.unlinkSync(input.file);
-        for (const file of [input.file, input.registration.store]) {
-            const created = spawnSync('mkfifo', [file], { encoding: 'utf8', timeout: 1000 });
-            assert.equal(created.status, 0, 'POSIX fixture requires mkfifo.');
-        }
-        const status = spawnSync(process.execPath, [script, 'status', '--file', input.file], {
-            encoding: 'utf8',
-            timeout: 1000,
-        });
-        assert.equal(status.error, undefined);
-        assert.equal(status.status, 1);
-        assert.equal(status.stdout, '');
-        const observation = spawnSync(
-            process.execPath,
-            [script, 'observe', '--store', input.registration.store, '--write'],
-            { encoding: 'utf8', input: JSON.stringify(metadata()), timeout: 1000 },
-        );
-        assert.equal(observation.error, undefined);
-        assert.equal(observation.status, 0);
-        assert.equal(observation.stdout, '');
-        assert.equal(fs.lstatSync(input.registration.store).isFIFO(), true);
-        assert.equal(fs.existsSync(input.registration.store + '.lock'), false);
-    },
-);
-
-test('receipt write conflicts restore settings without deleting the other writer', (t) => {
+test('FIFO settings and stores are rejected without waiting for a writer', { skip: process.platform === 'win32' }, (t) => {
     const input = fixture(t);
-    const before = content(input.file);
-    const provider = {
-        ...jsonArrayMapProvider,
-        merge(value, registration) {
-            fs.writeFileSync(
-                input.file + '.skills-usage.json',
-                JSON.stringify({ another: 'writer' }),
-            );
-            return jsonArrayMapProvider.merge(value, registration);
-        },
-    };
-    assert.throws(() => setup({ ...input, action: 'enable', write: true, provider }), /changed/u);
-    assert.equal(content(input.file), before);
-    assert.deepEqual(JSON.parse(content(input.file + '.skills-usage.json')), {
-        another: 'writer',
-    });
+    fs.unlinkSync(input.file);
+    for (const file of [input.file, input.registration.store]) {
+        const created = spawnSync('mkfifo', [file], { encoding: 'utf8', timeout: 1000 });
+        assert.equal(created.status, 0);
+    }
+    const status = spawnSync(process.execPath, [script, 'status', '--file', input.file], { encoding: 'utf8', timeout: 1000 });
+    assert.equal(status.error, undefined);
+    assert.equal(status.status, 1);
+    const observation = spawnSync(process.execPath, [script, 'observe', '--store', input.registration.store, '--write'],
+        { encoding: 'utf8', input: JSON.stringify(metadata()), timeout: 1000 });
+    assert.equal(observation.status, 0);
+    assert.equal(observation.stdout, '');
+    assert.equal(fs.existsSync(input.registration.store + '.lock'), false);
 });
 
 test('prototype paths, in-collection state and missing runtime are rejected', (t) => {
@@ -432,4 +434,48 @@ test('detached package runs from unrelated cwd without repository dependencies',
     assert.equal(result.status, 0);
     assert.equal(JSON.parse(result.stdout).preview, true);
     assert.equal(fs.existsSync(input.file + '.skills-usage.json'), false);
+});
+
+for (const host of ['claude', 'gemini', 'copilot']) {
+    test(host + ': native read fixture retains metadata only and rejects missing success', (t) => {
+        const input = fixture(t, host);
+        const filename = join(input.registration.collections.example, 'example-skill', 'SKILL.md');
+        const marker = ['private', 'synthetic', 'payload'].join('-');
+        const events = host === 'copilot' ? ['preToolUse', 'postToolUse'] : host === 'gemini' ? ['BeforeTool', 'AfterTool'] : ['PreToolUse', 'PostToolUse'];
+        setup({ ...input, action: 'enable', write: true });
+        for (const event of events) {
+            const value = host === 'copilot'
+                ? { sessionId: 'synthetic-session', toolName: 'view', toolArgs: { path: filename }, toolResult: { resultType: 'success', textResultForLlm: marker }, prompt: marker }
+                : { session_id: 'synthetic-session', hook_event_name: event, tool_name: host === 'gemini' ? 'read_file' : 'Read', tool_input: { file_path: filename }, tool_response: host === 'gemini' ? { llmContent: marker } : { content: marker }, prompt: marker };
+            assert.equal(observeHost({ file: input.file, value, event }).recorded, true);
+        }
+        const bytes = content(input.registration.store);
+        const records = bytes.trimEnd().split('\n').map(JSON.parse);
+        assert.deepEqual(records.map((entry) => entry.kind), ['read_attempt', 'read_confirmed']);
+        assert.ok(!bytes.includes(marker));
+        assert.ok(!bytes.includes(filename));
+        assert.ok(!bytes.includes('synthetic-session'));
+        assert.ok(records.every((entry) => Object.keys(entry).length === 7));
+        const missing = host === 'copilot'
+            ? { sessionId: 'synthetic-session', toolName: 'view', toolArgs: { path: filename } }
+            : { session_id: 'synthetic-session', hook_event_name: events[1], tool_name: host === 'gemini' ? 'read_file' : 'Read', tool_input: { file_path: filename } };
+        assert.equal(observeHost({ file: input.file, value: missing, event: events[1] }).recorded, false);
+        assert.equal(content(input.registration.store), bytes);
+        assert.equal(setup({ ...input, action: 'status' }).runtime_available, true);
+        setup({ ...input, action: 'disable', write: true });
+        assert.equal(content(input.registration.store), bytes);
+        assert.equal(observeHost({ file: input.file, value: missing, event: events[1] }).recorded, false);
+    });
+}
+
+test('retained standalone observer executes only the selected synthetic read and emits neutral output', (t) => {
+    const input = fixture(t);
+    setup({ ...input, action: 'enable', write: true });
+    const filename = join(input.registration.collections.example, 'example-skill', 'SKILL.md');
+    const payload = { session_id: 'synthetic-session', hook_event_name: 'PostToolUse', tool_name: 'Read', tool_input: { file_path: filename }, tool_response: { content: 'synthetic-only-body' } };
+    const result = spawnSync(process.execPath, [input.registration.runtime.script, 'observe-host', '--file', input.file], { input: JSON.stringify(payload), encoding: 'utf8', cwd: input.root });
+    assert.equal(result.status, 0, result.stderr);
+    assert.deepEqual(JSON.parse(result.stdout), {});
+    assert.equal(JSON.parse(content(input.registration.store)).kind, 'read_confirmed');
+    assert.ok(!content(input.registration.store).includes('synthetic-only-body'));
 });

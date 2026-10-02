@@ -54,7 +54,7 @@ node bin/index.mjs hook session-config --host codex
 node bin/index.mjs hook verify --host codex --file .codex/hooks.json
 node bin/index.mjs hook session-index
 node bin/index.mjs hook telemetry-enable --host claude --file /project/.claude/settings.json --collection project=/project/.agents/skills
-node bin/index.mjs hook telemetry-enable --host claude --file /project/.claude/settings.json --collection project=/project/.agents/skills --executable /usr/local/bin/i9-skills --write
+node bin/index.mjs hook telemetry-enable --host claude --file /project/.claude/settings.json --collection project=/project/.agents/skills --write --reviewed-registration SHA256_FROM_PREVIEW
 node bin/index.mjs hook telemetry-status --host claude --file /project/.claude/settings.json
 node bin/index.mjs hook telemetry-disable --host claude --file /project/.claude/settings.json
 node bin/index.mjs catalog search --query authoring --limit 10
@@ -246,12 +246,18 @@ No host registration is installed or enabled by these commands.
 
 `hook telemetry-enable --host HOST --file ABSOLUTE_SETTINGS --collection
 LABEL=ABSOLUTE_SKILLS` previews optional setup for Codex, Claude, Copilot or
-Gemini. The settings parent must already exist and be canonical. Add `--write`
-only for an authorized reviewed merge; a sibling ownership receipt records the
-exact inserted entries. The default invocation uses the current Node executable
-and CLI launcher. `--executable ABSOLUTE_PATH` instead selects a stable installed
-CLI. A launcher resolved from an npx cache requires that cache to remain available;
-status reports missing runtime paths. No install or network request runs at hook
+Gemini. The settings parent must already exist and be canonical. An authorized
+merge requires `--write --reviewed-registration SHA256_FROM_PREVIEW`, using the
+exact inspected preview's `registration_digest`. A sibling ownership receipt
+records the exact inserted entries and bounded runtime inventory identity.
+The invocation uses this running Node and the installed toolkit's own launcher;
+`--executable ABSOLUTE_PATH` may only resolve to that same running Node. Other
+executables are rejected. Run setup from a deliberately retained package with
+read-only code and local production dependencies. Writable checkout/cache assets
+and dependencies resolved outside that inventory are refused; status reports
+missing or changed runtime. Keep reviewed files stable; this is not per-event
+sandbox confinement.
+No install or network request runs at hook
 time, and setup creates no evidence database.
 
 `hook telemetry-status --host HOST --file ABSOLUTE_SETTINGS` inspects owned
@@ -260,7 +266,7 @@ trust/event delivery. `hook telemetry-disable` previews removal; `--write`
 removes only exact unchanged owned entries. It preserves unrelated settings and
 the usage database. Modified entries or receipts require review and are not
 silently overwritten. Native host trust remains a separate user action. See the
-[telemetry setup guide](../docs/Skill%20Telemetry.md).
+[telemetry setup guide](../docs/Optional%20Skill%20Telemetry.md).
 
 ## Failures and the single entrypoint
 

@@ -135,6 +135,13 @@ function isRequest(value: unknown): value is Request {
 
 /** Adapts one bounded MCP lifetime to installed catalog and explicit usage operations. */
 export class SkillMcpTransport {
+    private readonly serverInfo: { name: 'i9-skills'; version: string };
+
+    /** The service supplies validated installed identity; the protocol never scans packages. */
+    constructor(serverInfo: { name: 'i9-skills'; version: string }) {
+        this.serverInfo = { ...serverInfo };
+    }
+
     /** Bounded newline-delimited JSON-RPC. The returned promise owns server lifetime. */
     async startServer(
         store: SkillMcpOperations,
@@ -166,6 +173,7 @@ export class SkillMcpTransport {
         let initialized = false;
         let ready = false;
         let buffer = Buffer.alloc(0);
+        const serverInfo = this.serverInfo;
 
         function callTool(params: Request['params']) {
             const name = params?.name;
@@ -214,7 +222,7 @@ export class SkillMcpTransport {
                 return {
                     protocolVersion: '2025-11-25',
                     capabilities: { tools: {} },
-                    serverInfo: { name: 'i9-skills', version: '0.1.0' },
+                    serverInfo,
                 };
             }
 

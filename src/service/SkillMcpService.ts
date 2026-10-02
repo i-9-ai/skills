@@ -23,6 +23,7 @@ export type SkillMcpOptions = {
 export class SkillMcpService {
     private readonly options: SkillMcpOptions;
     private readonly configuration: InstalledCollectionConfiguration;
+    private readonly installed: InstalledSkillRepository;
     private readonly catalog: SkillCatalogService;
     private readonly validator = new SkillReadValidator();
     private writer: SkillReadRepository | undefined;
@@ -33,11 +34,16 @@ export class SkillMcpService {
     ) {
         this.options = { ...options, callerRoot: options.callerRoot ?? process.cwd() };
         this.configuration = configuration;
-        this.catalog = new SkillCatalogService(new InstalledSkillRepository(configuration));
+        this.installed = new InstalledSkillRepository(configuration);
+        this.catalog = new SkillCatalogService(this.installed);
     }
 
     async serve(): Promise<void> {
-        await new SkillMcpTransport().startServer(this);
+        const identity = this.installed.identity();
+        await new SkillMcpTransport({
+            name: 'i9-skills',
+            version: identity.package_version,
+        }).startServer(this);
     }
 
     search(value: unknown) {
