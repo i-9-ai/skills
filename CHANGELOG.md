@@ -1,5 +1,39 @@
 # Changelog
 
+## 0.3.2
+
+### Patch Changes
+
+- 38a9547: Define admission and interoperability for independently owned skill collection modules, including source-qualified collisions, license and identity evidence, resource boundaries, explicit updates and standalone fallbacks. Extend the synthetic federated integration proof to reject unsupported catalog versions and duplicate source IDs while preserving the existing aggregate and evidence. This contract does not install modules or authenticate publishers.
+- 38a9547: Report the validated installed package version in the CLI and local plugin MCP
+  handshake instead of a fixed implementation version. Initialization reads only
+  the installed manifest, leaves catalogs and evidence storage untouched, and
+  rejects malformed package identity. The MCP protocol version remains independent.
+- 38a9547: Document explicit Codex registration of the local stdio MCP through `npx @i-9.ai/skills mcp serve`, including runtime prerequisites, first-launch downloads and duplicate-registration limits. Explain that this local launch does not attach MCP to the public skills-only plugin: the public directory currently requires a remote HTTPS endpoint and cannot add MCP to an existing skills-only submission.
+- 38a9547: Constrain optional skill-read setup to closed, reviewed metadata observers.
+  The portable helper derives Claude, Gemini and Copilot commands from a selected
+  local Node, a byte-identical read-only retained observer, explicit collections
+  and a local JSONL sink; arbitrary command JSON is now manual preview only.
+  Existing generic ownership receipts remain inspectable and exactly removable.
+
+  Toolkit `hook telemetry-enable --write` now requires `--reviewed-registration`
+  from its preview, the installed launcher and a retained read-only package with
+  local production dependencies, traversing the declared transitive dependencies
+  and required peers relative to each importer. Missing optional packages remain
+  optional; present out-of-tree resolutions fail without evaluating modules.
+  Changed code/imports, unrelated runtimes, links,
+  writable toolkit assets and stale digests fail before settings writes.
+  Status verifies Node/launcher/inventory identity; removal preserves unrelated
+  settings and SQLite evidence. The toolkit retains its Codex read-proof path.
+
+  Node is selected and byte-bound but may remain owner-updatable. Filesystem
+  checks assume stable owned directories and do not provide hostile-race
+  confinement, validation of computed/undeclared imports, or toolkit per-event
+  inventory verification. No automatic download,
+  compilation, trust bypass or evidence upload is introduced. The public
+  skills-only submission still excludes the setup skill; hardening is not provider
+  approval.
+
 ## 0.3.1
 
 ### Patch Changes
