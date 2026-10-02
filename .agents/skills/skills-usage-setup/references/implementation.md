@@ -23,6 +23,21 @@ search or environment precedence: CLI arguments select files; the explicit JSON
 selects collection roots, sink and existing runtime files. Hooks are arbitrary
 reviewed JSON entries, not executable input to this helper. Events are one to
 eight named arrays with one to sixteen distinct object entries each.
+Their downstream host can execute them automatically with user authority. The
+generic provider does not parse shell commands or establish their safety, and
+`runtime_files` is an availability inventory rather than a binding to command
+execution. Review supplied JSON before using it to change a native host.
+
+Preview returns the complete selected registration and its canonical SHA-256
+`registration_digest`, together with selected settings and ownership receipt
+paths. An explicit enable write requires the identical digest through CLI
+`--reviewed-registration` or module `reviewedRegistrationDigest`. The check
+rejects missing or changed review input before writing settings, receipts,
+locks or evidence; it also applies to idempotent enable calls. It binds inspected
+content to the requested write, without authenticating the operator or evaluating
+command safety. Supplying a digest is never authority to bypass host trust or
+an approval boundary. Keep full preview output private because it contains local
+paths and commands.
 
 The default provider supports a one-to-four-segment path to an event-map object.
 Existing keys are preserved, matching unowned entries are refused, and removal
@@ -44,6 +59,16 @@ const preview = setup({
     registration: { ...reviewedRegistration, provider: provider.id },
     provider,
     write: false,
+});
+// Inspect preview.registration and confirm its exact commands are authorized.
+// Apply only after that review; the digest is a content guard, not consent.
+const applied = setup({
+    action: 'enable',
+    file: selectedSettings,
+    registration: { ...reviewedRegistration, provider: provider.id },
+    provider,
+    write: true,
+    reviewedRegistrationDigest: preview.registration_digest,
 });
 ```
 

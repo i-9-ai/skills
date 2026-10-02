@@ -3,7 +3,8 @@ import path from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { categories, languages, messages } from '../content.mjs';
-import { escapeHtml, renderPage } from '../render.mjs';
+import { escapeHtml, renderPage, renderPolicyPage } from '../render.mjs';
+import { policies } from '../policies.mjs';
 
 const buildMarker = '.i9-site-build.json';
 const hash = (bytes) => createHash('sha256').update(bytes).digest('hex');
@@ -242,6 +243,12 @@ export function buildSite({
             Buffer.from(renderPage({ locale: language.key, skills, publicUrl: origin })),
         );
     }
+    for (const policy of Object.keys(policies)) {
+        files.set(
+            policy + '/index.html',
+            Buffer.from(renderPolicyPage({ policy, publicUrl: origin })),
+        );
+    }
     for (const name of [
         'site.css',
         'site.mjs',
@@ -268,12 +275,11 @@ export function buildSite({
         ),
     );
     if (origin) {
-        const entries = languages
+        const routes = [...languages.map((language) => language.key), ...Object.keys(policies)];
+        const entries = routes
             .map(
-                (language) =>
-                    '<url><loc>' +
-                    escapeHtml(new URL(language.key + '/', origin).href) +
-                    '</loc></url>',
+                (route) =>
+                    '<url><loc>' + escapeHtml(new URL(route + '/', origin).href) + '</loc></url>',
             )
             .join('');
         files.set(

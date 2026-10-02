@@ -7,6 +7,7 @@ import {
     toolkitSource,
 } from './content.mjs';
 import { formatSkillCount } from './assets/catalog-state.mjs';
+import { policies } from './policies.mjs';
 
 export function escapeHtml(value) {
     return String(value).replace(
@@ -108,12 +109,12 @@ function heading(title, emphasis, tag = 'h2', attributes = {}) {
     );
 }
 
-function header(locale, prefix) {
+function header(locale, prefix, navigationRoot = '') {
     const m = messages[locale];
     const nav = [
-        link(m.nav.workflow, '#workflow'),
-        link(m.nav.catalog, '#catalog'),
-        link(m.nav.install, '#install'),
+        link(m.nav.workflow, navigationRoot + '#workflow'),
+        link(m.nav.catalog, navigationRoot + '#catalog'),
+        link(m.nav.install, navigationRoot + '#install'),
         link(m.nav.docs, documentation),
     ].join('');
     return element(
@@ -430,10 +431,72 @@ function footer(locale, prefix, publicUrl) {
                     { class: 'footer-links' },
                     link(m.source, repository) +
                         link(m.docs, documentation) +
-                        link(m.license, repository + '/blob/main/LICENSE'),
+                        link(m.license, repository + '/blob/main/LICENSE') +
+                        link(m.privacy, prefix + 'privacy/', { lang: 'en' }) +
+                        link(m.terms, prefix + 'terms/', { lang: 'en' }),
                 ) +
                 languageLinks(locale, prefix),
         ) + (publicUrl ? '' : text('p', m.preview, { class: 'preview-notice' })),
+    );
+}
+
+export function renderPolicyPage({ policy, publicUrl = null }) {
+    const content = policies[policy];
+    if (!content) throw new Error('Unsupported policy');
+
+    const prefix = '../';
+    const canonical = publicUrl ? new URL(policy + '/', publicUrl).href : null;
+    const renderPart = (part) => {
+        if (typeof part === 'string') return escapeHtml(part);
+        if (part.code) return text('code', part.code);
+        return link(part.text, part.href);
+    };
+    const sections = content.sections
+        .map((section) =>
+            element(
+                'section',
+                { class: 'policy-section' },
+                text('h2', section.title) +
+                    section.paragraphs
+                        .map((paragraph) => element('p', {}, paragraph.map(renderPart).join('')))
+                        .join(''),
+            ),
+        )
+        .join('');
+    const head = [
+        element('meta', { charset: 'utf-8' }),
+        element('meta', { name: 'viewport', content: 'width=device-width, initial-scale=1' }),
+        text('title', content.title + ' — I-9 Skills'),
+        element('meta', { name: 'description', content: content.description }),
+        element('meta', { name: 'robots', content: publicUrl ? 'index, follow' : 'noindex' }),
+        ...(canonical ? [element('link', { rel: 'canonical', href: canonical })] : []),
+        element('meta', { name: 'theme-color', content: '#14231A' }),
+        element('link', {
+            rel: 'icon',
+            type: 'image/svg+xml',
+            href: prefix + 'assets/favicon.svg',
+        }),
+        element('link', { rel: 'stylesheet', href: prefix + 'assets/site.css' }),
+    ].join('');
+    const body =
+        link(messages.en.skip, '#main', { class: 'skip-link' }) +
+        header('en', prefix, prefix) +
+        element(
+            'main',
+            { id: 'main', class: 'policy-page container' },
+            element(
+                'article',
+                {},
+                text('h1', content.title) +
+                    text('p', content.introduction, { class: 'policy-introduction' }) +
+                    sections,
+            ),
+        ) +
+        footer('en', prefix, publicUrl);
+    return (
+        '<!doctype html>\n' +
+        element('html', { lang: 'en' }, element('head', {}, head) + element('body', {}, body)) +
+        '\n'
     );
 }
 

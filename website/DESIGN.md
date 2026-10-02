@@ -223,13 +223,20 @@ for the primary button.
 - **Evidence:** lime band explains portable core, evidence limits and experimental
   state. Documented provider details use readable prose/source links, not logo
   grids or broad compatibility checkmarks.
-- **Footer:** source, docs and Apache-2.0 links; no invented publication status,
+- **Footer:** source, docs, Apache-2.0, privacy and terms links; localized policy
+  labels identify the English content. No invented publication status,
   provider endorsement, testimonial, email form or download count.
 
 Source English descriptions and canonical package names remain attributable to
 the actual catalog in every locale. All interface and editorial message keys
 have equivalent English, Portuguese and Spanish values. Stable anchors and
 catalog URL parameters are preserved when switching languages.
+
+The privacy and terms routes use the same wordmark, navigation, footer, colors
+and typography. Their English text sits in one readable column with sequential
+headings, generous paragraph spacing and ordinary underlined links. They load no
+JavaScript or extra imagery. Their navigation returns to the catalog sections;
+the catalog layout and page order remain unchanged.
 
 ## Do's and Don'ts
 

@@ -32,7 +32,12 @@ function fixture(t) {
         collections: { example: collection },
         store: join(root, 'reads.jsonl'),
     };
-    return { root, file, registration };
+    const reviewedRegistrationDigest = setup({
+        action: 'enable',
+        file,
+        registration,
+    }).registration_digest;
+    return { root, file, registration, reviewedRegistrationDigest };
 }
 function content(file) {
     return fs.readFileSync(file, 'utf8');
@@ -54,6 +59,70 @@ test('preview and status create no state and preserve existing bytes', (t) => {
     assert.equal(setup({ ...input, action: 'status' }).enabled, false);
     assert.equal(content(input.file), before);
     assert.deepEqual(fs.readdirSync(input.root).sort(), ['settings.json', 'skills']);
+});
+
+test('enable requires the exact reviewed registration before creating any state', (t) => {
+    const input = fixture(t);
+    const before = content(input.file);
+    const preview = setup({ ...input, action: 'enable' });
+    assert.deepEqual(preview.registration, input.registration);
+    assert.match(preview.registration_digest, /^[a-f0-9]{64}$/u);
+    assert.equal(preview.settings, input.file);
+    assert.equal(preview.ownership_receipt, input.file + '.skills-usage.json');
+    assert.match(preview.effects, /automatically with user authority/u);
+    for (const reviewedRegistrationDigest of [undefined, '0'.repeat(64), ['0'.repeat(64)]]) {
+        assert.throws(
+            () => setup({ ...input, action: 'enable', write: true, reviewedRegistrationDigest }),
+            /exact reviewed registration/u,
+        );
+        assert.equal(content(input.file), before);
+        assert.deepEqual(fs.readdirSync(input.root).sort(), ['settings.json', 'skills']);
+    }
+    setup({ ...input, action: 'enable', write: true });
+    assert.equal(setup({ ...input, action: 'status' }).enabled, true);
+});
+
+test('changed commands require a newly inspected digest without granting runtime trust', (t) => {
+    const input = fixture(t);
+    const original = content(input.file);
+    input.registration.events.SkillRead[0].command = 'changed-synthetic-observer';
+    const preview = setup({ ...input, action: 'enable' });
+    assert.notEqual(preview.registration_digest, input.reviewedRegistrationDigest);
+    assert.equal(preview.registration.events.SkillRead[0].command, 'changed-synthetic-observer');
+    assert.throws(() => setup({ ...input, action: 'enable', write: true }), /exact reviewed/u);
+    assert.equal(content(input.file), original);
+    setup({
+        ...input,
+        action: 'enable',
+        write: true,
+        reviewedRegistrationDigest: preview.registration_digest,
+    });
+    assert.equal(
+        JSON.parse(content(input.file)).hooks.SkillRead[1].command,
+        'changed-synthetic-observer',
+    );
+    assert.equal(JSON.parse(content(input.file)).theme, 'retain');
+});
+
+test('CLI write refuses an unreviewed registration and accepts its inspected digest', (t) => {
+    const input = fixture(t);
+    const registrationFile = join(input.root, 'registration.json');
+    fs.writeFileSync(registrationFile, JSON.stringify(input.registration));
+    const args = [script, 'enable', '--file', input.file, '--registration', registrationFile];
+    const preview = spawnSync(process.execPath, args, { encoding: 'utf8' });
+    assert.equal(preview.status, 0);
+    const reviewed = JSON.parse(preview.stdout);
+    const denied = spawnSync(process.execPath, [...args, '--write'], { encoding: 'utf8' });
+    assert.equal(denied.status, 1);
+    assert.equal(fs.existsSync(input.file + '.skills-usage.json'), false);
+    assert.equal(fs.existsSync(input.file + '.skills-usage.lock'), false);
+    const allowed = spawnSync(
+        process.execPath,
+        [...args, '--write', '--reviewed-registration', reviewed.registration_digest],
+        { encoding: 'utf8' },
+    );
+    assert.equal(allowed.status, 0);
+    assert.equal(JSON.parse(allowed.stdout).written, true);
 });
 
 test('enable is idempotent and exact removal preserves unrelated hooks and evidence', (t) => {
@@ -119,6 +188,7 @@ test('runtime disappearance does not prevent inspection or owned removal', (t) =
     fs.mkdirSync(runtime);
     fs.writeFileSync(join(runtime, 'observer.mjs'), '// synthetic runtime');
     input.registration.runtime_files = [join(runtime, 'observer.mjs')];
+    input.reviewedRegistrationDigest = setup({ ...input, action: 'enable' }).registration_digest;
     setup({ ...input, action: 'enable', write: true });
     fs.rmSync(runtime, { recursive: true });
     assert.equal(setup({ ...input, action: 'status' }).runtime_available, false);

@@ -5,6 +5,7 @@ import { ProjectConfiguration } from '../config/ProjectConfiguration.ts';
 import { CollectionFilesystemRepository, LIMITS } from './CollectionFilesystemRepository.ts';
 import { CollectionCatalogRepository } from './CollectionCatalogRepository.ts';
 import { CollectionAssetValidationService } from '../service/CollectionAssetValidationService.ts';
+import { PluginListingValidator } from '../validator/PluginListingValidator.ts';
 
 export type PluginFile = { path: string; bytes: Buffer; mode: number };
 export type PluginSource = {
@@ -13,6 +14,7 @@ export type PluginSource = {
     homepage: string;
     repository: string;
     license: string;
+    listing: Record<string, any>;
     skills: string[];
     files: PluginFile[];
 };
@@ -78,6 +80,15 @@ export class PluginArtifactRepository {
             const files: PluginFile[] = [
                 { path: 'LICENSE', bytes: source.readBytes('LICENSE'), mode: 0o644 },
             ];
+            const plugin = source.readJson('.codex-plugin/plugin.json');
+            if (plugin.name !== 'i9-skills' || plugin.version !== manifest.version)
+                throw new Error('Canonical plugin identity and version must match the package.');
+            const listing = plugin.interface;
+            const listingValidator = new PluginListingValidator();
+            listingValidator.validate(listing);
+            const icon = source.readBytes('assets/plugin-icon.png', LIMITS.artifactBytes);
+            listingValidator.validateIcon(icon);
+            files.push({ path: 'assets/plugin-icon.png', bytes: icon, mode: 0o644 });
             if (source.inspect('NOTICE', { allowMissingLeaf: true }).info) {
                 files.push({ path: 'NOTICE', bytes: source.readBytes('NOTICE'), mode: 0o644 });
             }
@@ -122,6 +133,7 @@ export class PluginArtifactRepository {
                 homepage: manifest.homepage,
                 repository,
                 license: manifest.license,
+                listing,
                 skills,
                 files,
             };

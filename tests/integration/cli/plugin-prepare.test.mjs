@@ -138,6 +138,15 @@ function fixture(t) {
         license: 'Apache-2.0',
     };
     fs.writeFileSync(join(source, 'package.json'), JSON.stringify(manifest));
+    fs.mkdirSync(join(source, '.codex-plugin'));
+    const plugin = JSON.parse(fs.readFileSync(join(repository, '.codex-plugin/plugin.json')));
+    plugin.version = manifest.version;
+    fs.writeFileSync(join(source, '.codex-plugin/plugin.json'), JSON.stringify(plugin));
+    fs.mkdirSync(join(source, 'assets'));
+    fs.copyFileSync(
+        join(repository, 'assets/plugin-icon.png'),
+        join(source, 'assets/plugin-icon.png'),
+    );
     syncCatalog(source, { layout: 'repository' });
     const cli = (args = [], selectedRoot = source) =>
         spawnSync(
@@ -185,6 +194,7 @@ test('plugin preview is inert and explicit artifacts preserve package bytes and 
         '.codex-plugin',
         'LICENSE',
         'artifact-receipt.json',
+        'assets',
         'plugin.json',
         'skills',
     ]);
@@ -197,7 +207,12 @@ test('plugin preview is inert and explicit artifacts preserve package bytes and 
     }
     assert.equal(compatibility.hooks, undefined);
     assert.equal(compatibility.mcpServers, undefined);
-    assert.equal(portable.extensions, undefined);
+    assert.deepEqual(portable.extensions['com.openai'].interface, compatibility.interface);
+    assert.ok([...compatibility.interface.shortDescription].length <= 30);
+    assert.deepEqual(
+        fs.readFileSync(join(output, compatibility.interface.logo)),
+        fs.readFileSync(join(source, compatibility.interface.logo)),
+    );
     const before = fs.readFileSync(join(output, 'artifact-receipt.json'));
     assert.notEqual(cli(['--output', output, '--write']).status, 0);
     assert.deepEqual(fs.readFileSync(join(output, 'artifact-receipt.json')), before);

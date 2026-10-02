@@ -1,5 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
-import { cpSync, mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import {
+    cpSync,
+    mkdirSync,
+    mkdtempSync,
+    readFileSync,
+    realpathSync,
+    rmSync,
+    writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -17,6 +25,12 @@ export function submissionFixture(t) {
         { recursive: true },
     );
     cpSync(join(repository, 'LICENSE'), join(source, 'LICENSE'));
+    mkdirSync(join(source, '.codex-plugin'));
+    const plugin = JSON.parse(readFileSync(join(repository, '.codex-plugin/plugin.json')));
+    plugin.version = '1.2.3';
+    writeFileSync(join(source, '.codex-plugin/plugin.json'), JSON.stringify(plugin));
+    mkdirSync(join(source, 'assets'));
+    cpSync(join(repository, 'assets/plugin-icon.png'), join(source, 'assets/plugin-icon.png'));
     writeFileSync(
         join(source, 'package.json'),
         JSON.stringify({

@@ -37,6 +37,12 @@ function target(t, { gitSource = false, origin = 'https://github.com/i-9-ai/skil
     write(value.installed, '.gitignore', 'dist/\nnode_modules/\n');
     write(value.installed, 'bin/index.mjs', '// A synthetic distributed launcher.\n');
     write(value.installed, 'dist/index.js', 'export const synthetic = true;\n');
+    write(
+        value.installed,
+        '.codex-plugin/plugin.json',
+        '{"name":"synthetic-plugin","version":"9.8.7"}\n',
+    );
+    write(value.installed, 'assets/plugin-icon.png', 'Synthetic packaged icon bytes.\n');
     if (gitSource) {
         git(value, ['init', '--quiet', '--template=', '--initial-branch=main']);
         git(value, ['remote', 'add', 'origin', origin]);
@@ -74,6 +80,12 @@ test('clean owned Git source records the selected SHA while installed reads veri
     });
     assert.ok(first.files.some((file) => file.path === 'dist/index.js'));
     assert.ok(first.files.some((file) => file.path.endsWith('/SKILL.md')));
+    for (const path of ['.codex-plugin/plugin.json', 'assets/plugin-icon.png']) {
+        assert.equal(
+            first.files.find((file) => file.path === path)?.sha256,
+            digest(readFileSync(join(value.installed, path))),
+        );
+    }
     assert.ok(
         first.files.every((file) => !file.path.includes('.git/') && !file.path.startsWith('/')),
     );
@@ -219,6 +231,20 @@ for (const [label, mutate] of [
         'compiled code',
         (value) => write(value.installed, 'dist/index.js', 'export const modified = true;\n'),
     ],
+    [
+        'changed plugin manifest',
+        (value) =>
+            write(value.installed, '.codex-plugin/plugin.json', '{"name":"changed-plugin"}\n'),
+    ],
+    [
+        'missing plugin manifest',
+        (value) => rmSync(join(value.installed, '.codex-plugin/plugin.json')),
+    ],
+    [
+        'changed plugin icon',
+        (value) => write(value.installed, 'assets/plugin-icon.png', 'Changed icon bytes.\n'),
+    ],
+    ['missing plugin icon', (value) => rmSync(join(value.installed, 'assets/plugin-icon.png'))],
     [
         'oversized receipt',
         (value) =>

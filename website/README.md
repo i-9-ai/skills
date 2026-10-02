@@ -18,6 +18,11 @@ Open http://127.0.0.1:4173/. English is available at / and /en/, Portuguese
 at /pt-br/, and Spanish at /es/. The preview listens on loopback only.
 Stop it with Ctrl-C.
 
+The English privacy policy and license-based terms are available at `/privacy/`
+and `/terms/`. These pages work without JavaScript, and localized footer labels
+identify their language. Their canonical URLs follow the configured production
+URL, including a project prefix such as `/skills/`.
+
 The unprefixed root offers a dismissible language suggestion when the browser's
 first supported language is Portuguese or Spanish. It preserves catalog query
 and section state, never redirects, and is suppressed on explicit locale URLs.
@@ -40,6 +45,8 @@ is ignored local evidence and must not be committed.
   category assignments and documented manual install commands.
 - render.mjs produces semantic HTML, escaped descriptions, native language and
   source links, and a complete no-JavaScript catalog.
+- policies.mjs owns the English public privacy and license-based terms content,
+  including local observation storage and separate hosting/provider boundaries.
 - assets/site.css implements [DESIGN.md](DESIGN.md).
 - assets/site.mjs adds filtering, URL/language-state preservation,
   clipboard feedback and finite reduced-motion-aware entrance.
@@ -113,7 +120,7 @@ upload workflow or repository deploy token is needed. Configure:
 | Initial preview branch | `codex/catalog-promotion-site`, custom preview control |
 | Pull-request comments | Enabled |
 | Both environments | `NODE_VERSION=24.21.0`, `SKIP_DEPENDENCY_INSTALL=1` |
-| Production only | `I9_SITE_PUBLIC_URL=https://i9-skills.pages.dev` |
+| Production only | `I9_SITE_PUBLIC_URL=https://skills.i-9.ai` |
 | Preview environment | `I9_SITE_PUBLIC_URL` absent |
 
 Dependency installation can be skipped because the website build uses only Node
@@ -126,8 +133,10 @@ both modes because a build cannot prove deployment.
 Native Git previews are public and attach provider checks/comments to PRs. Verify
 the deployment's actual commit before sharing its URL. A project setting or
 successful local build does not prove a successful provider build. Production
-requires the website source to merge into `main`; keep PR #67 open for the
-maintainer's review. Do not deploy the current pre-website main tree.
+requires the reviewed website source to merge into `main`. The configured custom
+domain is `skills.i-9.ai`; the Pages domain remains an additional access path.
+Verify the actual policy content at `/privacy/` and `/terms/`, because a missing
+static route can return the homepage with HTTP 200.
 
 Hosting both previews and main production was explicitly authorized in the
 [delivery plan](../plans/2026-09-30-18-31-35-cloudflare-site-delivery.md).

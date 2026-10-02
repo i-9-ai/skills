@@ -5,6 +5,20 @@ registration lifecycle, a local metadata-only reference sink and optional native
 adapters. This is an original implementation; native capture is not universal and
 read evidence is not task effectiveness.
 
+An October 2 public-submission screen reported a generic security-risk flag for
+this package without identifying a rule or offending file. Independent local
+inspection found a security-sensitive persistent command-registration capability,
+not network exfiltration or privilege elevation in the bundled helper. The revised
+helper exposes exact registration contents before a write and requires their
+reviewed digest. This is a content-binding safeguard, not command validation,
+host trust, authorization proof or evidence that the portal warning is resolved.
+
+Current [plugin guidelines](https://developers.openai.com/plugins/plugin-guidelines)
+and [security and privacy guidance](https://developers.openai.com/plugins/guides/security-privacy)
+were consulted for explicit action authority, narrowly scoped observations,
+retention and user control. They were synthesized as original guidance, not
+copied as a policy text or used to infer provider approval.
+
 Bounded discovery searched skills.sh for skill telemetry, skill usage, hooks,
 usage tracking and analytics. No directly matching registration-lifecycle
 meta-skill was accepted. Skills.sh installation leaderboard telemetry is a

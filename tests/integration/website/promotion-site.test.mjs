@@ -109,6 +109,14 @@ test('build renders every canonical package in all locales, escapes source data 
                 'rel="icon" type="image/svg+xml" href="' + prefix + 'assets/favicon.svg"',
             ),
         );
+        assert.ok(
+            html.includes(
+                'href="' + prefix + 'privacy/" lang="en">' + messages[locale].footer.privacy,
+            ),
+        );
+        assert.ok(
+            html.includes('href="' + prefix + 'terms/" lang="en">' + messages[locale].footer.terms),
+        );
         if (locale !== 'en') assert.ok(html.includes(messages[locale].catalog.sourceDescription));
     }
     assert.equal(
@@ -153,7 +161,7 @@ test('production metadata uses the selected HTTPS origin and review rebuild remo
             .includes('rel="canonical" href="https://example.test/en/"'),
     );
     const sitemap = fs.readFileSync(path.join(f.output, 'sitemap.xml'), 'utf8');
-    assert.equal((sitemap.match(/<loc>/g) ?? []).length, 3);
+    assert.equal((sitemap.match(/<loc>/g) ?? []).length, 5);
     assert.ok(sitemap.includes('<loc>https://example.test/es/</loc>'));
     assert.equal(
         fs.readFileSync(path.join(f.output, 'robots.txt'), 'utf8'),
@@ -165,6 +173,66 @@ test('production metadata uses the selected HTTPS origin and review rebuild remo
     assert.ok(
         fs.readFileSync(path.join(f.output, 'index.html'), 'utf8').includes('content="noindex"'),
     );
+});
+
+test('policy pages explain local data and licensing without scripts, forms or authentication', (t) => {
+    const f = fixture(t);
+    const result = f.build();
+    for (const [route, title] of [
+        ['privacy', 'Privacy policy'],
+        ['terms', 'Terms of use'],
+    ]) {
+        const relative = route + '/index.html';
+        assert.ok(result.files[relative]);
+        const html = fs.readFileSync(path.join(f.output, relative), 'utf8');
+        assert.ok(html.includes('<title>' + title + ' — I-9 Skills</title>'));
+        assert.ok(html.includes('<html lang="en">'));
+        assert.equal((html.match(/<h1/g) ?? []).length, 1);
+        assert.ok(html.includes('<h1>' + title + '</h1>'));
+        assert.ok(html.includes('I-9 AI'));
+        assert.ok(html.includes('href="https://github.com/i-9-ai/skills/issues"'));
+        assert.ok(html.includes('href="../#catalog"'));
+        assert.ok(html.includes('href="../assets/site.css"'));
+        assert.ok(html.includes('href="../assets/favicon.svg"'));
+        assert.ok(!/<(?:script|form|input|iframe)\b/i.test(html));
+        assert.ok(!html.includes('data-language-suggestion='));
+        assert.ok(html.includes('name="robots" content="noindex"'));
+    }
+    const privacy = fs.readFileSync(path.join(f.output, 'privacy/index.html'), 'utf8');
+    assert.ok(privacy.includes('<code>~/.agents/skills-usage.db</code>'));
+    assert.ok(privacy.includes('does not transmit this store to an I-9 AI server'));
+    assert.ok(privacy.includes('does not record prompts, skill contents'));
+    assert.ok(privacy.includes('There is no automatic retention pruning.'));
+    assert.ok(privacy.includes('GitHub Pages'));
+    assert.ok(privacy.includes('https://www.cloudflare.com/privacypolicy/'));
+    assert.ok(
+        privacy.includes(
+            'https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement',
+        ),
+    );
+    const terms = fs.readFileSync(path.join(f.output, 'terms/index.html'), 'utf8');
+    assert.ok(terms.includes('href="https://github.com/i-9-ai/skills/blob/main/LICENSE"'));
+    assert.ok(terms.includes('This page does not replace the license.'));
+    assert.ok(terms.includes('The project is experimental.'));
+});
+
+test('policy routes, canonical URLs and sitemap support custom domains and project paths', (t) => {
+    const f = fixture(t);
+    for (const publicUrl of ['https://skills.i-9.ai/', 'https://example.test/skills/']) {
+        buildSite({ projectRoot: f.root, outputDirectory: f.output, publicUrl });
+        const sitemap = fs.readFileSync(path.join(f.output, 'sitemap.xml'), 'utf8');
+        for (const route of ['privacy', 'terms']) {
+            const html = fs.readFileSync(path.join(f.output, route, 'index.html'), 'utf8');
+            const canonical = new URL(route + '/', publicUrl).href;
+            assert.ok(html.includes('rel="canonical" href="' + canonical + '"'));
+            assert.ok(sitemap.includes('<loc>' + canonical + '</loc>'));
+            assert.ok(html.includes('name="robots" content="index, follow"'));
+            for (const relative of ['../', '../assets/site.css', '../assets/favicon.svg']) {
+                const resolved = new URL(relative, canonical).href;
+                assert.ok(resolved.startsWith(publicUrl));
+            }
+        }
+    }
 });
 
 test('project-path hosting preserves canonical URLs, assets and language destinations', (t) => {
@@ -462,6 +530,16 @@ test('loopback preview serves only owned unchanged files and rejects traversal, 
     assert.ok(page.body.includes('lang="pt-BR"'));
     assert.match(page.headers['content-security-policy'], /connect-src 'none'/);
     assert.equal(page.headers['x-robots-tag'], 'noindex');
+    for (const [route, title] of [
+        ['privacy', 'Privacy policy'],
+        ['terms', 'Terms of use'],
+    ]) {
+        const policy = await request(server, '/' + route + '/');
+        assert.equal(policy.status, 200);
+        assert.ok(policy.body.includes('<h1>' + title + '</h1>'));
+        assert.ok(!policy.body.includes('<script'));
+        assert.match(policy.headers['content-type'], /text\/html/);
+    }
     assert.equal((await request(server, '/assets/site.mjs', 'HEAD')).body, '');
     assert.equal((await request(server, '/index.html', 'POST')).status, 405);
     for (const unsafe of [

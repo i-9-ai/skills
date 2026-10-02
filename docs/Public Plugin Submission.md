@@ -1,14 +1,41 @@
 # Prepare a public plugin submission
 
-`plugin submission` prepares the collection's complete portable meta-skills for
+`plugin submission` prepares the selected public profile's complete meta-skills for
 manual upload to the official public plugin directory. The existing repository
 marketplace remains available through its root plugin. This public projection
-contains root portable and compatibility manifests, bundled skills with their
-assets and licenses, and an artifact receipt. It has no root hooks, including
+contains root portable and compatibility manifests, a product icon, bundled
+skills with their assets and licenses, and an artifact receipt. It has no root
+hooks, including
 `hooks/hooks.json`, local MCP declarations, apps, repository runtime, or local
 evidence state. Installing it does not start telemetry or the local catalog MCP.
 Known workspace/state folders, environment files and database files inside a
 skill package are rejected rather than silently dropped from a required resource.
+
+The public profile deliberately excludes the entire optional `skills-usage-setup`
+package, whose purpose includes persistent host-command registration. This is a
+conservative distribution choice following a portal security-risk finding with
+no diagnostic cause, not a provider rule prohibiting such a skill or proof of
+scanner acceptance. Both receipts name the omitted package and its reason.
+The complete repository plugin and npm package retain all 25 skills and the
+explicit local setup capability; this public ZIP contains 24. No retained skill
+is selectively rewritten or stripped of its required resources.
+
+Listing metadata comes from the canonical `.codex-plugin/plugin.json` interface
+and is emitted in full into root `extensions.com.openai.interface` and the
+compatibility interface. The root extension takes precedence at the portal.
+The 26-character subtitle is **Author and maintain skills**. Both `logo` and
+`composerIcon` reference the included `assets/plugin-icon.png` (512 × 512), which
+is checked as a complete PNG before staging. Metadata lengths, HTTPS URL syntax
+and the closed presentation extension are checked locally; URL accessibility
+and policy contents must still be verified on the deployed website.
+
+The website, privacy policy and terms are published at
+[skills.i-9.ai](https://skills.i-9.ai/),
+[privacy](https://skills.i-9.ai/privacy/) and
+[terms](https://skills.i-9.ai/terms/). Support is the public
+[repository issue tracker](https://github.com/i-9-ai/skills/issues).
+The privacy policy distinguishes optional metadata-only local observations from
+agent-provider processing and hosting-provider request logs.
 
 Use an owned, existing neutral parent and a new `i9-skills` child:
 
@@ -52,7 +79,12 @@ manifest as fallback. It auto-discovers `hooks/hooks.json` when no hook field is
 declared, so omission of manifest hook fields alone is insufficient. Public ZIPs
 with lifecycle hooks or app references are currently unsupported; local MCP
 requires an OpenAI-specific support path. These constraints were checked on
-2026-10-01. The skills-only artifact excludes those components structurally.
+2026-10-02. The skills-only artifact excludes those components structurally.
+The portal's “No MCPs connected” message is expected for this distribution.
+The local catalog/evidence server remains in the full repository plugin; it is
+not a remote endpoint. The current submission process also does not support
+adding MCP to an existing skills-only plugin. A hosted service or supported local
+submission would need its own reviewed architecture and initial submission path.
 
 For the human delivery steps, follow the official
 [submission process](https://developers.openai.com/plugins/deploy/submission):

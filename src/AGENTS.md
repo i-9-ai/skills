@@ -69,7 +69,8 @@ Run `npm run check` and inspect the required official workflow result for the ex
 - [Skill discovery](repository/SkillDiscoveryRepository.ts): bounded project/global metadata discovery and canonical deduplication.
 - [Collection catalog](repository/CollectionCatalogRepository.ts): explicit collection inspection, checking and synchronization through the self-contained package helper.
 - [Plugin preparation](service/PluginPreparationService.ts): deterministic manifests and integrity receipt for a new inert local artifact, without installation or registration.
-- [Public plugin submission](service/PluginSubmissionService.ts): derive a skills-only folder, ZIP and integrity summary for separately approved directory submission.
+- [Public plugin submission](service/PluginSubmissionService.ts): derive a skills-only folder, ZIP and integrity summary with validated listing assets and explicit package exclusions; provider submission and approval remain separate.
+- [Plugin listing validator](validator/PluginListingValidator.ts): closed presentation fields, bounded HTTPS URL syntax and actual PNG validation; does not fetch policies or prove provider approval.
 - [Plugin ZIP repository](repository/PluginZipRepository.ts): bounded deterministic stored ZIP entries without shell execution or arbitrary archive paths.
 - [Aggregate catalog](repository/AggregateCatalogRepository.ts): derived multi-source state and history through explicit source/index selections.
 - [Host hook configuration](service/HostHookConfiguration.ts): verified per-host registration and context envelopes around the same discovery service.

@@ -5,6 +5,7 @@ import { PluginArtifactRepository } from '../repository/PluginArtifactRepository
 import type { PluginFile } from '../repository/PluginArtifactRepository.ts';
 import { LIMITS } from '../repository/CollectionFilesystemRepository.ts';
 import { relativeParts } from '../../.agents/skills/skill-authoring/scripts/skill_tools.mjs';
+import { PluginListingValidator } from '../validator/PluginListingValidator.ts';
 
 const jsonFile = (path: string, value: unknown): PluginFile => ({
     path,
@@ -36,8 +37,31 @@ export class PluginPreparationService {
     }
 
     /** Reuse the same validated projection without staging or executing its files. */
-    derive(configuration: ProjectConfiguration) {
+    derive(
+        configuration: ProjectConfiguration,
+        exclusions: { name: string; reason: string }[] = [],
+    ) {
         const source = this.repository.read(configuration);
+        new PluginListingValidator().validate(source.listing);
+        if (
+            exclusions.some(
+                (entry) =>
+                    !/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(entry.name) ||
+                    !entry.reason.trim() ||
+                    entry.reason.length > 256,
+            ) ||
+            new Set(exclusions.map((entry) => entry.name)).size !== exclusions.length
+        )
+            throw new Error(
+                'Plugin exclusions must have distinct skill names and explicit reasons.',
+            );
+        const excluded = exclusions.filter((entry) => source.skills.includes(entry.name));
+        const selectedSkills = source.skills.filter(
+            (name) => !excluded.some((entry) => entry.name === name),
+        );
+        const selectedFiles = source.files.filter(
+            (file) => !excluded.some((entry) => file.path.startsWith(`skills/${entry.name}/`)),
+        );
         const identity = {
             name: 'i9-skills',
             version: source.version,
@@ -51,25 +75,18 @@ export class PluginPreparationService {
         const manifest = {
             $schema: 'https://agent-plugins.org/schemas/1.0.0/plugin.schema.json',
             ...identity,
+            extensions: { 'com.openai': { interface: source.listing } },
         };
         const compatibility = {
             ...identity,
             skills: './skills/',
-            interface: {
-                displayName: 'I-9 Skills',
-                shortDescription: 'Author and maintain portable agent skills',
-                longDescription: source.description,
-                developerName: 'I-9 AI',
-                category: 'Developer Tools',
-                capabilities: ['Skills'],
-                defaultPrompt: ['Review the scope and completeness of this skill.'],
-            },
+            interface: source.listing,
         };
         const manifests = [
             jsonFile('.codex-plugin/plugin.json', compatibility),
             jsonFile('plugin.json', manifest),
         ];
-        const inventory = [...source.files, ...manifests]
+        const inventory = [...selectedFiles, ...manifests]
             .map((file) => ({
                 path: file.path,
                 size: file.bytes.length,
@@ -81,12 +98,13 @@ export class PluginPreparationService {
             schema_version: 1,
             plugin: identity.name,
             version: identity.version,
-            skills: source.skills,
+            skills: selectedSkills,
+            excluded_skills: excluded,
             files: inventory,
             inventory_sha256: sha256(Buffer.from(JSON.stringify(inventory))),
         };
         // Manifests are written last; no scripts, registration or installation runs.
-        const files = [...source.files, jsonFile('artifact-receipt.json', receipt), ...manifests];
+        const files = [...selectedFiles, jsonFile('artifact-receipt.json', receipt), ...manifests];
         for (const file of files) relativeParts(file.path);
         if (
             files.length > 10_000 ||
@@ -98,7 +116,8 @@ export class PluginPreparationService {
         return {
             files,
             manifest,
-            packages: source.skills.length,
+            packages: selectedSkills.length,
+            excluded_skills: excluded,
             file_count: inventory.length + 1,
             inventory_sha256: receipt.inventory_sha256,
         };
