@@ -17,6 +17,8 @@ Verify every requirement has an implementation and a check or an explicit limit.
 
 ## Child DOX index
 
+- [SQLite sidecar stability](2026-10-02-21-01-02-sqlite-sidecar-stability.md): bounded re-observation of legitimately removed SQLite sidecars and deterministic rejection proof; no writer retry or evidence reset.
+
 - [MCP and observer hardening](2026-10-02-17-02-37-mcp-and-observer-hardening.md): installed MCP identity, closed optional observer registration and module admission evidence; local npx launch remains distinct from public HTTPS submission.
 
 - [Public plugin listing](2026-10-02-13-52-37-public-plugin-listing.md): complete presentation metadata, product icon and public policies, with transparent omission of optional persistent-command setup from the public profile; no provider approval claim.

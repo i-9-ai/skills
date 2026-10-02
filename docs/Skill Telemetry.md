@@ -123,6 +123,12 @@ ledger, retention pruning or automatic backup. Back up the database while
 writers are stopped before an upgrade; older binaries reject newer schemas.
 Rollback uses that caller-owned backup rather than dropping new rows.
 
+SQLite may remove its journal, WAL or shared-memory sidecar during concurrent
+path inspection. A detached regular sidecar is inspected once more: absence is
+normal, while a present file must still be regular and have exactly one link.
+The primary database and unsafe sidecars remain strict. This does not retry a
+write, extend the lock timeout or authorize deleting SQLite state manually.
+
 Optional JSONL logs contain only timestamp, level, component, category and
 event/correlation UUIDs. They rotate at 1 MiB, retaining three archives; only
 the selected file and `.1`–`.3` are affected. Links and non-regular destinations

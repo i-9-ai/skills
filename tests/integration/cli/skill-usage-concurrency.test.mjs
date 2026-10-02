@@ -3,8 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { spawnSync, spawn } from 'node:child_process';
-import { DatabaseSync } from 'node:sqlite';
+import { spawn } from 'node:child_process';
 import { SkillReadRepository } from '../../../src/repository/SkillReadRepository.ts';
 const server = path.resolve('bin/index.mjs');
 const event = (id) => ({
@@ -30,14 +29,31 @@ test('independent processes preserve concurrent event inserts', async (t) => {
             (_, i) =>
                 new Promise((resolve, reject) => {
                     const child = spawn(process.execPath, [server, 'mcp', 'serve', '--db', db], {
-                        stdio: ['pipe', 'ignore', 'pipe'],
+                        stdio: ['pipe', 'pipe', 'pipe'],
                     });
                     let errors = '';
+                    let output = '';
+                    child.stdout.on('data', (chunk) => (output += chunk));
                     child.stderr.on('data', (x) => (errors += x));
                     child.on('error', reject);
-                    child.on('exit', (code) =>
-                        code === 0 ? resolve() : reject(new Error(errors)),
-                    );
+                    child.on('close', (code) => {
+                        if (code !== 0) return reject(new Error(errors));
+
+                        try {
+                            const replies = output
+                                .trim()
+                                .split('\n')
+                                .map((line) => JSON.parse(line))
+                                .filter((reply) => reply.id === 2);
+                            assert.equal(replies.length, 1);
+                            assert.equal(replies[0].error, undefined);
+                            assert.notEqual(replies[0].result.isError, true);
+                            assert.equal(replies[0].result.structuredContent.recorded, true);
+                            resolve();
+                        } catch (error) {
+                            reject(error);
+                        }
+                    });
                     child.stdin.end(
                         [
                             initialize,

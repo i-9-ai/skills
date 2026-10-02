@@ -1,11 +1,18 @@
 // SPDX-License-Identifier: Apache-2.0
 import { accessSync, constants, lstatSync, mkdirSync, realpathSync } from 'node:fs';
+import type { Stats } from 'node:fs';
 import { dirname, isAbsolute, join, parse, relative, resolve, sep } from 'node:path';
 
 type DirectoryIdentity = { dev: number; ino: number };
 
 /** Initializes only the selected external host directory, preserving existing state. */
 export class PluginDataRepository {
+    private readonly inspectFile: (filename: string) => Stats;
+
+    constructor(inspectFile: (filename: string) => Stats = lstatSync) {
+        this.inspectFile = inspectFile;
+    }
+
     /** Resolve caller/protected roots before discovery or any storage mutation. */
     canonicalDirectory(directory: string): string {
         const canonical = realpathSync(directory);
@@ -59,7 +66,7 @@ export class PluginDataRepository {
         }
 
         for (const suffix of ['', '-journal', '-wal', '-shm']) {
-            this.checkExistingFile(`${database}${suffix}`);
+            this.checkExistingFile(`${database}${suffix}`, suffix !== '');
         }
         if (!write) lstatSync(database);
 
@@ -97,14 +104,28 @@ export class PluginDataRepository {
         }
     }
 
-    private checkExistingFile(filename: string): void {
+    private checkExistingFile(filename: string, sidecar: boolean): void {
+        let info = this.existingFile(filename);
+        if (!info) return;
+
+        // SQLite can unlink a sidecar while lstat returns its old inode. Check
+        // the current pathname once; never reuse that detached file as proof.
+        if (sidecar && info.isFile() && !info.isSymbolicLink() && info.nlink === 0) {
+            info = this.existingFile(filename);
+        }
+        if (!info) return;
+
+        if (!info.isFile() || info.isSymbolicLink() || info.nlink !== 1) {
+            throw new Error('Plugin database files must be regular and non-linked');
+        }
+    }
+
+    private existingFile(filename: string): Stats | undefined {
         try {
-            const info = lstatSync(filename);
-            if (!info.isFile() || info.isSymbolicLink() || info.nlink !== 1) {
-                throw new Error('Plugin database files must be regular and non-linked');
-            }
+            return this.inspectFile(filename);
         } catch (error) {
-            if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+            if ((error as NodeJS.ErrnoException).code === 'ENOENT') return;
+            throw error;
         }
     }
 
