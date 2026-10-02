@@ -49,7 +49,10 @@ chmod -R a-w "$OBSERVER_RUNTIME"
 The published package contains prepared JavaScript. Installing its production
 dependencies with lifecycle scripts disabled keeps them inside this retained
 root; hoisted dependencies outside the inspected runtime are refused. Review
-the selected release and dependency bytes before enablement. A read-only mode
+the selected release and dependency bytes before enablement. Setup follows the
+declared production dependency graph, resolving each package from its importer;
+an indirect dependency found outside this runtime is refused too. This bounded
+manifest inspection does not analyze undeclared or computed imports. A read-only mode
 does not prevent its owner from changing permissions; this assumes a stable,
 caller-owned filesystem, not an adversarial sandbox. Node itself is the selected
 existing runtime foundation, whose bytes are included in the review identity.

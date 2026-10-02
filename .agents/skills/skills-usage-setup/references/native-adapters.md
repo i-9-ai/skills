@@ -56,8 +56,16 @@ installation's modes or install during an event.
 The toolkit requires the exact local bin/index.mjs and this running Node;
 arbitrary installed CLI executables are refused. Its inventory covers package
 identity, source/compiled code, bundled helpers and local dependencies, rejecting
-links and any writable toolkit file. Direct production dependencies must resolve
-inside the retained inventory. npm .bin aliases are excluded and not executed.
+links and any writable toolkit file or directory. The declared production
+dependency closure, including required peers, resolves relative to each importer
+inside the retained inventory. A truly absent optional dependency or optional
+peer is allowed; a present package outside that tree is refused. Type-only
+packages and import-only exports may lack a CommonJS entry but still require a
+local inventoried manifest. Traversal is limited to 256 packages, 2,048 declared
+relations, depth 64 and 128 KiB per manifest; cycles are deduplicated by path.
+No dependency module is evaluated during inspection. npm .bin aliases are
+excluded and not executed. Computed or undeclared imports require separate code
+review; manifest closure is not a runtime sandbox.
 Node itself remains byte-bound and cannot be shared-writable; an owner may still
 upgrade it. These checks assume stable owned filesystems, not malicious race
 confinement.

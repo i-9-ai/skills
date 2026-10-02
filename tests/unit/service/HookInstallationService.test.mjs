@@ -42,14 +42,23 @@ function fixture(t, host = 'claude') {
     mkdirSync(join(workspace, 'skills'));
     writeFileSync(
         join(root, 'package.json'),
-        JSON.stringify({ name: '@i-9.ai/skills', bin: { 'i9-skills': './bin/index.mjs' } }),
+        JSON.stringify({
+            name: '@i-9.ai/skills',
+            bin: { 'i9-skills': './bin/index.mjs' },
+            dependencies: { '@oclif/core': '1.0.0', yaml: '1.0.0' },
+        }),
     );
     writeFileSync(join(root, 'bin/index.mjs'), '// Synthetic local launcher.\n');
     writeFileSync(join(root, 'src/observer.ts'), '// Synthetic imported observer.\n');
     for (const name of ['@oclif/core', 'yaml']) {
         const directory = join(root, 'node_modules', name);
         mkdirSync(directory, { recursive: true });
+        writeFileSync(
+            join(directory, 'package.json'),
+            JSON.stringify({ name, version: '1.0.0', main: 'index.js' }),
+        );
         writeFileSync(join(directory, 'index.js'), '// Synthetic local dependency.\n');
+        chmodSync(join(directory, 'package.json'), 0o444);
         chmodSync(join(directory, 'index.js'), 0o444);
     }
     for (const filename of ['package.json', 'bin/index.mjs', 'src/observer.ts'])
@@ -81,6 +90,34 @@ function fixture(t, host = 'claude') {
 }
 function reviewed(service, input) {
     return { ...input, reviewedRegistrationDigest: service.enable(input).registration_digest };
+}
+
+function changeRetainedRuntime(root, operation) {
+    const mode = (directory, writable) => {
+        chmodSync(directory, writable ? 0o755 : 0o555);
+        for (const name of readdirSync(directory)) {
+            const file = join(directory, name);
+            if (lstatSync(file).isDirectory()) mode(file, writable);
+            else chmodSync(file, writable ? 0o644 : 0o444);
+        }
+    };
+    mode(root, true);
+    try {
+        operation();
+    } finally {
+        mode(root, false);
+    }
+}
+
+function dependencyFixture(modules, name, manifest = {}, body = '// Synthetic dependency.\n') {
+    const directory = join(modules, name);
+    mkdirSync(directory, { recursive: true });
+    writeFileSync(
+        join(directory, 'package.json'),
+        JSON.stringify({ name, version: '1.0.0', main: 'index.js', ...manifest }),
+    );
+    writeFileSync(join(directory, 'index.js'), body);
+    return directory;
 }
 for (const host of ['claude', 'codex', 'gemini', 'copilot']) {
     test(host + ': reviewed enable, status and exact removal preserve unrelated state', (t) => {
@@ -182,6 +219,7 @@ test('owner-writable imports and dependency resolution outside the retained tree
         'bin/index.mjs',
         'src/observer.ts',
         'node_modules/@oclif/core/index.js',
+        'node_modules/@oclif/core/package.json',
     ]) {
         copyFileSync(join(root, filename), join(nested, filename));
         chmodSync(join(nested, filename), 0o444);
@@ -203,6 +241,107 @@ test('owner-writable imports and dependency resolution outside the retained tree
     assert.equal(existsSync(input.file), false);
     assert.equal(existsSync(input.file + '.i9-skills.json'), false);
 });
+
+test('transitive external leaf is rejected at preview and after outside-only drift without evaluation', (t) => {
+    const { root, workspace, input, service } = fixture(t);
+    const marker = join(workspace, 'module-evaluated');
+    changeRetainedRuntime(root, () => {
+        dependencyFixture(
+            join(root, 'node_modules'),
+            '@oclif/core',
+            { dependencies: { 'outside-leaf': '1.0.0' } },
+            "module.exports = require('outside-leaf');\n",
+        );
+    });
+    const outside = dependencyFixture(
+        join(workspace, 'node_modules'),
+        'outside-leaf',
+        {},
+        `require('node:fs').writeFileSync(${JSON.stringify(marker)}, 'must not execute');\n`,
+    );
+    writeFileSync(input.file, '{"retain":true}');
+    const before = readFileSync(input.file);
+    assert.throws(() => service.enable(input), /inside the retained runtime inventory/);
+    writeFileSync(join(outside, 'index.js'), '// Only the mutable external leaf changed.\n');
+    assert.throws(
+        () => service.enable({ ...input, reviewedRegistrationDigest: '0'.repeat(64) }, true),
+        /inside the retained runtime inventory/,
+    );
+    assert.deepEqual(readFileSync(input.file), before);
+    assert.equal(existsSync(input.file + '.i9-skills.json'), false);
+    assert.equal(existsSync(input.database), false);
+    assert.equal(existsSync(marker), false);
+});
+
+test('dependency traversal honors importer-relative nesting, cycles and absent optional/type-only packages', (t) => {
+    const { root, input, service } = fixture(t);
+    changeRetainedRuntime(root, () => {
+        const modules = join(root, 'node_modules');
+        const core = dependencyFixture(modules, '@oclif/core', {
+            dependencies: {
+                'selected-leaf': '1.0.0',
+                'type-only': '1.0.0',
+                'import-only': '1.0.0',
+            },
+            optionalDependencies: { 'absent-optional': '1.0.0' },
+            peerDependencies: { 'absent-peer': '1.0.0' },
+            peerDependenciesMeta: { 'absent-peer': { optional: true } },
+        });
+        // This inactive root copy must not replace the closer selected nested dependency.
+        dependencyFixture(modules, 'selected-leaf', { dependencies: { unavailable: '1.0.0' } });
+        dependencyFixture(join(core, 'node_modules'), 'selected-leaf', {
+            dependencies: { '@oclif/core': '1.0.0' },
+        });
+        const types = dependencyFixture(modules, 'type-only', {
+            main: undefined,
+            types: 'index.d.ts',
+        });
+        rmSync(join(types, 'index.js'));
+        writeFileSync(join(types, 'index.d.ts'), 'export type Synthetic = string;\n');
+        dependencyFixture(modules, 'import-only', {
+            type: 'module',
+            exports: { '.': { import: './index.js' } },
+        });
+    });
+    const preview = service.enable(input);
+    assert.equal(preview.written, false);
+    service.enable({ ...input, reviewedRegistrationDigest: preview.registration_digest }, true);
+    assert.equal(service.status(input).runtime_available, true);
+    assert.equal(service.disable(input, true).enabled, false);
+});
+
+test('present optional or optional-peer dependencies outside the inventory are refused', (t) => {
+    for (const field of ['optionalDependencies', 'peerDependencies']) {
+        const { root, workspace, input, service } = fixture(t);
+        changeRetainedRuntime(root, () => {
+            dependencyFixture(join(root, 'node_modules'), '@oclif/core', {
+                [field]: { 'outside-optional': '1.0.0' },
+                peerDependenciesMeta: { 'outside-optional': { optional: true } },
+            });
+        });
+        dependencyFixture(join(workspace, 'node_modules'), 'outside-optional');
+        assert.throws(() => service.enable(input), /inside the retained runtime inventory/);
+        assert.equal(existsSync(input.file), false);
+    }
+});
+
+test('missing required or oversized dependency declarations fail before settings writes', (t) => {
+    for (const dependencies of [
+        { 'missing-required': '1.0.0' },
+        Object.fromEntries(
+            Array.from({ length: 257 }, (_, index) => ['bounded-' + index, '1.0.0']),
+        ),
+    ]) {
+        const { root, input, service } = fixture(t);
+        changeRetainedRuntime(root, () => {
+            dependencyFixture(join(root, 'node_modules'), '@oclif/core', { dependencies });
+        });
+        assert.throws(() => service.enable(input), /unavailable|exceed/);
+        assert.equal(existsSync(input.file), false);
+        assert.equal(existsSync(input.file + '.i9-skills.json'), false);
+    }
+});
+
 test('modified owned entries require reconciliation', (t) => {
     const { input, file, service } = fixture(t);
     service.enable(reviewed(service, input), true);

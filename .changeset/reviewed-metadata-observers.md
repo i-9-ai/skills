@@ -10,14 +10,18 @@ Existing generic ownership receipts remain inspectable and exactly removable.
 
 Toolkit `hook telemetry-enable --write` now requires `--reviewed-registration`
 from its preview, the installed launcher and a retained read-only package with
-local production dependencies. Changed code/imports, unrelated runtimes, links,
+local production dependencies, traversing the declared transitive dependencies
+and required peers relative to each importer. Missing optional packages remain
+optional; present out-of-tree resolutions fail without evaluating modules.
+Changed code/imports, unrelated runtimes, links,
 writable toolkit assets and stale digests fail before settings writes.
 Status verifies Node/launcher/inventory identity; removal preserves unrelated
 settings and SQLite evidence. The toolkit retains its Codex read-proof path.
 
 Node is selected and byte-bound but may remain owner-updatable. Filesystem
 checks assume stable owned directories and do not provide hostile-race
-confinement or toolkit per-event inventory verification. No automatic download,
+confinement, validation of computed/undeclared imports, or toolkit per-event
+inventory verification. No automatic download,
 compilation, trust bypass or evidence upload is introduced. The public
 skills-only submission still excludes the setup skill; hardening is not provider
 approval.
