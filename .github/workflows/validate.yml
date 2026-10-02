@@ -23,6 +23,8 @@ jobs:
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '24'
+      - name: Retain a private Node foundation for observer checks
+        run: node .github/scripts/isolate-node-runtime.mjs
       - name: Install locked Node.js dependencies
         run: npm ci
       - name: Run local Node.js checks and isolated regression tests

@@ -17,6 +17,13 @@ must remain usable without a hosted service or an automatic installation.
   runtime; ordinary mutable checkouts and npm caches are not hook runtimes.
   Preserve unrelated settings, receipts and existing evidence; generic settings
   remain a clearly separate manual reference workflow.
+- CI follow-up: the hosted Linux Node binary is rejected for group/other write
+  permission by the unchanged observer foundation checks. Copy that already
+  selected binary into a new private runner-temporary directory and use it for
+  validation and release packing. Keep the shared tool cache unchanged and retain
+  all production permission checks. Cover isolation and no-overwrite behavior
+  with synthetic fixtures; removing the two CI steps and helper restores the
+  earlier runner path without changing consumer code.
 - #7: define module admission and interoperability with a synthetic fixture,
   mapping existing federated discovery evidence rather than creating modules.
 - Document and verify the published CLI's local stdio MCP invocation via npx.
