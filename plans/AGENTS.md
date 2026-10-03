@@ -1,21 +1,28 @@
 # Plans
 
 ## Purpose
+
 Keep reproducible implementation recipes for architectural changes.
 
 ## Ownership
+
 Maintainers own plans; current contracts and code take precedence over historical intent.
 
 ## Local contracts
+
 Write in English. Link the related issue, scope, acceptance criteria, verification, and rollback. Before the first release, maintain one coherent inaugural baseline: fold a later refinement into its originating plan when it completes the same acceptance boundary and has no independently deployable interface, workflow, or rollback. Preserve the absorbed plan in Git with an explicit consolidation note for decision provenance. Create a separate UTC-timestamped plan when a decision adds a distinct scope, dependency, workflow, external boundary, or independently reviewable rollout. After the first release, treat each material plan as an immutable migration record.
 
 ## Work guidance
+
 Before the first release, update the originating baseline rather than keep artificial increments for the same initial outcome. After release, do not rewrite an earlier plan to absorb a later material decision. Name plans `YYYY-MM-DD-HH-mm-ss-meaningful-slug.md` in UTC, so lexical order reflects creation time. If two plans are created in the same second, use `-01`, `-02`, and so on before the slug. Never rename a committed plan merely to fill a gap or change its timestamp. Routine wording corrections that do not change intent may update the current plan. Keep transient progress and exact commit review evidence in the PR.
 
 ## Verification
+
 Verify every requirement has an implementation and a check or an explicit limit.
 
 ## Child DOX index
+
+- [Version draft readiness](2026-10-03-22-18-58-version-pr-readiness-checks.md): protected checks on an owner-operated draft-to-ready transition, with preserved PR events and read-only permissions; no new token or publication trigger.
 
 - [GitHub changelog and availability](2026-10-03-20-28-08-github-changelog-and-release-availability.md): reviewed PR references with offline reproduction and anonymous exact-version consumer checks; no historical rewrite or repeat publication.
 
