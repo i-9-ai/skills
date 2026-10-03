@@ -66,6 +66,10 @@ Run `npm run check` and inspect the required official workflow result for the ex
 - [Version preparation](service/ReleaseVersionService.ts): prepare aligned package, lockfile and plugin release artifacts or verify them; no commits or publication.
 - [Release artifact repository](repository/ReleaseVersionRepository.ts): bounded release-file I/O, rollback snapshots, Git evidence and pinned Changesets process execution.
 - [Release version validator](validator/ReleaseVersionValidator.ts): enforce supported configuration, version alignment and generated-only manifest changes.
+- [Release references](repository/ReleaseReferenceRepository.ts): bounded GitHub reference control and results for the owned version subprocess; public assertions contain no authentication data.
+- [Release reference validator](validator/ReleaseReferenceValidator.ts): closed query/response identity, canonical public URLs and receipt integrity for the pinned official generator; no provider authenticity claim.
+- [Release reference runner](transport/ReleaseReferenceRunner.ts): record public references during explicit preparation and replay exact queries offline for full changelog verification.
+- [Package availability](repository/PackageAvailabilityRepository.ts): anonymous exact-version metadata and tarball integrity with bounded retries after publication; downloaded code is never executed.
 - [Skill discovery](repository/SkillDiscoveryRepository.ts): bounded project/global metadata discovery and canonical deduplication.
 - [Collection catalog](repository/CollectionCatalogRepository.ts): explicit collection inspection, checking and synchronization through the self-contained package helper.
 - [Plugin preparation](service/PluginPreparationService.ts): deterministic manifests and integrity receipt for a new inert local artifact, without installation or registration.

@@ -15,16 +15,21 @@ import { join, resolve } from 'node:path';
 import { SafeRoot } from '../../.agents/skills/skill-authoring/scripts/lib/filesystem.mjs';
 import { strictJson } from '../../.agents/skills/skill-authoring/scripts/lib/contracts.mjs';
 import { ReleaseVersionValidator } from '../validator/ReleaseVersionValidator.ts';
+import { ReleaseReferenceRepository } from './ReleaseReferenceRepository.ts';
+import type { ReleaseReferenceControl } from './ReleaseReferenceRepository.ts';
+import { ReleaseReferenceValidator } from '../validator/ReleaseReferenceValidator.ts';
+import type { ReleaseReferenceReceipt } from '../validator/ReleaseReferenceValidator.ts';
 import type {
     ReleaseDocuments,
     ReleaseDocument,
     ReleaseExpectation,
 } from '../validator/ReleaseVersionValidator.ts';
 
-type VersionRunner = (root: string) => void;
+type VersionRunner = (root: string, environment: NodeJS.ProcessEnv) => void;
 
 /** Owns bounded release files and explicit local Changesets/Git subprocesses. */
 export class ReleaseVersionRepository {
+    static readonly referenceFile = '.changeset/github-references.json';
     static readonly pluginFiles = [
         '.codex-plugin/plugin.json',
         '.claude-plugin/plugin.json',
@@ -91,14 +96,17 @@ export class ReleaseVersionRepository {
         const safe = new SafeRoot(this.root);
         try {
             return new Map(
-                [...ReleaseVersionRepository.documentFiles, 'CHANGELOG.md', ...notes].map(
-                    (file) => [
-                        file,
-                        safe.inspect(file, { allowMissingLeaf: true }).info
-                            ? this.read(file)
-                            : undefined,
-                    ],
-                ),
+                [
+                    ...ReleaseVersionRepository.documentFiles,
+                    'CHANGELOG.md',
+                    ReleaseVersionRepository.referenceFile,
+                    ...notes,
+                ].map((file) => [
+                    file,
+                    safe.inspect(file, { allowMissingLeaf: true }).info
+                        ? this.read(file)
+                        : undefined,
+                ]),
             );
         } finally {
             safe.close();
@@ -133,17 +141,83 @@ export class ReleaseVersionRepository {
         );
     }
 
-    runVersion(root = this.root, environment = process.env): void {
-        if (this.runner) {
-            this.runner(root);
-            return;
+    recordReferences(config: ReleaseDocument): ReleaseReferenceControl | undefined {
+        const generator = this.validator.generator(config);
+        if (generator.module !== '@changesets/changelog-github') return undefined;
+        if (
+            this.git(['status', '--porcelain', '--untracked-files=no']).trim() ||
+            this.git(['status', '--porcelain', '--untracked-files=all', '--', '.changeset']).trim()
+        )
+            throw new Error(
+                'GitHub reference preparation requires committed notes and a clean tracked checkout.',
+            );
+        const base = this.git(['rev-parse', 'HEAD']).trim();
+        return {
+            mode: 'record',
+            receipt: new ReleaseReferenceValidator().seal(
+                {
+                    schema_version: 1,
+                    base,
+                    generator: generator.module,
+                    generator_version: '1.0.1',
+                    repo: generator.repo,
+                },
+                [],
+            ),
+        };
+    }
+
+    writeReferences(receipt: ReleaseReferenceReceipt): void {
+        const valid = new ReleaseReferenceValidator().receipt(receipt);
+        const safe = new SafeRoot(this.root);
+        try {
+            safe.inspect(ReleaseVersionRepository.referenceFile, { allowMissingLeaf: true });
+            const content = JSON.stringify(valid, null, 2) + '\n';
+            if (Buffer.byteLength(content) > ReleaseReferenceValidator.maximumBytes)
+                throw new Error(
+                    'GitHub release reference evidence exceeds the supported byte limit.',
+                );
+            writeFileSync(join(this.root, ReleaseVersionRepository.referenceFile), content);
+        } finally {
+            safe.close();
         }
+    }
+
+    runVersion(
+        root = this.root,
+        environment = process.env,
+        references?: ReleaseReferenceControl,
+    ): ReleaseReferenceReceipt | undefined {
         let cli: string;
         try {
             cli = createRequire(import.meta.url).resolve('@changesets/cli/bin.js');
+            if (references) {
+                const require = createRequire(import.meta.url);
+                const generator = require.resolve('@changesets/changelog-github');
+                let selected = generator;
+                try {
+                    selected = createRequire(join(root, '.changeset/config.json')).resolve(
+                        '@changesets/changelog-github',
+                    );
+                } catch (error) {
+                    if ((error as NodeJS.ErrnoException).code !== 'MODULE_NOT_FOUND') throw error;
+                }
+                if (realpathSync(selected) !== realpathSync(generator))
+                    throw new Error(
+                        'The selected project shadows the owned pinned GitHub changelog generator.',
+                    );
+                for (const file of [
+                    require.resolve('@changesets/changelog-github/package.json'),
+                    createRequire(generator).resolve('@changesets/get-github-info/package.json'),
+                ]) {
+                    const metadata = JSON.parse(readFileSync(file, 'utf8'));
+                    if (metadata.version !== '1.0.1')
+                        throw new Error('Unexpected GitHub reference dependency version.');
+                }
+            }
         } catch {
             throw new Error(
-                'Version preparation requires the pinned development dependencies. Run npm ci in the tooling checkout.',
+                'Version preparation requires the pinned development dependencies (including GitHub generator 1.0.1 when selected). Run npm ci in the tooling checkout.',
             );
         }
 
@@ -159,20 +233,77 @@ export class ReleaseVersionRepository {
                 'Release preparation requires an independent single-package root, not a nested workspace.',
             );
 
-        execFileSync(process.execPath, [cli, 'version'], {
-            cwd: root,
-            env: {
-                ...environment,
+        const temporary = references
+            ? mkdtempSync(join(tmpdir(), 'i9-release-references-'))
+            : undefined;
+        try {
+            const referenceRepository = temporary
+                ? new ReleaseReferenceRepository(temporary)
+                : undefined;
+            if (references) referenceRepository!.writeControl(references);
+            const selectedEnvironment =
+                references?.mode === 'replay'
+                    ? Object.fromEntries(
+                          Object.entries(environment).filter(
+                              ([name]) =>
+                                  [
+                                      'PATH',
+                                      'SystemRoot',
+                                      'TMPDIR',
+                                      'TMP',
+                                      'TEMP',
+                                      'LANG',
+                                      'LC_ALL',
+                                  ].includes(name) || name.startsWith('GIT_'),
+                          ),
+                      )
+                    : environment;
+            const versionEnvironment: NodeJS.ProcessEnv = {
+                ...selectedEnvironment,
                 CI: 'true',
+                NODE_OPTIONS: '',
                 GIT_ALLOW_PROTOCOL: '',
                 GIT_NO_LAZY_FETCH: '1',
                 GIT_NO_REPLACE_OBJECTS: '1',
                 GIT_TERMINAL_PROMPT: '0',
-            },
-            timeout: 30000,
-            maxBuffer: 1048576,
-            stdio: 'pipe',
-        });
+            };
+            const arguments_ = [cli, 'version'];
+            if (references) {
+                Object.assign(versionEnvironment, {
+                    I9_RELEASE_REFERENCE_CONTROL: join(temporary!, 'control.json'),
+                    GITHUB_SERVER_URL: 'https://github.com',
+                    GITHUB_GRAPHQL_URL: 'https://api.github.com/graphql',
+                    GITHUB_REPOSITORY: references.receipt.repo,
+                    GITHUB_TOKEN:
+                        references.mode === 'replay'
+                            ? 'offline-release-reference-replay'
+                            : environment.GITHUB_TOKEN,
+                });
+                if (references.mode === 'replay')
+                    Object.assign(versionEnvironment, {
+                        HOME: temporary,
+                        XDG_CONFIG_HOME: temporary,
+                    });
+                const extension = import.meta.url.endsWith('.ts') ? '.ts' : '.js';
+                arguments_.unshift(
+                    '--import',
+                    new URL(`../transport/ReleaseReferenceRunner${extension}`, import.meta.url)
+                        .href,
+                );
+            }
+            if (this.runner) this.runner(root, versionEnvironment);
+            else
+                execFileSync(process.execPath, arguments_, {
+                    cwd: root,
+                    env: versionEnvironment,
+                    timeout: 30000,
+                    maxBuffer: 1048576,
+                    stdio: 'pipe',
+                });
+            return referenceRepository?.result();
+        } finally {
+            if (temporary) rmSync(temporary, { recursive: true, force: true });
+        }
     }
 
     baseDocuments(base: string): ReleaseDocuments {
@@ -191,6 +322,11 @@ export class ReleaseVersionRepository {
             'CHANGELOG.md',
             ...notes,
         ]);
+        const config = this.validator.document(
+            strictJson(Buffer.from(this.git(['show', `${base}:.changeset/config.json`]))),
+        );
+        if (this.validator.generator(config).module === '@changesets/changelog-github')
+            expected.add(ReleaseVersionRepository.referenceFile);
         const rows = this.git(['diff', '--name-status', '--no-renames', base, 'HEAD', '--', '.'])
             .trim()
             .split('\n');
@@ -198,7 +334,9 @@ export class ReleaseVersionRepository {
             const [status, file] = row.split('\t');
             const allowedStatus = notes.includes(file)
                 ? status === 'D'
-                : status === 'M' || (file === 'CHANGELOG.md' && status === 'A');
+                : status === 'M' ||
+                  ((file === 'CHANGELOG.md' || file === ReleaseVersionRepository.referenceFile) &&
+                      status === 'A');
             if (!expected.delete(file) || !allowedStatus)
                 throw new Error('Prepared release contains unrelated or missing artifact changes.');
         }
@@ -236,6 +374,24 @@ export class ReleaseVersionRepository {
             strictJson(Buffer.from(this.git(['show', `${base}:.changeset/config.json`]))),
         );
         this.validator.configuration(pkg, config);
+        const generator = this.validator.generator(config);
+        let references: ReleaseReferenceControl | undefined;
+        if (generator.module === '@changesets/changelog-github') {
+            // Safety-check the worktree file, but only committed bytes are evidence.
+            this.read(ReleaseVersionRepository.referenceFile);
+            const receipt = new ReleaseReferenceValidator().receipt(
+                strictJson(
+                    Buffer.from(
+                        this.git(['show', `HEAD:${ReleaseVersionRepository.referenceFile}`]),
+                    ),
+                ),
+            );
+            if (receipt.base !== base || receipt.repo !== generator.repo)
+                throw new Error(
+                    'GitHub release reference evidence does not match the immutable release base and repository.',
+                );
+            references = { mode: 'replay', receipt };
+        }
         const temporary = mkdtempSync(join(tmpdir(), 'i9-release-intent-'));
         try {
             const environment = this.prepareHistoryView(temporary, base);
@@ -248,7 +404,13 @@ export class ReleaseVersionRepository {
                 join(temporary, '.changeset/config.json'),
                 JSON.stringify({
                     ...config,
-                    changelog: createRequire(import.meta.url).resolve('@changesets/cli/changelog'),
+                    changelog:
+                        generator.module === '@changesets/cli/changelog'
+                            ? createRequire(import.meta.url).resolve(generator.module)
+                            : [
+                                  createRequire(import.meta.url).resolve(generator.module),
+                                  { repo: generator.repo },
+                              ],
                 }),
             );
             for (const file of notes)
@@ -258,7 +420,7 @@ export class ReleaseVersionRepository {
                 : undefined;
             if (previous !== undefined) writeFileSync(join(temporary, 'CHANGELOG.md'), previous);
 
-            this.runVersion(temporary, environment);
+            this.runVersion(temporary, environment, references);
             return {
                 version: this.validator.version(
                     this.validator.document(
@@ -330,6 +492,9 @@ export class ReleaseVersionRepository {
             cwd,
             env: {
                 ...environment,
+                GIT_CONFIG_GLOBAL: '/dev/null',
+                GIT_CONFIG_SYSTEM: '/dev/null',
+                GIT_CONFIG_NOSYSTEM: '1',
                 GIT_ALLOW_PROTOCOL: '',
                 GIT_NO_LAZY_FETCH: '1',
                 GIT_NO_REPLACE_OBJECTS: '1',

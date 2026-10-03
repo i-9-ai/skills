@@ -14,16 +14,18 @@ export class ReleaseVersionService {
     prepare() {
         const current = this.repository.documents();
         const version = this.validator.alignment(current);
-        this.validator.configuration(
-            current.package,
-            this.repository.json('.changeset/config.json'),
-        );
+        const config = this.repository.json('.changeset/config.json');
+        this.validator.configuration(current.package, config);
         const notes = this.repository.pending();
         if (!notes.length) return { version, changed: false, notes: 0 };
         const snapshot = this.repository.snapshot(notes);
 
         try {
-            this.repository.runVersion();
+            const references = this.repository.runVersion(
+                undefined,
+                undefined,
+                this.repository.recordReferences(config),
+            );
             const updated = this.validator.synchronize(this.repository.documents());
             this.repository.writeDocuments(updated);
             const nextVersion = this.validator.alignment(updated);
@@ -37,6 +39,7 @@ export class ReleaseVersionService {
                 throw new Error('Changesets did not generate the version changelog heading.');
             if (nextVersion !== version)
                 this.repository.normalizeChangelog(snapshot.get('CHANGELOG.md'));
+            if (nextVersion !== version && references) this.repository.writeReferences(references);
             return { version: nextVersion, changed: true, notes: notes.length };
         } catch (error) {
             this.repository.restore(snapshot);

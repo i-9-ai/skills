@@ -8,6 +8,9 @@ export type ReleaseDocuments = {
     plugins: Record<string, ReleaseDocument>;
 };
 export type ReleaseExpectation = { version: string; changelog: string };
+export type ReleaseGenerator =
+    | { module: '@changesets/cli/changelog' }
+    | { module: '@changesets/changelog-github'; repo: string };
 
 /** Checks the single-package version contract without filesystem or process access. */
 export class ReleaseVersionValidator {
@@ -44,11 +47,12 @@ export class ReleaseVersionValidator {
     configuration(pkg: ReleaseDocument, config: ReleaseDocument): void {
         if (Object.hasOwn(pkg, 'workspaces'))
             throw new Error('Release preparation supports one root package.');
-        if (config.commit !== false || config.changelog !== '@changesets/cli/changelog') {
+        if (config.commit !== false) {
             throw new Error(
                 'Release preparation requires the standard Changesets changelog and disabled automatic commits.',
             );
         }
+        this.generator(config);
         if (config.format !== false) {
             throw new Error(
                 'Release preparation requires format: false for deterministic changelog generation without formatter execution.',
@@ -56,6 +60,29 @@ export class ReleaseVersionValidator {
         }
         if (typeof pkg.name !== 'string' || !pkg.name) throw new Error('Package name is required.');
         this.version(pkg);
+    }
+
+    generator(config: ReleaseDocument): ReleaseGenerator {
+        if (config.changelog === '@changesets/cli/changelog')
+            return { module: '@changesets/cli/changelog' };
+        const changelog = config.changelog;
+        if (
+            Array.isArray(changelog) &&
+            changelog.length === 2 &&
+            changelog[0] === '@changesets/changelog-github'
+        ) {
+            const options = this.document(changelog[1]);
+            if (
+                Object.keys(options).length === 1 &&
+                typeof options.repo === 'string' &&
+                options.repo.length <= 200 &&
+                /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/u.test(options.repo)
+            )
+                return { module: '@changesets/changelog-github', repo: options.repo };
+        }
+        throw new Error(
+            'Release preparation requires the standard Changesets changelog or the pinned GitHub generator with only an explicit repo.',
+        );
     }
 
     synchronize(
