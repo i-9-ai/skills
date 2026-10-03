@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.3.4
+
+### Patch Changes
+
+- [#85](https://github.com/i-9-ai/skills/pull/85) [`0e099a5`](https://github.com/i-9-ai/skills/commit/0e099a5abaea3ca368c838b40393c332c87200d4) Thanks [@coisa](https://github.com/coisa)! - Link new release notes to GitHub pull requests, commits and authors with the
+  official Changesets GitHub generator. Preserve the published changelog history
+  and reproduce prepared releases offline from bounded reference evidence included
+  in the version pull request. Reference resolution occurs only during explicit
+  version preparation; local release verification needs no token or network.
+
+  After trusted publication, verify that the exact npm version's public metadata
+  and tarball are available and match the declared integrity. Bounded visibility
+  retries distinguish consumer availability from a successful upload; failures
+  never republish the package or change release metadata.
+
+- [#88](https://github.com/i-9-ai/skills/pull/88) [`211f8c4`](https://github.com/i-9-ai/skills/commit/211f8c4e08115347cfe5b3719b3130dba1295768) Thanks [@coisa](https://github.com/coisa)! - Start collection validation, Changeset verification and credential-pattern checks when a maintainer marks an automated version draft ready for review. Preserve the existing opening, update and reopening triggers, read-only PR permissions and protected check names. Publication remains a separate workflow after the reviewed version PR merges.
+
 ## 0.3.3
 
 ### Patch Changes
