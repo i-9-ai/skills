@@ -17,6 +17,8 @@ Verify every requirement has an implementation and a check or an explicit limit.
 
 ## Child DOX index
 
+- [GitHub changelog and availability](2026-10-03-20-28-08-github-changelog-and-release-availability.md): reviewed PR references with offline reproduction and anonymous exact-version consumer checks; no historical rewrite or repeat publication.
+
 - [SQLite sidecar stability](2026-10-02-21-01-02-sqlite-sidecar-stability.md): bounded re-observation of legitimately removed SQLite sidecars and deterministic rejection proof; no writer retry or evidence reset.
 
 - [MCP and observer hardening](2026-10-02-17-02-37-mcp-and-observer-hardening.md): installed MCP identity, closed optional observer registration and module admission evidence; local npx launch remains distinct from public HTTPS submission.

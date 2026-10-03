@@ -22,6 +22,8 @@ pending version intent creates or updates a **draft version PR**. After that PR
 passes review and protected-branch checks, its merge runs release verification,
 repository checks and compiled-package checks, publishes the official packed
 artifact to npm, and creates its Git tag and GitHub release from `CHANGELOG.md`.
+An independent read-only job then checks anonymous availability of the exact
+published npm version and verifies its downloaded tarball integrity.
 
 ```mermaid
 flowchart LR
@@ -32,6 +34,7 @@ flowchart LR
     Merge --> Pack[Verify, test and pack]
     Pack --> Npm[npm Trusted Publishing]
     Npm --> Release[Git tag and generated GitHub release]
+    Release --> Availability[Anonymous metadata and tarball integrity]
 ```
 
 The official Changesets `select-mode`, `version`, `pack` and `publish` actions
@@ -47,6 +50,38 @@ No pending notes and no unpublished version is a successful no-op. Notes without
 a package bump stay untouched. Linked notes, malformed intent and unsupported
 prerelease state are rejected before selecting an action. Runs on other branches
 or tags are skipped. Concurrent release runs are serialized.
+
+### GitHub release references
+
+The configured `@changesets/changelog-github` generator is pinned to `1.0.1`.
+Its standard format adds links to the associated PR, commit and GitHub author
+when available; the Changeset summary remains the release description. A direct
+commit can retain a commit link without a PR. Experimental templates are not
+enabled. Previous releases remain byte-identical rather than being reformatted.
+See the [official generator contract](https://changesets.dev/packages/changelog-github).
+
+Only explicit version preparation resolves references through the GitHub API.
+The official version action supplies its existing repository token to that
+command. Local preparation requires an existing `GITHUB_TOKEN` environment
+value; it does not create a token or silently use another account. API failure
+fails preparation and restores the captured release inputs.
+
+Preparation includes `.changeset/github-references.json` in the generated version
+PR. This bounded receipt binds the base commit, repository, pinned generator and
+public query results. It contains no credentials or request headers. Review its
+PR/commit/author references with the generated notes. It is editable public source
+evidence, not a signature or independently authenticated provider attestation.
+
+Release verification replays the exact required queries from that committed
+receipt through the same pinned official generator. It requires no token or
+network and rejects malformed, missing or unused evidence. Full note content,
+version intent and historical changelog preservation remain checked.
+
+The editor schema is pinned to `@changesets/config` `4.0.1`, matching the installed
+configuration package rather than the independent CLI version. `commit: false`,
+`format: false`, public access and base branch `main` remain unchanged.
+`privatePackages.tag: false` only affects packages whose `package.json` has
+`private: true`; it does not disable tags for this public npm package.
 
 ### Publisher and repository prerequisites
 
@@ -117,6 +152,25 @@ GitHub App or personal token is required for this approval path.
 
 ### Verify publication and recover a failure
 
+The post-publication availability job receives neither npm publication credentials
+nor OIDC permission. It verifies the exact name/version reported by the official
+publish action against the reviewed manifest, fetches public registry metadata,
+and downloads the matching tarball to compare its advertised integrity. Bounded
+retries allow metadata and tarball visibility to catch up with a successful upload.
+The probe allows up to 15 minutes overall, 15 seconds per request including its
+body, and 91 attempts with 10-second waits. Metadata is limited to 512 KiB and
+compressed tarballs to 64 MiB. The job timeout is 20 minutes.
+Timeout or integrity disagreement fails the availability check; it never
+republishes, changes versions/tags, or requests credentials to recover.
+
+This automated check proves artifact retrieval and integrity, not installed CLI
+or MCP behavior. Keep the separate disposable runtime verification below when
+confirming a release. Publication may already have succeeded when availability
+fails; inspect the registry before choosing any recovery action.
+The repository's
+[availability probe guide](https://github.com/i-9-ai/skills/blob/main/.github/scripts/package-availability.md)
+documents exact inputs, observations and failure boundaries.
+
 Inspect the workflow result, registry version, `latest`, integrity, version tag
 target and generated GitHub release. Exercise `npx --yes @i-9.ai/skills --help`,
 catalog retrieval and the stdio MCP handshake from a disposable anonymous
@@ -175,9 +229,10 @@ and PR through the normal repository delivery process after inspecting the diff.
 Preparation returns JSON with `version`, `changed` and the number of consumed
 `notes`. Repeating it after all notes are consumed succeeds with `changed: false`
 and no file changes. The supported input is this single-package repository with
-the standard Changesets changelog generator, matching package/lock/plugin
-versions, and no active prerelease state. Workspaces and custom commit/changelog
-hooks are rejected. The development Changesets dependency is required for
+either the standard Changesets changelog generator or the pinned GitHub generator
+with its declared repository, matching package/lock/plugin versions, and no active
+prerelease state. Workspaces and arbitrary commit/changelog hooks are rejected.
+The development Changesets dependencies are required for
 preparation and for verification against a base; it is not bundled into the
 consumer CLI's production dependencies.
 
@@ -199,8 +254,8 @@ strict verification reproduces that same canonical output. This normalization
 leaves existing release history and generated nonblank Markdown and code
 indentation unchanged.
 
-If preparation fails, the adapter restores its captured manifests, pending notes
-and changelog. Diagnose the reported error before retrying; do not overwrite
+If preparation fails, the adapter restores its captured manifests, pending notes,
+changelog and reference receipt. Diagnose the reported error before retrying; do not overwrite
 unrelated changes or manually fabricate generated versions. A missing development
 dependency requires an explicit `npm ci` in the trusted source checkout.
 
@@ -215,8 +270,8 @@ npm run release:verify -- --base <full-base-commit-sha>
 ```
 
 This stronger mode requires a clean tracked worktree and checks that the diff
-contains only the generated package/lock/plugin metadata, changelog and removed
-pending notes. It recomputes the expected version and complete changelog with the
+contains only the generated package/lock/plugin metadata, changelog, GitHub
+reference receipt when applicable, and removed pending notes. It recomputes the expected version and complete changelog with the
 pinned Changesets CLI from the base commit's notes and existing release history,
 then requires an exact match. Missing or altered entries and unrelated edits
 hidden inside allowed manifest files fail verification. The comparison uses the

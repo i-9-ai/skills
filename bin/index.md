@@ -105,7 +105,10 @@ node bin/index.mjs repo verify-release --project .
 pending notes and updates `package.json`, `CHANGELOG.md`, root lockfile version
 fields and the three root plugin manifests. It prints JSON with `version`,
 `changed` and consumed `notes`; no notes returns a successful no-op. It requires
-the standard single-package Changesets configuration and aligned input versions.
+the supported single-package Changesets configuration and aligned input versions.
+The GitHub generator resolves public references during explicit preparation and
+includes `.changeset/github-references.json` in the version PR; local preparation
+requires existing GitHub API authentication through `GITHUB_TOKEN`.
 Failure restores the captured release files. It never installs dependencies,
 commits, pushes or publishes.
 
@@ -116,6 +119,8 @@ from that base's notes in a disposable fixture. This mode needs Git history, a
 clean tracked worktree and the development Changesets dependency; unrelated
 changes or fabricated version evidence fail. Neither release command implicitly
 downloads the dependency if it is absent.
+For GitHub-generated notes, verification replays the committed reference receipt
+without network or credentials and preserves the complete historical changelog.
 
 The npm equivalents are `npm run release:prepare` and `npm run release:verify`.
 Read [release management](../docs/Release%20Management.md) for the manual draft-PR
