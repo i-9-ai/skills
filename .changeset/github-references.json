@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "base": "211f8c4e08115347cfe5b3719b3130dba1295768",
+  "generator": "@changesets/changelog-github",
+  "generator_version": "1.0.1",
+  "repo": "i-9-ai/skills",
+  "exchanges": [
+    {
+      "query": "query {\n  repo__0: repository(\n    owner: \"i-9-ai\",\n    name: \"skills\"\n  ) {\n    commit__0e099a5abaea3ca368c838b40393c332c87200d4: object(expression: \"0e099a5abaea3ca368c838b40393c332c87200d4\") {\n      ... on Commit {\n        ...CommitFragment\n      }\n    }\n    commit__211f8c4e08115347cfe5b3719b3130dba1295768: object(expression: \"211f8c4e08115347cfe5b3719b3130dba1295768\") {\n      ... on Commit {\n        ...CommitFragment\n      }\n    }\n  }\n}\nfragment CommitFragment on Commit {\n  commitUrl\n  associatedPullRequests(first: 50) {\n    nodes {\n      number\n      url\n      mergedAt\n      author {\n        login\n        url\n      }\n    }\n  }\n  author {\n    user {\n      login\n      url\n    }\n  }\n}\n",
+      "data": {
+        "repo__0": {
+          "commit__0e099a5abaea3ca368c838b40393c332c87200d4": {
+            "commitUrl": "https://github.com/i-9-ai/skills/commit/0e099a5abaea3ca368c838b40393c332c87200d4",
+            "associatedPullRequests": {
+              "nodes": [
+                {
+                  "number": 85,
+                  "url": "https://github.com/i-9-ai/skills/pull/85",
+                  "mergedAt": "2026-10-03T21:23:38Z",
+                  "author": {
+                    "login": "coisa",
+                    "url": "https://github.com/coisa"
+                  }
+                }
+              ]
+            },
+            "author": {
+              "user": {
+                "login": "coisa",
+                "url": "https://github.com/coisa"
+              }
+            }
+          },
+          "commit__211f8c4e08115347cfe5b3719b3130dba1295768": {
+            "commitUrl": "https://github.com/i-9-ai/skills/commit/211f8c4e08115347cfe5b3719b3130dba1295768",
+            "associatedPullRequests": {
+              "nodes": [
+                {
+                  "number": 88,
+                  "url": "https://github.com/i-9-ai/skills/pull/88",
+                  "mergedAt": "2026-10-03T23:00:35Z",
+                  "author": {
+                    "login": "coisa",
+                    "url": "https://github.com/coisa"
+                  }
+                }
+              ]
+            },
+            "author": {
+              "user": {
+                "login": "coisa",
+                "url": "https://github.com/coisa"
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "sha256": "c226475d8fb181e09d941a0611e33043e88c7601f4624299ad41a8cf43047762"
+}
