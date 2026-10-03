@@ -29,7 +29,8 @@ published npm version and verifies its downloaded tarball integrity.
 flowchart LR
     Notes[Contribution and Changeset] --> Main[Reviewed merge to main]
     Main --> Version[Draft aligned version PR]
-    Version --> Review[Review and current-head checks]
+    Version --> Ready[Review diff and mark ready]
+    Ready --> Review[Current-head checks]
     Review --> Merge[Protected version merge]
     Merge --> Pack[Verify, test and pack]
     Pack --> Npm[npm Trusted Publishing]
@@ -93,13 +94,13 @@ Only its publication job receives `id-token: write`.
 
 Configure npm Trusted Publishing for this exact binding:
 
-| Field | Value |
-| --- | --- |
-| Package | `@i-9.ai/skills` |
-| GitHub owner / repository | `i-9-ai/skills` |
-| Workflow filename | `release.yml` |
-| Environment | None |
-| Allowed operation | `npm publish` |
+| Field                     | Value            |
+| ------------------------- | ---------------- |
+| Package                   | `@i-9.ai/skills` |
+| GitHub owner / repository | `i-9-ai/skills`  |
+| Workflow filename         | `release.yml`    |
+| Environment               | None             |
+| Allowed operation         | `npm publish`    |
 
 An authenticated package owner can configure it with npm 12:
 
@@ -143,12 +144,17 @@ workflow and CLI distribution for that release; later versions still require
 their own publication and consumer evidence.
 
 According to the [GitHub trigger contract](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow),
-PR creation and updates with `GITHUB_TOKEN` create PR checks in an
-approval-required state. A maintainer with write access selects **Approve
-workflows to run** in the PR banner. Review the generated diff, wait for checks
-on its current commit, and mark the draft ready when appropriate. An updated
-version PR returns to draft so its new content is reviewed again. No stored
-GitHub App or personal token is required for this approval path.
+PR creation and updates with `GITHUB_TOKEN` can create PR checks in an
+approval-required state. If the PR displays that banner, a maintainer with write
+access selects **Approve workflows to run**. Review the generated diff before
+marking the draft ready. The three protected workflows explicitly retain
+`opened`, `synchronize` and `reopened` and add `ready_for_review`, so the
+maintainer's ready transition also starts validation of the current head.
+GitHub's [default PR event types](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#pull_request)
+do not include this transition. Wait for all protected checks on that exact
+commit before merging. An updated version PR returns to draft so its new content
+is reviewed again. No stored GitHub App or personal token is required for these
+approval and readiness paths; neither path publishes a package.
 
 ### Verify publication and recover a failure
 
