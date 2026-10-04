@@ -111,6 +111,11 @@ baseline/treatment evidence. Use the reviewed candidate checkout or a prepared
 candidate CLI; published npm `0.3.4` does not include these routes. The commands
 do not execute a model or certify skill readiness.
 
+The source-only [demonstration corpus and retained public pilot](benchmarks/behavioral/suite.json)
+live outside `docs/`, so experiment inputs, generated workproducts and run logs
+are excluded from the Wiki mirror, website assets and npm package. The guide
+retains the first pilot's incomplete comparison and failed treatment result.
+
 ## Available skills and optional session hook
 
 This source checkout includes a project-local Codex `SessionStart` adapter. After explicit `npm ci`, a trusted host can load a compact map from current project and global skill entrypoints at startup, resume, clear and compaction. Discovery reads bounded metadata, deduplicates canonical paths, and never installs packages or invokes a route.

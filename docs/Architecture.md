@@ -325,9 +325,14 @@ bytes, imports externally produced artifacts, and compares paired baseline and
 treatment observations. It has no model runner or evaluator. Its filesystem
 records are separate from the usage database and catalog indexes.
 
+The source-only demonstration suite and retained public pilot are in
+[`benchmarks/behavioral/`](https://github.com/i-9-ai/skills/tree/main/benchmarks/behavioral),
+outside the mirrored `docs/` tree, website assets and npm package. The human
+guide and outcome summary stay in public documentation.
+
 ```mermaid
 flowchart LR
-    Inputs[Declared synthetic suite and selected packages] --> Prepare[benchmark prepare]
+    Inputs[Source-only benchmarks/behavioral suite and selected packages] --> Prepare[benchmark prepare]
     Prepare --> Freeze[Frozen inputs and package digests]
     Freeze --> Executor[Separately authorized fresh baseline and treatment contexts]
     Executor --> Grade[Independent grading against frozen criteria]

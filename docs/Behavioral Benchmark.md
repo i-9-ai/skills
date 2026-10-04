@@ -15,7 +15,7 @@ candidate checkout. They are not instructions to install the latest npm release.
 ## Prepare the closed freeze
 
 The demonstration suite is
-[`docs/assets/behavioral-benchmark/suite.json`](https://github.com/i-9-ai/skills/blob/main/docs/assets/behavioral-benchmark/suite.json).
+[`benchmarks/behavioral/suite.json`](https://github.com/i-9-ai/skills/blob/main/benchmarks/behavioral/suite.json).
 Its ID is `skill-lifecycle-synthetic-v1`. It contains four synthetic acceptance
 cases with separate executor prompts and evaluator rubrics:
 
@@ -30,13 +30,20 @@ The corpus is inert input, not a result set. Its source fixtures include their
 license. Each case's prompt describes the allowed task; the evaluator rubric and
 criteria stay outside the executor handoff.
 
+`benchmarks/behavioral/` holds the experiment inputs and retained public pilot
+evidence in the source checkout. They stay outside `docs/`, the Wiki mirror,
+the website's copied assets and the npm package allowlist. This guide and its
+concise results remain public documentation; repository links expose the
+separately retained evidence. A prepared installed candidate needs an explicitly
+selected suite source because the corpus is not bundled with the CLI.
+
 The nested fixture `SKILL.md` files are synthetic task inputs, not collection
 packages. Collection installation and plugin discovery select `.agents/skills`;
 do not select the fixture subtree as a skill-installation source.
 
 ```sh
 node bin/index.mjs benchmark prepare \
-  --suite docs/assets/behavioral-benchmark/suite.json \
+  --suite benchmarks/behavioral/suite.json \
   --skills-root .agents/skills \
   --output ../skill-lifecycle-synthetic-v1
 ```
@@ -335,8 +342,8 @@ behavior prevent an OS-isolation claim. Wall times include startup, tools and
 waiting. An initial outer-sandbox startup failure preceded any model execution;
 the unchanged freeze was then run with permission for the normal runtime.
 
-The [public method and artifact lineage](https://github.com/i-9-ai/skills/blob/main/docs/assets/behavioral-benchmark/pilot-2026-10-04/method.json)
-links the [comparison](https://github.com/i-9-ai/skills/blob/main/docs/assets/behavioral-benchmark/pilot-2026-10-04/comparison.json)
+The [public method and artifact lineage](https://github.com/i-9-ai/skills/blob/main/benchmarks/behavioral/pilot-2026-10-04/method.json)
+links the [comparison](https://github.com/i-9-ai/skills/blob/main/benchmarks/behavioral/pilot-2026-10-04/comparison.json)
 and independently graded workproducts. This is a privacy-reviewed derived view:
 owned absolute paths and the local username become explicit portable markers, tool events are projected,
 and original/public hashes record that transformation. Slash-separated dependency

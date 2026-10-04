@@ -142,19 +142,15 @@ test('CLI help exposes one canonical route and rejects unsafe case paths before 
     assert.equal(fs.readFileSync(outside, 'utf8'), 'Unrelated sentinel preserved.');
 });
 
-test('documented synthetic corpus prepares with every shipped fixture in a disposable collection', (t) => {
+test('documented source corpus prepares with every retained fixture in a disposable collection', (t) => {
     const target = fixture(t);
-    const corpus = path.join(target.root, 'shipped-corpus');
-    fs.cpSync(
-        path.join(repository, 'docs/assets/behavioral-benchmark/cases'),
-        path.join(corpus, 'cases'),
-        {
-            recursive: true,
-        },
-    );
+    const corpus = path.join(target.root, 'source-corpus');
+    fs.cpSync(path.join(repository, 'benchmarks/behavioral/cases'), path.join(corpus, 'cases'), {
+        recursive: true,
+    });
     for (const name of ['suite.json', 'LICENSE']) {
         fs.copyFileSync(
-            path.join(repository, 'docs/assets/behavioral-benchmark', name),
+            path.join(repository, 'benchmarks/behavioral', name),
             path.join(corpus, name),
         );
     }

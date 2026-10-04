@@ -9,5 +9,8 @@ corpus and operator guidance for critical failures, missing pairs, unmeasured
 metrics, reported overruns of the time budget, and declared execution conditions.
 Retain a privacy-reviewed public view of eight real agent attempts, including
 incomplete authoring/refactoring deliveries and explicit comparison limits.
+Keep the source-only corpus and pilot evidence under `benchmarks/behavioral/`,
+outside Wiki/site copies and the npm package, while retaining the operator
+guide and honest outcome summary in public documentation.
 The CLI never executes models or case scripts; artifact integrity does not
 authenticate agent execution or certify skill readiness.

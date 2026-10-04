@@ -146,7 +146,7 @@ installed candidate. Published npm `@i-9.ai/skills@0.3.4` does not include them.
 From the candidate checkout:
 
 ```sh
-node bin/index.mjs benchmark prepare --suite docs/assets/behavioral-benchmark/suite.json --output ../skill-lifecycle-synthetic-v1 --skills-root .agents/skills
+node bin/index.mjs benchmark prepare --suite benchmarks/behavioral/suite.json --output ../skill-lifecycle-synthetic-v1 --skills-root .agents/skills
 node bin/index.mjs benchmark import-run --benchmark ../skill-lifecycle-synthetic-v1 --run ../candidate-run/run.json --artifacts ../candidate-run/artifacts
 node bin/index.mjs benchmark compare --benchmark ../skill-lifecycle-synthetic-v1
 ```
@@ -158,7 +158,11 @@ retained bytes and reports missing pairs, declared comparability, critical
 failures and caller-reported metrics; unknown metrics remain `null`. Artifact
 integrity does not authenticate execution, and wall time is not inference
 latency. All commands print JSON and invalid input exits nonzero. They execute no
-model/case scripts, installation, hooks or telemetry database operations. Read
+model/case scripts, installation, hooks or telemetry database operations.
+
+The demonstration corpus and retained public pilot live in `benchmarks/behavioral/`
+in the source checkout, outside the npm package's files. An installed candidate
+must select an external suite explicitly. Read
 the [behavioral benchmark guide](../docs/Behavioral%20Benchmark.md) for external
 execution/grading, schema, bounded inputs and failure recovery.
 

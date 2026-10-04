@@ -7,7 +7,7 @@ export default class BenchmarkPrepareCommand extends Command {
     static description =
         'Freeze an inert behavioral suite, executor inputs and selected package bytes into a new directory.';
     static examples = [
-        '<%= config.bin %> benchmark prepare --suite docs/assets/behavioral-benchmark/suite.json --output /tmp/skill-benchmark --project .',
+        '<%= config.bin %> benchmark prepare --suite benchmarks/behavioral/suite.json --output /tmp/skill-benchmark --project .',
     ];
     static flags = {
         suite: Flags.string({
