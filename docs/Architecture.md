@@ -24,6 +24,9 @@ flowchart LR
     CLI -->|optional setup preview / explicit write| Settings[Selected host settings and receipt]
     CLI -->|plugin submission preview / explicit write| Submission[Skills-only folder and ZIP]
     CLI -->|benchmark prepare / import-run / compare| Benchmark[Retained behavioral experiment]
+    CLI -->|skills quality record / inspect| Quality[Explicit quality receipts]
+    MCP -->|skill_quality_record / skill_quality_inspect| Quality
+    Quality --> Evidence
     MCP -->|catalog tools| Catalog
     Catalog --> Read
     Read --> Work[Portable meta-skill workflow]
@@ -93,7 +96,7 @@ Live metadata discovery does not depend on a catalog being fresh or readable.
 | --- | --- | --- |
 | Repository skill inventory | `<collection>/skills-catalog.json` | Canonical source-owned inventory; repository layout reads `.agents/skills/` |
 | Global skill inventory | `<agent-state>/skills-catalog.json` | Explicit global catalog operation; reads that root's `skills/`; discovery itself never rewrites it |
-| Read/lifecycle evidence | `<agent-state>/skills-usage.db` | Shared CLI/plugin default; `I9_SKILLS_USAGE_DB` overrides it, and explicit `--db` wins |
+| Read/lifecycle/quality evidence | `<agent-state>/skills-usage.db` | Shared CLI/plugin default; `I9_SKILLS_USAGE_DB` overrides it, and explicit `--db` wins |
 | Derived catalog index | `<caller-index>/skills-catalog.db` or `skills-catalog.index.json` | Explicit output outside every source catalog directory; independent schema and history |
 | Snapshot and installation records | Caller-selected operation state | Keep outside discovery/source roots under the selected package's recovery contract |
 
@@ -259,6 +262,53 @@ inspection counts records around an optional caller cutoff within the queried
 period. Neither operation establishes a retention policy, evaluates historical
 dependencies for deletion, or writes to the database.
 
+## Exact-revision quality receipts
+
+Quality uses a separate projection in the existing dedicated evidence database.
+It adds no store, activation inference or implicit recording from catalog reads,
+hooks or lifecycle completion. CLI and MCP use the same closed assertion input,
+protected data selection and read-only inspection contracts.
+
+```mermaid
+flowchart LR
+    Input[Closed metadata event] --> Ingress[skills quality record / skill_quality_record]
+    Ingress --> Validate[Normalize caller assertion]
+    Validate --> Bytes[Check optional inert package selection]
+    Package[Optional selected package tree] --> Bytes
+    Bytes --> Assertion[caller_assertion]
+    Bytes -->|explicit retained benchmark selection| Verify[Verify full freeze, runs, receipts and artifacts]
+    Verify --> Derived[verified_retained_benchmark coverage and limits]
+    Assertion --> Writer[Transactional quality projection]
+    Derived --> Writer
+    Writer --> Store[Existing evidence database]
+    Query[skills quality inspect / skill_quality_inspect] --> Reader[Bounded read-only compatible-schema access]
+    Store --> Reader
+    Reader --> Rows[Exact-revision receipt rows and cursors]
+    Memory[Explicit memory inspection] --> Reader
+    Reader --> Section[Separate quality section and logical cutoff counts]
+```
+
+Pure metadata remains `caller_assertion` even when selected package bytes match.
+Only the internally verified retained-benchmark path derives that tier; supplied
+assurance or detached comparison JSON cannot select it. Full verification
+precedes safe database selection. No record command executes a skill, benchmark
+case, grader or official validator. An `official_validation` caller metadata kind
+does not establish observation of an official process.
+
+Receipts bind normalized source identity and the exact full package digest,
+including resources. The same name at a later revision does not inherit a
+historical pass. Failed, blocked, missing and incomplete evidence remains
+recorded. Retained hashes verify bytes; executor identity, grading, metrics,
+source Git claims, phase labels and causal attribution remain limited assertions.
+
+Queries require existing schema 4 and never create or upgrade it. Migration 4
+is additive; issued migrations 1–3 and earlier evidence bytes remain unchanged.
+Memory keeps quality separate from weaker read/lifecycle/catalog projections,
+and retention counts one logical quality occurrence without counting its
+mirrored envelope twice. Neither inspection chooses promotion, deletion or
+publication. See [Skill Quality](https://github.com/i-9-ai/skills/wiki/Skill-Quality)
+for complete inputs, tier boundaries, exact identity, bounds and recovery.
+
 ## Skill observations and version decisions
 
 Snapshot observations and bump reports do not use the telemetry database.
@@ -323,7 +373,10 @@ for explicit selections, limits and receipt semantics.
 The candidate benchmark interface freezes a selected suite and exact package
 bytes, imports externally produced artifacts, and compares paired baseline and
 treatment observations. It has no model runner or evaluator. Its filesystem
-records are separate from the usage database and catalog indexes.
+records are separate from the usage database and catalog indexes. A separately
+invoked quality record can verify these retained bytes and store compact
+exact-revision metadata in the existing evidence database; it does not change
+benchmark prepare/import/compare behavior or copy raw artifacts into that store.
 
 The source-only demonstration suite and retained public pilot are in
 [`benchmarks/behavioral/`](https://github.com/i-9-ai/skills/tree/main/benchmarks/behavioral),

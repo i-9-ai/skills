@@ -1,7 +1,8 @@
 # Skill catalog and explicit evidence
 
 One local MCP exposes this installed collection's instructions and explicit
-read, lifecycle and catalog evidence. Catalog lookup tools only read bundled files; they do not record
+read, lifecycle, catalog and separately recorded quality evidence. Catalog lookup
+tools only read bundled files; they do not record
 usage, activate skills, scan the caller's home or execute package scripts.
 Recording evidence requires a separate explicit call with evidence from its emitter.
 
@@ -215,13 +216,58 @@ Six additional tools share the closed schema-2 contracts in the
 `skill_catalog_inactivity` and `skill_catalog_history`. Records receive complete
 event objects; queries receive an explicit half-open UTC period and optional
 collection/skill filters. Tool listing describes each schema and its write/read
-annotation. No tool receives a database or filesystem path as an argument.
+annotation. These six tools receive neither a database nor a selected filesystem
+path as an argument.
 
 Lifecycle ratios return denominators; absent catalog coverage is an error, not
 proof of inactivity. Catalog observation is a complete caller-reported inventory,
 distinct from reading this installed collection's metadata. Reads, hooks and
 catalog retrieval never manufacture lifecycle outcomes. The guide includes
 complete event examples, retries, reason codes, query budgets and history paging.
+
+## Explicit quality receipts
+
+`skill_quality_record` receives a closed wrapper containing `receipt`: the complete
+schema-2 event from [Skill Quality](https://github.com/i-9-ai/skills/wiki/Skill-Quality).
+Optional `package_root` and `benchmark` fields select absolute server-local input
+directories. There is no database, assurance or arbitrary process argument in the
+tool request. Select the evidence database through the existing server configuration
+or `mcp serve --db`; quality recording rejects storage inside the installed
+collection, its known caller root and either selected input tree, including explicit
+DB paths. A plugin-root process cannot infer an otherwise unknown consumer cwd.
+
+Pure metadata records `caller_assertion`; checking `package_root` bytes does not
+change that tier. A behavioral receipt plus `benchmark` reuses complete frozen
+suite/package/run/receipt/artifact verification and derives
+`verified_retained_benchmark` coverage. Detached comparison JSON and supplied
+assurance fields cannot earn that tier. These calls execute no skill, benchmark
+case, grader or official validator. Source Git identity, execution, grading and
+metrics remain assertions; a passing receipt is not readiness or causal evidence.
+
+`skill_quality_inspect` accepts this complete read-only query:
+
+```json
+{
+    "collection": "demo",
+    "skill": "example-skill",
+    "from": "2026-09-01T00:00:00.000Z",
+    "until": "2026-10-01T00:00:00.000Z",
+    "kind": "behavioral_evaluation",
+    "limit": 20
+}
+```
+
+Optional `source_key` and `identity_key` select a source family or exact recorded
+revision. A returned `next_cursor` can be supplied as `after` with identical
+period/collection/skill/kind/source/identity filters; only the display limit may
+change. Counts cover the full bounded window, rows are ordered by occurrence
+time/event ID, and historical fail/blocked/not-run receipts remain visible.
+Inspection never dereferences artifact locators, creates a database or upgrades
+schema. It scans at most 5,000 matching receipts before cursor/display selection,
+returns at most 100 entries and caps JSON at 64 KiB; caller receipt input is 16 KiB.
+See the quality guide for complete record examples, coverage, privacy, exact byte
+identity, limits and schema recovery. Reading or activating a skill never creates
+quality evidence, and memory presents these receipts as a separate section.
 
 ## Change reports and onboarding
 
@@ -240,10 +286,14 @@ On the first explicit record, ordered checksum-verified migrations run in SQLite
 
 **Use a dedicated evidence database.** Aggregate catalog helpers replace derived
 database files and refuse this evidence store, including reset/rebuild requests.
-Catalog or unrelated databases are rejected, untouched. Migration 3 preserves
-older read events; queries against an older known schema request an explicit
-upgrade instead of performing one. Keep a backup before an explicit write upgrades
-storage. There is no shared transactional writer for derived catalog databases.
+Catalog or unrelated databases are rejected, untouched. Issued migrations 1–3
+preserve older reads and lifecycle/catalog evidence; additive migration 4 stores
+quality receipts separately. Queries against schema 1–3 request an explicit
+compatible upgrade instead of performing one, while older consumers reject schema
+4. Keep an owner-selected verified backup before an explicit write upgrades
+valuable history. Future/altered schemas fail without reset, and code rollback
+does not downgrade the database. There is no shared transactional writer for
+derived catalog databases.
 
 The adapter implements newline-delimited JSON-RPC stdio initialization, ping,
 tool discovery and calls. Input messages are bounded to 1 MiB and serialized

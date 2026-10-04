@@ -22,6 +22,8 @@ Verify every requirement has an implementation and a check or an explicit limit.
 
 ## Child DOX index
 
+- [Exact-revision skill quality](2026-10-04-23-04-39-exact-revision-skill-quality.md): explicit source-qualified conformance/behavioral receipts, preserved evidence history and bounded CLI/MCP queries; no automatic readiness, installation or publication.
+
 - [Global-reference evaluation](2026-10-04-19-15-10-global-reference-evaluation.md): real caller skill references, isolated practical cases and bounded authoring/refactoring repairs; installed packages and historical experiment bytes remain unchanged.
 
 - [Skill behavioral benchmark](2026-10-04-01-25-24-skill-behavioral-benchmark.md): frozen synthetic cases, exact package/artifact identity and declared baseline/treatment evidence; no provider execution engine, automatic readiness claim or publication.

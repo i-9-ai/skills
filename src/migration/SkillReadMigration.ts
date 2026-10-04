@@ -36,11 +36,26 @@ sequence INTEGER NOT NULL REFERENCES catalog_observations(sequence), skill TEXT 
 before_json TEXT, after_json TEXT, PRIMARY KEY(sequence, skill));`;
 
 const legacyTables = ['usage_events', 'usage_migrations', 'usage_reads'];
+const qualitySql = `CREATE TABLE quality_receipts (
+event_id TEXT PRIMARY KEY REFERENCES usage_events(event_id), correlation_id TEXT NOT NULL,
+collection TEXT NOT NULL, skill TEXT NOT NULL, source_key TEXT NOT NULL, identity_key TEXT NOT NULL,
+source_json TEXT NOT NULL, occurred_at TEXT NOT NULL, recorded_at TEXT NOT NULL,
+kind TEXT NOT NULL CHECK(kind IN ('official_validation','behavioral_evaluation')),
+assurance TEXT NOT NULL CHECK(assurance IN ('caller_assertion','locally_observed_official_process','verified_retained_benchmark')),
+method_name TEXT NOT NULL, result TEXT NOT NULL CHECK(result IN ('pass','fail','blocked','not-run')));
+CREATE INDEX quality_period ON quality_receipts(occurred_at,event_id);
+CREATE INDEX quality_collection_period ON quality_receipts(collection,occurred_at,event_id);
+CREATE INDEX quality_skill_period ON quality_receipts(collection,skill,occurred_at,event_id);
+CREATE INDEX quality_source_period ON quality_receipts(collection,source_key,occurred_at,event_id);
+CREATE INDEX quality_identity_period ON quality_receipts(collection,identity_key,occurred_at,event_id);
+CREATE INDEX quality_kind_period ON quality_receipts(collection,kind,occurred_at,event_id);`;
+
 const evidenceTables = [
     'catalog_changes',
     'catalog_members',
     'catalog_observations',
     'lifecycle_events',
+    'quality_receipts',
     ...legacyTables,
 ].sort();
 
@@ -59,6 +74,11 @@ const migrations = [
         version: 3,
         sql: lifecycleSql,
         checksum: createHash('sha256').update(lifecycleSql).digest('hex'),
+    },
+    {
+        version: 4,
+        sql: qualitySql,
+        checksum: createHash('sha256').update(qualitySql).digest('hex'),
     },
 ];
 
@@ -123,6 +143,9 @@ export class SkillReadMigration {
             }
             if (applied.length < 2 && tables.some((table) => table.name === 'usage_events')) {
                 throw new Error('Untracked telemetry schema');
+            }
+            if (applied.length < 4 && tables.some((table) => table.name === 'quality_receipts')) {
+                throw new Error('Untracked quality schema');
             }
             if (
                 applied.length < 3 &&

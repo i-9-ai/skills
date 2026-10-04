@@ -43,6 +43,8 @@ node bin/index.mjs collection audit --collection ./example-skills --layout repos
 node bin/index.mjs skills onboarding
 node bin/index.mjs skills observe --snapshot ./snapshots/before --subject ./subject.json
 node bin/index.mjs skills report bump --file ./comparison.json --limit 20
+node bin/index.mjs skills quality record --db /absolute/local-data/skill-usage.db --file ./receipt.json
+node bin/index.mjs skills quality inspect --db /absolute/local-data/skill-usage.db --collection demo --skill example-skill --from 2026-09-01T00:00:00.000Z --until 2026-10-01T00:00:00.000Z --limit 20
 node bin/index.mjs skills memory summarize --db /absolute/local-data/skill-usage.db --collection demo --from 2026-09-01T00:00:00.000Z --until 2026-10-01T00:00:00.000Z
 node bin/index.mjs skills memory retention --db /absolute/local-data/skill-usage.db --collection demo --from 2026-09-01T00:00:00.000Z --until 2026-10-01T00:00:00.000Z --cutoff 2026-09-15T00:00:00.000Z
 node bin/index.mjs collection plan --collection ./example-skills --layout repository --audit ./audit.json
@@ -92,6 +94,16 @@ not skill behavior or publication readiness. The `npm run validate` and
 `npm run ci:official` scripts still select these operations. The earlier standalone
 `validate` and `ci-official` CLI spellings have been removed before the first release.
 
+`repo validate-official` accepts an explicit selected-package observation with
+`--quality-request FILE --quality-db ABSOLUTE_PATH --quality-output NEW_ABSOLUTE_ROOT`.
+All three are required together. It still validates every canonical skill and the
+temporary scaffold; only unchanged selected bytes after correct-version official
+execution can obtain an observed receipt. External request/storage/artifact paths
+are preflighted before setup. Retained blocked artifacts and negative receipts
+remain evidence; they do not turn a failed validation into success. See
+[Skill Quality](https://github.com/i-9-ai/skills/wiki/Skill-Quality) for the complete
+request, selected-state boundaries and recovery.
+
 ## Version preparation
 
 For an authorized version-preparation task in a trusted source checkout:
@@ -138,6 +150,37 @@ installed guide with complete synthetic examples, without executing them.
 See [skill change reports](../docs/Skill%20Change%20Reports.md) for fields, limits
 and the inspect-through-report walkthrough. Report and guide data are also
 available through `skill_bump_report` and `skill_onboarding` in the shared MCP.
+
+## Exact-revision quality receipts
+
+`skills quality record --file FILE` explicitly records a closed schema-2 metadata
+receipt (or `--file -` for stdin). Pure metadata always records `caller_assertion`;
+a supplied assurance is rejected. Optional `--package-root ABSOLUTE_DIRECTORY`
+checks every inert resource against the declared package digest while preserving
+that tier. `--benchmark ABSOLUTE_DIRECTORY` requires behavioral input and derives
+`verified_retained_benchmark` coverage only after verifying the full retained
+freeze, package inventories, run receipts and artifacts. A detached summary cannot
+select a trusted tier. No skill, case, grader or official validator executes.
+
+The DB must be outside installed files, the known caller workspace and selected
+input trees, even with explicit `--db`. A valid explicit record can create/upgrade
+that dedicated store. Matching retries return `recorded: false`; changed evidence
+under an existing event ID conflicts. New observations use new UUIDs, preserving
+failed, blocked and not-run history.
+
+`skills quality inspect` requires collection/from/until and existing storage.
+Optional `--skill`, `--kind`, `--source-key`, `--identity-key` and opaque `--after`
+filter or page exact source/revision evidence. The period is at most 366 days;
+work is capped at 5,000 matching receipts before cursor/display selection, the
+page at 100 entries and output at 64 KiB. Queries neither create nor migrate the
+store or dereference artifact locators. Historical receipts apply to their recorded
+package digest; names, reads and completions do not imply quality or provenance.
+
+The shared MCP tools are `skill_quality_record` and `skill_quality_inspect`.
+Read [Skill Quality](https://github.com/i-9-ai/skills/wiki/Skill-Quality) for complete
+inert inputs, benchmark request generation, filters/cursors, privacy, coverage and
+migration recovery. A successful record can contain a negative result; stored
+hashes verify bytes, not executor authenticity, grading or causal effectiveness.
 
 ## Behavioral benchmark candidate
 
@@ -223,7 +266,8 @@ selected executable and its Node 24 runtime must remain available; file checks
 do not establish dependency health, host trust or native hook delivery.
 
 `mcp serve` starts the single stdio server for bundled skill search, Markdown
-retrieval and overview plus explicit read, lifecycle and catalog evidence. Initialization and
+retrieval and overview plus explicit read, lifecycle, catalog and quality evidence.
+Initialization and
 catalog calls require no data directory and create no state. A valid record opens
 the selected dedicated SQLite database and applies migrations; evidence queries open
 existing valid storage read-only. A missing database is unavailable, not zero
@@ -255,11 +299,14 @@ identity, ratio denominators, missing coverage and history paging. File reads
 never imply activation or completion.
 
 `skills memory summarize` composes bounded lifecycle, catalog and read summaries
-from that same existing store. `skills memory retention` reports evidence before
+plus a separate quality-receipt section from that same existing store. `skills memory retention` reports evidence before
 and after an optional cutoff inside the requested period. Both require an explicit
 collection and UTC period, open storage read-only, and make no retention decision
-for the caller. Missing approval, validation or migration receipts remain
-unrecorded rather than inferred from events. See the
+for the caller. Quality retention counts one logical `skill.quality.recorded`
+occurrence without double counting its mirrored envelope. Approval and approved
+migration receipts remain unrecorded; an official-validation metadata kind does
+not imply observed official execution. Reads or outcomes never supply missing
+quality receipts. See the
 [skill memory guide](../docs/Skill%20Memory.md) for complete examples, identity
 tiers, limits and the distinction between inspection and deletion.
 

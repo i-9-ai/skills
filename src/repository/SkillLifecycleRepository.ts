@@ -1,13 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
+import { SkillEvidenceContractValidator } from '../validator/SkillEvidenceContractValidator.ts';
 import type { SQLInputValue } from 'node:sqlite';
 import { SkillEvidenceDatabaseRepository } from './SkillEvidenceDatabaseRepository.ts';
 import { SkillEvidenceEventRepository } from './SkillEvidenceEventRepository.ts';
-import {
-    SkillEvidenceValidator,
-    lifecycleTypes,
-    sourceKey,
-    identityKey,
-} from '../validator/SkillEvidenceValidator.ts';
+import { SkillEvidenceValidator, lifecycleTypes } from '../validator/SkillEvidenceValidator.ts';
 import type {
     EvidenceQuery,
     LifecycleEvent,
@@ -69,7 +65,7 @@ export class SkillLifecycleRepository {
                     event.payload.collection,
                     event.payload.skill,
                 ) as unknown as LifecycleRow[];
-            const identity = identityKey(event.payload.source);
+            const identity = SkillEvidenceContractValidator.identityKey(event.payload.source);
             for (const row of previous) {
                 if (
                     row.identity_key !== identity ||
@@ -92,7 +88,7 @@ export class SkillLifecycleRepository {
                     event.correlation_id,
                     event.payload.collection,
                     event.payload.skill,
-                    sourceKey(event.payload.source),
+                    SkillEvidenceContractValidator.sourceKey(event.payload.source),
                     identity,
                     JSON.stringify(event.payload.source),
                     event.session,

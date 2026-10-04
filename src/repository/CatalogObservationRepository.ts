@@ -1,12 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
+import { SkillEvidenceContractValidator } from '../validator/SkillEvidenceContractValidator.ts';
 import type { SQLInputValue } from 'node:sqlite';
 import { SkillEvidenceDatabaseRepository } from './SkillEvidenceDatabaseRepository.ts';
 import { SkillEvidenceEventRepository } from './SkillEvidenceEventRepository.ts';
-import {
-    SkillEvidenceValidator,
-    sourceKey,
-    identityKey,
-} from '../validator/SkillEvidenceValidator.ts';
+import { SkillEvidenceValidator } from '../validator/SkillEvidenceValidator.ts';
 import type {
     CatalogMember,
     EvidenceSource,
@@ -112,8 +109,14 @@ export class CatalogObservationRepository {
                 const old = previous.get(member.skill);
                 const continuous =
                     old &&
-                    sourceKey({ ...previousSource!, package_path: old.package_path }) ===
-                        sourceKey({ ...event.payload.source, package_path: member.package_path });
+                    SkillEvidenceContractValidator.sourceKey({
+                        ...previousSource!,
+                        package_path: old.package_path,
+                    }) ===
+                        SkillEvidenceContractValidator.sourceKey({
+                            ...event.payload.source,
+                            package_path: member.package_path,
+                        });
                 putMember.run(
                     sequence,
                     member.skill,
@@ -243,7 +246,7 @@ export class CatalogObservationRepository {
                     .get(
                         header.collection,
                         member.skill,
-                        sourceKey(selected),
+                        SkillEvidenceContractValidator.sourceKey(selected),
                         query.from,
                         query.until,
                     );
@@ -251,8 +254,8 @@ export class CatalogObservationRepository {
                 rows.push({
                     collection: header.collection,
                     skill: member.skill,
-                    source_key: sourceKey(selected),
-                    active_identity_key: identityKey(selected),
+                    source_key: SkillEvidenceContractValidator.sourceKey(selected),
+                    active_identity_key: SkillEvidenceContractValidator.identityKey(selected),
                     source: selected,
                     observation_sequence: header.sequence,
                     observation_id: header.event_id,

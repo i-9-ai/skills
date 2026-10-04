@@ -27,6 +27,12 @@ Run `npm run check` and inspect the required official workflow result for the ex
 
 ## Child DOX index
 
+- [Skill quality](../docs/Skill%20Quality.md): source-qualified exact-revision receipts with explicit assurance and coverage; structural conformance, behavioral evidence and readiness remain separate.
+- [Quality ingress](service/SkillQualityService.ts): validates closed assertions and selected evidence before storage, privately persisting verified retained-byte or actual official-process observations.
+- [Quality repository](repository/SkillQualityRepository.ts): append-only quality projection, retry/conflict identity and bounded read-only history over the preserved evidence store.
+- [Official observation artifacts](repository/SkillQualityArtifactRepository.ts): preflight protected roots and explicit input files, then retain new compact metadata without overwrite or deletion on database failure.
+- [Official observation contract](validator/OfficialQualityValidator.ts): closed selected-package requests and derived setup/version/process/fingerprint outcomes; normalization alone supplies no observed assurance.
+
 - [Behavioral benchmark](../docs/Behavioral%20Benchmark.md): closed suite/package freezes, immutable artifact-backed run imports and read-only comparisons; external execution and grading remain caller assertions.
 
 - [Skill memory inspection](../docs/Skill%20Memory.md): bounded summaries and retention-cutoff counts from the existing evidence store; no policy choice, mutation or deletion.

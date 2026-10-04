@@ -10,6 +10,7 @@ import { SkillReadValidator } from '../validator/SkillReadValidator.ts';
 import { SkillCatalogService } from './SkillCatalogService.ts';
 import { SkillEvidenceService } from './SkillEvidenceService.ts';
 import { SkillBumpReportService } from './SkillBumpReportService.ts';
+import { SkillQualityService } from './SkillQualityService.ts';
 import { SkillOnboardingService } from './SkillOnboardingService.ts';
 
 export type SkillMcpOptions = {
@@ -125,6 +126,22 @@ export class SkillMcpService {
     }
     catalogHistory(value: unknown) {
         return new SkillEvidenceService().query(() => this.database(false), 'history', value);
+    }
+
+    recordQuality(value: unknown) {
+        return this.quality().record(() => this.qualityDatabase(), value);
+    }
+    inspectQuality(value: unknown) {
+        return this.quality().inspect(() => this.qualityDatabase(), value);
+    }
+    private quality() {
+        return new SkillQualityService([this.configuration.root(), this.options.callerRoot!]);
+    }
+    private qualityDatabase(): string {
+        return (
+            this.options.database ??
+            new PluginDataConfiguration(this.options.environment).usageDatabase(this.options.host)
+        );
     }
 
     private database(write: boolean): string {

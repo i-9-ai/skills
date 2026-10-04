@@ -36,10 +36,89 @@ jobs:
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: '3.12'
-      - name: Validate every canonical skill with the pinned official tool
+      - name: Prepare an explicit exact-revision quality request
+        env:
+          QUALITY_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          QUALITY_SOURCE_REF: ${{ github.head_ref || github.ref_name }}
+          QUALITY_HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.html_url }}
+          QUALITY_EVENT_REPOSITORY: ${{ github.event.repository.html_url }}
         run: |
           python3 -I -m venv .work/validation-env
-          npm run ci:official
+
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import path from 'node:path';
+          import { SkillPackageRevisionRepository } from './src/repository/SkillPackageRevisionRepository.ts';
+          import { SkillEvidenceContractValidator } from './src/validator/SkillEvidenceContractValidator.ts';
+
+          const root = fs.mkdtempSync(path.join(fs.realpathSync(process.env.RUNNER_TEMP), 'i9-quality-'));
+          const skill = 'skill-authoring';
+          const fingerprint = new SkillPackageRevisionRepository().inspect(path.resolve('.agents/skills', skill));
+          const repository = process.env.GITHUB_EVENT_NAME === 'pull_request'
+              ? process.env.QUALITY_HEAD_REPOSITORY
+              : process.env.QUALITY_EVENT_REPOSITORY;
+          const validator = new SkillEvidenceContractValidator();
+          const source = validator.source({
+              repository: repository || null,
+              source_ref: null,
+              resolved_git_sha: repository ? process.env.QUALITY_SOURCE_SHA : null,
+          });
+          if (source.resolved_git_sha !== null) {
+              try {
+                  source.source_ref = validator.source({
+                      ...source,
+                      source_ref: process.env.QUALITY_SOURCE_REF || null,
+                  }).source_ref;
+              } catch {
+                  // A valid Git ref may not fit the narrower portable receipt syntax.
+                  // Keep the repository/commit assertions and leave that ref unknown.
+              }
+          }
+          const request = {
+              collection: 'i9-skills',
+              skill,
+              source: {
+                  ...source,
+                  package_path: '.agents/skills/' + skill,
+                  package_sha256: fingerprint.package_sha256,
+              },
+          };
+          fs.writeFileSync(path.join(root, 'request.json'), JSON.stringify(request) + '\n', { flag: 'wx', mode: 0o600 });
+          const now = Date.now();
+          const fields = {
+              I9_OFFICIAL_QUALITY_ROOT: root,
+              I9_OFFICIAL_QUALITY_FROM: new Date(now - 60_000).toISOString(),
+              I9_OFFICIAL_QUALITY_UNTIL: new Date(now + 3_600_000).toISOString(),
+          };
+          fs.appendFileSync(process.env.GITHUB_ENV, Object.entries(fields).map(([key, value]) => key + '=' + value + '\n').join(''));
+          NODE
+
+      - name: Validate every canonical skill and inspect one exact-revision observation
+        run: |
+          validation_status=0
+          npm run ci:official -- \
+            --quality-request "$I9_OFFICIAL_QUALITY_ROOT/request.json" \
+            --quality-db "$I9_OFFICIAL_QUALITY_ROOT/evidence.db" \
+            --quality-output "$I9_OFFICIAL_QUALITY_ROOT/observation" || validation_status=$?
+
+          inspection_status=0
+          if [ "$validation_status" -eq 0 ] && [ ! -f "$I9_OFFICIAL_QUALITY_ROOT/evidence.db" ]; then
+            echo "::error::Official observation succeeded without its evidence database."
+            exit 1
+          fi
+
+          if [ -f "$I9_OFFICIAL_QUALITY_ROOT/evidence.db" ]; then
+            node bin/index.mjs skills quality inspect \
+              --collection i9-skills \
+              --from "$I9_OFFICIAL_QUALITY_FROM" \
+              --until "$I9_OFFICIAL_QUALITY_UNTIL" \
+              --db "$I9_OFFICIAL_QUALITY_ROOT/evidence.db" || inspection_status=$?
+          fi
+
+          if [ "$validation_status" -ne 0 ]; then
+            exit "$validation_status"
+          fi
+          exit "$inspection_status"
       - name: Check whitespace
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}

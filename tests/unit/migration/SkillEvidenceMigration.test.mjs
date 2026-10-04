@@ -35,7 +35,7 @@ function legacy(filename, version) {
 }
 
 for (const version of [1, 2])
-    test(`schema ${version} queries request an upgrade without mutation and migration 3 preserves old rows/checksums`, (t) => {
+    test(`schema ${version} queries request an upgrade without mutation and migration 4 preserves old rows/checksums`, (t) => {
         const { database } = fixture(t);
         let db = legacy(database, version);
         const checksums = db.prepare('SELECT * FROM usage_migrations ORDER BY version').all();
@@ -90,7 +90,7 @@ test('a failure partway through new DDL rolls back schema and keeps the earlier 
     assert.equal(db.prepare('SELECT COUNT(*) AS n FROM usage_migrations').get().n, 2);
     assert.equal(db.prepare('SELECT COUNT(*) AS n FROM usage_reads').get().n, 1);
     new SkillReadMigration().migrateSkillReads(db);
-    db.exec("INSERT INTO usage_migrations VALUES(4,'future')");
+    db.exec("INSERT INTO usage_migrations VALUES(5,'future')");
     db.close();
     const before = fs.readFileSync(database);
     assert.throws(

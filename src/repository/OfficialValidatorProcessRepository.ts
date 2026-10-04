@@ -8,6 +8,45 @@ import { spawnSync } from 'node:child_process';
 import { strictJson } from '../../.agents/skills/skill-authoring/scripts/lib/contracts.mjs';
 import { initSkill } from '../../.agents/skills/skill-authoring/scripts/skill_tools.mjs';
 
+export interface OfficialPackage {
+    readonly name: string;
+    readonly path: string;
+}
+
+export type OfficialProcessSignal =
+    | 'SIGTERM'
+    | 'SIGKILL'
+    | 'SIGINT'
+    | 'SIGHUP'
+    | 'SIGQUIT'
+    | 'SIGABRT'
+    | 'SIGSEGV'
+    | 'SIGPIPE'
+    | 'SIGILL'
+    | 'SIGBUS'
+    | 'SIGFPE'
+    | 'SIGBREAK'
+    | 'other';
+
+export interface OfficialProcessObservation {
+    readonly status: 'completed' | 'timeout' | 'unavailable' | 'interrupted' | 'execution_error';
+    readonly exit_code: number | null;
+    readonly signal: OfficialProcessSignal | null;
+}
+
+export interface OfficialVersionObservation {
+    readonly state: 'verified' | 'version_unavailable' | 'version_mismatch';
+    readonly observed_version: string | null;
+    readonly process: OfficialProcessObservation;
+}
+
+/** Internal synchronous hooks around observed processes, excluding the generated scaffold. */
+export interface OfficialValidatorCallbacks {
+    onVersion?: (observation: OfficialVersionObservation) => void;
+    beforeValidate?: (skill: OfficialPackage) => void;
+    afterValidate?: (skill: OfficialPackage, process: OfficialProcessObservation) => void;
+}
+
 /** Owns official-tool filesystem discovery and shell-free process execution. */
 export class OfficialValidatorProcessRepository {
     readOfficialConfiguration(root: string): unknown {
@@ -94,9 +133,10 @@ export class OfficialValidatorProcessRepository {
 
     runOfficialValidator(
         root: string,
-        packages: Array<{ name: string; path: string }>,
+        packages: readonly OfficialPackage[],
         expectedVersion: string,
         execute = spawnSync,
+        callbacks: OfficialValidatorCallbacks = {},
     ) {
         const executable = join(root, '.work', 'validation-env', 'bin', 'skills-ref');
         const options = {
@@ -106,25 +146,73 @@ export class OfficialValidatorProcessRepository {
             timeout: 30_000,
             maxBuffer: 1_048_576,
         };
-        const identity = execute(executable, ['--version'], options);
-        if (
-            identity.error ||
-            identity.status !== 0 ||
-            identity.stdout?.trim() !== `skills-ref, version ${expectedVersion}`
-        ) {
-            throw new Error(
-                'Official validator unavailable or version does not match the reviewed source.',
-            );
+        const canonical = packages.map((skill) =>
+            Object.freeze({ name: skill.name, path: skill.path }),
+        );
+        const identityError = new Error(
+            'Official validator unavailable or version does not match the reviewed source.',
+        );
+        let identity;
+        try {
+            identity = execute(executable, ['--version'], options);
+        } catch (error) {
+            try {
+                callbacks.onVersion?.(
+                    Object.freeze({
+                        state: 'version_unavailable',
+                        observed_version: null,
+                        process: this.observedProcess({ error }),
+                    }),
+                );
+            } finally {
+                throw identityError;
+            }
         }
+        const process = this.observedProcess(identity);
+        const output = identity.stdout?.trim() ?? '';
+        const observedVersion =
+            /^skills-ref, version ([0-9]+(?:\.[0-9]+)*(?:\.post[0-9]+)?)$/.exec(output)?.[1] ??
+            null;
+        const state =
+            process.status !== 'completed' || process.exit_code !== 0
+                ? 'version_unavailable'
+                : output !== 'skills-ref, version ' + expectedVersion
+                  ? 'version_mismatch'
+                  : 'verified';
+        const versionObservation = Object.freeze({
+            state,
+            observed_version:
+                observedVersion && observedVersion.length <= 64 ? observedVersion : null,
+            process,
+        });
+        if (state !== 'verified') {
+            try {
+                callbacks.onVersion?.(versionObservation);
+            } finally {
+                throw identityError;
+            }
+        }
+        callbacks.onVersion?.(versionObservation);
         const temporary = mkdtempSync(join(tmpdir(), 'i9-validation-scaffold-'));
         try {
             const trial = initSkill('official-scaffold-trial', temporary);
-            return [...packages, { name: 'generated-scaffold', path: trial }].map(
-                ({ name, path }) => {
-                    const result = execute(executable, ['validate', path], options);
+            return [...canonical, { name: 'generated-scaffold', path: trial }].map(
+                (skill, index) => {
+                    const observed = index < canonical.length;
+                    if (observed) callbacks.beforeValidate?.(skill);
+                    let result;
+                    try {
+                        result = execute(executable, ['validate', skill.path], options);
+                    } catch (error) {
+                        if (observed)
+                            callbacks.afterValidate?.(skill, this.observedProcess({ error }));
+                        throw error;
+                    }
+                    const process = this.observedProcess(result);
+                    if (observed) callbacks.afterValidate?.(skill, process);
                     return {
-                        name,
-                        passed: !result.error && result.status === 0,
+                        name: skill.name,
+                        passed: process.status === 'completed' && process.exit_code === 0,
                         diagnostic: result.error
                             ? 'Official validation execution failed.'
                             : `${result.stdout ?? ''}${result.stderr ?? ''}`.trim(),
@@ -134,5 +222,59 @@ export class OfficialValidatorProcessRepository {
         } finally {
             rmSync(temporary, { recursive: true, force: true });
         }
+    }
+
+    private observedProcess(result: {
+        status?: number | null;
+        signal?: string | null;
+        error?: unknown;
+    }): OfficialProcessObservation {
+        const knownSignals: readonly string[] = [
+            'SIGTERM',
+            'SIGKILL',
+            'SIGINT',
+            'SIGHUP',
+            'SIGQUIT',
+            'SIGABRT',
+            'SIGSEGV',
+            'SIGPIPE',
+            'SIGILL',
+            'SIGBUS',
+            'SIGFPE',
+            'SIGBREAK',
+        ];
+        const signal: OfficialProcessSignal | null =
+            result.signal == null
+                ? null
+                : knownSignals.includes(result.signal)
+                  ? (result.signal as OfficialProcessSignal)
+                  : 'other';
+        const code =
+            result.error && typeof result.error === 'object' && 'code' in result.error
+                ? result.error.code
+                : null;
+        const exitCode =
+            Number.isSafeInteger(result.status) && (result.status as number) >= 0
+                ? (result.status as number)
+                : null;
+        const status =
+            code === 'ETIMEDOUT'
+                ? 'timeout'
+                : code === 'ENOENT' || code === 'EACCES'
+                  ? 'unavailable'
+                  : code === 'ABORT_ERR'
+                    ? 'interrupted'
+                    : result.error
+                      ? 'execution_error'
+                      : signal !== null
+                        ? 'interrupted'
+                        : exitCode === null
+                          ? 'execution_error'
+                          : 'completed';
+        return Object.freeze({
+            status,
+            exit_code: status === 'unavailable' ? null : exitCode,
+            signal: status === 'unavailable' ? null : signal,
+        });
     }
 }

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import type { DatabaseSync } from 'node:sqlite';
-import type { LifecycleEvent, CatalogObservation } from '../validator/SkillEvidenceValidator.ts';
+import type { ValidatedEvidenceEvent } from '../validator/SkillEvidenceContractValidator.ts';
 import { SkillOperationError } from '../validator/SkillOperationError.ts';
 
 /** Claims canonical v2 envelopes inside the owning projection's transaction. */
@@ -10,7 +10,7 @@ export class SkillEvidenceEventRepository {
         this.database = database;
     }
 
-    claim(event: LifecycleEvent | CatalogObservation): boolean {
+    claim(event: ValidatedEvidenceEvent): boolean {
         const envelope = JSON.stringify(event);
         const previous = this.database
             .prepare('SELECT envelope FROM usage_events WHERE event_id=?')
