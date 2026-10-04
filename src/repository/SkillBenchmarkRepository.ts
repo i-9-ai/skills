@@ -13,6 +13,8 @@ import type {
 
 type FrozenBenchmark = { suite: BenchmarkSuite; manifest: BenchmarkManifest };
 type FileBytes = { path: string; bytes: Buffer };
+const MAX_TREE_BYTES = 33_554_432;
+const MAX_ARTIFACT_SCAN_BYTES = 67_108_864;
 
 /** Caller-selected, stable local trees only; hashes prove bytes, not executor identity. */
 export class SkillBenchmarkRepository {
@@ -29,25 +31,41 @@ export class SkillBenchmarkRepository {
             const suite = this.validator.suite(
                 this.validator.parse(source.readBytes(path.basename(suiteFile), 524_288)),
             );
-            const files: FileBytes[] = [{ path: 'suite.json', bytes: this.json(suite) }];
+            const files: FileBytes[] = [];
+            let retainedBytes = 0;
+            const append = (file: FileBytes): void => {
+                this.validator.require(
+                    files.length < 2_048 && retainedBytes + file.bytes.length <= MAX_TREE_BYTES,
+                    'Combined file inventory exceeds bounds.',
+                );
+                files.push(file);
+                retainedBytes += file.bytes.length;
+            };
+            append({ path: 'suite.json', bytes: this.json(suite) });
             for (const selected of suite.cases) {
-                const prompt = source.readBytes(selected.prompt, 65_536);
+                const prompt = source.readBytes(
+                    selected.prompt,
+                    Math.min(65_536, MAX_TREE_BYTES - retainedBytes),
+                );
                 const text = new TextDecoder('utf-8', { fatal: true }).decode(prompt);
                 this.validator.require(
                     text.trim().length > 0,
                     'Executor prompt must be nonblank UTF-8 text.',
                 );
-                files.push({
+                append({
                     path: `cases/${selected.id}/prompt.md`,
                     bytes: prompt,
                 });
                 for (const fixture of selected.fixtures) {
-                    files.push({
+                    append({
                         path: `cases/${selected.id}/fixtures/${fixture.target}`,
-                        bytes: source.readBytes(fixture.path, 4_194_304),
+                        bytes: source.readBytes(
+                            fixture.path,
+                            Math.min(4_194_304, MAX_TREE_BYTES - retainedBytes),
+                        ),
                     });
                 }
-                files.push({
+                append({
                     path: `cases/${selected.id}/executor.json`,
                     bytes: this.json({
                         schema_version: 1,
@@ -68,18 +86,17 @@ export class SkillBenchmarkRepository {
                     snapshot.info?.isDirectory(),
                     'Selected package must be a directory.',
                 );
-                const entries = this.tree(snapshot.absolute);
+                const entries = this.tree(snapshot.absolute, [], MAX_TREE_BYTES - retainedBytes);
                 this.validator.require(
                     entries.some((item) => item.path === 'SKILL.md') &&
                         entries.some((item) => item.path === 'LICENSE'),
                     'Selected package lacks SKILL.md or LICENSE.',
                 );
-                files.push(
-                    ...entries.map((item) => ({
+                for (const item of entries)
+                    append({
                         path: `packages/${name}/${item.path}`,
                         bytes: item.bytes,
-                    })),
-                );
+                    });
                 skills.verifySnapshot(snapshot);
                 return { name, tree_sha256: this.treeDigest(this.inventory(entries)) };
             });
@@ -137,6 +154,15 @@ export class SkillBenchmarkRepository {
             ),
             'A run ID or case/variant/attempt already exists.',
         );
+        const retainedBytes = existing.reduce((total, item) => total + this.artifactBytes(item), 0);
+        this.validator.require(
+            retainedBytes + this.artifactBytes(run) <= MAX_ARTIFACT_SCAN_BYTES,
+            'Comparison artifact scan exceeds 67108864 bytes.',
+        );
+        // Validate the actual stored JSON sizes before reading payloads or creating a destination.
+        const runBytes = this.json(run);
+        const runSha256 = this.digest(runBytes);
+        const receiptBytes = this.json({ schema_version: 1, run_sha256: runSha256 });
         const artifacts = new SafeRoot(artifactsDirectory);
         const files: FileBytes[] = [];
         try {
@@ -148,14 +174,9 @@ export class SkillBenchmarkRepository {
         } finally {
             artifacts.close();
         }
-        const runBytes = this.json(run);
-        const runSha256 = this.digest(runBytes);
         files.push(
             { path: 'run.json', bytes: runBytes },
-            {
-                path: 'receipt.json',
-                bytes: this.json({ schema_version: 1, run_sha256: runSha256 }),
-            },
+            { path: 'receipt.json', bytes: receiptBytes },
         );
         // Recheck the freeze after inspecting external run artifacts and before writing.
         this.load(directory);
@@ -263,9 +284,9 @@ export class SkillBenchmarkRepository {
                         run.id === entry.name,
                         'Run directory identity does not match.',
                     );
-                    retainedBytes += run.artifacts.reduce((total, item) => total + item.bytes, 0);
+                    retainedBytes += this.artifactBytes(run);
                     this.validator.require(
-                        retainedBytes <= 67_108_864,
+                        retainedBytes <= MAX_ARTIFACT_SCAN_BYTES,
                         'Comparison artifact scan exceeds 67108864 bytes.',
                     );
                     this.validator.require(
@@ -308,12 +329,10 @@ export class SkillBenchmarkRepository {
                 frozen.suite,
                 frozen.manifest.benchmark_sha256,
             );
-            const expected = new Set([
-                'run.json',
-                'receipt.json',
-                ...run.artifacts.map((file) => `artifacts/${file.path}`),
-            ]);
-            const entries = this.tree(root.path);
+            // Each metadata JSON has its own bounded read; the 32 MiB payload budget
+            // must not include that overhead after accepting a full-size artifact set.
+            const expected = new Set(run.artifacts.map((file) => `artifacts/${file.path}`));
+            const entries = this.tree(root.path, ['run.json', 'receipt.json']);
             this.validator.require(
                 entries.length === expected.size &&
                     entries.every((item) => expected.has(item.path)),
@@ -337,7 +356,11 @@ export class SkillBenchmarkRepository {
         }
     }
 
-    private tree(directory: string, ignoredRootNames: string[] = []): FileBytes[] {
+    private tree(
+        directory: string,
+        ignoredRootNames: string[] = [],
+        byteLimit = MAX_TREE_BYTES,
+    ): FileBytes[] {
         const root = new SafeRoot(directory);
         try {
             // The JS helper supports string lists; its empty defaults infer never[].
@@ -350,11 +373,15 @@ export class SkillBenchmarkRepository {
             const files = inventory.filter(([, info]: [string, fs.Stats]) => info.isFile());
             this.validator.require(files.length <= 2_048, 'Tree exceeds 2048 files.');
             let total = 0;
-            const result = files.map(([relative]: [string, fs.Stats]) => {
+            const result = files.map(([relative, info]: [string, fs.Stats]) => {
                 this.validator.relative(relative);
-                const bytes = root.readBytes(relative, 4_194_304);
+                this.validator.require(
+                    total + info.size <= byteLimit,
+                    `Tree exceeds ${byteLimit} bytes.`,
+                );
+                const bytes = root.readBytes(relative, Math.min(4_194_304, byteLimit - total));
                 total += bytes.length;
-                this.validator.require(total <= 33_554_432, 'Tree exceeds 33554432 bytes.');
+                this.validator.require(total <= byteLimit, `Tree exceeds ${byteLimit} bytes.`);
                 return { path: relative, bytes };
             });
             // Detect additions/removals and ordinary file identity changes during the scan.
@@ -399,7 +426,7 @@ export class SkillBenchmarkRepository {
         );
         this.validator.require(
             result.length <= 2_048 &&
-                result.reduce((total, file) => total + file.bytes, 0) <= 33_554_432,
+                result.reduce((total, file) => total + file.bytes, 0) <= MAX_TREE_BYTES,
             'Combined file inventory exceeds bounds.',
         );
         return result;
@@ -450,6 +477,10 @@ export class SkillBenchmarkRepository {
             file.bytes === bytes.length && file.sha256 === this.digest(bytes),
             `Artifact identity mismatch: ${file.path}`,
         );
+    }
+
+    private artifactBytes(run: BenchmarkRun): number {
+        return run.artifacts.reduce((total, item) => total + item.bytes, 0);
     }
 
     private treeDigest(files: BenchmarkFile[]): string {

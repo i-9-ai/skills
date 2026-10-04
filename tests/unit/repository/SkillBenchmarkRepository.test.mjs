@@ -4,13 +4,33 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import test from 'node:test';
+import { SafeRoot } from '../../../.agents/skills/skill-authoring/scripts/lib/filesystem.mjs';
 import { SkillBenchmarkRepository } from '../../../src/repository/SkillBenchmarkRepository.ts';
 import { SkillBenchmarkService } from '../../../src/service/SkillBenchmarkService.ts';
-import { fixture, run, write, importRun } from '../fixture/SkillBenchmarkFixture.mjs';
+import { digest, fixture, run, write, importRun } from '../fixture/SkillBenchmarkFixture.mjs';
 
 const repository = new SkillBenchmarkRepository();
 const service = new SkillBenchmarkService();
 const prepare = (target) => repository.prepare(target.suiteFile, target.skills, target.output);
+
+function largeArtifacts(target, count) {
+    const bytes = Buffer.alloc(4_194_304, 0x42);
+    const sha256 = digest(bytes);
+    return Array.from({ length: count }, (_, index) => {
+        const relative = `payload/part-${index}.bin`;
+        write(target.artifacts, relative, bytes);
+        return { path: relative, sha256, bytes: bytes.length };
+    });
+}
+
+function largeRun(target, frozen, artifacts, variant, overrides = {}) {
+    const value = run(target, frozen, variant, { artifacts, ...overrides });
+    value.criteria = value.criteria.map((criterion) => ({
+        ...criterion,
+        evidence: [artifacts[0].path],
+    }));
+    return value;
+}
 
 test('freeze preserves complete bytes, uses the interoperable package digest and separates evaluator criteria', (t) => {
     const target = fixture(t);
@@ -89,6 +109,78 @@ test('traversal, symlinks and oversized fixtures fail before creating output', (
     }
 });
 
+test('preparation stops repeated fixture reads at the remaining aggregate budget', (t) => {
+    const target = fixture(t);
+    const sourceFile = write(target.source, 'large.bin', Buffer.alloc(4_194_304, 0x41));
+    target.suite.cases[0].fixtures = Array.from({ length: 64 }, (_, index) => ({
+        path: 'large.bin',
+        target: `inputs/repeated-${index}.bin`,
+    }));
+    write(target.source, 'suite.json', target.suite);
+    const originalRead = SafeRoot.prototype.readBytes;
+    const readLimits = [];
+    t.mock.method(SafeRoot.prototype, 'readBytes', function (relative, limit) {
+        if (this.path === target.source && relative === 'large.bin') {
+            readLimits.push(limit);
+            // Bound the regression itself if the incremental guard is ever removed.
+            assert.ok(readLimits.length <= 8, 'Preparation kept reading after its byte budget.');
+        }
+        return originalRead.call(this, relative, limit);
+    });
+    assert.throws(() => prepare(target), /exceeds/);
+    assert.equal(readLimits.length, 8);
+    assert.deepEqual(readLimits.slice(0, 7), Array(7).fill(4_194_304));
+    assert.ok(readLimits[7] < 4_194_304);
+    assert.equal(fs.existsSync(target.output), false);
+    assert.equal(fs.statSync(sourceFile).size, 4_194_304);
+});
+
+test('selected packages cannot read payloads larger than the remaining preparation budget', (t) => {
+    const target = fixture(t);
+    const bytes = Buffer.alloc(4_194_304, 0x43);
+    write(target.source, 'large.bin', bytes);
+    write(target.skills, 'example-skill/large.bin', bytes);
+    target.suite.cases[0].fixtures = Array.from({ length: 7 }, (_, index) => ({
+        path: 'large.bin',
+        target: `inputs/part-${index}.bin`,
+    }));
+    write(target.source, 'suite.json', target.suite);
+    const originalRead = SafeRoot.prototype.readBytes;
+    let packagePayloadReads = 0;
+    t.mock.method(SafeRoot.prototype, 'readBytes', function (relative, limit) {
+        if (this.path === path.join(target.skills, 'example-skill') && relative === 'large.bin')
+            packagePayloadReads += 1;
+        return originalRead.call(this, relative, limit);
+    });
+    assert.throws(() => prepare(target), /Tree exceeds/);
+    assert.equal(packagePayloadReads, 0);
+    assert.equal(fs.existsSync(target.output), false);
+    assert.equal(fs.statSync(path.join(target.skills, 'example-skill/large.bin')).size, 4_194_304);
+});
+
+test('fixture destinations each consume inventory bytes while repeated package selection stays unique', (t) => {
+    const target = fixture(t);
+    target.suite.cases[0].fixtures.push({ path: 'facts.json', target: 'inputs/duplicate.json' });
+    const second = structuredClone(target.suite.cases[0]);
+    second.id = 'make-second-report';
+    second.fixtures.pop();
+    target.suite.cases.push(second);
+    write(target.source, 'suite.json', target.suite);
+    const frozen = prepare(target);
+    const inventory = repository.load(target.output).manifest.files;
+    const fixtureFiles = inventory.filter((file) => file.path.includes('/fixtures/'));
+    assert.equal(frozen.packages.length, 1);
+    assert.equal(inventory.filter((file) => file.path.startsWith('packages/')).length, 3);
+    assert.equal(fixtureFiles.length, 3);
+    const original = fs.readFileSync(path.join(target.source, 'facts.json'));
+    assert.equal(
+        fixtureFiles.reduce((total, file) => total + file.bytes, 0),
+        original.length * 3,
+    );
+    for (const file of fixtureFiles)
+        assert.deepEqual(fs.readFileSync(path.join(target.output, file.path)), original);
+});
+
 test('symlink and hard-linked package resources are refused without modifying the source', (t) => {
     for (const mode of ['symlink', 'hardlink']) {
         const target = fixture(t);
@@ -116,6 +208,131 @@ test('imports preserve artifact bytes, stay immutable and do not depend on later
     const differentId = { ...value, id: 'replacement' };
     assert.throws(() => importRun(service, target, differentId), /already exists/);
     assert.equal(fs.existsSync(path.join(target.output, 'runs/replacement')), false);
+});
+
+test('an import exceeding the aggregate payload budget is rejected before reading or writing it', (t) => {
+    const target = fixture(t);
+    target.suite.cases[0].limits.attempts = 2;
+    write(target.source, 'suite.json', target.suite);
+    const frozen = prepare(target);
+    const artifacts = largeArtifacts(target, 6);
+    importRun(
+        service,
+        target,
+        largeRun(target, frozen, artifacts, 'baseline', { id: 'baseline-first' }),
+    );
+    importRun(
+        service,
+        target,
+        largeRun(target, frozen, artifacts, 'treatment', { id: 'treatment-first' }),
+    );
+    const originalReceipt = fs.readFileSync(
+        path.join(target.output, 'runs/baseline-first/receipt.json'),
+    );
+    const originalRead = SafeRoot.prototype.readBytes;
+    let incomingReads = 0;
+    t.mock.method(SafeRoot.prototype, 'readBytes', function (relative, limit) {
+        if (this.path === target.artifacts) incomingReads += 1;
+        return originalRead.call(this, relative, limit);
+    });
+    assert.throws(
+        () =>
+            importRun(
+                service,
+                target,
+                largeRun(target, frozen, artifacts, 'baseline', {
+                    id: 'oversized-append',
+                    attempt: 2,
+                }),
+            ),
+        /Comparison artifact scan exceeds/,
+    );
+    assert.equal(incomingReads, 0);
+    assert.equal(fs.existsSync(path.join(target.output, 'runs/oversized-append')), false);
+    assert.deepEqual(fs.readdirSync(path.join(target.output, 'runs')).sort(), [
+        'baseline-first',
+        'treatment-first',
+    ]);
+    assert.deepEqual(
+        fs.readFileSync(path.join(target.output, 'runs/baseline-first/receipt.json')),
+        originalReceipt,
+    );
+    assert.equal(repository.runs(target.output).length, 2);
+    assert.equal(service.compare(target.output).coverage.imported_runs, 2);
+});
+
+test('full 32 MiB payloads remain verifiable at the 64 MiB aggregate ceiling with metadata overhead', (t) => {
+    const target = fixture(t);
+    const frozen = prepare(target);
+    const artifacts = largeArtifacts(target, 8);
+    const receipt = importRun(
+        service,
+        target,
+        largeRun(target, frozen, artifacts, 'treatment', { id: 'full-payload' }),
+    );
+    const retained = path.join(target.output, 'runs/full-payload');
+    assert.equal(receipt.retained_artifacts, 8);
+    assert.ok(fs.statSync(path.join(retained, 'run.json')).size <= 524_288);
+    assert.ok(fs.statSync(path.join(retained, 'receipt.json')).size <= 524_288);
+    assert.equal(
+        repository.runs(target.output)[0].artifacts.reduce((total, file) => total + file.bytes, 0),
+        33_554_432,
+    );
+    assert.equal(service.compare(target.output).coverage.imported_runs, 1);
+    for (const file of artifacts)
+        assert.equal(
+            digest(fs.readFileSync(path.join(retained, 'artifacts', file.path))),
+            file.sha256,
+        );
+    importRun(
+        service,
+        target,
+        largeRun(target, frozen, artifacts, 'baseline', { id: 'full-baseline' }),
+    );
+    assert.equal(service.compare(target.output).coverage.imported_runs, 2);
+    fs.unlinkSync(path.join(target.artifacts, artifacts[0].path));
+    assert.equal(repository.runs(target.output).length, 2);
+});
+
+test('metadata exceeding the serialized JSON ceiling is rejected before creating a run directory', (t) => {
+    const target = fixture(t);
+    target.suite.cases[0].criteria = Array.from({ length: 64 }, (_, index) => ({
+        id: `criterion-${index}`,
+        critical: index === 0,
+        description: 'Synthetic criterion used only to test the metadata storage limit.',
+    }));
+    write(target.source, 'suite.json', target.suite);
+    const frozen = prepare(target);
+    const bytes = Buffer.from('X');
+    const artifacts = Array.from({ length: 16 }, (_, index) => {
+        const relative = `data/${'d'.repeat(240)}/${index}-${'p'.repeat(240)}.txt`;
+        write(target.artifacts, relative, bytes);
+        return { path: relative, sha256: digest(bytes), bytes: bytes.length };
+    });
+    const value = run(target, frozen, 'treatment', { id: 'oversized-metadata', artifacts });
+    value.criteria = target.suite.cases[0].criteria.map((criterion) => ({
+        id: criterion.id,
+        verdict: 'pass',
+        reason: 'Synthetic fixture only.',
+        evidence: artifacts.map((file) => file.path),
+    }));
+    const minified = JSON.stringify(value);
+    assert.ok(Buffer.byteLength(minified) <= 524_288);
+    assert.ok(Buffer.byteLength(`${JSON.stringify(value, null, 2)}\n`) > 524_288);
+    const runFile = write(target.root, 'oversized-metadata.json', minified);
+    const originalRead = SafeRoot.prototype.readBytes;
+    let artifactReads = 0;
+    t.mock.method(SafeRoot.prototype, 'readBytes', function (relative, limit) {
+        if (this.path === target.artifacts) artifactReads += 1;
+        return originalRead.call(this, relative, limit);
+    });
+    assert.throws(
+        () => service.importRun(target.output, runFile, target.artifacts),
+        /JSON output exceeds 524288 bytes/,
+    );
+    assert.equal(artifactReads, 0);
+    assert.deepEqual(fs.readdirSync(path.join(target.output, 'runs')), []);
+    assert.equal(service.compare(target.output).coverage.imported_runs, 0);
 });
 
 test('artifact mismatch, pass without evidence and omitted criterion results are never imported', (t) => {
@@ -157,6 +374,30 @@ test('unexpected retained files and symlink substitutions cannot enlarge the evi
     fs.unlinkSync(retained);
     fs.symlinkSync(target.artifactFile, retained);
     assert.throws(() => service.compare(target.output), /symlink/);
+});
+
+test('separate metadata budgets do not hide unexpected root entries or substituted metadata', (t) => {
+    for (const mode of ['root-sibling', 'run-symlink', 'receipt-symlink', 'run-directory']) {
+        const target = fixture(t);
+        const frozen = prepare(target);
+        importRun(service, target, run(target, frozen));
+        const directory = path.join(target.output, 'runs/treatment-one');
+        if (mode === 'root-sibling') write(directory, 'unlisted.json', { unexpected: true });
+        if (mode === 'run-symlink' || mode === 'receipt-symlink') {
+            const file = path.join(directory, mode === 'run-symlink' ? 'run.json' : 'receipt.json');
+            fs.unlinkSync(file);
+            fs.symlinkSync(target.artifactFile, file);
+        }
+        if (mode === 'run-directory') {
+            const file = path.join(directory, 'run.json');
+            fs.unlinkSync(file);
+            fs.mkdirSync(file);
+        }
+        assert.throws(
+            () => service.compare(target.output),
+            /unexpected|symlink|not a regular file/,
+        );
+    }
 });
 
 test('duplicate JSON keys, executable case fields and overlapping target files fail before any output', (t) => {

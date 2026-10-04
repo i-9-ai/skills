@@ -8,6 +8,7 @@ import test from 'node:test';
 import { digest, fixture, run, write } from '../../unit/fixture/SkillBenchmarkFixture.mjs';
 
 const launcher = fileURLToPath(new URL('../../../bin/index.mjs', import.meta.url));
+const repository = fileURLToPath(new URL('../../../', import.meta.url));
 
 function cli(target, args) {
     return spawnSync(process.execPath, [launcher, ...args], {
@@ -139,4 +140,58 @@ test('CLI help exposes one canonical route and rejects unsafe case paths before 
     assert.match(rejected.stderr, /traversal/);
     assert.equal(fs.existsSync(target.output), false);
     assert.equal(fs.readFileSync(outside, 'utf8'), 'Unrelated sentinel preserved.');
+});
+
+test('documented synthetic corpus prepares with every shipped fixture in a disposable collection', (t) => {
+    const target = fixture(t);
+    const corpus = path.join(target.root, 'shipped-corpus');
+    fs.cpSync(
+        path.join(repository, 'docs/assets/behavioral-benchmark/cases'),
+        path.join(corpus, 'cases'),
+        {
+            recursive: true,
+        },
+    );
+    for (const name of ['suite.json', 'LICENSE']) {
+        fs.copyFileSync(
+            path.join(repository, 'docs/assets/behavioral-benchmark', name),
+            path.join(corpus, name),
+        );
+    }
+    const suite = JSON.parse(fs.readFileSync(path.join(corpus, 'suite.json'), 'utf8'));
+    const packages = new Set(suite.cases.flatMap((item) => item.skills));
+    for (const name of packages) {
+        fs.cpSync(path.join(repository, '.agents/skills', name), path.join(target.skills, name), {
+            recursive: true,
+        });
+    }
+
+    const prepared = cli(target, [
+        'benchmark',
+        'prepare',
+        '--suite',
+        path.join(corpus, 'suite.json'),
+        '--skills-root',
+        target.skills,
+        '--output',
+        target.output,
+    ]);
+    assert.equal(prepared.status, 0, prepared.stderr);
+    assert.match(JSON.parse(prepared.stdout).benchmark_sha256, /^[0-9a-f]{64}$/);
+    const manifest = JSON.parse(fs.readFileSync(path.join(target.output, 'manifest.json'), 'utf8'));
+    for (const item of suite.cases) {
+        for (const input of item.fixtures) {
+            const expected = fs.readFileSync(path.join(corpus, input.path));
+            const relative = `cases/${item.id}/fixtures/${input.target}`;
+            const record = manifest.files.find((entry) => entry.path === relative);
+            assert.equal(record?.sha256, digest(expected), relative);
+            assert.deepEqual(
+                fs.readFileSync(path.join(target.output, relative)),
+                expected,
+                relative,
+            );
+        }
+    }
+    assert.equal(fs.existsSync(path.join(target.root, '.agents')), false);
+    assert.equal(fs.existsSync(path.join(target.root, '.codex')), false);
 });

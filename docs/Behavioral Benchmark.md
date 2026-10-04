@@ -30,6 +30,10 @@ The corpus is inert input, not a result set. Its source fixtures include their
 license. Each case's prompt describes the allowed task; the evaluator rubric and
 criteria stay outside the executor handoff.
 
+The nested fixture `SKILL.md` files are synthetic task inputs, not collection
+packages. Collection installation and plugin discovery select `.agents/skills`;
+do not select the fixture subtree as a skill-installation source.
+
 ```sh
 node bin/index.mjs benchmark prepare \
   --suite docs/assets/behavioral-benchmark/suite.json \
@@ -350,7 +354,10 @@ criteria and candidate packages were not tuned after observing results.
 The implementation limits JSON to 512 KiB, an individual file to 4 MiB, a freeze
 to 32 MiB and 2,048 files, a suite to 16 cases, each case to 64 criteria and 64
 fixtures, selected packages to 16, imported runs to 160, and comparison artifact
-work to 64 MiB. These are input/work boundaries, not a host isolation guarantee.
+work to 64 MiB. Each run allows 32 MiB of artifacts, with `run.json` and
+`receipt.json` each bounded separately at 512 KiB. Import rejects a prospective
+aggregate above 64 MiB before creating the new run. These are input/work
+boundaries, not a host isolation guarantee.
 
 Invalid schemas, unsafe entries, unrelated identities, existing output,
 incomplete criteria, changed bytes and receipt disagreements fail with a
