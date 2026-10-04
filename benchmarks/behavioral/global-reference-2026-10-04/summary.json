@@ -10,53 +10,506 @@
         "raw_files": 11,
         "executor_files": 10,
         "inventory_sha256": "b5806da5ef4dd037fabaebd6b020cf1be0a4613d689c0fca00ce5730892842b0",
-        "license_observation": "Full MIT LICENSE reviewed in captured package; preserve included notices"
+        "license_observation": "Full MIT LICENSE reviewed in captured package; preserve included notices",
+        "inventory_sort": "localeCompare-en historical capture order",
+        "origin_kind": "caller_selected_local_package_capture",
+        "installed_upstream_revision": null,
+        "upstream_package_version_attribution": "unavailable; results apply to captured local bytes only",
+        "reviewed_resource_inventory": [
+          {
+            "path": "agents/openai.yaml",
+            "bytes": 265,
+            "sha256": "56137e5aa08abaa344b55957d615e0b3e2d5edaf10f3bfc4c8ca34c0a44ad887",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "assets/icon.png",
+            "bytes": 19099,
+            "sha256": "46c3a0b2ac00590187356f4eef5685f9bb43c224a2a1d14db5dbfc740ab303fb",
+            "review_scope": "retained binary resource identity; no source-code reading claim"
+          },
+          {
+            "path": "assets/icon.svg",
+            "bytes": 498,
+            "sha256": "0b155934519de4e302caa7f2201fa3300d5512c46ad6bc70212589de8a94b6fc",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "examples/.editorconfig",
+            "bytes": 452,
+            "sha256": "562592e0a6af437d50702aabada0df523a9a942453a3e8c13cbda7ab1a328a8b",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "examples/verify_example.py",
+            "bytes": 2980,
+            "sha256": "39020a3fba21ba98b4685a7ea7aaacea8125283800271ff646a52957e79bc9b5",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "LICENSE",
+            "bytes": 1138,
+            "sha256": "b5407ce514b9dcff05fb5a4572e290e221acd36fa81ae63b396883383817d729",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "PROVENANCE.md",
+            "bytes": 2020,
+            "sha256": "9d0a19f7c285ba7f47601bdd24f00f8d23a7ca0aa7b29ba99b045cbf7a99cf30",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "references/example.md",
+            "bytes": 2615,
+            "sha256": "c824bcb2503937498555220057e27f8cb7bdd9253d33cb746970a5a8fce3be58",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "references/matching.md",
+            "bytes": 1825,
+            "sha256": "daf63ff4d07d6f9f39e39aecae13277d912df234acf99b8f22e46db168d61611",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "SKILL.md",
+            "bytes": 5913,
+            "sha256": "52339cfcdbe81acd7ea442d3fa4e0db6353fa24f327ddc75232cdbcdb891781c",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          }
+        ],
+        "incidental_files_withheld": [
+          {
+            "path": ".DS_Store",
+            "bytes": 6148,
+            "sha256": "e0e1490612919edc62443f3adbabbb4c7d6dee4d05c85a02c9c390cd16ccc3ed"
+          }
+        ],
+        "captured_upstream_declarations": [
+          {
+            "repository": "https://github.com/github/awesome-copilot",
+            "revision": "1899b18da3fa5183652f86165917d553cba1850a",
+            "reviewed_files": [
+              "LICENSE"
+            ],
+            "scope": "declared license-scope review only; not installed package byte lineage"
+          },
+          {
+            "repository": "https://github.com/editorconfig/specification",
+            "revision": "f58051318a657b52b73ff2d7774a66fa6c296bd8",
+            "reviewed_files": [
+              "index.rst"
+            ],
+            "scope": "declared syntax research; original local prose and examples"
+          },
+          {
+            "repository": "https://github.com/editorconfig/editorconfig-core-py",
+            "revision": "e1298e0b8c66041f2e32e84d7c7bbe99ffdba339",
+            "reviewed_files": null,
+            "scope": "declared external validation dependency; no new execution or file-level review credited here"
+          }
+        ],
+        "captured_declarations_independently_reverified": false
       },
       {
         "capture_label": "create-llms",
         "raw_files": 7,
         "executor_files": 6,
         "inventory_sha256": "f4a2414b800b2d159f863f05e212d7d916ab4a2337bdbb8f5585ec2394fc46c2",
-        "license_observation": "Full MIT LICENSE reviewed in captured package; preserve included notices"
+        "license_observation": "Full MIT LICENSE reviewed in captured package; preserve included notices",
+        "inventory_sort": "localeCompare-en historical capture order",
+        "origin_kind": "caller_selected_local_package_capture",
+        "installed_upstream_revision": null,
+        "upstream_package_version_attribution": "unavailable; results apply to captured local bytes only",
+        "reviewed_resource_inventory": [
+          {
+            "path": "agents/openai.yaml",
+            "bytes": 263,
+            "sha256": "bd3c642cd064bdd0085f39be7b72ed3e2e435871098abb40031a6366229688d4",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "assets/icon.png",
+            "bytes": 16966,
+            "sha256": "386c42aca8e1b9c94596078f077c1d554ef1aeda3e8cfaf0c7c77575c507ac24",
+            "review_scope": "retained binary resource identity; no source-code reading claim"
+          },
+          {
+            "path": "assets/icon.svg",
+            "bytes": 532,
+            "sha256": "3f84ea3cd2627cf02382c7d6cf03b55bfd1b88be895a63993794bcd4be94cae9",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "LICENSE",
+            "bytes": 1060,
+            "sha256": "2510b446bc1f0cf9702453075d20cd88631e20e5642658edb7325d9c1eb534f7",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "PROVENANCE.md",
+            "bytes": 581,
+            "sha256": "4eb5d96edad935f8c94c10ba5cc61b986b06fffd4f5b5e82d728d7a33303119d",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "SKILL.md",
+            "bytes": 7336,
+            "sha256": "a1a4241c86c8023223998eb8db16d29024be1476629c8c50474d5e03c070ad25",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          }
+        ],
+        "incidental_files_withheld": [
+          {
+            "path": ".DS_Store",
+            "bytes": 6148,
+            "sha256": "69aa4f151f5beb8d280e47b8ce67d5331ec5d4c0d498a554e058af138c3bac96"
+          }
+        ],
+        "captured_upstream_declarations": [
+          {
+            "repository": "https://github.com/github/awesome-copilot",
+            "revision": "1899b18da3fa5183652f86165917d553cba1850a",
+            "reviewed_files": [
+              "LICENSE"
+            ],
+            "scope": "declared license-scope review only; not installed package byte lineage"
+          }
+        ],
+        "captured_declarations_independently_reverified": false
       },
       {
         "capture_label": "architecture-diagram",
         "raw_files": 10,
         "executor_files": 9,
         "inventory_sha256": "66d6b4e3f8285448cb221cff3555a140bc854173ae0b447666f1a4daf2ef56ed",
-        "license_observation": "Full MIT LICENSE reviewed in captured package; preserve included notices"
+        "license_observation": "Full MIT LICENSE reviewed in captured package; preserve included notices",
+        "inventory_sort": "localeCompare-en historical capture order",
+        "origin_kind": "caller_selected_local_package_capture",
+        "installed_upstream_revision": null,
+        "upstream_package_version_attribution": "unavailable; results apply to captured local bytes only",
+        "reviewed_resource_inventory": [
+          {
+            "path": "agents/openai.yaml",
+            "bytes": 289,
+            "sha256": "2c46a1f2cbc014a8f659a06d2a504970de1f3fc193f48c7480983c91c0094aa6",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "assets/icon.png",
+            "bytes": 14176,
+            "sha256": "fb34d4dc6ddb483dad37cb17030e4179dbca4114208550bb2324766faee00157",
+            "review_scope": "retained binary resource identity; no source-code reading claim"
+          },
+          {
+            "path": "assets/icon.svg",
+            "bytes": 560,
+            "sha256": "6ed0ab92101a6c63d09246cab62fe1e0748728905dd1e3e26e5d969c0514b838",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "assets/template.html",
+            "bytes": 17666,
+            "sha256": "3c595d8a745c4d6285e36ebabc15822785b96c6628087b8b6f0cf444d2e8b90a",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "LICENSE",
+            "bytes": 1068,
+            "sha256": "775ec66aca270a92ce2f0c5b24c32b8e87119e8d7a68c56f8720ad3b2fe417f3",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "PROVENANCE.md",
+            "bytes": 595,
+            "sha256": "70e6de99d61dbd3c782814f78957c398aa1c703c707fe69fc3e73e7a651bc952",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "references/design-system.md",
+            "bytes": 4004,
+            "sha256": "c27cf700f8a171e9773dbc4d925a42b39c58aedb75bd85f03c1be556fd22e148",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "references/interactive.md",
+            "bytes": 3385,
+            "sha256": "f5f5f887e27b3cdfee2d51e65f753a45371e524a77f3fd1b7af37ebbc69e873f",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "SKILL.md",
+            "bytes": 6680,
+            "sha256": "2ca47594b4d773593c23b8b7a4760b031082d8d83c8003b6444f7a3eb5d7aeaa",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          }
+        ],
+        "incidental_files_withheld": [
+          {
+            "path": ".DS_Store",
+            "bytes": 6148,
+            "sha256": "e420f0e71036f0be03ccb9d5a3ba2846c187cf3075f4810f45d7c2db860c0adc"
+          }
+        ],
+        "captured_upstream_declarations": [
+          {
+            "repository": "https://github.com/proyecto26/system-design-skills",
+            "revision": "a70772efb956e8c9b78ef5b7538dee00cc3b9263",
+            "reviewed_files": [
+              "LICENSE"
+            ],
+            "scope": "declared license-scope review only; not installed package byte lineage"
+          }
+        ],
+        "captured_declarations_independently_reverified": false
       },
       {
         "capture_label": "architecture-diagram 2",
         "raw_files": 2,
         "executor_files": 2,
         "inventory_sha256": "a9a359d736b0686edc96501951642a31227ec0c802bed017b566da7dd356dcb4",
-        "license_observation": "Declared MIT; full LICENSE absent; inspection-only, redistribution unresolved"
+        "license_observation": "Declared MIT; full LICENSE absent; inspection-only, redistribution unresolved",
+        "inventory_sort": "localeCompare-en historical capture order",
+        "origin_kind": "caller_selected_local_package_capture",
+        "installed_upstream_revision": null,
+        "upstream_package_version_attribution": "unavailable; results apply to captured local bytes only",
+        "reviewed_resource_inventory": [
+          {
+            "path": "SKILL.md",
+            "bytes": 5830,
+            "sha256": "0e7e2736aafe052e409c2ad27863d51ef3007c116711e584033787ccb5d99d3f",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "templates/template.html",
+            "bytes": 12483,
+            "sha256": "d17a1631a14f108dd469ad16c83d667d917565ebe780f42fad7321be327de442",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          }
+        ],
+        "incidental_files_withheld": [],
+        "captured_upstream_declarations": [],
+        "captured_declarations_independently_reverified": false
       },
       {
         "capture_label": "github-wiki",
         "raw_files": 3,
         "executor_files": 3,
         "inventory_sha256": "96726000184cbebae849351c68aac40d452dd00c60c86c71458c0dd102952dc8",
-        "license_observation": "Full MIT LICENSE reviewed in captured package; preserve included notices"
+        "license_observation": "Full MIT LICENSE reviewed in captured package; preserve included notices",
+        "inventory_sort": "localeCompare-en historical capture order",
+        "origin_kind": "caller_selected_local_package_capture",
+        "installed_upstream_revision": null,
+        "upstream_package_version_attribution": "unavailable; results apply to captured local bytes only",
+        "reviewed_resource_inventory": [
+          {
+            "path": "LICENSE",
+            "bytes": 1063,
+            "sha256": "35d5d97ff473a350479dbde0295177cc27e05968435f3fb0e98bdaaa6328ebc8",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "references/documentation-mirror.md",
+            "bytes": 2755,
+            "sha256": "b52acf9e27674472ee0fc7a4bab910fafcf807cd7a3c231d1aa90727a944b4ab",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "SKILL.md",
+            "bytes": 4338,
+            "sha256": "0be7e4b3c66b99c567d819efc9eee35c59edb9d5ed4689a94b82e42d4965dbe6",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          }
+        ],
+        "incidental_files_withheld": [],
+        "captured_upstream_declarations": [],
+        "captured_declarations_independently_reverified": false
       },
       {
         "capture_label": "git-ignore",
         "raw_files": 10,
         "executor_files": 9,
         "inventory_sha256": "06635a15a58e587cbc72966bf91f23ce968fd141d264beb54af438709584a14c",
-        "license_observation": "Full Apache-2.0 LICENSE and separate ISC icon notices reviewed in capture; preserve notices and modification attribution; upstream byte lineage unverified"
+        "license_observation": "Full Apache-2.0 LICENSE and separate ISC icon notices reviewed in capture; preserve notices and modification attribution; upstream byte lineage unverified",
+        "inventory_sort": "UTF-8 byte order",
+        "origin_kind": "caller_selected_local_package_capture",
+        "installed_upstream_revision": null,
+        "upstream_package_version_attribution": "unavailable; results apply to captured local bytes only",
+        "reviewed_resource_inventory": [
+          {
+            "path": "LICENSE",
+            "bytes": 11358,
+            "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "PROVENANCE.md",
+            "bytes": 1528,
+            "sha256": "e04cd1d8f4e10e2f508660d64300eccd553a6ca2ec950549c54f9faf41dfdb5f",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "SKILL.md",
+            "bytes": 6569,
+            "sha256": "31842089c62f26be41070bdbf9aa35a716c58d7aa9ed09f9efc778ae5eca5d54",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "THIRD_PARTY_NOTICES.md",
+            "bytes": 1164,
+            "sha256": "8af12787b27b66afef510fc134922d353b12b809c2104c8c92f029e837164cfa",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "agents/openai.yaml",
+            "bytes": 281,
+            "sha256": "899233f697128b2e2ad97ebd6d4a1c9e156f41e5fbaa28562e64596c39e15f2b",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "assets/icon.png",
+            "bytes": 2978,
+            "sha256": "d99aba39b58aad07021ad7d49c2ced776290fc3b177695600663ebc1af166282",
+            "review_scope": "retained binary resource identity; no source-code reading claim"
+          },
+          {
+            "path": "assets/icon.svg",
+            "bytes": 462,
+            "sha256": "7e3293338748c1b79cb356c687a7f468b64db5e6802ff1c16ab6d1a33f0e2e7d",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "examples/.gitignore",
+            "bytes": 217,
+            "sha256": "86199e9dddbbad6c64a038a9887b576cdb951a438e7f24fae806342ed31f87fa",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "examples/run.sh",
+            "bytes": 1888,
+            "sha256": "d0253b8bfbddbac1c00c614b045aee3c1b73dbbfb3ddf10c9e53969d89748db0",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          }
+        ],
+        "incidental_files_withheld": [
+          {
+            "path": ".DS_Store",
+            "bytes": 6148,
+            "sha256": "f5d924d4dee4120ff4364d11b730da25b143d61c9ae3e9397ff347a84c688229"
+          }
+        ],
+        "captured_upstream_declarations": [
+          {
+            "repository": "https://github.com/git/git",
+            "revision": "94f057755b7941b321fd11fec1b2e3ca5313a4e0",
+            "reviewed_files": null,
+            "scope": "declared manual research at Git v2.54.0; no upstream implementation/prose copied and exact manual-file list unavailable"
+          },
+          {
+            "repository": "https://github.com/lucide-icons/lucide",
+            "revision": "f12b0de177fbc2a6795e99be065887e72b237123",
+            "reviewed_files": [
+              "icons/file-x-2.svg"
+            ],
+            "scope": "declared icon geometry source; scoped ISC notice captured; no new upstream-byte verification"
+          }
+        ],
+        "captured_declarations_independently_reverified": false
       },
       {
         "capture_label": "git-attributes",
         "raw_files": 10,
         "executor_files": 9,
         "inventory_sha256": "b28bcfc2f8ed5caac7ab11518f0d8f58155ef8a82906f72be53368bfe9a26e83",
-        "license_observation": "Full Apache-2.0 LICENSE and separate ISC icon notices reviewed in capture; preserve notices and modification attribution; upstream byte lineage unverified"
+        "license_observation": "Full Apache-2.0 LICENSE and separate ISC icon notices reviewed in capture; preserve notices and modification attribution; upstream byte lineage unverified",
+        "inventory_sort": "UTF-8 byte order",
+        "origin_kind": "caller_selected_local_package_capture",
+        "installed_upstream_revision": null,
+        "upstream_package_version_attribution": "unavailable; results apply to captured local bytes only",
+        "reviewed_resource_inventory": [
+          {
+            "path": "LICENSE",
+            "bytes": 11358,
+            "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "PROVENANCE.md",
+            "bytes": 1536,
+            "sha256": "83a5c29cf32ee976dfd3478e688b949a947432d7566017bb1197089c65bc7ea3",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "SKILL.md",
+            "bytes": 6925,
+            "sha256": "57849e6c028645ad25fb4d83e4b9a8e8302ce746830b2a7cec6a73c9830abb67",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "THIRD_PARTY_NOTICES.md",
+            "bytes": 1168,
+            "sha256": "b0a2e210e35cb7a35ae4b51ba0589343d620ad9197a37502b269fdd8eb0dc373",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "agents/openai.yaml",
+            "bytes": 296,
+            "sha256": "26bba3f5fd21f6278bc68b51c202cd2fd392e6cd9e13349c2c910af6c1bbc22c",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "assets/icon.png",
+            "bytes": 2637,
+            "sha256": "15a607db01ad89239a444b0af12cb79a0d0cbd0dfaaf405d5b17ab7734d2f826",
+            "review_scope": "retained binary resource identity; no source-code reading claim"
+          },
+          {
+            "path": "assets/icon.svg",
+            "bytes": 517,
+            "sha256": "1c9ce11f17ee5de13c5ad3efd4d4bdfaf45f92f029df40a1cc32883b25e00b31",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "examples/.gitattributes",
+            "bytes": 116,
+            "sha256": "0cf62eca040a8963f35d86ccfde0b0807b2c38cee905f4b078a8870a851569c3",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "examples/run.sh",
+            "bytes": 2354,
+            "sha256": "9651f6e7af4b28d059c4481a18271be3cf887f28ea88b575e5c665fdf4c31bba",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          }
+        ],
+        "incidental_files_withheld": [
+          {
+            "path": ".DS_Store",
+            "bytes": 6148,
+            "sha256": "57602cd58f95d6334adceedd1abecbb460a7a3b28c2d85ed373289d3623b7b6a"
+          }
+        ],
+        "captured_upstream_declarations": [
+          {
+            "repository": "https://github.com/git/git",
+            "revision": "94f057755b7941b321fd11fec1b2e3ca5313a4e0",
+            "reviewed_files": null,
+            "scope": "declared manual research at Git v2.54.0; no upstream implementation/prose copied and exact manual-file list unavailable"
+          },
+          {
+            "repository": "https://github.com/lucide-icons/lucide",
+            "revision": "f12b0de177fbc2a6795e99be065887e72b237123",
+            "reviewed_files": [
+              "icons/file-sliders.svg"
+            ],
+            "scope": "declared icon geometry source; scoped ISC notice captured; no new upstream-byte verification"
+          }
+        ],
+        "captured_declarations_independently_reverified": false
       }
     ],
     "upstream_byte_lineage_verified": false,
-    "raw_sources_published": false
+    "raw_sources_published": false,
+    "attribution_boundary": "Caller-owned local byte captures, including local overlays. Declared upstream license/research/icon pins are recorded separately; none is an authenticated installed-package revision. No attributable upstream-version evaluation or redistribution authorization is claimed."
   },
   "original_pilot": {
     "source": "benchmarks/behavioral/pilot-2026-10-04/",
@@ -275,7 +728,7 @@
               "pass": 8,
               "fail": 0,
               "blocked": 0,
-              "not_run": 0
+              "not-run": 0
             }
           },
           {
@@ -295,7 +748,7 @@
               "pass": 8,
               "fail": 0,
               "blocked": 0,
-              "not_run": 0
+              "not-run": 0
             }
           }
         ]
@@ -332,7 +785,7 @@
               "pass": 6,
               "fail": 1,
               "blocked": 0,
-              "not_run": 0
+              "not-run": 0
             }
           },
           {
@@ -352,7 +805,7 @@
               "pass": 6,
               "fail": 1,
               "blocked": 0,
-              "not_run": 0
+              "not-run": 0
             }
           }
         ]
