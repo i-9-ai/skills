@@ -4,6 +4,16 @@ Use one isolated directory per run. The creator owns `run.json`; specialists ret
 
 Resolve each companion from the host's available skills or a caller-supplied trusted path. Packages may be installed globally, locally, or in different directories; the creator's installation does not supply its companions. Record the selected identities in the run's reports. A missing required companion blocks that handoff, while a specialist used alone returns its own report directly to the caller.
 
+## Delivery checkpoints
+
+Choose the required record destination at intake. Start a substantive record with the verified goal, output locations, authority, and current incomplete status. A package not yet authored and checks not yet run stay explicit; do not invent identities or results to fill the format.
+
+Update the record when a stage yields evidence, a candidate changes, a check finishes or fails, or a blocker is discovered. Retain source identities and reuse/license decisions; identify the current candidate and its meaningful resources when available. Link actual check evidence, including failed attempts and corrections, and distinguish structural validation, official conformance, authored/manual exercises, independent behavioral evaluation, and untested environments. Record the concrete gaps and next handoff. Missing official execution remains `not-run` and blocks readiness.
+
+Before optional exercises, repeated inspection, or additional refinements, save the current required outputs and status. Each further inspection must resolve a named acceptance question or blocker within the agreed resource budget. Reuse already verified evidence when its identity and applicability hold. Load resources required by the selected route; do not read unrelated resources or repeat equivalent checks merely to enlarge the evidence set. Required discovery, domain research, safety/license reviews, and evaluation gates still apply. If the budget or access prevents completion, retain the candidate and substantive partial record with the unresolved gates.
+
+The record is a mutable progress summary pointing to finalized stage evidence. Do not register its changing bytes as evidence for a passed stage; freeze and hash any consumed version at handoff. It adds no manifest stage or status and cannot turn an incomplete run into `validated`. A heading, empty checklist, or future intention does not supply a factual source decision, check result, or completed deliverable.
+
 ## Manifest
 
 The canonical machine contract is implemented by the package's Node.js helper, documented in [tooling](tooling.md). The schema is deliberately small:

@@ -1,0 +1,953 @@
+{
+  "schema_version": 1,
+  "scope": "Private real-reference practical cases; public identities and compact observations only.",
+  "replayable_from_this_projection": false,
+  "source_intake": {
+    "digest_definition": "SHA256 of sorted relative-path, NUL, byte-count, NUL, file-SHA256, newline inventory entries; this is not the repository benchmark helper tree algorithm.",
+    "sources": [
+      {
+        "capture_label": "editorconfig",
+        "raw_files": 11,
+        "executor_files": 10,
+        "inventory_sha256": "b5806da5ef4dd037fabaebd6b020cf1be0a4613d689c0fca00ce5730892842b0",
+        "license_observation": "Full MIT LICENSE reviewed in captured package; preserve included notices",
+        "inventory_sort": "localeCompare-en historical capture order",
+        "origin_kind": "caller_selected_local_package_capture",
+        "installed_upstream_revision": null,
+        "upstream_package_version_attribution": "unavailable; results apply to captured local bytes only",
+        "reviewed_resource_inventory": [
+          {
+            "path": "agents/openai.yaml",
+            "bytes": 265,
+            "sha256": "56137e5aa08abaa344b55957d615e0b3e2d5edaf10f3bfc4c8ca34c0a44ad887",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "assets/icon.png",
+            "bytes": 19099,
+            "sha256": "46c3a0b2ac00590187356f4eef5685f9bb43c224a2a1d14db5dbfc740ab303fb",
+            "review_scope": "retained binary resource identity; no source-code reading claim"
+          },
+          {
+            "path": "assets/icon.svg",
+            "bytes": 498,
+            "sha256": "0b155934519de4e302caa7f2201fa3300d5512c46ad6bc70212589de8a94b6fc",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "examples/.editorconfig",
+            "bytes": 452,
+            "sha256": "562592e0a6af437d50702aabada0df523a9a942453a3e8c13cbda7ab1a328a8b",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "examples/verify_example.py",
+            "bytes": 2980,
+            "sha256": "39020a3fba21ba98b4685a7ea7aaacea8125283800271ff646a52957e79bc9b5",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "LICENSE",
+            "bytes": 1138,
+            "sha256": "b5407ce514b9dcff05fb5a4572e290e221acd36fa81ae63b396883383817d729",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "PROVENANCE.md",
+            "bytes": 2020,
+            "sha256": "9d0a19f7c285ba7f47601bdd24f00f8d23a7ca0aa7b29ba99b045cbf7a99cf30",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "references/example.md",
+            "bytes": 2615,
+            "sha256": "c824bcb2503937498555220057e27f8cb7bdd9253d33cb746970a5a8fce3be58",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "references/matching.md",
+            "bytes": 1825,
+            "sha256": "daf63ff4d07d6f9f39e39aecae13277d912df234acf99b8f22e46db168d61611",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "SKILL.md",
+            "bytes": 5913,
+            "sha256": "52339cfcdbe81acd7ea442d3fa4e0db6353fa24f327ddc75232cdbcdb891781c",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          }
+        ],
+        "incidental_files_withheld": [
+          {
+            "path": ".DS_Store",
+            "bytes": 6148,
+            "sha256": "e0e1490612919edc62443f3adbabbb4c7d6dee4d05c85a02c9c390cd16ccc3ed"
+          }
+        ],
+        "captured_upstream_declarations": [
+          {
+            "repository": "https://github.com/github/awesome-copilot",
+            "revision": "1899b18da3fa5183652f86165917d553cba1850a",
+            "reviewed_files": [
+              "LICENSE"
+            ],
+            "scope": "declared license-scope review only; not installed package byte lineage"
+          },
+          {
+            "repository": "https://github.com/editorconfig/specification",
+            "revision": "f58051318a657b52b73ff2d7774a66fa6c296bd8",
+            "reviewed_files": [
+              "index.rst"
+            ],
+            "scope": "declared syntax research; original local prose and examples"
+          },
+          {
+            "repository": "https://github.com/editorconfig/editorconfig-core-py",
+            "revision": "e1298e0b8c66041f2e32e84d7c7bbe99ffdba339",
+            "reviewed_files": null,
+            "scope": "declared external validation dependency; no new execution or file-level review credited here"
+          }
+        ],
+        "captured_declarations_independently_reverified": false
+      },
+      {
+        "capture_label": "create-llms",
+        "raw_files": 7,
+        "executor_files": 6,
+        "inventory_sha256": "f4a2414b800b2d159f863f05e212d7d916ab4a2337bdbb8f5585ec2394fc46c2",
+        "license_observation": "Full MIT LICENSE reviewed in captured package; preserve included notices",
+        "inventory_sort": "localeCompare-en historical capture order",
+        "origin_kind": "caller_selected_local_package_capture",
+        "installed_upstream_revision": null,
+        "upstream_package_version_attribution": "unavailable; results apply to captured local bytes only",
+        "reviewed_resource_inventory": [
+          {
+            "path": "agents/openai.yaml",
+            "bytes": 263,
+            "sha256": "bd3c642cd064bdd0085f39be7b72ed3e2e435871098abb40031a6366229688d4",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "assets/icon.png",
+            "bytes": 16966,
+            "sha256": "386c42aca8e1b9c94596078f077c1d554ef1aeda3e8cfaf0c7c77575c507ac24",
+            "review_scope": "retained binary resource identity; no source-code reading claim"
+          },
+          {
+            "path": "assets/icon.svg",
+            "bytes": 532,
+            "sha256": "3f84ea3cd2627cf02382c7d6cf03b55bfd1b88be895a63993794bcd4be94cae9",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "LICENSE",
+            "bytes": 1060,
+            "sha256": "2510b446bc1f0cf9702453075d20cd88631e20e5642658edb7325d9c1eb534f7",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "PROVENANCE.md",
+            "bytes": 581,
+            "sha256": "4eb5d96edad935f8c94c10ba5cc61b986b06fffd4f5b5e82d728d7a33303119d",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "SKILL.md",
+            "bytes": 7336,
+            "sha256": "a1a4241c86c8023223998eb8db16d29024be1476629c8c50474d5e03c070ad25",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          }
+        ],
+        "incidental_files_withheld": [
+          {
+            "path": ".DS_Store",
+            "bytes": 6148,
+            "sha256": "69aa4f151f5beb8d280e47b8ce67d5331ec5d4c0d498a554e058af138c3bac96"
+          }
+        ],
+        "captured_upstream_declarations": [
+          {
+            "repository": "https://github.com/github/awesome-copilot",
+            "revision": "1899b18da3fa5183652f86165917d553cba1850a",
+            "reviewed_files": [
+              "LICENSE"
+            ],
+            "scope": "declared license-scope review only; not installed package byte lineage"
+          }
+        ],
+        "captured_declarations_independently_reverified": false
+      },
+      {
+        "capture_label": "architecture-diagram",
+        "raw_files": 10,
+        "executor_files": 9,
+        "inventory_sha256": "66d6b4e3f8285448cb221cff3555a140bc854173ae0b447666f1a4daf2ef56ed",
+        "license_observation": "Full MIT LICENSE reviewed in captured package; preserve included notices",
+        "inventory_sort": "localeCompare-en historical capture order",
+        "origin_kind": "caller_selected_local_package_capture",
+        "installed_upstream_revision": null,
+        "upstream_package_version_attribution": "unavailable; results apply to captured local bytes only",
+        "reviewed_resource_inventory": [
+          {
+            "path": "agents/openai.yaml",
+            "bytes": 289,
+            "sha256": "2c46a1f2cbc014a8f659a06d2a504970de1f3fc193f48c7480983c91c0094aa6",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "assets/icon.png",
+            "bytes": 14176,
+            "sha256": "fb34d4dc6ddb483dad37cb17030e4179dbca4114208550bb2324766faee00157",
+            "review_scope": "retained binary resource identity; no source-code reading claim"
+          },
+          {
+            "path": "assets/icon.svg",
+            "bytes": 560,
+            "sha256": "6ed0ab92101a6c63d09246cab62fe1e0748728905dd1e3e26e5d969c0514b838",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "assets/template.html",
+            "bytes": 17666,
+            "sha256": "3c595d8a745c4d6285e36ebabc15822785b96c6628087b8b6f0cf444d2e8b90a",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "LICENSE",
+            "bytes": 1068,
+            "sha256": "775ec66aca270a92ce2f0c5b24c32b8e87119e8d7a68c56f8720ad3b2fe417f3",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "PROVENANCE.md",
+            "bytes": 595,
+            "sha256": "70e6de99d61dbd3c782814f78957c398aa1c703c707fe69fc3e73e7a651bc952",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "references/design-system.md",
+            "bytes": 4004,
+            "sha256": "c27cf700f8a171e9773dbc4d925a42b39c58aedb75bd85f03c1be556fd22e148",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "references/interactive.md",
+            "bytes": 3385,
+            "sha256": "f5f5f887e27b3cdfee2d51e65f753a45371e524a77f3fd1b7af37ebbc69e873f",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "SKILL.md",
+            "bytes": 6680,
+            "sha256": "2ca47594b4d773593c23b8b7a4760b031082d8d83c8003b6444f7a3eb5d7aeaa",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          }
+        ],
+        "incidental_files_withheld": [
+          {
+            "path": ".DS_Store",
+            "bytes": 6148,
+            "sha256": "e420f0e71036f0be03ccb9d5a3ba2846c187cf3075f4810f45d7c2db860c0adc"
+          }
+        ],
+        "captured_upstream_declarations": [
+          {
+            "repository": "https://github.com/proyecto26/system-design-skills",
+            "revision": "a70772efb956e8c9b78ef5b7538dee00cc3b9263",
+            "reviewed_files": [
+              "LICENSE"
+            ],
+            "scope": "declared license-scope review only; not installed package byte lineage"
+          }
+        ],
+        "captured_declarations_independently_reverified": false
+      },
+      {
+        "capture_label": "architecture-diagram 2",
+        "raw_files": 2,
+        "executor_files": 2,
+        "inventory_sha256": "a9a359d736b0686edc96501951642a31227ec0c802bed017b566da7dd356dcb4",
+        "license_observation": "Declared MIT; full LICENSE absent; inspection-only, redistribution unresolved",
+        "inventory_sort": "localeCompare-en historical capture order",
+        "origin_kind": "caller_selected_local_package_capture",
+        "installed_upstream_revision": null,
+        "upstream_package_version_attribution": "unavailable; results apply to captured local bytes only",
+        "reviewed_resource_inventory": [
+          {
+            "path": "SKILL.md",
+            "bytes": 5830,
+            "sha256": "0e7e2736aafe052e409c2ad27863d51ef3007c116711e584033787ccb5d99d3f",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "templates/template.html",
+            "bytes": 12483,
+            "sha256": "d17a1631a14f108dd469ad16c83d667d917565ebe780f42fad7321be327de442",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          }
+        ],
+        "incidental_files_withheld": [],
+        "captured_upstream_declarations": [],
+        "captured_declarations_independently_reverified": false
+      },
+      {
+        "capture_label": "github-wiki",
+        "raw_files": 3,
+        "executor_files": 3,
+        "inventory_sha256": "96726000184cbebae849351c68aac40d452dd00c60c86c71458c0dd102952dc8",
+        "license_observation": "Full MIT LICENSE reviewed in captured package; preserve included notices",
+        "inventory_sort": "localeCompare-en historical capture order",
+        "origin_kind": "caller_selected_local_package_capture",
+        "installed_upstream_revision": null,
+        "upstream_package_version_attribution": "unavailable; results apply to captured local bytes only",
+        "reviewed_resource_inventory": [
+          {
+            "path": "LICENSE",
+            "bytes": 1063,
+            "sha256": "35d5d97ff473a350479dbde0295177cc27e05968435f3fb0e98bdaaa6328ebc8",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "references/documentation-mirror.md",
+            "bytes": 2755,
+            "sha256": "b52acf9e27674472ee0fc7a4bab910fafcf807cd7a3c231d1aa90727a944b4ab",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "SKILL.md",
+            "bytes": 4338,
+            "sha256": "0be7e4b3c66b99c567d819efc9eee35c59edb9d5ed4689a94b82e42d4965dbe6",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          }
+        ],
+        "incidental_files_withheld": [],
+        "captured_upstream_declarations": [],
+        "captured_declarations_independently_reverified": false
+      },
+      {
+        "capture_label": "git-ignore",
+        "raw_files": 10,
+        "executor_files": 9,
+        "inventory_sha256": "06635a15a58e587cbc72966bf91f23ce968fd141d264beb54af438709584a14c",
+        "license_observation": "Full Apache-2.0 LICENSE and separate ISC icon notices reviewed in capture; preserve notices and modification attribution; upstream byte lineage unverified",
+        "inventory_sort": "UTF-8 byte order",
+        "origin_kind": "caller_selected_local_package_capture",
+        "installed_upstream_revision": null,
+        "upstream_package_version_attribution": "unavailable; results apply to captured local bytes only",
+        "reviewed_resource_inventory": [
+          {
+            "path": "LICENSE",
+            "bytes": 11358,
+            "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "PROVENANCE.md",
+            "bytes": 1528,
+            "sha256": "e04cd1d8f4e10e2f508660d64300eccd553a6ca2ec950549c54f9faf41dfdb5f",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "SKILL.md",
+            "bytes": 6569,
+            "sha256": "31842089c62f26be41070bdbf9aa35a716c58d7aa9ed09f9efc778ae5eca5d54",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "THIRD_PARTY_NOTICES.md",
+            "bytes": 1164,
+            "sha256": "8af12787b27b66afef510fc134922d353b12b809c2104c8c92f029e837164cfa",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "agents/openai.yaml",
+            "bytes": 281,
+            "sha256": "899233f697128b2e2ad97ebd6d4a1c9e156f41e5fbaa28562e64596c39e15f2b",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "assets/icon.png",
+            "bytes": 2978,
+            "sha256": "d99aba39b58aad07021ad7d49c2ced776290fc3b177695600663ebc1af166282",
+            "review_scope": "retained binary resource identity; no source-code reading claim"
+          },
+          {
+            "path": "assets/icon.svg",
+            "bytes": 462,
+            "sha256": "7e3293338748c1b79cb356c687a7f468b64db5e6802ff1c16ab6d1a33f0e2e7d",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "examples/.gitignore",
+            "bytes": 217,
+            "sha256": "86199e9dddbbad6c64a038a9887b576cdb951a438e7f24fae806342ed31f87fa",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "examples/run.sh",
+            "bytes": 1888,
+            "sha256": "d0253b8bfbddbac1c00c614b045aee3c1b73dbbfb3ddf10c9e53969d89748db0",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          }
+        ],
+        "incidental_files_withheld": [
+          {
+            "path": ".DS_Store",
+            "bytes": 6148,
+            "sha256": "f5d924d4dee4120ff4364d11b730da25b143d61c9ae3e9397ff347a84c688229"
+          }
+        ],
+        "captured_upstream_declarations": [
+          {
+            "repository": "https://github.com/git/git",
+            "revision": "94f057755b7941b321fd11fec1b2e3ca5313a4e0",
+            "reviewed_files": null,
+            "scope": "declared manual research at Git v2.54.0; no upstream implementation/prose copied and exact manual-file list unavailable"
+          },
+          {
+            "repository": "https://github.com/lucide-icons/lucide",
+            "revision": "f12b0de177fbc2a6795e99be065887e72b237123",
+            "reviewed_files": [
+              "icons/file-x-2.svg"
+            ],
+            "scope": "declared icon geometry source; scoped ISC notice captured; no new upstream-byte verification"
+          }
+        ],
+        "captured_declarations_independently_reverified": false
+      },
+      {
+        "capture_label": "git-attributes",
+        "raw_files": 10,
+        "executor_files": 9,
+        "inventory_sha256": "b28bcfc2f8ed5caac7ab11518f0d8f58155ef8a82906f72be53368bfe9a26e83",
+        "license_observation": "Full Apache-2.0 LICENSE and separate ISC icon notices reviewed in capture; preserve notices and modification attribution; upstream byte lineage unverified",
+        "inventory_sort": "UTF-8 byte order",
+        "origin_kind": "caller_selected_local_package_capture",
+        "installed_upstream_revision": null,
+        "upstream_package_version_attribution": "unavailable; results apply to captured local bytes only",
+        "reviewed_resource_inventory": [
+          {
+            "path": "LICENSE",
+            "bytes": 11358,
+            "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "PROVENANCE.md",
+            "bytes": 1536,
+            "sha256": "83a5c29cf32ee976dfd3478e688b949a947432d7566017bb1197089c65bc7ea3",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "SKILL.md",
+            "bytes": 6925,
+            "sha256": "57849e6c028645ad25fb4d83e4b9a8e8302ce746830b2a7cec6a73c9830abb67",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "THIRD_PARTY_NOTICES.md",
+            "bytes": 1168,
+            "sha256": "b0a2e210e35cb7a35ae4b51ba0589343d620ad9197a37502b269fdd8eb0dc373",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "agents/openai.yaml",
+            "bytes": 296,
+            "sha256": "26bba3f5fd21f6278bc68b51c202cd2fd392e6cd9e13349c2c910af6c1bbc22c",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "assets/icon.png",
+            "bytes": 2637,
+            "sha256": "15a607db01ad89239a444b0af12cb79a0d0cbd0dfaaf405d5b17ab7734d2f826",
+            "review_scope": "retained binary resource identity; no source-code reading claim"
+          },
+          {
+            "path": "assets/icon.svg",
+            "bytes": 517,
+            "sha256": "1c9ce11f17ee5de13c5ad3efd4d4bdfaf45f92f029df40a1cc32883b25e00b31",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "examples/.gitattributes",
+            "bytes": 116,
+            "sha256": "0cf62eca040a8963f35d86ccfde0b0807b2c38cee905f4b078a8870a851569c3",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          },
+          {
+            "path": "examples/run.sh",
+            "bytes": 2354,
+            "sha256": "9651f6e7af4b28d059c4481a18271be3cf887f28ea88b575e5c665fdf4c31bba",
+            "review_scope": "case-intake source/resource inspection; supplied as task data"
+          }
+        ],
+        "incidental_files_withheld": [
+          {
+            "path": ".DS_Store",
+            "bytes": 6148,
+            "sha256": "57602cd58f95d6334adceedd1abecbb460a7a3b28c2d85ed373289d3623b7b6a"
+          }
+        ],
+        "captured_upstream_declarations": [
+          {
+            "repository": "https://github.com/git/git",
+            "revision": "94f057755b7941b321fd11fec1b2e3ca5313a4e0",
+            "reviewed_files": null,
+            "scope": "declared manual research at Git v2.54.0; no upstream implementation/prose copied and exact manual-file list unavailable"
+          },
+          {
+            "repository": "https://github.com/lucide-icons/lucide",
+            "revision": "f12b0de177fbc2a6795e99be065887e72b237123",
+            "reviewed_files": [
+              "icons/file-sliders.svg"
+            ],
+            "scope": "declared icon geometry source; scoped ISC notice captured; no new upstream-byte verification"
+          }
+        ],
+        "captured_declarations_independently_reverified": false
+      }
+    ],
+    "upstream_byte_lineage_verified": false,
+    "raw_sources_published": false,
+    "attribution_boundary": "Caller-owned local byte captures, including local overlays. Declared upstream license/research/icon pins are recorded separately; none is an authenticated installed-package revision. No attributable upstream-version evaluation or redistribution authorization is claimed."
+  },
+  "original_pilot": {
+    "source": "benchmarks/behavioral/pilot-2026-10-04/",
+    "preserved_unchanged": true
+  },
+  "tuning_r1": {
+    "suite_id": "skill-real-global-tuning-v1",
+    "suite_sha256": "d08d3a98bfb027d4d85695c7d57942e04f41750c424b7904b7a0e13d12b3c600",
+    "benchmark_sha256": "aa1828e044641a4ccaa91b4e1829510f6ced742890258282dcbc566352c65d85",
+    "packages": [
+      {
+        "name": "skill-authoring",
+        "tree_sha256": "763d8436f55de2b88fedd5ad13dd2c4b5d60cf739b6e0310460041bc92b00df9"
+      },
+      {
+        "name": "skill-design",
+        "tree_sha256": "d26c1a220ab949ce8a17ad689cdd4bcb14dea95c58978b675fd758663b3e0c57"
+      },
+      {
+        "name": "skill-domain-research",
+        "tree_sha256": "b3d2ceb4c42fcc0b806c370327239c31566f8fecbbc21ac4395f80a6a0ffa5f5"
+      },
+      {
+        "name": "skill-evaluator",
+        "tree_sha256": "9ad1b1d329cd3ab8dc2733619a8173e1b2bb8e0180a8046a466718ba50571388"
+      },
+      {
+        "name": "skill-naming",
+        "tree_sha256": "fc1466bdaccd7e1173814197dfc15cd4d17340d204d2818efcd604af676becb1"
+      },
+      {
+        "name": "skill-security-review",
+        "tree_sha256": "822d8e80dee532117c6db99cc4b4adb02d53a5577f17bc7b1a4784ae56c16ef9"
+      },
+      {
+        "name": "skills-refactoring",
+        "tree_sha256": "75ec8dd142b5294a4da27ac6db7f60892a5c98c59ff39d3c97ebd7ddc19f2c48"
+      }
+    ],
+    "comparison_status": "incomplete",
+    "controlled_pairs": 0,
+    "cases": [
+      {
+        "case_id": "create-editorconfig-workflow",
+        "phase": "tuning",
+        "run_id": "create-editorconfig-workflow-treatment-1",
+        "run_sha256": "111627d0bdf66b717e86dd93aa421f897310a1d50b9bc25290726393eac2b707",
+        "grading_sha256": "9e441a1465676aba1f4edbdfe9e4351323dfd16f6742f5dc592cec36ab8f4cb8",
+        "registered_artifacts": 51,
+        "seconds_limit": 600,
+        "wall_time_ms": 600038,
+        "assessment": {
+          "pass": 7,
+          "fail": 0,
+          "blocked": 0,
+          "not-run": 0
+        },
+        "critical_failures": []
+      },
+      {
+        "case_id": "plan-architecture-duplicate-refactor",
+        "phase": "tuning",
+        "run_id": "plan-architecture-duplicate-refactor-treatment-1",
+        "run_sha256": "89ce0e9b5fd61adbb372608065d9150a7f2c03772561d23d97b03a6eda00b6d3",
+        "grading_sha256": "80c0b7505cd4b02b479edd40500023dd5c74543ba91351844718eb268fd0d0e1",
+        "registered_artifacts": 12,
+        "seconds_limit": 300,
+        "wall_time_ms": 300011,
+        "assessment": {
+          "pass": 1,
+          "fail": 6,
+          "blocked": 0,
+          "not-run": 0
+        },
+        "critical_failures": [
+          "useful-plan-in-budget",
+          "actual-overlap-map",
+          "justified-boundary",
+          "resource-and-dependency-disposition",
+          "rights-and-consumer-transition",
+          "ordered-validation-and-rollback"
+        ]
+      }
+    ]
+  },
+  "tuning_r2": {
+    "suite_id": "skill-real-global-tuning-v1",
+    "suite_sha256": "d08d3a98bfb027d4d85695c7d57942e04f41750c424b7904b7a0e13d12b3c600",
+    "benchmark_sha256": "e14489dbd896ac678db353ad28b43f800c30ad46a2c6bf757416f2bf5d9a943a",
+    "packages": [
+      {
+        "name": "skill-authoring",
+        "tree_sha256": "763d8436f55de2b88fedd5ad13dd2c4b5d60cf739b6e0310460041bc92b00df9"
+      },
+      {
+        "name": "skill-design",
+        "tree_sha256": "d26c1a220ab949ce8a17ad689cdd4bcb14dea95c58978b675fd758663b3e0c57"
+      },
+      {
+        "name": "skill-domain-research",
+        "tree_sha256": "b3d2ceb4c42fcc0b806c370327239c31566f8fecbbc21ac4395f80a6a0ffa5f5"
+      },
+      {
+        "name": "skill-evaluator",
+        "tree_sha256": "9ad1b1d329cd3ab8dc2733619a8173e1b2bb8e0180a8046a466718ba50571388"
+      },
+      {
+        "name": "skill-naming",
+        "tree_sha256": "fc1466bdaccd7e1173814197dfc15cd4d17340d204d2818efcd604af676becb1"
+      },
+      {
+        "name": "skill-security-review",
+        "tree_sha256": "822d8e80dee532117c6db99cc4b4adb02d53a5577f17bc7b1a4784ae56c16ef9"
+      },
+      {
+        "name": "skills-refactoring",
+        "tree_sha256": "54ede26848d4fc69336662a49133924386eede624cd082facf50054c301d715d"
+      }
+    ],
+    "comparison_status": "incomplete",
+    "controlled_pairs": 0,
+    "cases": [
+      {
+        "case_id": "plan-architecture-duplicate-refactor",
+        "phase": "tuning",
+        "run_id": "plan-architecture-duplicate-refactor-treatment-1",
+        "run_sha256": "c86824c2c36f8542eed31dddab92791ac43bc4debbdfeeb3bac692e002154d67",
+        "grading_sha256": "cb47611f5e927aa6ba2320e373dc86cccee067d14c58376014013ef3e025d31d",
+        "registered_artifacts": 12,
+        "seconds_limit": 300,
+        "wall_time_ms": 300011,
+        "assessment": {
+          "pass": 3,
+          "fail": 4,
+          "blocked": 0,
+          "not-run": 0
+        },
+        "critical_failures": [
+          "useful-plan-in-budget",
+          "actual-overlap-map",
+          "resource-and-dependency-disposition",
+          "ordered-validation-and-rollback"
+        ]
+      }
+    ]
+  },
+  "fresh_acceptance_r2": {
+    "suite_id": "skill-real-global-acceptance-v1",
+    "suite_sha256": "fd4b71ce186f82d41e564637b701ca5484ddbeee8c1e04dd4e83d78a53f478ba",
+    "benchmark_sha256": "90514731b95c63aa17a0975155768a1d2bd8e670f7b7277c2c790da5980ab386",
+    "manifest_sha256": "92f094dda8418196ab2a2fe7f7dc56cea721bfcb69eaa44767912e9c39b3fe77",
+    "comparison_sha256": "7ec479b689250b74f573f28a278d5d69ebf61cc44eeed5f656de272bf630844f",
+    "packages": [
+      {
+        "name": "skill-authoring",
+        "tree_sha256": "763d8436f55de2b88fedd5ad13dd2c4b5d60cf739b6e0310460041bc92b00df9"
+      },
+      {
+        "name": "skill-design",
+        "tree_sha256": "d26c1a220ab949ce8a17ad689cdd4bcb14dea95c58978b675fd758663b3e0c57"
+      },
+      {
+        "name": "skill-domain-research",
+        "tree_sha256": "b3d2ceb4c42fcc0b806c370327239c31566f8fecbbc21ac4395f80a6a0ffa5f5"
+      },
+      {
+        "name": "skill-evaluator",
+        "tree_sha256": "9ad1b1d329cd3ab8dc2733619a8173e1b2bb8e0180a8046a466718ba50571388"
+      },
+      {
+        "name": "skill-naming",
+        "tree_sha256": "fc1466bdaccd7e1173814197dfc15cd4d17340d204d2818efcd604af676becb1"
+      },
+      {
+        "name": "skill-security-review",
+        "tree_sha256": "822d8e80dee532117c6db99cc4b4adb02d53a5577f17bc7b1a4784ae56c16ef9"
+      },
+      {
+        "name": "skills-refactoring",
+        "tree_sha256": "54ede26848d4fc69336662a49133924386eede624cd082facf50054c301d715d"
+      }
+    ],
+    "coverage": {
+      "expected_pairs": 2,
+      "imported_runs": 4,
+      "missing_runs": 0,
+      "paired_cases": 2,
+      "declared_agent_pairs": 2,
+      "declared_controlled_agent_pairs": 0,
+      "fixture_runs": 0,
+      "manual_runs": 0,
+      "unexecuted_runs": 0
+    },
+    "comparison_status": "incomplete",
+    "cases": [
+      {
+        "case_id": "create-github-wiki-workflow",
+        "seconds_limit": 600,
+        "comparison_status": "incomplete",
+        "critical_failures": [],
+        "runs": [
+          {
+            "variant": "baseline",
+            "run_id": "create-github-wiki-workflow-baseline-1",
+            "run_sha256": "01318c4f918616cd238f76f2a20516cac6a43fc5d79717af6d4cf891fb27a9b4",
+            "receipt_sha256": "10cc324b58e02859b6371e3d37f80d1bf159f6b9b867cd08e78060b7c10cabaf",
+            "grading_sha256": "ddaf7639963c66ac145e83b6bd01cee2cc6f88efb3ba264f9845bef05ffa2487",
+            "grading_report_sha256": "23ceb7b77e0ce5880bdc053eb2f0d34ed644a7e9427d1ee49631801f7b74e40b",
+            "registered_artifacts": 44,
+            "reported_metrics": {
+              "wall_time_ms": 590784,
+              "input_tokens": 516328,
+              "output_tokens": 16024
+            },
+            "assessment": {
+              "pass": 8,
+              "fail": 0,
+              "blocked": 0,
+              "not-run": 0
+            }
+          },
+          {
+            "variant": "treatment",
+            "run_id": "create-github-wiki-workflow-treatment-1",
+            "run_sha256": "ac0dffe0b783e263b76a9d2fab5b3ed068cd41d86d568937eddea61f57d81b68",
+            "receipt_sha256": "0d1c3fe5e885c804ddabb9afd4a05fddab51ce976b5977ae4762d9b4bc360d36",
+            "grading_sha256": "db357e634f0c2bbea00305156d7d795d7c61de077fb57422590b629f8d2bc038",
+            "grading_report_sha256": "60b1fddaaaf97678d2afe5fe9a46ceb2d4fb0def49fecfd70774bff8685db8ab",
+            "registered_artifacts": 53,
+            "reported_metrics": {
+              "wall_time_ms": 600007,
+              "input_tokens": null,
+              "output_tokens": null
+            },
+            "assessment": {
+              "pass": 8,
+              "fail": 0,
+              "blocked": 0,
+              "not-run": 0
+            }
+          }
+        ]
+      },
+      {
+        "case_id": "plan-llms-name-scope-refactor",
+        "seconds_limit": 300,
+        "comparison_status": "incomplete",
+        "critical_failures": [
+          {
+            "variant": "baseline",
+            "criterion": "ordered-validation-and-rollback"
+          },
+          {
+            "variant": "treatment",
+            "criterion": "ordered-validation-and-rollback"
+          }
+        ],
+        "runs": [
+          {
+            "variant": "baseline",
+            "run_id": "plan-llms-name-scope-refactor-baseline-1",
+            "run_sha256": "377bc47529da740cef2baeb4f2658a1b92e718f2e9c115a5fbc82f08834c067f",
+            "receipt_sha256": "57c81303e0aa2480b421111c9dc82b0cb14c715779ce90f9c26d7a9550bb9807",
+            "grading_sha256": "8ca6672d4f5f461b05f74975eada523b0cb405d9e9ca00fb59e75a0a4bcdcf3f",
+            "grading_report_sha256": "d3bdd127b2ad9996719516aa4e76f9c94dc35c5362eb38003ad4988f0dcd5001",
+            "registered_artifacts": 14,
+            "reported_metrics": {
+              "wall_time_ms": 300006,
+              "input_tokens": null,
+              "output_tokens": null
+            },
+            "assessment": {
+              "pass": 6,
+              "fail": 1,
+              "blocked": 0,
+              "not-run": 0
+            }
+          },
+          {
+            "variant": "treatment",
+            "run_id": "plan-llms-name-scope-refactor-treatment-1",
+            "run_sha256": "b6cdc708c05da6c3fd177b0a6edaab862922dadc829ec39fd00f7fd8f057be25",
+            "receipt_sha256": "8cccbcffad73a5a3ee7c3908291eacd0e178c31e47eda4a61666ba722659b524",
+            "grading_sha256": "3447c155bc53f5887b010e7d1d337b95ce3ea9d07fb0fc6167ddc1ebee6fffd7",
+            "grading_report_sha256": "5bdcf02e7d58fd28c11548cce62718fef3a5234cfb25cf28ce10302350478a5e",
+            "registered_artifacts": 11,
+            "reported_metrics": {
+              "wall_time_ms": 300007,
+              "input_tokens": null,
+              "output_tokens": null
+            },
+            "assessment": {
+              "pass": 6,
+              "fail": 1,
+              "blocked": 0,
+              "not-run": 0
+            }
+          }
+        ]
+      }
+    ],
+    "integrity": {
+      "freeze_files": 113,
+      "imported_registered_artifacts": 122,
+      "byte_or_length_mismatches": 0,
+      "imported_comparison_criterion_verdicts_match": true,
+      "meaning": "Read-only checks of retained bytes, lengths and verdict correspondence; no authenticity or execution claim"
+    },
+    "grading_blinded": false,
+    "wiki_reviewer_knew_repair_diff": true,
+    "llms_requirement_visibility": {
+      "executor_prompt_sha256": "1317878929c8da92110f6018fa3a350758aa55111dfab01b73c5d7207999d880",
+      "prompt_explicitly_names_official_validator": false,
+      "frozen_rubric_requires_future_official_conformance": true,
+      "frozen_rubric_literally_names_skills_ref": false,
+      "failed_future_gate": "An identified official Agent Skills conformance route and successful validation on the exact candidate as an adoption prerequisite",
+      "current_validator_execution_required_by_plan_only_grade": false,
+      "interpretation": "Retain both frozen failures as a common planning gap under the supplied rubric. Prompt/rubric visibility limits prevent treating them as causal treatment benefit/defect proof or evidence that every caller explicitly selected this exact tool requirement."
+    },
+    "wiki_delivery_limits": {
+      "useful_pre_cutoff_proposals_credited": true,
+      "baseline_completed_record": true,
+      "baseline_actual_disposable_rsync_find_exercise": true,
+      "treatment_completed_authoring_pipeline": false,
+      "treatment_record_in_progress_and_stops_before_final_simulation_success": true,
+      "treatment_python_simulation_is_model_only": true,
+      "treatment_candidate_node_helper_executed": false,
+      "treatment_rsync_git_or_provider_execution": false,
+      "treatment_completed_separate_security_review_retained": false,
+      "treatment_finished_run_manifest_retained": false,
+      "official_conformance_or_provider_readiness_established": false,
+      "interpretation": "Scoped criteria credit the complete gated proposal and corroborating fixture bytes; the Python surrogate is not candidate implementation validation."
+    }
+  },
+  "held_out_git_case": {
+    "status": "independently assessed bounded planning delivery; implementation and readiness remain unperformed",
+    "suite_id": "skill-real-git-policy-plan-v1",
+    "suite_sha256": "de42c470bc4833b66cca8f6d33cb10348e1402edfb49e2950f94df622daadebd",
+    "manifest_sha256": "4d691512edb5fc1632406ba11fb2f5302be85ee295ae3a0b00b17761e6e0f24b",
+    "benchmark_sha256": "8d9fe2e469be6c78851a6e0106b67202edb56d85f933ef86aece8b03da038f79",
+    "comparison_sha256": "d27e14479bb1beb070e8df1a2b8a9608c81befe4d99134fa3a0d2286385cd673",
+    "packages": [
+      {
+        "name": "skill-naming",
+        "tree_sha256": "fc1466bdaccd7e1173814197dfc15cd4d17340d204d2818efcd604af676becb1"
+      },
+      {
+        "name": "skills-refactoring",
+        "tree_sha256": "e4ce26467f59fe3118285a2242900fff39390f9cfd5bd8b4f7d96f3176852da2"
+      }
+    ],
+    "case_id": "plan-git-policy-refactor",
+    "seconds_limit": 600,
+    "required_criteria": 9,
+    "critical_criteria": 8,
+    "requirement_visibility": "Explicit resource, consumer, official final-candidate validation and before-mutation recovery requirements supplied to both arms before execution",
+    "acceptance_result": "pass",
+    "comparison_status": "complete",
+    "coverage": {
+      "expected_pairs": 1,
+      "imported_runs": 2,
+      "missing_runs": 0,
+      "paired_cases": 1,
+      "declared_agent_pairs": 1,
+      "declared_controlled_agent_pairs": 1,
+      "fixture_runs": 0,
+      "manual_runs": 0,
+      "unexecuted_runs": 0
+    },
+    "runs": [
+      {
+        "variant": "baseline",
+        "run_id": "plan-git-policy-refactor-baseline-1",
+        "run_sha256": "47b25328318df6c01cb5dfc69a840e9f9044147eb045e539a35818d468c377b7",
+        "receipt_sha256": "1017a5ffd79ce1cb69fe8723c8c47a7f8eca4b23c7a62874a68484223e9f12e8",
+        "grading_sha256": "bd9257422c8e58eca57eed2dce24762a79084bb94d5c51b3b6ed6e107b432600",
+        "grading_report_sha256": "53b93d71339841ad848bb870a8ad1cf437fc453c01c0006d5833695aba14bfae",
+        "import_evidence_projection_sha256": "26ea7234d71fc642b915f486263eb93acd235caac41963a74cdf5c36cc940d60",
+        "import_evidence_projection_report_sha256": "5e5c6bec5789e020d6285dc468efb1dcd6a0a5ee7c4c86318e7c1059f9adaf2d",
+        "registered_artifacts": 15,
+        "reported_metrics": {
+          "wall_time_ms": 431518,
+          "input_tokens": 341943,
+          "output_tokens": 12427
+        },
+        "assessment": {
+          "pass": 9,
+          "fail": 0,
+          "blocked": 0,
+          "not-run": 0
+        }
+      },
+      {
+        "variant": "treatment",
+        "run_id": "plan-git-policy-refactor-treatment-1",
+        "run_sha256": "fcc0a8d3b58d1faab59d594b36b5b56682e88386fbc55e89c631f9bafdf99a4e",
+        "receipt_sha256": "64851d5a5055063b56dfe743bc4bcf9eba810fb0554b127a2f9bb2f3cfa82781",
+        "grading_sha256": "462f9456f50fccae26d6b3139c46060d220503e87956d6313a37ec6a1f51a543",
+        "grading_report_sha256": "c3ff5ea876c55b9a89d6971b4839a349710d992d646428a9eccc980bc5e7ee28",
+        "import_evidence_projection_sha256": "ee410448366f4c4a8e94c61392f6c5942e599b86e9335c2876619468ed51a833",
+        "import_evidence_projection_report_sha256": "76e901c8c71304f0205f85186d409886f970a40e4076ce894e0f8c60a065773a",
+        "registered_artifacts": 15,
+        "reported_metrics": {
+          "wall_time_ms": 513650,
+          "input_tokens": 538105,
+          "output_tokens": 15241
+        },
+        "assessment": {
+          "pass": 9,
+          "fail": 0,
+          "blocked": 0,
+          "not-run": 0
+        }
+      }
+    ],
+    "integrity": {
+      "frozen_files": 43,
+      "registered_artifacts": 30,
+      "hash_and_length_mismatches": 0,
+      "original_grades_preserved": true,
+      "import_projection_changes_assessments": false
+    },
+    "grading_blinded": false,
+    "grading_independent_of_executors_and_case_author": true,
+    "grader_authored_treatment_teaching_recipe": true,
+    "selected_original_files_rechecked": 20,
+    "selected_original_file_mismatches": 0,
+    "implementation_semantic_checks_conformance_and_installation_performed": false
+  },
+  "limits": [
+    "Identity hashes do not authenticate execution, grading, timing or provider identity.",
+    "Baseline receives no meta-skills; these are not original-versus-repaired package comparisons.",
+    "Failed and consumed cases remain unchanged; tuning does not establish fresh acceptance.",
+    "The LLMS official-conformance rubric requirement was not explicitly named in its prompt.",
+    "Pre-cutoff artifact credit differs from complete-run budget compliance; the earlier R2 comparison remains incomplete while the Git comparison is complete.",
+    "Wiki treatment modeled copying and retained an unfinished record; candidate helper execution is not established.",
+    "Raw source captures, original locators, provider logs and generated packages are private.",
+    "Bounded observations do not prove full OS isolation, descendant cleanup or permanent quiescence.",
+    "No general, causal, statistical, cross-provider, conformance, installation or publication readiness claim."
+  ]
+}

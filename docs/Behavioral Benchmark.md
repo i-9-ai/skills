@@ -1,10 +1,24 @@
 # Skill behavioral benchmark
 
-The behavioral benchmark freezes a synthetic task suite and the exact selected
+The behavioral benchmark freezes a task suite and the exact selected
 skill packages, retains externally produced run artifacts, and compares a
 no-skill baseline with a treatment under declared comparable conditions. Its
 three CLI commands prepare evidence and inspect it. They do not execute a case,
 call a model, grade an artifact, or certify a skill as ready.
+
+Use tasks drawn from real skill workflows when evaluating practical improvements.
+Review the complete relevant package resources, declared consumers and reuse
+rights; include the owner's target requirements in both executor handoffs.
+Freeze criteria before execution and retain failures when correcting guidance.
+A case used to tune a correction cannot also establish fresh acceptance for it.
+The original synthetic suite below exercises the evidence interface and preserves
+historical observations; it is not a universal measure of skill quality.
+
+The [global-reference evaluation](https://github.com/i-9-ai/skills/blob/main/benchmarks/behavioral/global-reference-2026-10-04/method.md)
+summarizes real EditorConfig, diagram, Wiki and LLMS workflow cases. It retains
+useful deliveries and failed plans with their limits. Private source captures
+and unsanitized runs are not published, so the summary cannot independently
+replay those cases or establish a general advantage from supplying meta-skills.
 
 This is a candidate interface. The published npm package `@i-9.ai/skills@0.3.4`
 does not contain these commands. Use a reviewed candidate checkout with Node.js
