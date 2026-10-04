@@ -1,0 +1,8 @@
+inputs/authority.json: OK
+inputs/history-policy.md: OK
+collections/source/skills-catalog.json: OK
+collections/source/skills/skill-note-transfer/SKILL.md: OK
+collections/source/skills/skill-note-transfer/LICENSE: OK
+collections/source/skills/skill-note-transfer/references/handoff.md: OK
+collections/target/skills-catalog.json: OK
+collections/target/KEEP.md: OK

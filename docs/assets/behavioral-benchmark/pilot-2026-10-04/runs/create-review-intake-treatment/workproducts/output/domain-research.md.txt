@@ -1,0 +1,38 @@
+# Supplied-fact dossier
+
+Date consulted: 2026-10-03. Selected depth: focused, low-consequence fictional
+process. Status: **blocked_external_research** under the general domain-research
+package: current public research was not performed and is prohibited here.
+The user explicitly requests implementing the supplied synthetic design without
+external services; authoring continues under that case-specific authority, not
+by claiming this general stage passed. No external normative or product-version
+claim is necessary. No case-specific professional determination is made.
+
+## Source register
+
+| ID | Supplied locator | Role / scope | Revision and dates | Rights |
+| --- | --- | --- | --- | --- |
+| brief | inputs/brief.json | Fictional owner approval, task authority | Bytes pinned in source-hashes.sha256; approval/publication date not stated | Fixture brief; license decision Apache-2.0 |
+| design | inputs/design.md | Approved implementation contract | Bytes pinned; approval date not stated | Apache-2.0 notice |
+| policy | inputs/process-policy.md | Fictional owner process | Bytes pinned; effective date not stated | Apache-2.0 notice and explicit owner reuse grant |
+| research | inputs/research.md | Supplied context; not executed research | Bytes pinned; observation date not stated | Apache-2.0 notice |
+| license | inputs/LICENSE | Full supplied license | Bytes pinned | Apache License 2.0 |
+
+## Evidence matrix
+
+| Claim | Owner/supplied evidence | Reviewed upstream content | Public authority | Disposition / implication |
+| --- | --- | --- | --- | --- |
+| One record, no evaluation or mutation | brief, design, policy | None contributes | Not consulted | Supported within fictional scope; keep task focused |
+| Three review kinds and five sections | policy | None | Not consulted | Supported; retain in core and template |
+| Missing identity/kind is incomplete; excessive action outside scope | policy | None | Not consulted | Supported; preserve unknowns and owner handoff |
+| Structure requests tree and recorded checks | policy evidence table | None | Not consulted | Supported evidence request |
+| Tree-only ordinary example is ready; missing data makes intake incomplete | policy ordinary example versus design | None | Not consulted | Conflict: unresolved owner question about missing check records |
+| Behavior prior outputs requested when available | policy | None | Not consulted | Qualified: report unknown availability; supplied no-prior-execution fact is not a result |
+| Official conformance or behavioral quality | research explicitly disclaims certification | None | Not consulted | Unknown until actual checks; no invented pass |
+
+No external search queries were sent. No current URL, publication date,
+professional rule, benchmark result or remote revision is asserted. Future real
+consumer suitability is unknown. The tree-only gate is retained in the package:
+until the owner clarifies the exception, an intake with missing check records
+uses incomplete and states the question. The complete ordinary example supplies
+both artifacts and is unaffected by that gate.

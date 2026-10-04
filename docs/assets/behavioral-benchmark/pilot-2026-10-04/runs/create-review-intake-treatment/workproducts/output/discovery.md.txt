@@ -1,0 +1,24 @@
+# Bounded discovery record
+
+Observation: 2026-10-03. Status: **offline; discovery incomplete** under the supplied
+skills-discovery procedure. External search is prohibited by the case.
+Task queries prepared but not submitted: “skill review request intake record”
+and “review evidence missing information handoff”. No skills.sh or primary
+repository search occurred; no repository revision or remote source is invented.
+
+Local `rg --files --hidden` inventoried the fixture. Its only candidate packages
+are the six explicit instruction-only guidance packages. None contributes source
+content to the delivered intake skill: discovery researches candidates, domain
+research creates dossiers, design defines contracts, authoring creates packages,
+security review inspects risk, and evaluation judges behavior. These are separate
+outcomes and would broaden the approved responsibility if copied into runtime.
+
+Read the actual six SKILL.md files and relevant linked text resources for this
+authoring run. Binary icons, adapters and unused helper code were not reviewed
+or reused; complete safety/conformance review of those packages is not claimed.
+Exact selected entrypoint identities are in `source-hashes.sha256`.
+
+Recommendation: original connecting prose and examples, selective adaptation of
+the supplied owner's licensed policy. No external source package accepted.
+Synthesis is skipped: zero contributing upstream skill packages. Naming is
+settled; no naming companion is needed. Runtime companion requirement: none.

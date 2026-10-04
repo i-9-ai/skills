@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "skills": [
+    {
+      "name": "skill-note-transfer",
+      "path": "skills/skill-note-transfer",
+      "description": "Use to prepare a reviewer handoff from a supplied skill evidence note without making a lifecycle decision.",
+      "tags": ["handoff", "review", "skills"]
+    }
+  ]
+}

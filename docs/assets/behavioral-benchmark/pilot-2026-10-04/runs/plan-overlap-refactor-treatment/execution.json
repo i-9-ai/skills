@@ -1,0 +1,13 @@
+{
+  "case_id": "plan-overlap-refactor",
+  "variant": "treatment",
+  "executor": "Codex CLI 0.160.0",
+  "model": "gpt-6.1-sol",
+  "settings": "reasoning=high; ephemeral; user-config=ignored; host-skill-discovery=disabled; hooks=disabled; plugins=disabled; workspace-write; approval=never",
+  "fresh_context": true,
+  "started_at": "2026-10-04T02:15:40.114Z",
+  "wall_time_ms": 300005,
+  "timed_out": true,
+  "exit_code": null,
+  "signal": "SIGTERM"
+}

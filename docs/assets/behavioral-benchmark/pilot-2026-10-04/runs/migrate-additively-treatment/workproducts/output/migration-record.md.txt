@@ -1,0 +1,181 @@
+# Additive migration record
+
+Status: **candidate prepared; acceptance readiness BLOCKED**. The target
+catalog remains unchanged. Official validation and host execution are not run
+because their tools/contracts are not supplied in this self-contained fixture.
+
+## Authority and history strategy recorded before copying
+
+This synthetic migration follows `inputs/authority.json`,
+`inputs/history-policy.md`, and `instruction-only/skill-migration/SKILL.md`.
+Only the source Git metadata, target candidate, conditionally authorized target
+catalog, and `output/` are writable. Both catalogs and the full source package
+were read before writing. No workspace-scoped `AGENTS.md` was found.
+
+Retain a new local Git repository at `collections/source/.git` with a reachable
+`refs/heads/synthetic-baseline` baseline containing exactly the supplied source
+catalog, `SKILL.md`, complete `LICENSE`, and `references/handoff.md`. Use a
+synthetic command-local identity, disable global/system Git configuration,
+templates, hooks, and signing, and add no remotes. Verify retrieval of the actual
+commit and its blobs before copying the package. No bundle or external history
+is needed under the supplied history policy.
+
+History retention owner: **Fictional source collection maintainer**. Keep the
+repository and baseline ref reachable for the lifetime of this candidate and
+any later acceptance. The new baseline records only the supplied synthetic
+tree; it does not claim earlier historical provenance.
+
+The source remains authoritative. The target is a review candidate with the
+same skill name and is not cataloged or installed until acceptance gates pass.
+No consumer cutover or source deprecation/removal is authorized.
+
+## Initial compatibility assessment
+
+The target package path does not exist; the target catalog has an empty
+`skills` array. There is no naming collision. The package has no runtime
+dependency, executable, external service, companion installation, or required
+host adapter. Its bundled reference is package-relative. No packaging or
+behavior change is needed. No live consumers are supplied or authorized for
+discovery.
+
+No official validator, validator invocation, or host harness is supplied in
+this workspace. These checks must be recorded as unavailable/not run, never
+inferred from the presence of copied files. Target catalog acceptance is
+therefore blocked; a proposed entry will be recorded without editing it.
+
+## Source baseline retained before target copy
+
+Actual source commit: `5d6065b89eec4493199a0516ea4ef3aa23f76175`.
+Repository: `collections/source/.git`.
+Reachable ref: `refs/heads/synthetic-baseline`.
+Synthetic author/committer: `Synthetic Source Fixture Owner
+<synthetic-source@example.invalid>`.
+
+`git rev-parse refs/heads/synthetic-baseline` returned that commit. `git show
+--format=fuller --stat` retrieved the root commit and exactly four supplied
+files. `git show <commit>:<path>` retrieved every file, including all 202 lines
+of the complete license and the bundled reference; SHA-256 digests matched the
+initial working files (listed below). `git fsck --full` exited 0 without errors.
+`git status --porcelain=v1` and `git remote -v` were empty. All Git commands
+used `GIT_CONFIG_GLOBAL=/dev/null`, `GIT_CONFIG_NOSYSTEM=1`,
+`GIT_ATTR_NOSYSTEM=1`, and `-C collections/source`. Initialization disabled
+templates; commands disabled hooks; commit signing was disabled. Only the
+four explicitly named source files were staged and committed.
+
+`git rev-list --count refs/heads/synthetic-baseline` returned `1`; `git ls-tree
+-r --name-only <commit>` listed exactly those four files. The package subtree
+Git object is `64493dbfb862bb6cca914f37ae5e822f0419686b`. No caller repository
+or unrelated history was used. The original package and source catalog remain
+unchanged; only the authorized source `.git` metadata was added.
+
+## Old and new identities
+
+| Property | Retained source | Staged target candidate |
+| --- | --- | --- |
+| Skill name | `skill-note-transfer` | `skill-note-transfer` |
+| Collection-relative path | `skills/skill-note-transfer` | `skills/skill-note-transfer` |
+| Workspace path | `collections/source/skills/skill-note-transfer` | `collections/target/skills/skill-note-transfer` |
+| Revision | `5d6065b89eec4493199a0516ea4ef3aa23f76175` | Uncommitted candidate; exact package bytes from that commit, verified below |
+| Catalog state | Original entry retained | No entry added; proposed entry below |
+| Authority | Authoritative source | Review candidate only |
+
+Responsibility and ordinary behavior are unchanged: turn one supplied skill
+evidence note into one portable reviewer handoff, retaining identity, review
+question, inspected artifacts, evidence gaps, uncertainty, and next decision
+owner. The skill does not evaluate or alter the reviewed package. The bundled
+reference governs the handoff sections, and output belongs in the caller's
+authorized workspace. Provenance remains `original-synthetic-fixture`.
+
+Changed packaging/adapters: **none**. `SKILL.md`, the entire Apache-2.0
+`LICENSE` (including sections 1–9 and appendix), and `references/handoff.md`
+were copied without edits. The relative reference resolves inside the target
+package. No host adapter or dependency was introduced. There is no separate
+lifecycle/deprecation evidence supplied, and none is invented.
+
+## Checks actually performed
+
+| Check | Result and evidence | Limits |
+| --- | --- | --- |
+| Authority, target compatibility, collision | PASS: read authority, policy, both catalogs and all package files; target path absent and target catalog empty before copying | Fixture-only scope |
+| Source history retention | PASS: reachable actual root commit, four retrieved blobs with matching SHA-256, `git fsck --full` exit 0, clean source status, no remotes, exactly one commit | Owner must retain repository/ref; no historical commits predate this synthetic baseline |
+| Complete copy and behavioral instruction preservation | PASS: `diff -r` source/target package exited 0 with no differences; target hashes match originals and retrieved baseline | Byte preservation does not establish formal validation |
+| License/provenance | PASS: read complete supplied license and attribution metadata; both survive byte-for-byte | No external provenance verification was authorized |
+| Manual behavioral smoke check | PASS for the supplied synthetic note: read the target entrypoint and bundled reference, produced `output/behavioral-handoff.md` from `output/behavioral-evidence-note.md`, then read both and compared all required fields | Manual exercise by this agent; no automated behavioral suite or live host execution |
+| Security review | PASS within static scope: inspected all three candidate files; no executables, symlinks, external dependency, private transcript or credential content; output restriction and uncertainty safeguards retained | No automated security scanner supplied; not run |
+| Host packaging compatibility | PASS by inspection against the supplied standalone profile: no required adapter/setup, reference resolves relative to target | Live host/consumer-layout execution NOT RUN; no harness or consumers supplied |
+| Collection/catalog structure | PASS for inspection and JSON checks: both catalogs parse; `jq -e` source identity/schema and empty target/schema checks returned `true` with exit 0 | No official collection validator supplied; no acceptance implied |
+| Official package validation | **BLOCKED / NOT RUN**: no official validator, command, or validation contract supplied | No installation, downloads, generated scripts, or external lookup performed |
+| Existing target/source preservation | PASS: protected-file hashes below match pre-write values; source Git status clean after copy | Future edits must be checked again before any rollback |
+
+The manual handoff preserves the exact source identity/commit, question and all
+three artifact references, carries forward both missing checks and the
+unassigned decision owner, and labels the supplied completion claim unverified.
+It makes no package evaluation or approval claim. The reviewed source/target
+packages were not changed by this exercise. This is a narrow smoke check, not
+an official validation substitute.
+
+SHA-256 verification (each package digest matches the initial source file,
+retrieved commit blob, and in-place target candidate):
+
+| Package-relative file | SHA-256 |
+| --- | --- |
+| `SKILL.md` | `fa28c05e823c13065f96793f2cd19df880cd31ac9e0180b6c479e4a265931e59` |
+| `LICENSE` | `cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30` |
+| `references/handoff.md` | `e5500b3361b6d4eaab15e4555e28a4a4db2fc4dcbead391bdd6dfb000ba9c553` |
+
+Protected files, before and after candidate preparation:
+
+| File | SHA-256 |
+| --- | --- |
+| `collections/source/skills-catalog.json` | `911d333f264f14d76a4860db231ff0a84637c34e23fbb1044b8247f4e23c6147` |
+| `collections/target/skills-catalog.json` | `589e34d92968f63ef2a7e337c54a0cee3b72b29501b3355a74d3dd101af0cf7b` |
+| `collections/target/KEEP.md` | `74c19f171854df7adc5fd75db1075a34755d7a772ad179c22fa9e2d8c64223eb` |
+
+## Proposed catalog reconciliation and unresolved gates
+
+The source catalog is retained exactly. The target catalog is retained exactly
+as `{"schema_version": 1, "skills": []}`. Only after required gates pass,
+the proposed target `skills` entry is:
+
+```json
+{
+  "name": "skill-note-transfer",
+  "path": "skills/skill-note-transfer",
+  "description": "Use to turn one supplied skill evidence note into a portable reviewer handoff without changing the reviewed package.",
+  "tags": ["handoff", "review", "skills"]
+}
+```
+
+Unresolved acceptance gates: supply and run the official package/collection
+validation contract, and supply host execution evidence or an explicit decision
+on its applicability. The fixture names no target acceptance reviewer; this
+decision owner remains unassigned. A future authorized reviewer must resolve
+these gaps and record actual results before catalog acceptance. No clarification
+or additional access was requested. Missing evidence is not treated as success.
+
+No live consumers are supplied or authorized for discovery. Consumer actions
+performed: **none**. Any later transition requires a separate authorized owner
+decision, acceptance evidence and consumer inventory. Until then the source is
+authoritative and the target remains an uncataloged review candidate, avoiding
+two mutable canonical authorities. Source deprecation/removal is not planned
+under this authority.
+
+## Reversible target additions and handoff
+
+Target additions are limited to the three candidate files listed in the digest
+table and their new directories. Preparation records are limited to this file,
+`output/behavioral-evidence-note.md`, and `output/behavioral-handoff.md`.
+
+Rollback has not been performed. To withdraw this candidate, first compare its
+inventory and bytes with the recorded digests; stop for an ownership decision
+if another actor has added or changed anything. Remove only these three
+verified migration-created target files, then their directories if empty.
+The newly created `collections/target/skills` parent may be removed only if
+empty. Keep `collections/target/KEEP.md` and both catalogs untouched. Retain
+the output audit record and the source repository, its reachable baseline ref,
+original package and source catalog. No source-history rollback or deletion is
+authorized.
+
+If the proposed catalog entry is accepted in a later authorized change,
+rollback of that later change must remove only its incoming entry and preserve
+all other entries. No catalog mutation is part of this candidate.

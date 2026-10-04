@@ -22,6 +22,8 @@ Verify every requirement has an implementation and a check or an explicit limit.
 
 ## Child DOX index
 
+- [Skill behavioral benchmark](2026-10-04-01-25-24-skill-behavioral-benchmark.md): frozen synthetic cases, exact package/artifact identity and declared baseline/treatment evidence; no provider execution engine, automatic readiness claim or publication.
+
 - [Version draft readiness](2026-10-03-22-18-58-version-pr-readiness-checks.md): protected checks on an owner-operated draft-to-ready transition, with preserved PR events and read-only permissions; no new token or publication trigger.
 
 - [GitHub changelog and availability](2026-10-03-20-28-08-github-changelog-and-release-availability.md): reviewed PR references with offline reproduction and anonymous exact-version consumer checks; no historical rewrite or repeat publication.

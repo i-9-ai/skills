@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "skills": [
+    {
+      "name": "skill-note-transfer",
+      "path": "skills/skill-note-transfer",
+      "description": "Use to record a maintainer's already approved skill lifecycle decision without importing reviewer evidence.",
+      "tags": ["decision", "lifecycle", "skills"]
+    }
+  ]
+}

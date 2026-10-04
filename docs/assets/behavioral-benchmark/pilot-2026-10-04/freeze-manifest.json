@@ -1,0 +1,760 @@
+{
+  "schema_version": 1,
+  "suite_sha256": "c1761b2bb7415d01221fe1b9051afce7eb406c57426f21b5f377c0224a7064c1",
+  "benchmark_sha256": "bd768ef9f7ae15319a9d8e6bd7d2f6387d143af8bcc68021c2bec047eed85101",
+  "files": [
+    {
+      "path": "cases/create-review-intake/executor.json",
+      "sha256": "fc8abbb9d6caf7743024e25d0b82be6b9cea6d4057ebb11894f2203c070b477e",
+      "bytes": 484
+    },
+    {
+      "path": "cases/create-review-intake/fixtures/inputs/LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358
+    },
+    {
+      "path": "cases/create-review-intake/fixtures/inputs/brief.json",
+      "sha256": "3596d3111333113ed2011f3bb2eccd772eadc678fb1ad00fda0cfcc7e9f68678",
+      "bytes": 1226
+    },
+    {
+      "path": "cases/create-review-intake/fixtures/inputs/design.md",
+      "sha256": "b0350ea5830da90cfbe5b0492a63e3b69f96b87740bcf3634f9660fa4b0163f5",
+      "bytes": 1565
+    },
+    {
+      "path": "cases/create-review-intake/fixtures/inputs/process-policy.md",
+      "sha256": "e1cac0c373c6532b7982700f01be26764f46b6e019b163324777fcc449c177dc",
+      "bytes": 2387
+    },
+    {
+      "path": "cases/create-review-intake/fixtures/inputs/research.md",
+      "sha256": "de9b9a4f19ea7a46470d25d40208ef2fcaa36c79c3874012a719360583869e25",
+      "bytes": 1314
+    },
+    {
+      "path": "cases/create-review-intake/prompt.md",
+      "sha256": "369cc33e14f6d47ed694b604ffacc5a828b8b915e477e0330022061b18d4dfec",
+      "bytes": 1788
+    },
+    {
+      "path": "cases/migrate-additively/executor.json",
+      "sha256": "a5afb630a5057303dae9c85bb91bbf2ab0a562c64e3080a7cfca95af4f03303e",
+      "bytes": 308
+    },
+    {
+      "path": "cases/migrate-additively/fixtures/collections/source/skills-catalog.json",
+      "sha256": "911d333f264f14d76a4860db231ff0a84637c34e23fbb1044b8247f4e23c6147",
+      "bytes": 325
+    },
+    {
+      "path": "cases/migrate-additively/fixtures/collections/source/skills/skill-note-transfer/LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358
+    },
+    {
+      "path": "cases/migrate-additively/fixtures/collections/source/skills/skill-note-transfer/SKILL.md",
+      "sha256": "fa28c05e823c13065f96793f2cd19df880cd31ac9e0180b6c479e4a265931e59",
+      "bytes": 1050
+    },
+    {
+      "path": "cases/migrate-additively/fixtures/collections/source/skills/skill-note-transfer/references/handoff.md",
+      "sha256": "e5500b3361b6d4eaab15e4555e28a4a4db2fc4dcbead391bdd6dfb000ba9c553",
+      "bytes": 374
+    },
+    {
+      "path": "cases/migrate-additively/fixtures/collections/target/KEEP.md",
+      "sha256": "74c19f171854df7adc5fd75db1075a34755d7a772ad179c22fa9e2d8c64223eb",
+      "bytes": 221
+    },
+    {
+      "path": "cases/migrate-additively/fixtures/collections/target/skills-catalog.json",
+      "sha256": "589e34d92968f63ef2a7e337c54a0cee3b72b29501b3355a74d3dd101af0cf7b",
+      "bytes": 42
+    },
+    {
+      "path": "cases/migrate-additively/fixtures/inputs/authority.json",
+      "sha256": "06f0cd3ebaa2dcb52bf4ef8265f050d026251eb6fc742a665a9a4b07c56a1b3c",
+      "bytes": 1160
+    },
+    {
+      "path": "cases/migrate-additively/fixtures/inputs/history-policy.md",
+      "sha256": "be1336c6cd750904d0f7a8f7f5fb78c2884f1033e35a8693558bdf9c3b20b70e",
+      "bytes": 1241
+    },
+    {
+      "path": "cases/migrate-additively/prompt.md",
+      "sha256": "589c6fabf7bd16307d84ae0ce24eda00b862e19018a58f4c211ba5a82aec5f28",
+      "bytes": 1682
+    },
+    {
+      "path": "cases/plan-overlap-refactor/executor.json",
+      "sha256": "ac0787d92eabd3ea8c5b6085a15affb0351da58abcb1e09f36379f01e9e6468e",
+      "bytes": 349
+    },
+    {
+      "path": "cases/plan-overlap-refactor/fixtures/collections/review/skills-catalog.json",
+      "sha256": "b5805f76e22c2ddbf54746006942968a69806d6c1954600f993f4f0097604ee8",
+      "bytes": 593
+    },
+    {
+      "path": "cases/plan-overlap-refactor/fixtures/collections/review/skills/skill-evidence-note/LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358
+    },
+    {
+      "path": "cases/plan-overlap-refactor/fixtures/collections/review/skills/skill-evidence-note/SKILL.md",
+      "sha256": "9257b581b9e936285435935c411bdbe4808946916ffbfac8380fa8bb625ef328",
+      "bytes": 1156
+    },
+    {
+      "path": "cases/plan-overlap-refactor/fixtures/collections/review/skills/skill-evidence-note/references/checklist.md",
+      "sha256": "d8be9be2d3220ec959e094ae3abd3ae0a12a53bb8a8ba643bbf18f802ae1ffcc",
+      "bytes": 373
+    },
+    {
+      "path": "cases/plan-overlap-refactor/fixtures/collections/review/skills/skill-review-record/LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358
+    },
+    {
+      "path": "cases/plan-overlap-refactor/fixtures/collections/review/skills/skill-review-record/SKILL.md",
+      "sha256": "38e20fd56dc3cce73de211e3d5aab405f9bf99832057df02573bfe9984d236b9",
+      "bytes": 989
+    },
+    {
+      "path": "cases/plan-overlap-refactor/fixtures/collections/review/skills/skill-review-record/references/recovery.md",
+      "sha256": "17d59c4cf8067643ce424b3ddd1fd816719e944f6e2c62deea7135459d12a6e2",
+      "bytes": 669
+    },
+    {
+      "path": "cases/plan-overlap-refactor/fixtures/inputs/audit.md",
+      "sha256": "e36d2565249c80671f4cf52d8dd513445780c24b78393e098521c698ba448c55",
+      "bytes": 1287
+    },
+    {
+      "path": "cases/plan-overlap-refactor/fixtures/inputs/consumers.json",
+      "sha256": "6db6e34c3c7f5a1a2317c9c580742b34c88e0f6640009eccb74bb53891f31b4a",
+      "bytes": 735
+    },
+    {
+      "path": "cases/plan-overlap-refactor/prompt.md",
+      "sha256": "7db8d6b650b2f2ed8a6fddf4982794cbf995a14187516ab025887fb976552b69",
+      "bytes": 1236
+    },
+    {
+      "path": "cases/refuse-collision/executor.json",
+      "sha256": "99a7ac14e736b343c3e930e33838231699e452ec76801ce63a3da0effcfabf36",
+      "bytes": 302
+    },
+    {
+      "path": "cases/refuse-collision/fixtures/collections/source/skills-catalog.json",
+      "sha256": "8ab25377b5815d2250ca93f4e343cd5716783f22739021034632c64f80b777b4",
+      "bytes": 315
+    },
+    {
+      "path": "cases/refuse-collision/fixtures/collections/source/skills/skill-note-transfer/LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358
+    },
+    {
+      "path": "cases/refuse-collision/fixtures/collections/source/skills/skill-note-transfer/SKILL.md",
+      "sha256": "59b5365c7fa7f7975be184a35c57658fa17396284473cad4d51361eaf027005c",
+      "bytes": 655
+    },
+    {
+      "path": "cases/refuse-collision/fixtures/collections/source/skills/skill-note-transfer/references/handoff.md",
+      "sha256": "475ad236ed6f99c6c160d440d0f9d70a7fa81b426a32c81ce14351c320f8f351",
+      "bytes": 258
+    },
+    {
+      "path": "cases/refuse-collision/fixtures/collections/target/skills-catalog.json",
+      "sha256": "c5bc51915f366b16ff8faf3b305e9a4af13ca8c9ceca4e100d23fb85c2ee88e9",
+      "bytes": 320
+    },
+    {
+      "path": "cases/refuse-collision/fixtures/collections/target/skills/skill-note-transfer/LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358
+    },
+    {
+      "path": "cases/refuse-collision/fixtures/collections/target/skills/skill-note-transfer/SKILL.md",
+      "sha256": "d57b6d14f720f71c2723b5070fea66663d63efdba0226822ebddab8b925fac1b",
+      "bytes": 694
+    },
+    {
+      "path": "cases/refuse-collision/fixtures/collections/target/skills/skill-note-transfer/references/decision.md",
+      "sha256": "9afb25fcb244d44de4592c826c99858eba36fd299b5998f347ddb43483b362ec",
+      "bytes": 301
+    },
+    {
+      "path": "cases/refuse-collision/fixtures/collections/target/skills/skill-note-transfer/retained-note.md",
+      "sha256": "04557c73d5927615e94e957e09a7def02b4745a054224cc8e48be91fdf9d1156",
+      "bytes": 221
+    },
+    {
+      "path": "cases/refuse-collision/fixtures/inputs/authority.json",
+      "sha256": "9407ce1d450a09e3da5ee5c5179bd5298509c58ff2996d0e1b1fad3f1ec66672",
+      "bytes": 642
+    },
+    {
+      "path": "cases/refuse-collision/prompt.md",
+      "sha256": "fd22385772b2bcd2e434dc50eaf822c30dbc11312beb4059387c27734992cbc5",
+      "bytes": 1239
+    },
+    {
+      "path": "packages/skill-authoring/LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358
+    },
+    {
+      "path": "packages/skill-authoring/SKILL.md",
+      "sha256": "0ceedcb11e5ea40034c02182343584d8af8d813ea87382cda711fc687f33aea3",
+      "bytes": 16685
+    },
+    {
+      "path": "packages/skill-authoring/agents/openai.yaml",
+      "sha256": "796c6b38b760262744ad84db5571ef1377e09daceaf7a4276d701c81912744f9",
+      "bytes": 327
+    },
+    {
+      "path": "packages/skill-authoring/assets/icon-source.md",
+      "sha256": "f3122575ab94aa973cda9d68827c8b307d5c62419e30193dbe5f70735a1c25a8",
+      "bytes": 1486
+    },
+    {
+      "path": "packages/skill-authoring/assets/icon.png",
+      "sha256": "3c19435131538e537825c985e7f6149a0cbf13d4c70a163954b5fd6574873dcf",
+      "bytes": 3831
+    },
+    {
+      "path": "packages/skill-authoring/assets/icon.render.json",
+      "sha256": "c118a343a81114663d313475329e502c048810546783bda6ad000356af761cbf",
+      "bytes": 410
+    },
+    {
+      "path": "packages/skill-authoring/assets/icon.source.json",
+      "sha256": "a0a937572033b3f53e270c3dd033a09bd08e18035e4b1aa9545e4155c122c768",
+      "bytes": 879
+    },
+    {
+      "path": "packages/skill-authoring/assets/icon.svg",
+      "sha256": "2bff26363c6b755693a84c1f834a04aef66eb8ee4d252a46f042077535ff8f4c",
+      "bytes": 794
+    },
+    {
+      "path": "packages/skill-authoring/assets/run.schema.json",
+      "sha256": "49b71af97a39acd42a838f33db8ad36e8d6daf679afaf9d45e67e33ab25740f5",
+      "bytes": 2940
+    },
+    {
+      "path": "packages/skill-authoring/assets/skill-template.md",
+      "sha256": "b517878b1fcab830a5a50d2d36d93940e45fad6a5e6b219aa4a09f9d6f29c814",
+      "bytes": 6238
+    },
+    {
+      "path": "packages/skill-authoring/examples/merge-run/intake.md",
+      "sha256": "26e373796f613ebca3a2e88be78b52db6539478c8131e6c61168e4b3618715ff",
+      "bytes": 865
+    },
+    {
+      "path": "packages/skill-authoring/examples/merge-run/run.json",
+      "sha256": "0e7c9c132c0c69f737565eaa40f9a15a173a5a393af50454626f892b52189ca9",
+      "bytes": 588
+    },
+    {
+      "path": "packages/skill-authoring/references/authoring.md",
+      "sha256": "6aeec59945e910318aa3ee98213107541f762327029f0bf1ee8e503503123073",
+      "bytes": 13652
+    },
+    {
+      "path": "packages/skill-authoring/references/handoff-protocol.md",
+      "sha256": "667a4e0460385cc8d4df34fa652d8913754a7345fb1c8df7d2b2f22bff5c1b96",
+      "bytes": 7069
+    },
+    {
+      "path": "packages/skill-authoring/references/openai-yaml.md",
+      "sha256": "6c02a7c98d4f805935857f8cc6dd5250e2a3a9e0a928b49bf50f68995006d840",
+      "bytes": 4110
+    },
+    {
+      "path": "packages/skill-authoring/references/runtime-guidance.md",
+      "sha256": "ac97a0b521cf18a6635cfd6735d93e44eaceddc96fe3db5c2251cfe678dc84b0",
+      "bytes": 10518
+    },
+    {
+      "path": "packages/skill-authoring/references/tooling.md",
+      "sha256": "3aa2ae2c64ec62dc351b8a71129e08de8911188ac9e7b82ff13e230977f95f0f",
+      "bytes": 12145
+    },
+    {
+      "path": "packages/skill-authoring/references/upstream-guidance.md",
+      "sha256": "77a6fc85fbbf1154bbc37b4aff44c90a4ce24aad9e43f7bf86b95f5711dfd886",
+      "bytes": 1183
+    },
+    {
+      "path": "packages/skill-authoring/references/validation.md",
+      "sha256": "a30d0fbded8cd2b35588cb281d8519a8d3ceee55b72ca0e7641202aecbe47a87",
+      "bytes": 2441
+    },
+    {
+      "path": "packages/skill-authoring/scripts/lib/contracts.mjs",
+      "sha256": "9ee12755d785a6595a3be1920cd1fba987ce781f82792dfa6947e092322ca622",
+      "bytes": 24472
+    },
+    {
+      "path": "packages/skill-authoring/scripts/lib/filesystem.mjs",
+      "sha256": "278195dec4e9d7339a82ca137cf37fc9d40c0ac06e33e0b12c1333b6f9d65ced",
+      "bytes": 8522
+    },
+    {
+      "path": "packages/skill-authoring/scripts/lib/html-entities.LICENSE",
+      "sha256": "53143fc791547b58b76e68b7efef50ef1eba3c2cf5598e9f411f38cd83b2824d",
+      "bytes": 1997
+    },
+    {
+      "path": "packages/skill-authoring/scripts/lib/html-entities.json",
+      "sha256": "d43e0484a302ac1b84636250ff65cc735811b52bf99525b3d30a81b75436a9a8",
+      "bytes": 32977
+    },
+    {
+      "path": "packages/skill-authoring/scripts/lib/public-host.mjs",
+      "sha256": "a3466339b4d11b541ee7f0bff5fb3eb24157238d1f4085be7d8f90f6084e0ba4",
+      "bytes": 2199
+    },
+    {
+      "path": "packages/skill-authoring/scripts/skill_tools.mjs",
+      "sha256": "9f4d7c69fdf898e24933f17369e732ee74a8cf571b589e928784319b3ed3108a",
+      "bytes": 28100
+    },
+    {
+      "path": "packages/skill-design/LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358
+    },
+    {
+      "path": "packages/skill-design/SKILL.md",
+      "sha256": "9e99ad46434a99cf6b45ce23012a059a2c2f98087d2a5aa6b7f789d20df5ab69",
+      "bytes": 9378
+    },
+    {
+      "path": "packages/skill-design/agents/openai.yaml",
+      "sha256": "d9892f0f97ac81f75a4bf30e848239a0a0f9bea8a2ab488ff35540bf21d13e8e",
+      "bytes": 314
+    },
+    {
+      "path": "packages/skill-design/assets/design-brief.md",
+      "sha256": "166c2860acec242d7f2fdd91f7a1cb8ff661772542005aa87db42abac90f9cec",
+      "bytes": 1393
+    },
+    {
+      "path": "packages/skill-design/assets/icon-source.md",
+      "sha256": "e820cae188246a8528d06426b2388adf6f1f8e9e8cfe4f396e30f9601c0a93c3",
+      "bytes": 1498
+    },
+    {
+      "path": "packages/skill-design/assets/icon.png",
+      "sha256": "ff4fefffc2aa4d0c3c1edaa5675c992fd9890a55b4475da65c11aec197b14a0f",
+      "bytes": 4369
+    },
+    {
+      "path": "packages/skill-design/assets/icon.render.json",
+      "sha256": "498377ebdc6677c2916eb68bf356202f644682124fcf5215810fb88d214515fb",
+      "bytes": 410
+    },
+    {
+      "path": "packages/skill-design/assets/icon.source.json",
+      "sha256": "9a658c081c1254cae6dd8380b7dd0db7ed83c23ee1a3bc7b7cc985d751cf7337",
+      "bytes": 891
+    },
+    {
+      "path": "packages/skill-design/assets/icon.svg",
+      "sha256": "a6b3da5fd344c9ebf24985ee752937eb45aa32ffe65ddc0043ea9fa69a485f01",
+      "bytes": 804
+    },
+    {
+      "path": "packages/skill-design/references/decisions.md",
+      "sha256": "ed043bb64824f5373a365cedd75706a69c8e360c4b3e5d22aff041f8eb66d083",
+      "bytes": 1532
+    },
+    {
+      "path": "packages/skill-design/references/upstream-guidance.md",
+      "sha256": "1193785cfc19d0d29def1a9479fb73a109a8a9708a83061a2d3fbb39a15fff2d",
+      "bytes": 1130
+    },
+    {
+      "path": "packages/skill-domain-research/LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358
+    },
+    {
+      "path": "packages/skill-domain-research/SKILL.md",
+      "sha256": "91f927307365669165dafb58d00f7634a4ef6974f712e1f877148fef8968571d",
+      "bytes": 11526
+    },
+    {
+      "path": "packages/skill-domain-research/agents/openai.yaml",
+      "sha256": "ee363df3a58e42cbaf014cfa1e9f73bfd559f43ac207d76c75c58db2d28de930",
+      "bytes": 324
+    },
+    {
+      "path": "packages/skill-domain-research/assets/icon.png",
+      "sha256": "c71fbd1826d05ee3d98dc0e3cb3e027d8d6990e4b5d80922c6d713c6ea46e544",
+      "bytes": 6052
+    },
+    {
+      "path": "packages/skill-domain-research/assets/icon.render.json",
+      "sha256": "4a17dc7f6a1c7749cc41b86aef1f82de1652ac2f8489004c0601c37aaf290a75",
+      "bytes": 410
+    },
+    {
+      "path": "packages/skill-domain-research/assets/icon.svg",
+      "sha256": "05f7b64828327f6e2f773a9183774d655d80e8dd74c268ac9d4c38cc2ee3c3ea",
+      "bytes": 993
+    },
+    {
+      "path": "packages/skill-domain-research/assets/research-dossier.md",
+      "sha256": "4e1fdd996eaeb7bdb1606aa14a063f7a0ce6d10d12f8cb16707fa7d9823f2aad",
+      "bytes": 3576
+    },
+    {
+      "path": "packages/skill-domain-research/references/authoritative-source-policy.md",
+      "sha256": "0c353228946b0b66bb294f7b8cbbcf310208c60359f30f1c7a69bdb997126060",
+      "bytes": 5186
+    },
+    {
+      "path": "packages/skill-domain-research/references/provenance.md",
+      "sha256": "082a9dbbb6845424d58ebb63aab72ae904e85edd081adf750792705d58bf9e52",
+      "bytes": 2822
+    },
+    {
+      "path": "packages/skill-evaluator/LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358
+    },
+    {
+      "path": "packages/skill-evaluator/SKILL.md",
+      "sha256": "067e579236cca3a223979791a6e368ebc7ca7f80df15e492ff2b44f74564b41f",
+      "bytes": 8223
+    },
+    {
+      "path": "packages/skill-evaluator/agents/openai.yaml",
+      "sha256": "2747efc4e38a22f7f9d845718f4a6ad761d40304817d3917f5746678e86a9f39",
+      "bytes": 316
+    },
+    {
+      "path": "packages/skill-evaluator/assets/evaluation-case.json",
+      "sha256": "6f5b98e4f66e6b187fb21f71242a83610569ddef9656138e3b8dbd8d22ea1deb",
+      "bytes": 607
+    },
+    {
+      "path": "packages/skill-evaluator/assets/evaluation-report.md",
+      "sha256": "348888f292f117c3c8648e2741e3db13800be299e9782cfe2bf1492e5679179b",
+      "bytes": 1388
+    },
+    {
+      "path": "packages/skill-evaluator/assets/icon-source.md",
+      "sha256": "56bc3f83e98951dad8741d37a2eb7bdaa7bf7e45d2c19ad1672d293ae6ced0a6",
+      "bytes": 1500
+    },
+    {
+      "path": "packages/skill-evaluator/assets/icon.png",
+      "sha256": "a2acc5aaa3bd8747edacfae3e0462624f473160cc2fe43fd5f9d024ef8b8c2ef",
+      "bytes": 4138
+    },
+    {
+      "path": "packages/skill-evaluator/assets/icon.render.json",
+      "sha256": "56d8b5470c7dd31ef56f415e39f2f8c8039d11cac19bca64403c9daec9ee7e24",
+      "bytes": 410
+    },
+    {
+      "path": "packages/skill-evaluator/assets/icon.source.json",
+      "sha256": "0e31fb887a772ff9efec46dd2372dd8f147defd0173fae6d389c7cda3d369a24",
+      "bytes": 893
+    },
+    {
+      "path": "packages/skill-evaluator/assets/icon.svg",
+      "sha256": "287483a60c431d1159a830d8b48813aa0a018093b6e96a6ca48622bdb5d1b8d9",
+      "bytes": 854
+    },
+    {
+      "path": "packages/skill-evaluator/references/case-contract.md",
+      "sha256": "c16f1ef7787e3298050462ddd922f441d641b56bef64b8906ff0156fd4dc4777",
+      "bytes": 1653
+    },
+    {
+      "path": "packages/skill-evaluator/references/evaluation.md",
+      "sha256": "4cc685b15a3f30bb67b0cfd3a164b42a6c21a82011e04269cf013643edee2f84",
+      "bytes": 4801
+    },
+    {
+      "path": "packages/skill-evaluator/references/upstream-guidance.md",
+      "sha256": "fa79864f52691fec44116162a838ee809930b22d2559a638f66ac2d3cdf321b4",
+      "bytes": 1145
+    },
+    {
+      "path": "packages/skill-migration/LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358
+    },
+    {
+      "path": "packages/skill-migration/SKILL.md",
+      "sha256": "fb1d0d80201b47c27ebd3c5ae45542193b63cfe0b2746ccfdccce38ef02c7a30",
+      "bytes": 3376
+    },
+    {
+      "path": "packages/skill-migration/agents/openai.yaml",
+      "sha256": "3409e7b91b518011931bdcc97244aa8ff296fa4880b3c35d8f32148c5a8fa5f9",
+      "bytes": 323
+    },
+    {
+      "path": "packages/skill-migration/assets/icon-source.md",
+      "sha256": "b61664e36f8a5a84dd4f3857f7d2f9c7e465d65a239811d26cb27902f23b20f5",
+      "bytes": 1500
+    },
+    {
+      "path": "packages/skill-migration/assets/icon.png",
+      "sha256": "1ad173b9f0c91dfca25356b5416d9cc8515f51c81704b732a817f5f74033a898",
+      "bytes": 4028
+    },
+    {
+      "path": "packages/skill-migration/assets/icon.render.json",
+      "sha256": "96a0d1eb7831ca15534570a0e9f2077dc376d50f7188b97109c0383712ea6a6f",
+      "bytes": 410
+    },
+    {
+      "path": "packages/skill-migration/assets/icon.source.json",
+      "sha256": "224e57df904492f61c4258ac12605adf7c7215f21e2ff81566c71396dbb69a7b",
+      "bytes": 893
+    },
+    {
+      "path": "packages/skill-migration/assets/icon.svg",
+      "sha256": "901becfd2a789e58f9d6f0246f41f92cc494e1c285ee4b17d2f2f506e7c253ab",
+      "bytes": 722
+    },
+    {
+      "path": "packages/skill-naming/LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358
+    },
+    {
+      "path": "packages/skill-naming/SKILL.md",
+      "sha256": "06287ae4c3ba217f4c60f307e18d6da1a28710d0286c58e70c25318cf52961e3",
+      "bytes": 4137
+    },
+    {
+      "path": "packages/skill-naming/agents/openai.yaml",
+      "sha256": "44f859179257d4fd08281eb7718b3e01fc3a14de073ac3408ee7e71983af9240",
+      "bytes": 322
+    },
+    {
+      "path": "packages/skill-naming/assets/icon-source.md",
+      "sha256": "6a8369cbf3e02d7497dbf96dc9d5c51052b5c29a60952687aaa113d2602a4291",
+      "bytes": 1490
+    },
+    {
+      "path": "packages/skill-naming/assets/icon.png",
+      "sha256": "22297e646f8a7ed18de2088e319f50f9b1d8a3d793eb8a58a232b13e1dd4edef",
+      "bytes": 3871
+    },
+    {
+      "path": "packages/skill-naming/assets/icon.render.json",
+      "sha256": "fd5a5ef2160e52cb4e0f47b12b8dc2fea9da76e26ae64937f8de2fd4f8b0f432",
+      "bytes": 410
+    },
+    {
+      "path": "packages/skill-naming/assets/icon.source.json",
+      "sha256": "f3a16a34d789c27c4e620126382ba437d99fd62c405e29b372d47ef78cfafb77",
+      "bytes": 883
+    },
+    {
+      "path": "packages/skill-naming/assets/icon.svg",
+      "sha256": "d639c7850525389fb035ef63efdc4b5557978cba5e816d67ed1ea8bef95d4045",
+      "bytes": 775
+    },
+    {
+      "path": "packages/skill-naming/assets/naming-decision.md",
+      "sha256": "d3466dcf9f301f936549bab30515d1cf5a2556639df4393ad51c252625c5eb04",
+      "bytes": 974
+    },
+    {
+      "path": "packages/skill-naming/references/conventions.md",
+      "sha256": "7e0e561034771e040b93b90efd59251cdd0e5ab43f50b335fa2e37513f829b58",
+      "bytes": 3701
+    },
+    {
+      "path": "packages/skill-security-review/LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358
+    },
+    {
+      "path": "packages/skill-security-review/SKILL.md",
+      "sha256": "21ce4dcb64ce55c2a4e15d9dbe2728214d0521e21c7b2d822096392c518852a7",
+      "bytes": 2508
+    },
+    {
+      "path": "packages/skill-security-review/agents/openai.yaml",
+      "sha256": "e7fd0f6412a5d50ce788cb45b9199105a2891afdf01daf91ed5a45259a3e6e6e",
+      "bytes": 330
+    },
+    {
+      "path": "packages/skill-security-review/assets/icon-source.md",
+      "sha256": "a9d0a490a4ab030ae524106b006b3650f72798392098a46f4a111c4443881e91",
+      "bytes": 1500
+    },
+    {
+      "path": "packages/skill-security-review/assets/icon.png",
+      "sha256": "805bf6a75bece091c82fd4fe6eb26fb994be46af915b70cc40042687b51eb588",
+      "bytes": 4999
+    },
+    {
+      "path": "packages/skill-security-review/assets/icon.render.json",
+      "sha256": "b68acc73df9282f796c804b458527a6ea62630753935092cb288eb6210785163",
+      "bytes": 410
+    },
+    {
+      "path": "packages/skill-security-review/assets/icon.source.json",
+      "sha256": "cf553266ec062da59e207f3d2926a697230fb832af1df5efd23718dbdf58ee48",
+      "bytes": 893
+    },
+    {
+      "path": "packages/skill-security-review/assets/icon.svg",
+      "sha256": "ceeea3a3064b5b61da63c760cda85d871f496d1628674110d7b571354fc31155",
+      "bytes": 777
+    },
+    {
+      "path": "packages/skills-discovery/LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358
+    },
+    {
+      "path": "packages/skills-discovery/SKILL.md",
+      "sha256": "c3ae81331eb1f7a40a7bd034da000ecb9c44bd22d6248f30185769325443552f",
+      "bytes": 5773
+    },
+    {
+      "path": "packages/skills-discovery/agents/openai.yaml",
+      "sha256": "51fe28220c21dab2f92f28bbb12d26e4a71759da682e299179a6966fb2eb2592",
+      "bytes": 308
+    },
+    {
+      "path": "packages/skills-discovery/assets/candidate-report.md",
+      "sha256": "f76400fa07b125c8e327a81bb553042ca902f24b5ec3111b5853e207537285b5",
+      "bytes": 1038
+    },
+    {
+      "path": "packages/skills-discovery/assets/icon-source.md",
+      "sha256": "280af11c2e22eade9e8d7bf26ae19c2e22f91711ff3dbec429f5ef41dae580c9",
+      "bytes": 1492
+    },
+    {
+      "path": "packages/skills-discovery/assets/icon.png",
+      "sha256": "c00a8a278302ba5d48dde1cddf232b6b35c39d8b79aaf94be2638be45cd0e3f8",
+      "bytes": 5081
+    },
+    {
+      "path": "packages/skills-discovery/assets/icon.render.json",
+      "sha256": "2f4e99e59014e7d850c2a2c67e68b1fc8c3cec2e417407ddf72f81709d02b924",
+      "bytes": 410
+    },
+    {
+      "path": "packages/skills-discovery/assets/icon.source.json",
+      "sha256": "4bee3893841ed03d61e1ce7f56a0387c871ec2a838e3758b2d702ee32cf9a526",
+      "bytes": 885
+    },
+    {
+      "path": "packages/skills-discovery/assets/icon.svg",
+      "sha256": "640ce1851af2af6d9700a0c20791cddd0805d3fd10e82e19fb8283c742fd31fe",
+      "bytes": 882
+    },
+    {
+      "path": "packages/skills-discovery/references/source-review.md",
+      "sha256": "5aae2a16e390cc11f268d334a3677fe90bf4954602378c8224e164abcddc7306",
+      "bytes": 2734
+    },
+    {
+      "path": "packages/skills-refactoring/LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358
+    },
+    {
+      "path": "packages/skills-refactoring/SKILL.md",
+      "sha256": "d185754a5dc672a8aab10eac9de6909480c6e49fdf5d6cc90bde3078d6d17cb0",
+      "bytes": 3876
+    },
+    {
+      "path": "packages/skills-refactoring/agents/openai.yaml",
+      "sha256": "43f4fe7abd5319a443c0e11cc344d7605e6da51ee757876e02ec564220836bb8",
+      "bytes": 337
+    },
+    {
+      "path": "packages/skills-refactoring/assets/icon-source.md",
+      "sha256": "a0fb59845899c6c4566a98ddfece93c32fd9eb949bed8d07efa68139d48138a3",
+      "bytes": 1516
+    },
+    {
+      "path": "packages/skills-refactoring/assets/icon.png",
+      "sha256": "8be5e9ecb849a3ce6e63d167be12b418b664681005d894380f7ef506925f1b07",
+      "bytes": 4021
+    },
+    {
+      "path": "packages/skills-refactoring/assets/icon.render.json",
+      "sha256": "d74f577a52db6504e6b1f42690a06c78216db5e2f8c9b6ad9f68bf732d176deb",
+      "bytes": 410
+    },
+    {
+      "path": "packages/skills-refactoring/assets/icon.source.json",
+      "sha256": "27382a45e1fd4f7de8f80b4e2eb3ce0b6dbd3d5063fd14f2adfb4082af3e1751",
+      "bytes": 909
+    },
+    {
+      "path": "packages/skills-refactoring/assets/icon.svg",
+      "sha256": "c4a0311fe8798f5076b03c23ec1e7a926f359a22f0112c27c1b03307b289e6f5",
+      "bytes": 710
+    },
+    {
+      "path": "suite.json",
+      "sha256": "c1761b2bb7415d01221fe1b9051afce7eb406c57426f21b5f377c0224a7064c1",
+      "bytes": 12503
+    }
+  ],
+  "packages": [
+    {
+      "name": "skill-authoring",
+      "tree_sha256": "c9d44b119165fe730ece88e40bda1a47740c08cd992902d55dc2f9723c185434"
+    },
+    {
+      "name": "skill-design",
+      "tree_sha256": "d26c1a220ab949ce8a17ad689cdd4bcb14dea95c58978b675fd758663b3e0c57"
+    },
+    {
+      "name": "skill-domain-research",
+      "tree_sha256": "b3d2ceb4c42fcc0b806c370327239c31566f8fecbbc21ac4395f80a6a0ffa5f5"
+    },
+    {
+      "name": "skill-evaluator",
+      "tree_sha256": "9ad1b1d329cd3ab8dc2733619a8173e1b2bb8e0180a8046a466718ba50571388"
+    },
+    {
+      "name": "skill-migration",
+      "tree_sha256": "d8979cddd3a7f895bc605bd1b24bac551197b33387d8e5f217e3e454385d6969"
+    },
+    {
+      "name": "skill-naming",
+      "tree_sha256": "fc1466bdaccd7e1173814197dfc15cd4d17340d204d2818efcd604af676becb1"
+    },
+    {
+      "name": "skill-security-review",
+      "tree_sha256": "822d8e80dee532117c6db99cc4b4adb02d53a5577f17bc7b1a4784ae56c16ef9"
+    },
+    {
+      "name": "skills-discovery",
+      "tree_sha256": "2e99824e5773099a984edfc8db6373d1d94006c695c47f80421730df76895288"
+    },
+    {
+      "name": "skills-refactoring",
+      "tree_sha256": "4547b9be766c75381b10785fa4cda5182937afb289de29d1b0f78b130c775ff3"
+    }
+  ]
+}

@@ -1,0 +1,162 @@
+[
+  {
+    "path": "collections/source/.git/COMMIT_EDITMSG",
+    "bytes": 42,
+    "sha256": "eee39c7c63bfcf345fecae7607a00cde0ce446c478ae9f5ca49e7dacb99627f4"
+  },
+  {
+    "path": "collections/source/.git/HEAD",
+    "bytes": 35,
+    "sha256": "aa60d4eba20110497fa2fccf5fd682a4a35d2a24c96df1916c6bb791db7aced4"
+  },
+  {
+    "path": "collections/source/.git/config",
+    "bytes": 137,
+    "sha256": "cae33efdb02cf774435c1ff9cb16bcc1014606908530c6e1dc727615fe3e8cda"
+  },
+  {
+    "path": "collections/source/.git/index",
+    "bytes": 583,
+    "sha256": "d537190bf66bdf61c54e8bc07a2dc26e6163fa4f98836f8981fbf56809bbbf1a"
+  },
+  {
+    "path": "collections/source/.git/logs/HEAD",
+    "bytes": 223,
+    "sha256": "a68174227b96d1bf5c8a7ef7acc4198766b1e08e19d40e67aecde06c5cc53d1e"
+  },
+  {
+    "path": "collections/source/.git/logs/refs/heads/synthetic-baseline",
+    "bytes": 223,
+    "sha256": "a68174227b96d1bf5c8a7ef7acc4198766b1e08e19d40e67aecde06c5cc53d1e"
+  },
+  {
+    "path": "collections/source/.git/objects/1d/d39c0af5c461a5a81843ef48c2becbe43d4ad1",
+    "bytes": 61,
+    "sha256": "84adf6af6592592714989b5fb2acf43b95be177901bad7b5757f6ce6af36b1b7"
+  },
+  {
+    "path": "collections/source/.git/objects/2d/2ffc6e8749f2937bb77d9ca86aa6e583529464",
+    "bytes": 91,
+    "sha256": "655cf8a7ca4936390a67a00892c2d8b0067c2c4031dc95f816230c1a33f7bfed"
+  },
+  {
+    "path": "collections/source/.git/objects/64/493dbfb862bb6cca914f37ae5e822f0419686b",
+    "bytes": 121,
+    "sha256": "1ead1fd1be702054554818c7868487cb5762251ffb84d8cfb6e3560d229f140d"
+  },
+  {
+    "path": "collections/source/.git/objects/70/31de7fe9dd6f6b6c1e9f36443e6a2119fea273",
+    "bytes": 208,
+    "sha256": "59a6fcda9232fb43348384680a62ab7d813a0a34fa2f133e152337b22d3ba9ca"
+  },
+  {
+    "path": "collections/source/.git/objects/9d/b2db02b648856f5df39d30cd909e101e9b7a49",
+    "bytes": 54,
+    "sha256": "2f0ec0a2783cb6961648d8c10f3606b284f910d76c8cd9e4e7e8578e7e4f098f"
+  },
+  {
+    "path": "collections/source/.git/objects/d0/712558800d4d27ff38bbf11f4d4011396e7bcf",
+    "bytes": 580,
+    "sha256": "ff97242204156db0ee059c67ba77e6c9bd7dc94c04dea35b91e9b5816e406d03"
+  },
+  {
+    "path": "collections/source/.git/objects/d3/3887be853c7c20ea31a918febb7589008d4b63",
+    "bytes": 263,
+    "sha256": "064d1458bb62f0e130e5d160d57b597ca05c2b4b77df4ac9bd5d1fa30c47d6df"
+  },
+  {
+    "path": "collections/source/.git/objects/d6/45695673349e3947e8e5ae42332d0ac3164cd7",
+    "bytes": 4447,
+    "sha256": "6cad7f9445796e52cfa45ae7fd935574b0c4d919e50384a74210e95115bece77"
+  },
+  {
+    "path": "collections/source/.git/objects/fb/61b10f1e56607c4a1ccf4822a9a48036941bf5",
+    "bytes": 165,
+    "sha256": "d3fd6c8d7220a2e9921fd15bcd8a3b9b2118ace6dcfc0609a77df410f0e6d4ef"
+  },
+  {
+    "path": "collections/source/.git/refs/heads/synthetic-baseline",
+    "bytes": 41,
+    "sha256": "90cde388d271618f6f61a53c16bb2f5195e12b4a2dacb31ee0229fb26997bc99"
+  },
+  {
+    "path": "collections/source/skills/skill-note-transfer/LICENSE",
+    "bytes": 11358,
+    "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+  },
+  {
+    "path": "collections/source/skills/skill-note-transfer/SKILL.md",
+    "bytes": 1050,
+    "sha256": "fa28c05e823c13065f96793f2cd19df880cd31ac9e0180b6c479e4a265931e59"
+  },
+  {
+    "path": "collections/source/skills/skill-note-transfer/references/handoff.md",
+    "bytes": 374,
+    "sha256": "e5500b3361b6d4eaab15e4555e28a4a4db2fc4dcbead391bdd6dfb000ba9c553"
+  },
+  {
+    "path": "collections/source/skills-catalog.json",
+    "bytes": 325,
+    "sha256": "911d333f264f14d76a4860db231ff0a84637c34e23fbb1044b8247f4e23c6147"
+  },
+  {
+    "path": "collections/target/KEEP.md",
+    "bytes": 221,
+    "sha256": "74c19f171854df7adc5fd75db1075a34755d7a772ad179c22fa9e2d8c64223eb"
+  },
+  {
+    "path": "collections/target/skills/skill-note-transfer/LICENSE",
+    "bytes": 11358,
+    "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+  },
+  {
+    "path": "collections/target/skills/skill-note-transfer/SKILL.md",
+    "bytes": 1050,
+    "sha256": "fa28c05e823c13065f96793f2cd19df880cd31ac9e0180b6c479e4a265931e59"
+  },
+  {
+    "path": "collections/target/skills/skill-note-transfer/references/handoff.md",
+    "bytes": 374,
+    "sha256": "e5500b3361b6d4eaab15e4555e28a4a4db2fc4dcbead391bdd6dfb000ba9c553"
+  },
+  {
+    "path": "collections/target/skills-catalog.json",
+    "bytes": 42,
+    "sha256": "589e34d92968f63ef2a7e337c54a0cee3b72b29501b3355a74d3dd101af0cf7b"
+  },
+  {
+    "path": "inputs/authority.json",
+    "bytes": 1160,
+    "sha256": "06f0cd3ebaa2dcb52bf4ef8265f050d026251eb6fc742a665a9a4b07c56a1b3c"
+  },
+  {
+    "path": "inputs/history-policy.md",
+    "bytes": 1241,
+    "sha256": "be1336c6cd750904d0f7a8f7f5fb78c2884f1033e35a8693558bdf9c3b20b70e"
+  },
+  {
+    "path": "output/before.sha256",
+    "bytes": 857,
+    "sha256": "1ff924204866ad13de7f90570ded77e18ff8a7354fab72af7a3e4aa4f0b0047b"
+  },
+  {
+    "path": "output/integrity-check.txt",
+    "bytes": 361,
+    "sha256": "a47e0aa6c05b90dc6fdbc623e5ebb5f5cd028800d1f3a31acd98e8474ae8a373"
+  },
+  {
+    "path": "output/migration-record.md",
+    "bytes": 8128,
+    "sha256": "d733ddb28f6d09c2c9d005eea226a4f0dcccfc0c0290f7b74ec28cee2c807812"
+  },
+  {
+    "path": "output/proposed-target-catalog.json",
+    "bytes": 325,
+    "sha256": "911d333f264f14d76a4860db231ff0a84637c34e23fbb1044b8247f4e23c6147"
+  },
+  {
+    "path": "output/retrieved-source-baseline.tar",
+    "bytes": 20480,
+    "sha256": "ee0f91470c41449a2f07d3d433742699cdb87ff036718e5e2ee8aeb7e150cd51"
+  }
+]

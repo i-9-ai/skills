@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "skills": [
+    {
+      "name": "skill-note-transfer",
+      "path": "skills/skill-note-transfer",
+      "description": "Use to turn one supplied skill evidence note into a portable reviewer handoff without changing the reviewed package.",
+      "tags": ["handoff", "review", "skills"]
+    }
+  ]
+}

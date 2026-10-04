@@ -1,0 +1,47 @@
+[
+  {
+    "path": "deliverables/skill-review-intake/LICENSE",
+    "bytes": 11358,
+    "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+  },
+  {
+    "path": "deliverables/skill-review-intake/SKILL.md",
+    "bytes": 12668,
+    "sha256": "e20ae1134e0bfb0a6f38f2e760672eb508a9ce03e6b61adf9af8736a3b45dfff"
+  },
+  {
+    "path": "deliverables/skill-review-intake/assets/review-intake-template.md",
+    "bytes": 2067,
+    "sha256": "0a096ece022f3cd666b5cbaecae718031e923cd9ca5ecb150859d004bc2185b1"
+  },
+  {
+    "path": "inputs/LICENSE",
+    "bytes": 11358,
+    "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+  },
+  {
+    "path": "inputs/brief.json",
+    "bytes": 1226,
+    "sha256": "3596d3111333113ed2011f3bb2eccd772eadc678fb1ad00fda0cfcc7e9f68678"
+  },
+  {
+    "path": "inputs/design.md",
+    "bytes": 1565,
+    "sha256": "b0350ea5830da90cfbe5b0492a63e3b69f96b87740bcf3634f9660fa4b0163f5"
+  },
+  {
+    "path": "inputs/process-policy.md",
+    "bytes": 2387,
+    "sha256": "e1cac0c373c6532b7982700f01be26764f46b6e019b163324777fcc449c177dc"
+  },
+  {
+    "path": "inputs/research.md",
+    "bytes": 1314,
+    "sha256": "de9b9a4f19ea7a46470d25d40208ef2fcaa36c79c3874012a719360583869e25"
+  },
+  {
+    "path": "output/authoring-record.md",
+    "bytes": 7005,
+    "sha256": "cedf2fae0ee3fd3a5c41f30eae21015ef230ce4273e19cab336b9b3ad6e356c2"
+  }
+]

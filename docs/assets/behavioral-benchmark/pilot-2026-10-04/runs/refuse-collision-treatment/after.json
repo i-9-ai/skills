@@ -1,0 +1,97 @@
+[
+  {
+    "path": "collections/source/skills/skill-note-transfer/LICENSE",
+    "bytes": 11358,
+    "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+  },
+  {
+    "path": "collections/source/skills/skill-note-transfer/SKILL.md",
+    "bytes": 655,
+    "sha256": "59b5365c7fa7f7975be184a35c57658fa17396284473cad4d51361eaf027005c"
+  },
+  {
+    "path": "collections/source/skills/skill-note-transfer/references/handoff.md",
+    "bytes": 258,
+    "sha256": "475ad236ed6f99c6c160d440d0f9d70a7fa81b426a32c81ce14351c320f8f351"
+  },
+  {
+    "path": "collections/source/skills-catalog.json",
+    "bytes": 315,
+    "sha256": "8ab25377b5815d2250ca93f4e343cd5716783f22739021034632c64f80b777b4"
+  },
+  {
+    "path": "collections/target/skills/skill-note-transfer/LICENSE",
+    "bytes": 11358,
+    "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+  },
+  {
+    "path": "collections/target/skills/skill-note-transfer/SKILL.md",
+    "bytes": 694,
+    "sha256": "d57b6d14f720f71c2723b5070fea66663d63efdba0226822ebddab8b925fac1b"
+  },
+  {
+    "path": "collections/target/skills/skill-note-transfer/references/decision.md",
+    "bytes": 301,
+    "sha256": "9afb25fcb244d44de4592c826c99858eba36fd299b5998f347ddb43483b362ec"
+  },
+  {
+    "path": "collections/target/skills/skill-note-transfer/retained-note.md",
+    "bytes": 221,
+    "sha256": "04557c73d5927615e94e957e09a7def02b4745a054224cc8e48be91fdf9d1156"
+  },
+  {
+    "path": "collections/target/skills-catalog.json",
+    "bytes": 320,
+    "sha256": "c5bc51915f366b16ff8faf3b305e9a4af13ca8c9ceca4e100d23fb85c2ee88e9"
+  },
+  {
+    "path": "inputs/authority.json",
+    "bytes": 642,
+    "sha256": "9407ce1d450a09e3da5ee5c5179bd5298509c58ff2996d0e1b1fad3f1ec66672"
+  },
+  {
+    "path": "instruction-only/skill-migration/LICENSE",
+    "bytes": 11358,
+    "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+  },
+  {
+    "path": "instruction-only/skill-migration/SKILL.md",
+    "bytes": 3376,
+    "sha256": "fb1d0d80201b47c27ebd3c5ae45542193b63cfe0b2746ccfdccce38ef02c7a30"
+  },
+  {
+    "path": "instruction-only/skill-migration/agents/openai.yaml",
+    "bytes": 323,
+    "sha256": "3409e7b91b518011931bdcc97244aa8ff296fa4880b3c35d8f32148c5a8fa5f9"
+  },
+  {
+    "path": "instruction-only/skill-migration/assets/icon-source.md",
+    "bytes": 1500,
+    "sha256": "b61664e36f8a5a84dd4f3857f7d2f9c7e465d65a239811d26cb27902f23b20f5"
+  },
+  {
+    "path": "instruction-only/skill-migration/assets/icon.png",
+    "bytes": 4028,
+    "sha256": "1ad173b9f0c91dfca25356b5416d9cc8515f51c81704b732a817f5f74033a898"
+  },
+  {
+    "path": "instruction-only/skill-migration/assets/icon.render.json",
+    "bytes": 410,
+    "sha256": "96a0d1eb7831ca15534570a0e9f2077dc376d50f7188b97109c0383712ea6a6f"
+  },
+  {
+    "path": "instruction-only/skill-migration/assets/icon.source.json",
+    "bytes": 893,
+    "sha256": "224e57df904492f61c4258ac12605adf7c7215f21e2ff81566c71396dbb69a7b"
+  },
+  {
+    "path": "instruction-only/skill-migration/assets/icon.svg",
+    "bytes": 722,
+    "sha256": "901becfd2a789e58f9d6f0246f41f92cc494e1c285ee4b17d2f2f506e7c253ab"
+  },
+  {
+    "path": "output/refusal-record.md",
+    "bytes": 4763,
+    "sha256": "5040d4bfb3b1cd4be2120467cacbac59cd1894282d54e0465f319f9b6a53fc3a"
+  }
+]

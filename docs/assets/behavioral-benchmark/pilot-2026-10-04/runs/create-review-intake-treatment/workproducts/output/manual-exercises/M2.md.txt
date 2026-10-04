@@ -1,0 +1,29 @@
+# Review intake: skill-note
+
+## 1. Supplied package identity and review kind
+- Skill: skill-note
+- Package reference: candidate/skill-note, caller supplied; revision not supplied
+- Review kind: portability
+- Reason: not supplied
+- Output path: output/manual-exercises/M2.md
+
+## 2. Evidence available and evidence missing
+- Available: caller's proposed layout: read-only packages/skill-note with
+  task outputs in project/reviews.
+- Available: caller explicitly reports no runtime prerequisite.
+- Available: notes/relocation.md, supplied reference, not opened; caller reports
+  a package-only copy whose template resolves from loaded SKILL.md.
+- Missing: none for intake. Reported relocation is not independently verified.
+
+## 3. Requested review scope and actions authorized
+- Scope: portability-review intake for the supplied candidate.
+- Authorized and performed: write this intake only.
+
+## 4. Status
+ready_for_review — identity, kind and all three portability evidence categories
+are supplied. This does not certify portability or installation success.
+
+## 5. Next reviewer handoff and blocking questions
+- Next: portability reviewer; unassigned role, no companion assumed available.
+- Pass: this record, package reference, proposed layout and relocation reference.
+- Blocking questions: none for intake; caller must arrange reviewer assignment.

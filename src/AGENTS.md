@@ -26,6 +26,9 @@ Update affected domain rules, adapters, use cases, tests, and documentation toge
 Run `npm run check` and inspect the required official workflow result for the exact PR head. Test process adapters using fake executors and temporary fixtures.
 
 ## Child DOX index
+
+- [Behavioral benchmark](../docs/Behavioral%20Benchmark.md): closed suite/package freezes, immutable artifact-backed run imports and read-only comparisons; external execution and grading remain caller assertions.
+
 - [Skill memory inspection](../docs/Skill%20Memory.md): bounded summaries and retention-cutoff counts from the existing evidence store; no policy choice, mutation or deletion.
 - [Memory service](service/SkillMemoryService.ts): validates and composes compact read-only evidence reports while retaining source identity and coverage limits.
 - [Memory repository](repository/SkillMemoryRepository.ts): bounded lifecycle, catalog and read projections in one consistent snapshot; existing evidence stays unchanged.

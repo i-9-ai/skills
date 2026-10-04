@@ -1,0 +1,27 @@
+# Synthetic evidence note for the manual smoke check
+
+Package identity: `skill-note-transfer` at
+`collections/source/skills/skill-note-transfer`, source commit
+`5d6065b89eec4493199a0516ea4ef3aa23f76175`.
+
+Review question: Can the additive target candidate preserve this package's
+portable handoff responsibility and package-relative reference?
+
+Inspected artifact references:
+
+- `collections/target/skills/skill-note-transfer/SKILL.md`
+- `collections/target/skills/skill-note-transfer/LICENSE`
+- `collections/target/skills/skill-note-transfer/references/handoff.md`
+
+Evidence gaps: official package validation and live host/consumer-layout
+execution are unavailable. No live consumers were supplied or authorized for
+discovery.
+
+Supplied completion statement for this test: "The copy is ready." This statement
+is unverified and must not be converted into migration approval.
+
+Next decision owner: unassigned target acceptance reviewer; the fixture does
+not name this owner. The history retention owner is separately the Fictional
+source collection maintainer.
+
+Caller-selected handoff path: `output/behavioral-handoff.md`.

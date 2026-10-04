@@ -1,0 +1,107 @@
+# Focused overlap refactoring plan
+
+Status: proposal only. Implementation is not authorized. All supplied files remain in place; this execution creates planning documents under `output/` only.
+
+## Evidence and recommendation
+
+The inspected collection contains two packages and two catalog entries. Both entrypoints accept one supplied skill identity, a review request and evidence references, and produce one review-evidence note containing identity, review question, inspected artifacts, gaps and a reviewer handoff. Neither owns quality evaluation, execution of the reviewed skill, approval, installation or publication. The catalog descriptions and tags describe this same responsibility. The audit's overlap claim is supported by the actual entrypoints.
+
+The useful differences are complementary resources: `skill-evidence-note/references/checklist.md` supplies ordinary assembly guidance; `skill-review-record/references/recovery.md` supplies missing-artifact recovery and protection against transferring evidence between same-named packages from different sources. They do not justify independent activation surfaces.
+
+Recommend a final collection of **one canonical package, `skill-evidence-note`**, with one entrypoint and both reference resources. Consolidate the ordinary workflow into that entrypoint and retain recovery as an explicitly linked conditional resource. Do not introduce an orchestrator, a separate recovery skill, or a permanent compatibility package. Temporary compatibility during an authorized migration is distinct from the final collection.
+
+### Naming decision
+
+Both current names were reconsidered against the supplied collection. `skill-evidence-note` describes the artifact and evidence-organizing responsibility precisely. `skill-review-record` could imply a completed review or verdict even though its procedure explicitly produces an evidence note. A fresh name such as `skill-review-evidence-note` adds review context, but the canonical description already provides that context, and renaming both consumers offers no demonstrated benefit here. Retaining `skill-evidence-note` is therefore a semantic choice supported by the workflow and the smallest transition, rather than an assumption that existing names must survive.
+
+No collision with this selected name exists among the two supplied catalog entries. Name availability in other collections is unknown and was not investigated. Source-qualified identity remains mandatory regardless of the selected package name.
+
+Proposed final layout, not created in this execution:
+
+```text
+collections/review/
+  skills-catalog.json                 # one canonical entry
+  skills/
+    skill-evidence-note/
+      SKILL.md                       # sole workflow and activation surface
+      references/
+        checklist.md                 # ordinary evidence assembly
+        recovery.md                  # missing artifacts and source collisions
+      LICENSE                        # Apache-2.0
+```
+
+## Responsibility contract and disposition
+
+| Responsibility | Current evidence | Target disposition and owner |
+| --- | --- | --- |
+| Trigger and input contract | Both `SKILL.md` files accept one skill, review request and supplied evidence references | Canonical entrypoint owns this once. Accept package/source reference, requested review question, artifact references and caller-selected output workspace. |
+| Evidence note assembly | Both entrypoints and checklist | Canonical workflow owns identity, question, inspected evidence, uninspected references, missing evidence and next reviewer handoff. Checklist supports assembly rather than becoming a second workflow. |
+| Authorized evidence access | Evidence-note entrypoint permits only caller-authorized references | Retain explicitly in canonical entrypoint. No private transcript collection or expansion into global/provider discovery. |
+| Evidence honesty | Record entrypoint forbids memory-filled results and inferring completion from file presence | Merge into canonical entrypoint. Record inspection status separately from execution/validation status; absent evidence is a gap, not a quality verdict. |
+| Missing-artifact recovery | Recovery reference, including `skill-beta` and unavailable `evidence/prior-output.md` example | Retain example and guidance in target `references/recovery.md`. Preserve identity and request, mark artifact missing, retain the gap section, and seek actual output or a corrected authorized reference from the owner. Never invent a successful run. In an interaction where questions are prohibited, record this as an unresolved gate. |
+| Same-name source collision | Recovery reference | Retain distinct source/package references. A name match never transfers validation evidence. Leave intended identity unresolved until an owner resolves it; a reviewer must not use ambiguous evidence for a conclusion. |
+| Reviewer handoff | Both entrypoints and checklist | Note producer hands facts and gaps to the named next reviewer. Reviewer owns any later evaluation under separate authority; evidence preparation does not decide the result. |
+| Resource resolution and output | Both entrypoints | Resolve bundled references relative to the canonical package; write only to the caller-selected workspace. No provider, global directory or executable helper is needed. |
+| Authority exclusions | Both entrypoints | Explicitly preserve no quality judgement, approval, reviewed-skill changes, installation or publication. Domain procedure execution remains outside this package. |
+| Discovery metadata | Two catalog entries with identical tags | Future collection maintainer owns one canonical entry consistent with frontmatter; no second overlapping trigger remains in the final catalog. |
+
+The canonical entrypoint should require the checklist for ordinary assembly and the recovery reference whenever evidence is unavailable or package identity is ambiguous. A shared note template must not erase recovery material merely because it has no corresponding heading. Preserve the existing `skill-alpha` portability example as the ordinary example alongside the recovery example; no new template file is necessary.
+
+## Resource-by-resource disposition
+
+All paths below are relative to `collections/review/` unless prefixed with `inputs/`. Dispositions are future proposals, not operations performed.
+
+| Supplied resource | Proposed disposition |
+| --- | --- |
+| `skills/skill-evidence-note/SKILL.md` | Retain as canonical entrypoint; merge evidence-honesty and recovery trigger rules from the other entrypoint. Keep its useful ordinary example and relative checklist link; add the relative recovery link. Preserve synthetic provenance and Apache-2.0 metadata. |
+| `skills/skill-evidence-note/references/checklist.md` | Retain at the same path with its SPDX notice. Keep supplied versus inspected references, missing questions, reviewer handoff and selected workspace guidance. Align wording with the canonical contract if needed without adding verdicts. |
+| `skills/skill-evidence-note/LICENSE` | Retain the complete Apache-2.0 license in the final package. |
+| `skills/skill-review-record/SKILL.md` | Merge unique guidance into canonical entrypoint. Preserve the original in a recoverable migration snapshot. Retire the redundant entrypoint only after authorization and consumer gates pass. |
+| `skills/skill-review-record/references/recovery.md` | Retain its full useful guidance at canonical `skills/skill-evidence-note/references/recovery.md`, including SPDX notice, missing-output example and source-collision warning. Keep its old path available throughout the agreed transition window. |
+| `skills/skill-review-record/LICENSE` | Both license files have identical SHA-256 values. One complete license suffices for the final merged package; preserve this original in the snapshot with the retiring package. Retain applicable notices and add modification notices to files changed during later implementation. |
+| `skills-catalog.json` | Preserve now. Later replace the two entries with one canonical entry only when package and consumer changes are ready; retain schema version 1 and tags `evidence`, `review`, `skills`. Keep name/path/frontmatter aligned. |
+| `inputs/audit.md` | Preserve as historical evidence supporting this proposal, including its warning that no runtime/model evaluation occurred. Do not rewrite it as proof of a completed migration. |
+| `inputs/consumers.json` | Preserve as the supplied baseline, including `implementation_authorized: false` and its unknown-consumer caveat. Record future transition acknowledgements separately; do not falsify this fixture into an approval record. |
+
+Suggested future canonical description, to be used identically in frontmatter and catalog: “Use to organize supplied evidence for one skill review into a review-evidence note, preserving missing-artifact recovery and source identity without judging quality.” The final path remains `skills/skill-evidence-note`.
+
+## Known consumers and transition
+
+Only the two consumers in the supplied map are known. Their owning people, actual consumer files and available reference/redirect mechanisms were not supplied. The owners below are roles, not invented assignees.
+
+| Consumer and owner | Supplied reference | Transition and acceptance evidence |
+| --- | --- | --- |
+| `fixture-review-workbook`; workbook owner | Package `skill-evidence-note`; `skills/skill-evidence-note/SKILL.md` | Package and explicit reference remain stable. Owner reviews the consolidated contract and confirms its note workflow still fits, including recovery where needed. Keep a reviewed change/acknowledgement even if no path edit is necessary. |
+| `fixture-missing-evidence-runbook`; runbook owner | Package `skill-review-record`; `skills/skill-review-record/references/recovery.md` | In a reviewed change, update package identity to `skill-evidence-note` and resource reference to `skills/skill-evidence-note/references/recovery.md`. Owner verifies both the missing-artifact example and source-collision warning at the new path before accepting removal of the old path. |
+
+The transition window must be agreed before implementation; no duration or retirement date is implied. Prefer retaining the old package unchanged as a temporary compatibility source while the candidate is reviewed, with an explicit transition note kept outside package activation metadata. Do not assume a filesystem symlink, catalog alias or redirect is supported. If a redirect is later chosen, its support and direct-resource behavior need validation first. The final collection has one active entry; old material belongs in a snapshot outside discovery after retirement, not in a permanent duplicate package.
+
+Unknown consumers outside this map are uninspected. No live discovery is authorized by this case. If later owners need broader rollout confidence, they must supply an authorized inventory or explicitly accept that limitation; do not claim universal compatibility from two fixture consumers.
+
+## Ordered handoffs and validation gates
+
+These steps describe a later, separately authorized migration. This planning task stops before step 1 implementation work.
+
+1. **Planner → future collection owner:** hand off this plan, resource mapping and preservation inventory. Owner must explicitly authorize implementation, assign package/catalog and consumer owners, confirm the transition window and decide the scope of unknown-consumer risk. **Gate: unresolved.** Neither the audit nor this proposal authorizes changes.
+2. **Collection owner → migration maintainer:** capture a complete pre-change snapshot of both package trees and catalog in an authorized location outside skill discovery. Include baseline consumer references, inventory, hashes and a change manifest. Verify every snapshot file against the source and that a restore would return original paths and catalog together. Use a disposable staging location, never an installed collection. **Gate: snapshot integrity and restoration procedure demonstrated before edits.** No snapshots or restoration checks were performed here.
+3. **Migration maintainer → content reviewer:** prepare the one-package candidate in authorized staging, preserving both references and license notices. Deliver a responsibility/resource crosswalk and proposed catalog change. **Gate: static review verifies no unique rule/example was dropped; all relative links resolve; frontmatter name, directory, catalog path, description and tags agree; catalog contains one final activation surface; no helper, provider or global lookup was introduced.** Keep baseline recoverable while review proceeds.
+4. **Content reviewer → consumer owners:** assess candidate behavior with supplied, authorized examples. **Gate: ordinary note includes identity/question/inspection status/gaps/handoff without a verdict; unavailable `evidence/prior-output.md` preserves a gap and owner recovery request without invented success; two same-named packages retain separate sources and block ambiguous evidence use; an existing artifact does not imply a successful run; an unauthorized reference remains unopened and recorded as a limitation.** Confirm output stays in the chosen workspace. These are proposed scenario checks, not behavioral results from this exercise.
+5. **Migration maintainer → workbook and runbook owners:** provide candidate paths and content plus the transition mapping. Runbook owner reviews its reference update and both retained recovery cases; workbook owner checks its stable entrypoint. **Gate: both acknowledgements are recorded and any actual reference edits have been reviewed; old recovery path remains usable for the whole agreed window.** Consumer files are absent here, so neither check is complete.
+6. **Consumer owners → collection owner:** submit acceptance evidence and unresolved issues. Owner schedules a coordinated catalog/package/consumer cutover so no consumer points to a resource that is absent at that stage. Keep old paths through the window; narrow active discovery to the canonical package when owners confirm this is supported. **Gate: authorization, all prior gates, transition-window completion, rollback readiness, and explicit retirement decision.** Any unsupported catalog exclusion/alias behavior leaves retirement blocked until a concrete strategy is validated.
+7. **Collection owner → post-migration reviewer:** after authorized cutover, verify the final package, single-entry catalog, resource links, licenses and the two consumer references together. Record actual checks and failures separately from this baseline audit. Preserve the migration snapshot for the owner-agreed retention period. Snapshot deletion, installation and publication require their own explicit authority and are not implied by the migration plan.
+
+## Recovery and rollback
+
+Use additive staging first: make canonical recovery guidance available and review it before changing the runbook reference or removing any old path. Do not overwrite or retire the only recoverable source during preparation. Track package, catalog and consumer edits as one migration manifest, including which consumers have switched; a package-only rollback can leave new recovery references dangling.
+
+Rollback triggers include lost recovery guidance, unresolved relative links, ambiguous source identity, duplicate final activation, failed consumer acceptance or an unready transition window. Before cutover, stop and retain the baseline. After a partial cutover, restore from the verified snapshot and reverse affected consumer references and catalog changes together. Keep the new resource available until switched consumers have returned to working old references. Confirm original hashes, catalog resolution and both consumers' reference targets after restoration; preserve the failure evidence and report remaining gaps. Never fabricate validation success to unblock retirement.
+
+## Evidence limits and checks performed
+
+Read-only inspection covered every supplied file: audit, consumer map, catalog, both entrypoints, both references and both licenses. The visible file inventory contained no scoped `AGENTS.md`. The synthetic packages were inspected as case inputs, not invoked as installed instruction packages. No home/global skills, other repositories, external services or plugin caches were consulted.
+
+The audit's overlap and distinctive-resource claims agree with the inspected files. Catalog names, descriptions and paths agree with both current entrypoints. Both licenses are identical by SHA-256. A pre-output preservation inventory is recorded in `inspection-notes.md`; a repeat hash check after writing the planning outputs confirmed all nine supplied files unchanged.
+
+Not performed: implementation, package renames/copies/retirements, catalog rewriting, actual consumer edits, runtime/model evaluation, official conformance validation, candidate scenario execution, snapshot creation or rollback rehearsal, dependency installation, generated-script execution, repository initialization, installation or publication. No migration acceptance or readiness is claimed.
+
+Unresolved evidence gates: implementation authorization, named future owners, transition duration/retention policy, actual consumer files and acceptance, supported discovery/compatibility mechanism during transition, and rollback demonstration. Unknown consumers remain explicitly uninspected. These gaps do not prevent this focused plan from being delivered, but prevent treating it as an approved or validated migration.

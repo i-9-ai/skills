@@ -1,0 +1,28 @@
+# Review intake: skill-tree
+
+## 1. Supplied package identity and review kind
+- Skill: skill-tree
+- Package reference: candidate/skill-tree, caller supplied; revision not supplied
+- Review kind: structure
+- Reason: not supplied
+- Output path: output/manual-exercises/M5.md
+
+## 2. Evidence available and evidence missing
+- Available: caller-supplied tree: SKILL.md and LICENSE.
+- Missing: recorded structural checks, including unavailable/not-run checks.
+- Unresolved policy: the original owner example calls tree-only intake ready,
+  while the evidence list requests check records and the design makes missing
+  data incomplete. Neither statement is silently discarded.
+
+## 3. Requested review scope and actions authorized
+- Scope: structure-review intake.
+- Authorized and performed: write this record only; no checks executed.
+
+## 4. Status
+incomplete — a check record and the owner ruling about the tree-only exception
+are absent. This gate is not a finding about package quality.
+
+## 5. Next reviewer handoff and blocking questions
+- First: process owner clarifies whether check records are optional for the
+  policy's tree-only ready example; caller supplies missing check evidence.
+- Then: structure reviewer, unassigned; pass this record and supplied evidence.

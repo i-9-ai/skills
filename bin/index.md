@@ -139,6 +139,29 @@ See [skill change reports](../docs/Skill%20Change%20Reports.md) for fields, limi
 and the inspect-through-report walkthrough. Report and guide data are also
 available through `skill_bump_report` and `skill_onboarding` in the shared MCP.
 
+## Behavioral benchmark candidate
+
+These routes require the reviewed candidate checkout or an explicitly prepared
+installed candidate. Published npm `@i-9.ai/skills@0.3.4` does not include them.
+From the candidate checkout:
+
+```sh
+node bin/index.mjs benchmark prepare --suite docs/assets/behavioral-benchmark/suite.json --output ../skill-lifecycle-synthetic-v1 --skills-root .agents/skills
+node bin/index.mjs benchmark import-run --benchmark ../skill-lifecycle-synthetic-v1 --run ../candidate-run/run.json --artifacts ../candidate-run/artifacts
+node bin/index.mjs benchmark compare --benchmark ../skill-lifecycle-synthetic-v1
+```
+
+Preparation freezes a closed suite, fixtures and exact package inventory in a
+new directory. Import verifies declared artifact hashes and creates an immutable
+run receipt without overwriting a prior case/variant/attempt. Comparison verifies
+retained bytes and reports missing pairs, declared comparability, critical
+failures and caller-reported metrics; unknown metrics remain `null`. Artifact
+integrity does not authenticate execution, and wall time is not inference
+latency. All commands print JSON and invalid input exits nonzero. They execute no
+model/case scripts, installation, hooks or telemetry database operations. Read
+the [behavioral benchmark guide](../docs/Behavioral%20Benchmark.md) for external
+execution/grading, schema, bounded inputs and failure recovery.
+
 ## Collection maintenance
 
 `collection audit` inspects an explicitly selected collection and reports bounded

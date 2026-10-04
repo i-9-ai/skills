@@ -1,0 +1,121 @@
+# Additive migration record
+
+Readiness: **BLOCKED for acceptance; target candidate prepared for review.**
+The fixture supplies no official validator, validation entrypoint, or validator
+dependencies. Official validation was not run. Local preservation checks below
+do not replace that gate. The target catalog remains unchanged with `skills: []`.
+
+## Authority and identities
+
+Authority: `inputs/authority.json` and `inputs/history-policy.md`, read together
+with both original collection catalogs before any write. This is a synthetic
+scratch migration; all additions are within the listed writable paths.
+
+| Identity | Before | Candidate |
+| --- | --- | --- |
+| Collection | `collections/source` | `collections/target` |
+| Package name | `skill-note-transfer` | `skill-note-transfer` |
+| Package path | `collections/source/skills/skill-note-transfer/` | `collections/target/skills/skill-note-transfer/` |
+| Collection-relative entrypoint | `skills/skill-note-transfer/SKILL.md` | `skills/skill-note-transfer/SKILL.md` |
+| Catalog status | Existing source entry, retained | Proposed entry only; not accepted |
+| License | Complete Apache-2.0 | Exact copy of complete source license |
+
+Responsibility remains turning one supplied skill evidence note into a reviewer
+handoff for one identified skill, preserving its identity, review question,
+inspected artifacts, evidence gaps, uncertainty, and next decision owner.
+It does not evaluate or modify the reviewed package. The caller chooses an
+authorized output path; private transcripts and credentials are excluded.
+
+## Packaging and preservation
+
+No packaging or content changes were needed. Exactly three ordinary files were
+copied into the new target package: `SKILL.md`, `LICENSE`, and
+`references/handoff.md`. The frontmatter, source metadata, example, all license
+sections and appendix, and reference attribution are preserved byte for byte.
+The reference still resolves relative to the package. No host adapter, installed
+companion, setup, or external service is required by the supplied package.
+
+The source package and source catalog remain unchanged. Existing target
+`KEEP.md` and the target catalog remain unchanged. Original SHA-256 values are
+in `before.sha256`; all eight protected-file checks returned `OK`, recorded in
+`integrity-check.txt`.
+
+## Retained source history
+
+Retention owner: **Fictional source collection maintainer**.
+
+An independent local repository was initialized only at
+`collections/source/.git`, with an empty Git template and no remote. It retains
+the reachable root commit on branch `synthetic-baseline`:
+
+`fb61b10f1e56607c4a1ccf4822a9a48036941bf5`
+
+Commit subject: `Retain supplied synthetic source baseline`.
+Command-local author/committer identity:
+`Synthetic Source Maintainer <source-maintainer@example.invalid>`.
+Every Git invocation disabled system/global Git configuration via
+`GIT_CONFIG_NOSYSTEM=1` and `GIT_CONFIG_GLOBAL=/dev/null`, disabled system
+attributes, and used an isolated environment. Commit hooks were disabled and
+signing was disabled for this synthetic commit.
+
+The commit has no parent and tracks only the supplied source catalog and three
+package files. It imports no unrelated history. `git archive` retrieved this
+actual commit to `retrieved-source-baseline.tar`; extracting each of its four
+file streams and comparing against the supplied source returned exit 0 for
+every file. The archive is supplemental evidence; the retained source Git
+repository and reachable commit are the history retention mechanism.
+
+## Actual checks and unresolved gates
+
+Commands used RTK 0.51.0; Git was 2.54.0 (Apple Git-157). Shell checks used
+`/bin/bash` without login initialization. No dependencies were downloaded,
+generated scripts executed, or external services contacted.
+
+| Check | Actual method and result |
+| --- | --- |
+| Scope and authority | Read the authority, history policy, both catalogs, and all package files; target package did not exist before copying. PASS. |
+| Source history contents | `git -C collections/source ls-tree -r --full-tree HEAD`: exactly the four authorized files. `git log -1`: recorded SHA, synthetic identity, and empty parent list. PASS. |
+| Source retrieval | `git archive --format=tar` using the recorded full SHA; `tar -tf` lists the catalog, entrypoint, full license, and bundled reference. Four `tar -xOf ... \| cmp - ...` checks with pipeline failure propagation each exited 0. PASS. |
+| Git integrity | `git -C collections/source fsck --full` exited 0. PASS. |
+| Source working tree | `git -C collections/source status --porcelain=v1 --untracked-files=all` exited 0 with no output. PASS. |
+| Candidate completeness and equality | `diff -r collections/source/skills/skill-note-transfer collections/target/skills/skill-note-transfer` exited 0 with no output. PASS. |
+| License preservation | Complete source license was inspected; whole-package comparison includes `LICENSE`. Its SHA-256 is `cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30`. PASS for preservation. |
+| Package-relative reference | Read the entrypoint's `references/handoff.md` instruction and the bundled reference; `/bin/test -f` on its resolved target path exited 0. PASS for this file reference. |
+| Protected bytes | `shasum -a 256 -c output/before.sha256` exited 0: inputs, source package/catalog, target catalog, and `KEEP.md` all unchanged. PASS. |
+| Catalog JSON syntax | Standard library `python3 -I -S -B -m json.tool` on source catalog, unchanged target catalog, and proposed catalog each exited 0. PASS for JSON syntax only. |
+| Responsibility and ordinary behavior | Static review plus exact file equality preserves the supplied instructions and example. No independent runtime behavior check was run; this is not a claim of behavioral certification. |
+| Official validator | Unavailable in the supplied fixture; no specification or executable supplied. NOT RUN; acceptance BLOCKED. No global skills, external validator, or downloaded tooling was sought. |
+| Consumer checks and cutover | No consumers supplied, discovery unauthorized. NOT RUN; no cutover. |
+
+Diagnostic attempts were not counted as passes: macOS `plutil -lint` rejected
+these JSON inputs as property lists, so JSON syntax was checked using the
+standard library instead. `/usr/bin/test` was unavailable; the corrected
+`/bin/test` reference check succeeded. Git emitted a temporary-directory lookup
+warning and used `/tmp`; Git operations and retrieval still exited 0.
+
+Unresolved acceptance owner: the fixture does not identify an official validator
+provider or acceptance decision owner. The fictional source maintainer owns
+history retention only. A reviewer must supply the authorized validator/check
+definition and resolve that gate before catalog reconciliation. No approval is
+inferred from copied files or the source's completion example.
+
+## Proposed catalog and reversible additions
+
+`proposed-target-catalog.json` contains the reviewable prospective target catalog:
+schema version 1, name `skill-note-transfer`, path `skills/skill-note-transfer`,
+the unchanged source description, and tags `handoff`, `review`, `skills`.
+It is an output artifact, not the active target catalog. Reconciliation was
+withheld because the official validation gate is unresolved.
+
+To roll back this candidate, remove only the three newly added target files
+listed above after checking they still match this candidate. Remove their new
+`references/` and package directories only if empty; the newly created
+`collections/target/skills/` parent can also be removed only if empty. Leave any
+subsequent unrelated additions intact. No target catalog restoration is needed,
+because it was not changed. Leave `collections/target/KEEP.md`, the source
+package, source catalog, and `collections/source/.git` intact, including the
+reachable baseline branch and commit. Rollback was documented, not executed.
+
+Review artifacts in `output/` may be retained with this record; the retrieved
+archive is not a substitute for retaining source history. There was no source
+removal, consumer cutover, agent installation, publication, or host-link change.
