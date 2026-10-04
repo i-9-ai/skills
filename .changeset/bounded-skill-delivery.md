@@ -7,3 +7,5 @@ Make the authoring record and refactoring plan explicit incremental outputs. Kee
 Bound optional or repeated inspection by the acceptance question it resolves. Required research, security and conformance stages remain required, and a partial record or plan remains incomplete rather than proving readiness.
 
 Add a complete inline refactoring-plan example connecting resource and declared-consumer dispositions, recovery before mutation, semantic mode and fallback checks, final-candidate `skills-ref validate`, transition and rollback. Keep proposed checks separate from performed evidence and leave unavailable requirements or consumers explicitly unresolved.
+
+Link the behavioral evaluation guide to a scoped report of real global-reference cases. Preserve failed and incomplete comparisons, grading and timing limits, and the distinction between a useful delivery and complete workflow readiness; the report does not establish a general or causal quality benefit.

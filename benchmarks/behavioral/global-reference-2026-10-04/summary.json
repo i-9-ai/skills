@@ -39,6 +39,20 @@
         "executor_files": 3,
         "inventory_sha256": "96726000184cbebae849351c68aac40d452dd00c60c86c71458c0dd102952dc8",
         "license_observation": "Full MIT LICENSE reviewed in captured package; preserve included notices"
+      },
+      {
+        "capture_label": "git-ignore",
+        "raw_files": 10,
+        "executor_files": 9,
+        "inventory_sha256": "06635a15a58e587cbc72966bf91f23ce968fd141d264beb54af438709584a14c",
+        "license_observation": "Full Apache-2.0 LICENSE and separate ISC icon notices reviewed in capture; preserve notices and modification attribution; upstream byte lineage unverified"
+      },
+      {
+        "capture_label": "git-attributes",
+        "raw_files": 10,
+        "executor_files": 9,
+        "inventory_sha256": "b28bcfc2f8ed5caac7ab11518f0d8f58155ef8a82906f72be53368bfe9a26e83",
+        "license_observation": "Full Apache-2.0 LICENSE and separate ISC icon notices reviewed in capture; preserve notices and modification attribution; upstream byte lineage unverified"
       }
     ],
     "upstream_byte_lineage_verified": false,
@@ -378,26 +392,106 @@
     }
   },
   "held_out_git_case": {
-    "status": "executing; independent grading not yet retained",
+    "status": "independently assessed bounded planning delivery; implementation and readiness remain unperformed",
+    "suite_id": "skill-real-git-policy-plan-v1",
+    "suite_sha256": "de42c470bc4833b66cca8f6d33cb10348e1402edfb49e2950f94df622daadebd",
+    "manifest_sha256": "4d691512edb5fc1632406ba11fb2f5302be85ee295ae3a0b00b17761e6e0f24b",
     "benchmark_sha256": "8d9fe2e469be6c78851a6e0106b67202edb56d85f933ef86aece8b03da038f79",
+    "comparison_sha256": "d27e14479bb1beb070e8df1a2b8a9608c81befe4d99134fa3a0d2286385cd673",
     "packages": [
-      {
-        "name": "skills-refactoring",
-        "tree_sha256": "e4ce26467f59fe3118285a2242900fff39390f9cfd5bd8b4f7d96f3176852da2"
-      },
       {
         "name": "skill-naming",
         "tree_sha256": "fc1466bdaccd7e1173814197dfc15cd4d17340d204d2818efcd604af676becb1"
+      },
+      {
+        "name": "skills-refactoring",
+        "tree_sha256": "e4ce26467f59fe3118285a2242900fff39390f9cfd5bd8b4f7d96f3176852da2"
       }
     ],
-    "acceptance_result": null
+    "case_id": "plan-git-policy-refactor",
+    "seconds_limit": 600,
+    "required_criteria": 9,
+    "critical_criteria": 8,
+    "requirement_visibility": "Explicit resource, consumer, official final-candidate validation and before-mutation recovery requirements supplied to both arms before execution",
+    "acceptance_result": "pass",
+    "comparison_status": "complete",
+    "coverage": {
+      "expected_pairs": 1,
+      "imported_runs": 2,
+      "missing_runs": 0,
+      "paired_cases": 1,
+      "declared_agent_pairs": 1,
+      "declared_controlled_agent_pairs": 1,
+      "fixture_runs": 0,
+      "manual_runs": 0,
+      "unexecuted_runs": 0
+    },
+    "runs": [
+      {
+        "variant": "baseline",
+        "run_id": "plan-git-policy-refactor-baseline-1",
+        "run_sha256": "47b25328318df6c01cb5dfc69a840e9f9044147eb045e539a35818d468c377b7",
+        "receipt_sha256": "1017a5ffd79ce1cb69fe8723c8c47a7f8eca4b23c7a62874a68484223e9f12e8",
+        "grading_sha256": "bd9257422c8e58eca57eed2dce24762a79084bb94d5c51b3b6ed6e107b432600",
+        "grading_report_sha256": "53b93d71339841ad848bb870a8ad1cf437fc453c01c0006d5833695aba14bfae",
+        "import_evidence_projection_sha256": "26ea7234d71fc642b915f486263eb93acd235caac41963a74cdf5c36cc940d60",
+        "import_evidence_projection_report_sha256": "5e5c6bec5789e020d6285dc468efb1dcd6a0a5ee7c4c86318e7c1059f9adaf2d",
+        "registered_artifacts": 15,
+        "reported_metrics": {
+          "wall_time_ms": 431518,
+          "input_tokens": 341943,
+          "output_tokens": 12427
+        },
+        "assessment": {
+          "pass": 9,
+          "fail": 0,
+          "blocked": 0,
+          "not-run": 0
+        }
+      },
+      {
+        "variant": "treatment",
+        "run_id": "plan-git-policy-refactor-treatment-1",
+        "run_sha256": "fcc0a8d3b58d1faab59d594b36b5b56682e88386fbc55e89c631f9bafdf99a4e",
+        "receipt_sha256": "64851d5a5055063b56dfe743bc4bcf9eba810fb0554b127a2f9bb2f3cfa82781",
+        "grading_sha256": "462f9456f50fccae26d6b3139c46060d220503e87956d6313a37ec6a1f51a543",
+        "grading_report_sha256": "c3ff5ea876c55b9a89d6971b4839a349710d992d646428a9eccc980bc5e7ee28",
+        "import_evidence_projection_sha256": "ee410448366f4c4a8e94c61392f6c5942e599b86e9335c2876619468ed51a833",
+        "import_evidence_projection_report_sha256": "76e901c8c71304f0205f85186d409886f970a40e4076ce894e0f8c60a065773a",
+        "registered_artifacts": 15,
+        "reported_metrics": {
+          "wall_time_ms": 513650,
+          "input_tokens": 538105,
+          "output_tokens": 15241
+        },
+        "assessment": {
+          "pass": 9,
+          "fail": 0,
+          "blocked": 0,
+          "not-run": 0
+        }
+      }
+    ],
+    "integrity": {
+      "frozen_files": 43,
+      "registered_artifacts": 30,
+      "hash_and_length_mismatches": 0,
+      "original_grades_preserved": true,
+      "import_projection_changes_assessments": false
+    },
+    "grading_blinded": false,
+    "grading_independent_of_executors_and_case_author": true,
+    "grader_authored_treatment_teaching_recipe": true,
+    "selected_original_files_rechecked": 20,
+    "selected_original_file_mismatches": 0,
+    "implementation_semantic_checks_conformance_and_installation_performed": false
   },
   "limits": [
     "Identity hashes do not authenticate execution, grading, timing or provider identity.",
     "Baseline receives no meta-skills; these are not original-versus-repaired package comparisons.",
     "Failed and consumed cases remain unchanged; tuning does not establish fresh acceptance.",
     "The LLMS official-conformance rubric requirement was not explicitly named in its prompt.",
-    "Pre-cutoff artifact credit differs from complete-run budget compliance; comparison remains incomplete.",
+    "Pre-cutoff artifact credit differs from complete-run budget compliance; the earlier R2 comparison remains incomplete while the Git comparison is complete.",
     "Wiki treatment modeled copying and retained an unfinished record; candidate helper execution is not established.",
     "Raw source captures, original locators, provider logs and generated packages are private.",
     "Bounded observations do not prove full OS isolation, descendant cleanup or permanent quiescence.",
