@@ -1,0 +1,406 @@
+{
+  "schema_version": 1,
+  "scope": "Private real-reference practical cases; public identities and compact observations only.",
+  "replayable_from_this_projection": false,
+  "source_intake": {
+    "digest_definition": "SHA256 of sorted relative-path, NUL, byte-count, NUL, file-SHA256, newline inventory entries; this is not the repository benchmark helper tree algorithm.",
+    "sources": [
+      {
+        "capture_label": "editorconfig",
+        "raw_files": 11,
+        "executor_files": 10,
+        "inventory_sha256": "b5806da5ef4dd037fabaebd6b020cf1be0a4613d689c0fca00ce5730892842b0",
+        "license_observation": "Full MIT LICENSE reviewed in captured package; preserve included notices"
+      },
+      {
+        "capture_label": "create-llms",
+        "raw_files": 7,
+        "executor_files": 6,
+        "inventory_sha256": "f4a2414b800b2d159f863f05e212d7d916ab4a2337bdbb8f5585ec2394fc46c2",
+        "license_observation": "Full MIT LICENSE reviewed in captured package; preserve included notices"
+      },
+      {
+        "capture_label": "architecture-diagram",
+        "raw_files": 10,
+        "executor_files": 9,
+        "inventory_sha256": "66d6b4e3f8285448cb221cff3555a140bc854173ae0b447666f1a4daf2ef56ed",
+        "license_observation": "Full MIT LICENSE reviewed in captured package; preserve included notices"
+      },
+      {
+        "capture_label": "architecture-diagram 2",
+        "raw_files": 2,
+        "executor_files": 2,
+        "inventory_sha256": "a9a359d736b0686edc96501951642a31227ec0c802bed017b566da7dd356dcb4",
+        "license_observation": "Declared MIT; full LICENSE absent; inspection-only, redistribution unresolved"
+      },
+      {
+        "capture_label": "github-wiki",
+        "raw_files": 3,
+        "executor_files": 3,
+        "inventory_sha256": "96726000184cbebae849351c68aac40d452dd00c60c86c71458c0dd102952dc8",
+        "license_observation": "Full MIT LICENSE reviewed in captured package; preserve included notices"
+      }
+    ],
+    "upstream_byte_lineage_verified": false,
+    "raw_sources_published": false
+  },
+  "original_pilot": {
+    "source": "benchmarks/behavioral/pilot-2026-10-04/",
+    "preserved_unchanged": true
+  },
+  "tuning_r1": {
+    "suite_id": "skill-real-global-tuning-v1",
+    "suite_sha256": "d08d3a98bfb027d4d85695c7d57942e04f41750c424b7904b7a0e13d12b3c600",
+    "benchmark_sha256": "aa1828e044641a4ccaa91b4e1829510f6ced742890258282dcbc566352c65d85",
+    "packages": [
+      {
+        "name": "skill-authoring",
+        "tree_sha256": "763d8436f55de2b88fedd5ad13dd2c4b5d60cf739b6e0310460041bc92b00df9"
+      },
+      {
+        "name": "skill-design",
+        "tree_sha256": "d26c1a220ab949ce8a17ad689cdd4bcb14dea95c58978b675fd758663b3e0c57"
+      },
+      {
+        "name": "skill-domain-research",
+        "tree_sha256": "b3d2ceb4c42fcc0b806c370327239c31566f8fecbbc21ac4395f80a6a0ffa5f5"
+      },
+      {
+        "name": "skill-evaluator",
+        "tree_sha256": "9ad1b1d329cd3ab8dc2733619a8173e1b2bb8e0180a8046a466718ba50571388"
+      },
+      {
+        "name": "skill-naming",
+        "tree_sha256": "fc1466bdaccd7e1173814197dfc15cd4d17340d204d2818efcd604af676becb1"
+      },
+      {
+        "name": "skill-security-review",
+        "tree_sha256": "822d8e80dee532117c6db99cc4b4adb02d53a5577f17bc7b1a4784ae56c16ef9"
+      },
+      {
+        "name": "skills-refactoring",
+        "tree_sha256": "75ec8dd142b5294a4da27ac6db7f60892a5c98c59ff39d3c97ebd7ddc19f2c48"
+      }
+    ],
+    "comparison_status": "incomplete",
+    "controlled_pairs": 0,
+    "cases": [
+      {
+        "case_id": "create-editorconfig-workflow",
+        "phase": "tuning",
+        "run_id": "create-editorconfig-workflow-treatment-1",
+        "run_sha256": "111627d0bdf66b717e86dd93aa421f897310a1d50b9bc25290726393eac2b707",
+        "grading_sha256": "9e441a1465676aba1f4edbdfe9e4351323dfd16f6742f5dc592cec36ab8f4cb8",
+        "registered_artifacts": 51,
+        "seconds_limit": 600,
+        "wall_time_ms": 600038,
+        "assessment": {
+          "pass": 7,
+          "fail": 0,
+          "blocked": 0,
+          "not-run": 0
+        },
+        "critical_failures": []
+      },
+      {
+        "case_id": "plan-architecture-duplicate-refactor",
+        "phase": "tuning",
+        "run_id": "plan-architecture-duplicate-refactor-treatment-1",
+        "run_sha256": "89ce0e9b5fd61adbb372608065d9150a7f2c03772561d23d97b03a6eda00b6d3",
+        "grading_sha256": "80c0b7505cd4b02b479edd40500023dd5c74543ba91351844718eb268fd0d0e1",
+        "registered_artifacts": 12,
+        "seconds_limit": 300,
+        "wall_time_ms": 300011,
+        "assessment": {
+          "pass": 1,
+          "fail": 6,
+          "blocked": 0,
+          "not-run": 0
+        },
+        "critical_failures": [
+          "useful-plan-in-budget",
+          "actual-overlap-map",
+          "justified-boundary",
+          "resource-and-dependency-disposition",
+          "rights-and-consumer-transition",
+          "ordered-validation-and-rollback"
+        ]
+      }
+    ]
+  },
+  "tuning_r2": {
+    "suite_id": "skill-real-global-tuning-v1",
+    "suite_sha256": "d08d3a98bfb027d4d85695c7d57942e04f41750c424b7904b7a0e13d12b3c600",
+    "benchmark_sha256": "e14489dbd896ac678db353ad28b43f800c30ad46a2c6bf757416f2bf5d9a943a",
+    "packages": [
+      {
+        "name": "skill-authoring",
+        "tree_sha256": "763d8436f55de2b88fedd5ad13dd2c4b5d60cf739b6e0310460041bc92b00df9"
+      },
+      {
+        "name": "skill-design",
+        "tree_sha256": "d26c1a220ab949ce8a17ad689cdd4bcb14dea95c58978b675fd758663b3e0c57"
+      },
+      {
+        "name": "skill-domain-research",
+        "tree_sha256": "b3d2ceb4c42fcc0b806c370327239c31566f8fecbbc21ac4395f80a6a0ffa5f5"
+      },
+      {
+        "name": "skill-evaluator",
+        "tree_sha256": "9ad1b1d329cd3ab8dc2733619a8173e1b2bb8e0180a8046a466718ba50571388"
+      },
+      {
+        "name": "skill-naming",
+        "tree_sha256": "fc1466bdaccd7e1173814197dfc15cd4d17340d204d2818efcd604af676becb1"
+      },
+      {
+        "name": "skill-security-review",
+        "tree_sha256": "822d8e80dee532117c6db99cc4b4adb02d53a5577f17bc7b1a4784ae56c16ef9"
+      },
+      {
+        "name": "skills-refactoring",
+        "tree_sha256": "54ede26848d4fc69336662a49133924386eede624cd082facf50054c301d715d"
+      }
+    ],
+    "comparison_status": "incomplete",
+    "controlled_pairs": 0,
+    "cases": [
+      {
+        "case_id": "plan-architecture-duplicate-refactor",
+        "phase": "tuning",
+        "run_id": "plan-architecture-duplicate-refactor-treatment-1",
+        "run_sha256": "c86824c2c36f8542eed31dddab92791ac43bc4debbdfeeb3bac692e002154d67",
+        "grading_sha256": "cb47611f5e927aa6ba2320e373dc86cccee067d14c58376014013ef3e025d31d",
+        "registered_artifacts": 12,
+        "seconds_limit": 300,
+        "wall_time_ms": 300011,
+        "assessment": {
+          "pass": 3,
+          "fail": 4,
+          "blocked": 0,
+          "not-run": 0
+        },
+        "critical_failures": [
+          "useful-plan-in-budget",
+          "actual-overlap-map",
+          "resource-and-dependency-disposition",
+          "ordered-validation-and-rollback"
+        ]
+      }
+    ]
+  },
+  "fresh_acceptance_r2": {
+    "suite_id": "skill-real-global-acceptance-v1",
+    "suite_sha256": "fd4b71ce186f82d41e564637b701ca5484ddbeee8c1e04dd4e83d78a53f478ba",
+    "benchmark_sha256": "90514731b95c63aa17a0975155768a1d2bd8e670f7b7277c2c790da5980ab386",
+    "manifest_sha256": "92f094dda8418196ab2a2fe7f7dc56cea721bfcb69eaa44767912e9c39b3fe77",
+    "comparison_sha256": "7ec479b689250b74f573f28a278d5d69ebf61cc44eeed5f656de272bf630844f",
+    "packages": [
+      {
+        "name": "skill-authoring",
+        "tree_sha256": "763d8436f55de2b88fedd5ad13dd2c4b5d60cf739b6e0310460041bc92b00df9"
+      },
+      {
+        "name": "skill-design",
+        "tree_sha256": "d26c1a220ab949ce8a17ad689cdd4bcb14dea95c58978b675fd758663b3e0c57"
+      },
+      {
+        "name": "skill-domain-research",
+        "tree_sha256": "b3d2ceb4c42fcc0b806c370327239c31566f8fecbbc21ac4395f80a6a0ffa5f5"
+      },
+      {
+        "name": "skill-evaluator",
+        "tree_sha256": "9ad1b1d329cd3ab8dc2733619a8173e1b2bb8e0180a8046a466718ba50571388"
+      },
+      {
+        "name": "skill-naming",
+        "tree_sha256": "fc1466bdaccd7e1173814197dfc15cd4d17340d204d2818efcd604af676becb1"
+      },
+      {
+        "name": "skill-security-review",
+        "tree_sha256": "822d8e80dee532117c6db99cc4b4adb02d53a5577f17bc7b1a4784ae56c16ef9"
+      },
+      {
+        "name": "skills-refactoring",
+        "tree_sha256": "54ede26848d4fc69336662a49133924386eede624cd082facf50054c301d715d"
+      }
+    ],
+    "coverage": {
+      "expected_pairs": 2,
+      "imported_runs": 4,
+      "missing_runs": 0,
+      "paired_cases": 2,
+      "declared_agent_pairs": 2,
+      "declared_controlled_agent_pairs": 0,
+      "fixture_runs": 0,
+      "manual_runs": 0,
+      "unexecuted_runs": 0
+    },
+    "comparison_status": "incomplete",
+    "cases": [
+      {
+        "case_id": "create-github-wiki-workflow",
+        "seconds_limit": 600,
+        "comparison_status": "incomplete",
+        "critical_failures": [],
+        "runs": [
+          {
+            "variant": "baseline",
+            "run_id": "create-github-wiki-workflow-baseline-1",
+            "run_sha256": "01318c4f918616cd238f76f2a20516cac6a43fc5d79717af6d4cf891fb27a9b4",
+            "receipt_sha256": "10cc324b58e02859b6371e3d37f80d1bf159f6b9b867cd08e78060b7c10cabaf",
+            "grading_sha256": "ddaf7639963c66ac145e83b6bd01cee2cc6f88efb3ba264f9845bef05ffa2487",
+            "grading_report_sha256": "23ceb7b77e0ce5880bdc053eb2f0d34ed644a7e9427d1ee49631801f7b74e40b",
+            "registered_artifacts": 44,
+            "reported_metrics": {
+              "wall_time_ms": 590784,
+              "input_tokens": 516328,
+              "output_tokens": 16024
+            },
+            "assessment": {
+              "pass": 8,
+              "fail": 0,
+              "blocked": 0,
+              "not_run": 0
+            }
+          },
+          {
+            "variant": "treatment",
+            "run_id": "create-github-wiki-workflow-treatment-1",
+            "run_sha256": "ac0dffe0b783e263b76a9d2fab5b3ed068cd41d86d568937eddea61f57d81b68",
+            "receipt_sha256": "0d1c3fe5e885c804ddabb9afd4a05fddab51ce976b5977ae4762d9b4bc360d36",
+            "grading_sha256": "db357e634f0c2bbea00305156d7d795d7c61de077fb57422590b629f8d2bc038",
+            "grading_report_sha256": "60b1fddaaaf97678d2afe5fe9a46ceb2d4fb0def49fecfd70774bff8685db8ab",
+            "registered_artifacts": 53,
+            "reported_metrics": {
+              "wall_time_ms": 600007,
+              "input_tokens": null,
+              "output_tokens": null
+            },
+            "assessment": {
+              "pass": 8,
+              "fail": 0,
+              "blocked": 0,
+              "not_run": 0
+            }
+          }
+        ]
+      },
+      {
+        "case_id": "plan-llms-name-scope-refactor",
+        "seconds_limit": 300,
+        "comparison_status": "incomplete",
+        "critical_failures": [
+          {
+            "variant": "baseline",
+            "criterion": "ordered-validation-and-rollback"
+          },
+          {
+            "variant": "treatment",
+            "criterion": "ordered-validation-and-rollback"
+          }
+        ],
+        "runs": [
+          {
+            "variant": "baseline",
+            "run_id": "plan-llms-name-scope-refactor-baseline-1",
+            "run_sha256": "377bc47529da740cef2baeb4f2658a1b92e718f2e9c115a5fbc82f08834c067f",
+            "receipt_sha256": "57c81303e0aa2480b421111c9dc82b0cb14c715779ce90f9c26d7a9550bb9807",
+            "grading_sha256": "8ca6672d4f5f461b05f74975eada523b0cb405d9e9ca00fb59e75a0a4bcdcf3f",
+            "grading_report_sha256": "d3bdd127b2ad9996719516aa4e76f9c94dc35c5362eb38003ad4988f0dcd5001",
+            "registered_artifacts": 14,
+            "reported_metrics": {
+              "wall_time_ms": 300006,
+              "input_tokens": null,
+              "output_tokens": null
+            },
+            "assessment": {
+              "pass": 6,
+              "fail": 1,
+              "blocked": 0,
+              "not_run": 0
+            }
+          },
+          {
+            "variant": "treatment",
+            "run_id": "plan-llms-name-scope-refactor-treatment-1",
+            "run_sha256": "b6cdc708c05da6c3fd177b0a6edaab862922dadc829ec39fd00f7fd8f057be25",
+            "receipt_sha256": "8cccbcffad73a5a3ee7c3908291eacd0e178c31e47eda4a61666ba722659b524",
+            "grading_sha256": "3447c155bc53f5887b010e7d1d337b95ce3ea9d07fb0fc6167ddc1ebee6fffd7",
+            "grading_report_sha256": "5bdcf02e7d58fd28c11548cce62718fef3a5234cfb25cf28ce10302350478a5e",
+            "registered_artifacts": 11,
+            "reported_metrics": {
+              "wall_time_ms": 300007,
+              "input_tokens": null,
+              "output_tokens": null
+            },
+            "assessment": {
+              "pass": 6,
+              "fail": 1,
+              "blocked": 0,
+              "not_run": 0
+            }
+          }
+        ]
+      }
+    ],
+    "integrity": {
+      "freeze_files": 113,
+      "imported_registered_artifacts": 122,
+      "byte_or_length_mismatches": 0,
+      "imported_comparison_criterion_verdicts_match": true,
+      "meaning": "Read-only checks of retained bytes, lengths and verdict correspondence; no authenticity or execution claim"
+    },
+    "grading_blinded": false,
+    "wiki_reviewer_knew_repair_diff": true,
+    "llms_requirement_visibility": {
+      "executor_prompt_sha256": "1317878929c8da92110f6018fa3a350758aa55111dfab01b73c5d7207999d880",
+      "prompt_explicitly_names_official_validator": false,
+      "frozen_rubric_requires_future_official_conformance": true,
+      "frozen_rubric_literally_names_skills_ref": false,
+      "failed_future_gate": "An identified official Agent Skills conformance route and successful validation on the exact candidate as an adoption prerequisite",
+      "current_validator_execution_required_by_plan_only_grade": false,
+      "interpretation": "Retain both frozen failures as a common planning gap under the supplied rubric. Prompt/rubric visibility limits prevent treating them as causal treatment benefit/defect proof or evidence that every caller explicitly selected this exact tool requirement."
+    },
+    "wiki_delivery_limits": {
+      "useful_pre_cutoff_proposals_credited": true,
+      "baseline_completed_record": true,
+      "baseline_actual_disposable_rsync_find_exercise": true,
+      "treatment_completed_authoring_pipeline": false,
+      "treatment_record_in_progress_and_stops_before_final_simulation_success": true,
+      "treatment_python_simulation_is_model_only": true,
+      "treatment_candidate_node_helper_executed": false,
+      "treatment_rsync_git_or_provider_execution": false,
+      "treatment_completed_separate_security_review_retained": false,
+      "treatment_finished_run_manifest_retained": false,
+      "official_conformance_or_provider_readiness_established": false,
+      "interpretation": "Scoped criteria credit the complete gated proposal and corroborating fixture bytes; the Python surrogate is not candidate implementation validation."
+    }
+  },
+  "held_out_git_case": {
+    "status": "executing; independent grading not yet retained",
+    "benchmark_sha256": "8d9fe2e469be6c78851a6e0106b67202edb56d85f933ef86aece8b03da038f79",
+    "packages": [
+      {
+        "name": "skills-refactoring",
+        "tree_sha256": "e4ce26467f59fe3118285a2242900fff39390f9cfd5bd8b4f7d96f3176852da2"
+      },
+      {
+        "name": "skill-naming",
+        "tree_sha256": "fc1466bdaccd7e1173814197dfc15cd4d17340d204d2818efcd604af676becb1"
+      }
+    ],
+    "acceptance_result": null
+  },
+  "limits": [
+    "Identity hashes do not authenticate execution, grading, timing or provider identity.",
+    "Baseline receives no meta-skills; these are not original-versus-repaired package comparisons.",
+    "Failed and consumed cases remain unchanged; tuning does not establish fresh acceptance.",
+    "The LLMS official-conformance rubric requirement was not explicitly named in its prompt.",
+    "Pre-cutoff artifact credit differs from complete-run budget compliance; comparison remains incomplete.",
+    "Wiki treatment modeled copying and retained an unfinished record; candidate helper execution is not established.",
+    "Raw source captures, original locators, provider logs and generated packages are private.",
+    "Bounded observations do not prove full OS isolation, descendant cleanup or permanent quiescence.",
+    "No general, causal, statistical, cross-provider, conformance, installation or publication readiness claim."
+  ]
+}
