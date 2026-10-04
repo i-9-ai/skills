@@ -147,7 +147,9 @@ future actions; the planner performs none of them.
 
 1. Copy the complete selected A/B inventories and the supplied loader map to a
    new caller-owned `rollback/package-note/`, outside discovery. Record per-file
-   digests and restore them into a separate disposable directory. Compare every
+   digests, capture any existing selected placement destination or record its
+   verified absence, and restore captured bytes into a separate disposable
+   directory. Compare every
    restored path and byte digest with the frozen inputs. Stop before mutation if
    the restore comparison fails or the selected snapshot method is unavailable.
 2. Resolve the target-profile question and any indispensable rights or consumer
@@ -178,19 +180,30 @@ future actions; the planner performs none of them.
    pending and requires an environment handoff. Any later edit, including an
    adapter or notice correction, requires new affected checks and conformance
    evidence. The earlier semantic results must also match the final candidate.
-6. After required gates and implementation authorization, update the one known
-   loader mapping and verify its ordinary and recovery invocations against the
-   unchanged candidate. Keep B's entrypoint and its consumed resources intact
+6. After required gates, obtain explicit authorization for placement and hand
+   the unchanged candidate to `skill-migration`. Place it at
+   `skill-package-note/` relative to the known loader's collection root, then
+   compare the complete placed inventory/digests with the validated candidate
+   and verify its ordinary and recovery invocations from that destination. An
+   unavailable or unauthorized placement leaves the loader mapping unchanged.
+   If placement changes package bytes, repeat affected semantic checks and
+   official conformance before proceeding. Only after these gates pass, update
+   the one known loader mapping to `skill-package-note/SKILL.md` and verify both
+   invocations through that loader. Keep B's entrypoint and its consumed
+   resources intact
    until the owner's stated retirement criteria pass; retire the duplicate
    template and recovery copy with that transition after their readers are
    accounted for. Resolution of the related handoff and unknown consumers is
    recorded separately; no global
    installation, publication or readiness is inferred.
 
-**Rollback and handoff.** Before loader transition, reject the candidate and
-leave sources/mappings intact if a gate fails. After transition, restore the
-captured loader mapping and affected package bytes from the verified snapshot,
-compare their complete inventories/digests, and rerun the known legacy ordinary
+**Rollback and handoff.** Before placement, reject the candidate and leave
+sources/mappings intact if a gate fails. After any placement, including failure
+before the loader switch, restore affected destination/package bytes from the
+verified snapshot or restore verified prior absence through the authorized
+migration recovery method. Preserve the old loader mapping if it never changed;
+otherwise restore its captured bytes. For either recovery path, compare the
+complete restored inventories/digests or verify prior absence, and rerun the known legacy ordinary
 and recovery invocations. Preserve failed candidate evidence and unrelated
 consumer changes. Hand the candidate design to authoring/evolution, validated
 movement to migration, and unresolved rights/security to the relevant reviewer.
