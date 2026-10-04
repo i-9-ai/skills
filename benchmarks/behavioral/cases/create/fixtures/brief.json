@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "synthetic": true,
+  "process_owner": "Fictional skill collection maintainer",
+  "skill_name": "skill-review-intake",
+  "responsibility": "Turn one request to review a skill into a bounded review-intake record.",
+  "primary_output": "One review-intake record with supplied facts, missing evidence, permitted actions and the next reviewer handoff.",
+  "target_user": "An agent preparing a skill review for a maintainer.",
+  "destination": "deliverables/skill-review-intake",
+  "language": "English",
+  "license": "Apache-2.0",
+  "profile": "Portable standalone package; host interface and icons are optional.",
+  "required_companions": [],
+  "exclusions": [
+    "Evaluating the package",
+    "Approving publication or installation",
+    "Changing a collection catalog",
+    "Migrating, overwriting or deleting a skill",
+    "Researching or performing an unrelated domain procedure"
+  ],
+  "source_material": [
+    "inputs/design.md",
+    "inputs/process-policy.md",
+    "inputs/research.md",
+    "inputs/LICENSE"
+  ],
+  "authority": {
+    "create_package": true,
+    "create_authoring_record": true,
+    "change_inputs": false,
+    "install": false,
+    "publish": false,
+    "download": false
+  }
+}

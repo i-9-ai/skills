@@ -32,4 +32,5 @@ Run repository link and public-hygiene checks. Verify upstream revisions and sco
 - [Credential Detection.md](../../docs/Credential%20Detection.md): native security settings and bounded reproducible CI scanning with redacted failure output.
 - [Public Plugin Submission.md](../../docs/Public%20Plugin%20Submission.md): skills-only ZIP preparation and separate provider identity, upload and review boundaries.
 - [Validation.md](../../docs/Validation.md): required official validation, pinned setup, and PR coverage.
+- [Behavioral Benchmark.md](../../docs/Behavioral%20Benchmark.md): closed synthetic freezes, immutable artifact-backed run receipts and declared baseline/treatment comparisons; byte integrity does not authenticate agent execution or certify readiness.
 - [Pilot Evaluation.md](../../docs/Pilot%20Evaluation.md): actual forward-exercise results and their limitations.

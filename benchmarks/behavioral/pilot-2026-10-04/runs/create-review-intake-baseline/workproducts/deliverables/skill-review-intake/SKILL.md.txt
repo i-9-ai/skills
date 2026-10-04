@@ -1,0 +1,244 @@
+---
+name: skill-review-intake
+description: Prepare one bounded review-intake record when a maintainer requests review intake for one identified skill. Capture supplied facts, missing evidence, authorized actions and the next reviewer handoff. Does not evaluate skills, approve releases, install packages or perform their domain tasks.
+license: Apache-2.0
+---
+
+# Skill review intake
+
+SPDX-License-Identifier: Apache-2.0
+
+Adapted from the fictional owner's synthetic review-intake policy. Changes:
+organized the policy into an agent procedure, added a reusable template and
+expanded the examples. The source material is fictional and licensed under the
+bundled [full Apache-2.0 license](LICENSE).
+
+## Responsibility and boundaries
+
+Produce exactly one review-intake record for one skill. Use this procedure for
+preparing a maintainer's review request. It records evidence presence and gaps;
+it supplies no quality verdict, validation result or approval.
+
+Do not evaluate the package, execute its instructions or helpers, approve
+publication or installation, install anything, change a catalog, migrate,
+overwrite or delete a skill, or research or perform an unrelated domain task.
+An intake request that also demands these actions gets an
+`outside_intake_scope` record and an owner handoff. A request solely to perform
+those actions is outside this skill's activation purpose; do not perform it.
+
+No companion skill, executable helper, external service, provider integration
+or automatic setup is required. All procedure details are here. Resolve bundled
+resource links relative to this package, independently of the source checkout.
+
+## Ordinary procedure
+
+1. Capture the supplied skill name, caller-selected package reference and one
+   review kind: `structure`, `behavior` or `portability`. Preserve the requested
+   reason and scope. If identity or kind is missing or unsupported, record the
+   supplied value and the exact gap; do not infer a location or change the kind.
+   If multiple skills are requested, record the boundary problem and hand back
+   selection of one skill rather than create multiple records.
+2. Inventory only the evidence supplied or available through authorized,
+   read-only access. Record each artifact's reference and whether its contents
+   were supplied, opened, or merely referenced. A reference alone does not prove
+   its contents are available. List absent or inaccessible evidence as missing;
+   never claim it was opened or checked. Preserve reported check results as
+   reported facts, without confirming them or running new checks.
+
+   | Review kind | Evidence to request and inventory |
+   | --- | --- |
+   | `structure` | Package tree and recorded structural checks. |
+   | `behavior` | Representative task inputs, expected observable outcomes and actual prior outputs when available. |
+   | `portability` | Proposed consumer layout, runtime prerequisites and evidence that references remain usable outside the source checkout. |
+
+   For behavior intake, if prior outputs are absent, list that gap. Record a
+   caller's explicit statement that no prior runs exist; actual prior outputs
+   are requested when available. Unknown availability remains an unresolved
+   evidence question. Never invent a run or its result. An explicit statement
+   of no runtime prerequisites is supplied evidence, not a silent assumption.
+3. Separate requested actions from actions actually authorized. Cite the
+   caller's instruction or other supplied authority. An intake request
+   authorizes preparing the record; it does not grant approval or installation
+   authority. Even if broader authority is supplied, this procedure only
+   records it for the owner. Do not act on it. Retain the meaning of the reason
+   and evidence without copying secrets or private task transcripts into this
+   reusable package; use safe artifact references in the intake.
+4. Set the record's status:
+   - `outside_intake_scope` if the request exceeds the single-skill intake
+     responsibility. Still list missing identity and evidence. This status
+     takes precedence over `incomplete` for an overreaching request.
+   - `incomplete` if identity, supported kind, required evidence, output
+     destination or the next handoff is unresolved. Identify each blocking
+     question. A stated absence of prior runs alone does not require fabricated
+     outputs; record it as a gap with the owner's supplied context.
+   - `ready_for_review` if enough intake information is supplied and the
+     request stays within scope. This means intake readiness only, never that
+     the skill passed validation or publication was approved.
+5. Name the next reviewer from supplied information, or use the supplied
+   process owner's role to resolve reviewer assignment. Do not invent a
+   person's identity. List any blocking question and who must resolve it;
+   use `owner not supplied` when necessary. Recording a handoff does not send
+   a message, assign work or initiate a review.
+6. Load [assets/review-intake-template.md](assets/review-intake-template.md)
+   when drafting the record. Fill every section, using explicit `not supplied`,
+   `none` or `not applicable` values instead of blanks. Write only to the
+   caller-selected record path outside the installed package and within the
+   caller's authorized output area. Do not choose a path, overwrite an
+   existing record without authorization, or modify the skill package. If the
+   path is missing, inaccessible or inside the package, retain one draft
+   record in the response, mark the output gate unresolved and do not write.
+7. Before handing back the record, check its completeness as an intake:
+   all five sections are present; known facts are distinguished from gaps;
+   status follows the rules above; permissions are explicit; the destination
+   and next handoff are recorded. Stop after returning the record and its
+   unresolved gates. Do not turn this completeness check into skill evaluation.
+
+## Normal example: structure intake
+
+Fictional caller request: “Prepare intake only for `skill-alpha` at
+`candidate/skill-alpha`, for a structure review because its layout changed.
+Write a new record to `review-records/skill-alpha.md`, outside the package.
+The collection maintainer is the next reviewer.” The caller supplies a tree
+showing `SKILL.md`, `LICENSE` and `assets/example.md`, plus a checks note
+reporting that required files and local resource links were checked. Both
+artifacts' contents are supplied. No review or installation is authorized.
+
+Result, using the bundled template:
+
+```markdown
+# Review intake: skill-alpha
+
+Record destination: review-records/skill-alpha.md (caller-selected new file outside package)
+
+## 1. Supplied package identity and review kind
+- Skill name: skill-alpha
+- Package reference: candidate/skill-alpha
+- Review kind: structure
+- Reason: Package layout changed.
+
+## 2. Evidence available and evidence missing
+Available:
+- alpha-tree.txt: contents supplied; lists SKILL.md, LICENSE and assets/example.md.
+- alpha-checks.md: contents supplied; caller reports required-file and local-link checks.
+Missing:
+- None for this intake.
+Evidence limits:
+- Check results are caller-reported; this intake did not validate the package.
+
+## 3. Requested review scope and actions authorized
+- Requested scope: Structure review of candidate/skill-alpha.
+- Requested actions: Prepare intake only.
+- Authorized actions and source: Prepare a new record at the selected path, per caller request.
+- Actions outside intake: None requested; evaluation belongs to the next reviewer.
+
+## 4. Status
+ready_for_review
+Basis: Identity, supported kind, requested evidence, destination and next reviewer are supplied.
+This is intake readiness only, not a validation result or publication approval.
+
+## 5. Next reviewer handoff and blocking questions
+- Next reviewer: Collection maintainer, as named by the caller.
+- Handoff: Provide this record and the two supplied artifact references for structure review.
+- Blocking questions and resolver: None.
+- Delivery state: Record prepared for the selected path; no reviewer contact or review performed.
+```
+
+## Missing-evidence example: behavior intake
+
+Fictional caller request: “Prepare behavior-review intake for `skill-beta` at
+`candidate/skill-beta`; it summarizes notes. Write a new record to
+`review-records/skill-beta.md`. Route it to the collection maintainer.” Only
+that description is supplied. The completed record retains the description
+without inventing task cases or results:
+
+```markdown
+# Review intake: skill-beta
+
+Record destination: review-records/skill-beta.md (caller-selected new file outside package)
+
+## 1. Supplied package identity and review kind
+- Skill name: skill-beta
+- Package reference: candidate/skill-beta
+- Review kind: behavior
+- Reason: Not supplied; caller says the skill summarizes notes.
+
+## 2. Evidence available and evidence missing
+Available:
+- Caller description: supplied text, “it summarizes notes.”
+Missing:
+- Representative task inputs.
+- Expected observable outcomes.
+- Actual prior outputs; whether prior runs exist is not supplied.
+Evidence limits:
+- No task case or actual output was supplied or opened; no benchmark was run.
+
+## 3. Requested review scope and actions authorized
+- Requested scope: Behavior review of candidate/skill-beta.
+- Requested actions: Prepare intake only.
+- Authorized actions and source: Prepare a new record at the selected path, per caller request.
+- Actions outside intake: None requested; evaluation belongs to the next reviewer.
+
+## 4. Status
+incomplete
+Basis: Representative inputs, expected outcomes and prior-output availability are unresolved.
+This is an evidence gap, not a quality verdict.
+
+## 5. Next reviewer handoff and blocking questions
+- Next reviewer: Collection maintainer, as named by the caller.
+- Handoff: Retain this incomplete record for evidence collection before behavior review.
+- Blocking questions and resolver: Caller must supply representative inputs and expected outcomes;
+  are there prior outputs to attach, or have no prior runs been performed?
+- Delivery state: Incomplete record prepared for the selected path; no reviewer contact or review performed.
+```
+
+## Authority-boundary example: approval and global installation
+
+Fictional request received at intake: “Approve and globally install
+`skill-gamma`.” No package reference, review kind, output path or approval
+authority is supplied. Retain one draft record in the response:
+
+```markdown
+# Review intake: skill-gamma
+
+Record destination: Not supplied; draft returned in response, no file written.
+
+## 1. Supplied package identity and review kind
+- Skill name: skill-gamma
+- Package reference: Not supplied; name alone does not identify a package location.
+- Review kind: Not supplied.
+- Reason: Not supplied.
+
+## 2. Evidence available and evidence missing
+Available:
+- Caller request text naming skill-gamma and requesting approval and global installation.
+Missing:
+- Package reference and a supported review kind.
+- Review-kind evidence cannot be selected until the kind is supplied.
+Evidence limits:
+- No package artifact was supplied or opened.
+
+## 3. Requested review scope and actions authorized
+- Requested scope: Approval and global installation; no bounded review scope supplied.
+- Requested actions: Approve and globally install skill-gamma.
+- Authorized actions and source: No approval or installation authority supplied.
+  This procedure permits only retaining the intake boundary record.
+- Actions outside intake: Approval and global installation; neither performed.
+
+## 4. Status
+outside_intake_scope
+Basis: The request requires approval and installation, beyond intake responsibility.
+Missing identity, evidence and output destination remain unresolved as well.
+
+## 5. Next reviewer handoff and blocking questions
+- Next reviewer: Process owner; specific owner identity not supplied.
+- Handoff: Route package identity and the installation decision to the owner for a separate procedure.
+- Blocking questions and resolver: Caller must supply the package reference, one supported review kind,
+  an output path outside the package and the owner's identity. Owner must resolve any approval
+  or installation decision separately.
+- Delivery state: Draft retained in response; no file written, owner contacted or installation performed.
+```
+
+For portability intake, use the same five sections with the portability row's
+evidence. For example, a caller supplying a consumer layout and prerequisites
+but no evidence of usable references outside the checkout gets `incomplete`;
+record that exact gap and hand reference evidence collection to the caller.

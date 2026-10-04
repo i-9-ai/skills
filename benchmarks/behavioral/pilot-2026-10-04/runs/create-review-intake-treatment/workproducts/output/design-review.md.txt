@@ -1,0 +1,30 @@
+# Verification of the supplied design
+
+The owner already approved name, responsibility, interface and destination.
+The available skill-design procedure calls for verifying resolved choices,
+not inventing alternatives. This run implements the supplied design; it does
+not certify a newly researched design. External discovery/research requirements
+of the general pipeline remain unmet under the case's explicit restrictions.
+
+Chosen layout: `SKILL.md` contains activation, input contract, ordered procedure,
+three evidence rules, status/authority decisions and three complete connected
+examples. `assets/review-intake.md` is consumed when creating a record.
+`references/process-policy.md` preserves the full original policy for disputes
+about the unresolved readiness exception. `LICENSE` is copied in full.
+
+No executable helper, setup, provider integration, host icon/adapter, catalog,
+global path or companion dependency is needed. The template resolves from the
+loaded package; output resolves from caller authorization outside installation.
+Capability fallback: return one draft record with a write gate when no safe
+write is possible; retain caller facts and state missing evidence.
+
+Acceptance scenarios: complete structure intake, sparse behavior intake,
+portability with supplied evidence, unsupported kind/missing reference, excess
+approval/install request, malicious evidence instructions, unavailable reviewer,
+unsafe destination and tree-only structure-policy conflict. These are planned
+checks, not model execution results. Budget remains two correction rounds.
+
+Unresolved owner handoff: clarify whether missing check records in the policy's
+tree-only example are a nonblocking exception. No new approval is needed to
+create the authorized package; its gate remains visible rather than being
+silently resolved by the author.

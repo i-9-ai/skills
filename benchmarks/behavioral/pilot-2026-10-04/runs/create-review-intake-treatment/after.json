@@ -1,0 +1,507 @@
+[
+  {
+    "path": "deliverables/skill-review-intake/LICENSE",
+    "bytes": 11358,
+    "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+  },
+  {
+    "path": "deliverables/skill-review-intake/SKILL.md",
+    "bytes": 12151,
+    "sha256": "47add85ba6bfff6b7262ab3803fc44705ab1f60a5af3215257cbe3a03096927f"
+  },
+  {
+    "path": "deliverables/skill-review-intake/assets/review-intake.md",
+    "bytes": 1570,
+    "sha256": "22432476ab4b640cee18c3b11caa17ded72d2d575e1dfad00abb05e7d6affc54"
+  },
+  {
+    "path": "deliverables/skill-review-intake/references/process-policy.md",
+    "bytes": 2387,
+    "sha256": "e1cac0c373c6532b7982700f01be26764f46b6e019b163324777fcc449c177dc"
+  },
+  {
+    "path": "inputs/LICENSE",
+    "bytes": 11358,
+    "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+  },
+  {
+    "path": "inputs/brief.json",
+    "bytes": 1226,
+    "sha256": "3596d3111333113ed2011f3bb2eccd772eadc678fb1ad00fda0cfcc7e9f68678"
+  },
+  {
+    "path": "inputs/design.md",
+    "bytes": 1565,
+    "sha256": "b0350ea5830da90cfbe5b0492a63e3b69f96b87740bcf3634f9660fa4b0163f5"
+  },
+  {
+    "path": "inputs/process-policy.md",
+    "bytes": 2387,
+    "sha256": "e1cac0c373c6532b7982700f01be26764f46b6e019b163324777fcc449c177dc"
+  },
+  {
+    "path": "inputs/research.md",
+    "bytes": 1314,
+    "sha256": "de9b9a4f19ea7a46470d25d40208ef2fcaa36c79c3874012a719360583869e25"
+  },
+  {
+    "path": "instruction-only/skill-authoring/LICENSE",
+    "bytes": 11358,
+    "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+  },
+  {
+    "path": "instruction-only/skill-authoring/SKILL.md",
+    "bytes": 16685,
+    "sha256": "0ceedcb11e5ea40034c02182343584d8af8d813ea87382cda711fc687f33aea3"
+  },
+  {
+    "path": "instruction-only/skill-authoring/agents/openai.yaml",
+    "bytes": 327,
+    "sha256": "796c6b38b760262744ad84db5571ef1377e09daceaf7a4276d701c81912744f9"
+  },
+  {
+    "path": "instruction-only/skill-authoring/assets/icon-source.md",
+    "bytes": 1486,
+    "sha256": "f3122575ab94aa973cda9d68827c8b307d5c62419e30193dbe5f70735a1c25a8"
+  },
+  {
+    "path": "instruction-only/skill-authoring/assets/icon.png",
+    "bytes": 3831,
+    "sha256": "3c19435131538e537825c985e7f6149a0cbf13d4c70a163954b5fd6574873dcf"
+  },
+  {
+    "path": "instruction-only/skill-authoring/assets/icon.render.json",
+    "bytes": 410,
+    "sha256": "c118a343a81114663d313475329e502c048810546783bda6ad000356af761cbf"
+  },
+  {
+    "path": "instruction-only/skill-authoring/assets/icon.source.json",
+    "bytes": 879,
+    "sha256": "a0a937572033b3f53e270c3dd033a09bd08e18035e4b1aa9545e4155c122c768"
+  },
+  {
+    "path": "instruction-only/skill-authoring/assets/icon.svg",
+    "bytes": 794,
+    "sha256": "2bff26363c6b755693a84c1f834a04aef66eb8ee4d252a46f042077535ff8f4c"
+  },
+  {
+    "path": "instruction-only/skill-authoring/assets/run.schema.json",
+    "bytes": 2940,
+    "sha256": "49b71af97a39acd42a838f33db8ad36e8d6daf679afaf9d45e67e33ab25740f5"
+  },
+  {
+    "path": "instruction-only/skill-authoring/assets/skill-template.md",
+    "bytes": 6238,
+    "sha256": "b517878b1fcab830a5a50d2d36d93940e45fad6a5e6b219aa4a09f9d6f29c814"
+  },
+  {
+    "path": "instruction-only/skill-authoring/examples/merge-run/intake.md",
+    "bytes": 865,
+    "sha256": "26e373796f613ebca3a2e88be78b52db6539478c8131e6c61168e4b3618715ff"
+  },
+  {
+    "path": "instruction-only/skill-authoring/examples/merge-run/run.json",
+    "bytes": 588,
+    "sha256": "0e7c9c132c0c69f737565eaa40f9a15a173a5a393af50454626f892b52189ca9"
+  },
+  {
+    "path": "instruction-only/skill-authoring/references/authoring.md",
+    "bytes": 13652,
+    "sha256": "6aeec59945e910318aa3ee98213107541f762327029f0bf1ee8e503503123073"
+  },
+  {
+    "path": "instruction-only/skill-authoring/references/handoff-protocol.md",
+    "bytes": 7069,
+    "sha256": "667a4e0460385cc8d4df34fa652d8913754a7345fb1c8df7d2b2f22bff5c1b96"
+  },
+  {
+    "path": "instruction-only/skill-authoring/references/openai-yaml.md",
+    "bytes": 4110,
+    "sha256": "6c02a7c98d4f805935857f8cc6dd5250e2a3a9e0a928b49bf50f68995006d840"
+  },
+  {
+    "path": "instruction-only/skill-authoring/references/runtime-guidance.md",
+    "bytes": 10518,
+    "sha256": "ac97a0b521cf18a6635cfd6735d93e44eaceddc96fe3db5c2251cfe678dc84b0"
+  },
+  {
+    "path": "instruction-only/skill-authoring/references/tooling.md",
+    "bytes": 12145,
+    "sha256": "3aa2ae2c64ec62dc351b8a71129e08de8911188ac9e7b82ff13e230977f95f0f"
+  },
+  {
+    "path": "instruction-only/skill-authoring/references/upstream-guidance.md",
+    "bytes": 1183,
+    "sha256": "77a6fc85fbbf1154bbc37b4aff44c90a4ce24aad9e43f7bf86b95f5711dfd886"
+  },
+  {
+    "path": "instruction-only/skill-authoring/references/validation.md",
+    "bytes": 2441,
+    "sha256": "a30d0fbded8cd2b35588cb281d8519a8d3ceee55b72ca0e7641202aecbe47a87"
+  },
+  {
+    "path": "instruction-only/skill-authoring/scripts/lib/contracts.mjs",
+    "bytes": 24472,
+    "sha256": "9ee12755d785a6595a3be1920cd1fba987ce781f82792dfa6947e092322ca622"
+  },
+  {
+    "path": "instruction-only/skill-authoring/scripts/lib/filesystem.mjs",
+    "bytes": 8522,
+    "sha256": "278195dec4e9d7339a82ca137cf37fc9d40c0ac06e33e0b12c1333b6f9d65ced"
+  },
+  {
+    "path": "instruction-only/skill-authoring/scripts/lib/html-entities.LICENSE",
+    "bytes": 1997,
+    "sha256": "53143fc791547b58b76e68b7efef50ef1eba3c2cf5598e9f411f38cd83b2824d"
+  },
+  {
+    "path": "instruction-only/skill-authoring/scripts/lib/html-entities.json",
+    "bytes": 32977,
+    "sha256": "d43e0484a302ac1b84636250ff65cc735811b52bf99525b3d30a81b75436a9a8"
+  },
+  {
+    "path": "instruction-only/skill-authoring/scripts/lib/public-host.mjs",
+    "bytes": 2199,
+    "sha256": "a3466339b4d11b541ee7f0bff5fb3eb24157238d1f4085be7d8f90f6084e0ba4"
+  },
+  {
+    "path": "instruction-only/skill-authoring/scripts/skill_tools.mjs",
+    "bytes": 28100,
+    "sha256": "9f4d7c69fdf898e24933f17369e732ee74a8cf571b589e928784319b3ed3108a"
+  },
+  {
+    "path": "instruction-only/skill-design/LICENSE",
+    "bytes": 11358,
+    "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+  },
+  {
+    "path": "instruction-only/skill-design/SKILL.md",
+    "bytes": 9378,
+    "sha256": "9e99ad46434a99cf6b45ce23012a059a2c2f98087d2a5aa6b7f789d20df5ab69"
+  },
+  {
+    "path": "instruction-only/skill-design/agents/openai.yaml",
+    "bytes": 314,
+    "sha256": "d9892f0f97ac81f75a4bf30e848239a0a0f9bea8a2ab488ff35540bf21d13e8e"
+  },
+  {
+    "path": "instruction-only/skill-design/assets/design-brief.md",
+    "bytes": 1393,
+    "sha256": "166c2860acec242d7f2fdd91f7a1cb8ff661772542005aa87db42abac90f9cec"
+  },
+  {
+    "path": "instruction-only/skill-design/assets/icon-source.md",
+    "bytes": 1498,
+    "sha256": "e820cae188246a8528d06426b2388adf6f1f8e9e8cfe4f396e30f9601c0a93c3"
+  },
+  {
+    "path": "instruction-only/skill-design/assets/icon.png",
+    "bytes": 4369,
+    "sha256": "ff4fefffc2aa4d0c3c1edaa5675c992fd9890a55b4475da65c11aec197b14a0f"
+  },
+  {
+    "path": "instruction-only/skill-design/assets/icon.render.json",
+    "bytes": 410,
+    "sha256": "498377ebdc6677c2916eb68bf356202f644682124fcf5215810fb88d214515fb"
+  },
+  {
+    "path": "instruction-only/skill-design/assets/icon.source.json",
+    "bytes": 891,
+    "sha256": "9a658c081c1254cae6dd8380b7dd0db7ed83c23ee1a3bc7b7cc985d751cf7337"
+  },
+  {
+    "path": "instruction-only/skill-design/assets/icon.svg",
+    "bytes": 804,
+    "sha256": "a6b3da5fd344c9ebf24985ee752937eb45aa32ffe65ddc0043ea9fa69a485f01"
+  },
+  {
+    "path": "instruction-only/skill-design/references/decisions.md",
+    "bytes": 1532,
+    "sha256": "ed043bb64824f5373a365cedd75706a69c8e360c4b3e5d22aff041f8eb66d083"
+  },
+  {
+    "path": "instruction-only/skill-design/references/upstream-guidance.md",
+    "bytes": 1130,
+    "sha256": "1193785cfc19d0d29def1a9479fb73a109a8a9708a83061a2d3fbb39a15fff2d"
+  },
+  {
+    "path": "instruction-only/skill-domain-research/LICENSE",
+    "bytes": 11358,
+    "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+  },
+  {
+    "path": "instruction-only/skill-domain-research/SKILL.md",
+    "bytes": 11526,
+    "sha256": "91f927307365669165dafb58d00f7634a4ef6974f712e1f877148fef8968571d"
+  },
+  {
+    "path": "instruction-only/skill-domain-research/agents/openai.yaml",
+    "bytes": 324,
+    "sha256": "ee363df3a58e42cbaf014cfa1e9f73bfd559f43ac207d76c75c58db2d28de930"
+  },
+  {
+    "path": "instruction-only/skill-domain-research/assets/icon.png",
+    "bytes": 6052,
+    "sha256": "c71fbd1826d05ee3d98dc0e3cb3e027d8d6990e4b5d80922c6d713c6ea46e544"
+  },
+  {
+    "path": "instruction-only/skill-domain-research/assets/icon.render.json",
+    "bytes": 410,
+    "sha256": "4a17dc7f6a1c7749cc41b86aef1f82de1652ac2f8489004c0601c37aaf290a75"
+  },
+  {
+    "path": "instruction-only/skill-domain-research/assets/icon.svg",
+    "bytes": 993,
+    "sha256": "05f7b64828327f6e2f773a9183774d655d80e8dd74c268ac9d4c38cc2ee3c3ea"
+  },
+  {
+    "path": "instruction-only/skill-domain-research/assets/research-dossier.md",
+    "bytes": 3576,
+    "sha256": "4e1fdd996eaeb7bdb1606aa14a063f7a0ce6d10d12f8cb16707fa7d9823f2aad"
+  },
+  {
+    "path": "instruction-only/skill-domain-research/references/authoritative-source-policy.md",
+    "bytes": 5186,
+    "sha256": "0c353228946b0b66bb294f7b8cbbcf310208c60359f30f1c7a69bdb997126060"
+  },
+  {
+    "path": "instruction-only/skill-domain-research/references/provenance.md",
+    "bytes": 2822,
+    "sha256": "082a9dbbb6845424d58ebb63aab72ae904e85edd081adf750792705d58bf9e52"
+  },
+  {
+    "path": "instruction-only/skill-evaluator/LICENSE",
+    "bytes": 11358,
+    "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+  },
+  {
+    "path": "instruction-only/skill-evaluator/SKILL.md",
+    "bytes": 8223,
+    "sha256": "067e579236cca3a223979791a6e368ebc7ca7f80df15e492ff2b44f74564b41f"
+  },
+  {
+    "path": "instruction-only/skill-evaluator/agents/openai.yaml",
+    "bytes": 316,
+    "sha256": "2747efc4e38a22f7f9d845718f4a6ad761d40304817d3917f5746678e86a9f39"
+  },
+  {
+    "path": "instruction-only/skill-evaluator/assets/evaluation-case.json",
+    "bytes": 607,
+    "sha256": "6f5b98e4f66e6b187fb21f71242a83610569ddef9656138e3b8dbd8d22ea1deb"
+  },
+  {
+    "path": "instruction-only/skill-evaluator/assets/evaluation-report.md",
+    "bytes": 1388,
+    "sha256": "348888f292f117c3c8648e2741e3db13800be299e9782cfe2bf1492e5679179b"
+  },
+  {
+    "path": "instruction-only/skill-evaluator/assets/icon-source.md",
+    "bytes": 1500,
+    "sha256": "56bc3f83e98951dad8741d37a2eb7bdaa7bf7e45d2c19ad1672d293ae6ced0a6"
+  },
+  {
+    "path": "instruction-only/skill-evaluator/assets/icon.png",
+    "bytes": 4138,
+    "sha256": "a2acc5aaa3bd8747edacfae3e0462624f473160cc2fe43fd5f9d024ef8b8c2ef"
+  },
+  {
+    "path": "instruction-only/skill-evaluator/assets/icon.render.json",
+    "bytes": 410,
+    "sha256": "56d8b5470c7dd31ef56f415e39f2f8c8039d11cac19bca64403c9daec9ee7e24"
+  },
+  {
+    "path": "instruction-only/skill-evaluator/assets/icon.source.json",
+    "bytes": 893,
+    "sha256": "0e31fb887a772ff9efec46dd2372dd8f147defd0173fae6d389c7cda3d369a24"
+  },
+  {
+    "path": "instruction-only/skill-evaluator/assets/icon.svg",
+    "bytes": 854,
+    "sha256": "287483a60c431d1159a830d8b48813aa0a018093b6e96a6ca48622bdb5d1b8d9"
+  },
+  {
+    "path": "instruction-only/skill-evaluator/references/case-contract.md",
+    "bytes": 1653,
+    "sha256": "c16f1ef7787e3298050462ddd922f441d641b56bef64b8906ff0156fd4dc4777"
+  },
+  {
+    "path": "instruction-only/skill-evaluator/references/evaluation.md",
+    "bytes": 4801,
+    "sha256": "4cc685b15a3f30bb67b0cfd3a164b42a6c21a82011e04269cf013643edee2f84"
+  },
+  {
+    "path": "instruction-only/skill-evaluator/references/upstream-guidance.md",
+    "bytes": 1145,
+    "sha256": "fa79864f52691fec44116162a838ee809930b22d2559a638f66ac2d3cdf321b4"
+  },
+  {
+    "path": "instruction-only/skill-security-review/LICENSE",
+    "bytes": 11358,
+    "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+  },
+  {
+    "path": "instruction-only/skill-security-review/SKILL.md",
+    "bytes": 2508,
+    "sha256": "21ce4dcb64ce55c2a4e15d9dbe2728214d0521e21c7b2d822096392c518852a7"
+  },
+  {
+    "path": "instruction-only/skill-security-review/agents/openai.yaml",
+    "bytes": 330,
+    "sha256": "e7fd0f6412a5d50ce788cb45b9199105a2891afdf01daf91ed5a45259a3e6e6e"
+  },
+  {
+    "path": "instruction-only/skill-security-review/assets/icon-source.md",
+    "bytes": 1500,
+    "sha256": "a9d0a490a4ab030ae524106b006b3650f72798392098a46f4a111c4443881e91"
+  },
+  {
+    "path": "instruction-only/skill-security-review/assets/icon.png",
+    "bytes": 4999,
+    "sha256": "805bf6a75bece091c82fd4fe6eb26fb994be46af915b70cc40042687b51eb588"
+  },
+  {
+    "path": "instruction-only/skill-security-review/assets/icon.render.json",
+    "bytes": 410,
+    "sha256": "b68acc73df9282f796c804b458527a6ea62630753935092cb288eb6210785163"
+  },
+  {
+    "path": "instruction-only/skill-security-review/assets/icon.source.json",
+    "bytes": 893,
+    "sha256": "cf553266ec062da59e207f3d2926a697230fb832af1df5efd23718dbdf58ee48"
+  },
+  {
+    "path": "instruction-only/skill-security-review/assets/icon.svg",
+    "bytes": 777,
+    "sha256": "ceeea3a3064b5b61da63c760cda85d871f496d1628674110d7b571354fc31155"
+  },
+  {
+    "path": "instruction-only/skills-discovery/LICENSE",
+    "bytes": 11358,
+    "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+  },
+  {
+    "path": "instruction-only/skills-discovery/SKILL.md",
+    "bytes": 5773,
+    "sha256": "c3ae81331eb1f7a40a7bd034da000ecb9c44bd22d6248f30185769325443552f"
+  },
+  {
+    "path": "instruction-only/skills-discovery/agents/openai.yaml",
+    "bytes": 308,
+    "sha256": "51fe28220c21dab2f92f28bbb12d26e4a71759da682e299179a6966fb2eb2592"
+  },
+  {
+    "path": "instruction-only/skills-discovery/assets/candidate-report.md",
+    "bytes": 1038,
+    "sha256": "f76400fa07b125c8e327a81bb553042ca902f24b5ec3111b5853e207537285b5"
+  },
+  {
+    "path": "instruction-only/skills-discovery/assets/icon-source.md",
+    "bytes": 1492,
+    "sha256": "280af11c2e22eade9e8d7bf26ae19c2e22f91711ff3dbec429f5ef41dae580c9"
+  },
+  {
+    "path": "instruction-only/skills-discovery/assets/icon.png",
+    "bytes": 5081,
+    "sha256": "c00a8a278302ba5d48dde1cddf232b6b35c39d8b79aaf94be2638be45cd0e3f8"
+  },
+  {
+    "path": "instruction-only/skills-discovery/assets/icon.render.json",
+    "bytes": 410,
+    "sha256": "2f4e99e59014e7d850c2a2c67e68b1fc8c3cec2e417407ddf72f81709d02b924"
+  },
+  {
+    "path": "instruction-only/skills-discovery/assets/icon.source.json",
+    "bytes": 885,
+    "sha256": "4bee3893841ed03d61e1ce7f56a0387c871ec2a838e3758b2d702ee32cf9a526"
+  },
+  {
+    "path": "instruction-only/skills-discovery/assets/icon.svg",
+    "bytes": 882,
+    "sha256": "640ce1851af2af6d9700a0c20791cddd0805d3fd10e82e19fb8283c742fd31fe"
+  },
+  {
+    "path": "instruction-only/skills-discovery/references/source-review.md",
+    "bytes": 2734,
+    "sha256": "5aae2a16e390cc11f268d334a3677fe90bf4954602378c8224e164abcddc7306"
+  },
+  {
+    "path": "output/design-review.md",
+    "bytes": 1839,
+    "sha256": "d981c5ffaccb75436166e863cceb6268335b107d6ab6855de5fae4d2352a7467"
+  },
+  {
+    "path": "output/discovery.md",
+    "bytes": 1526,
+    "sha256": "ca37c7823c149b7de29373dc9b2a8478404e9f0bd75999b573c8c269d7186b71"
+  },
+  {
+    "path": "output/domain-research.md",
+    "bytes": 3097,
+    "sha256": "04ca2d4257b2eeb295c201de00015bf3fc859f45caa77f05829aff0085f2d675"
+  },
+  {
+    "path": "output/intake.md",
+    "bytes": 1362,
+    "sha256": "45528d615430400b11a6ae0549c9c229c00a8acb0d67955f3a124f1f8d1f2d63"
+  },
+  {
+    "path": "output/isolated/skill-review-intake/LICENSE",
+    "bytes": 11358,
+    "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+  },
+  {
+    "path": "output/isolated/skill-review-intake/SKILL.md",
+    "bytes": 12151,
+    "sha256": "47add85ba6bfff6b7262ab3803fc44705ab1f60a5af3215257cbe3a03096927f"
+  },
+  {
+    "path": "output/isolated/skill-review-intake/assets/review-intake.md",
+    "bytes": 1570,
+    "sha256": "22432476ab4b640cee18c3b11caa17ded72d2d575e1dfad00abb05e7d6affc54"
+  },
+  {
+    "path": "output/isolated/skill-review-intake/references/process-policy.md",
+    "bytes": 2387,
+    "sha256": "e1cac0c373c6532b7982700f01be26764f46b6e019b163324777fcc449c177dc"
+  },
+  {
+    "path": "output/manual-cases.md",
+    "bytes": 3103,
+    "sha256": "048fb6841e86773d1b8c1c65ad3ec72d669b8829f29e4abf240b549994da81b1"
+  },
+  {
+    "path": "output/manual-exercises/M1.md",
+    "bytes": 1188,
+    "sha256": "63c8500ac8a380ec95e8f108febb0530a237950182d296f0949fc5811ae73266"
+  },
+  {
+    "path": "output/manual-exercises/M2.md",
+    "bytes": 1352,
+    "sha256": "3172c607b3acafa38b1690ccac56ff55821232befa9e94fadee767250d0f8ba1"
+  },
+  {
+    "path": "output/manual-exercises/M3.md",
+    "bytes": 1327,
+    "sha256": "35ac04e08e6ab08097769d47981bce7f39df8e7ae096a0ba2dd912d2e55bbdb6"
+  },
+  {
+    "path": "output/manual-exercises/M4.md",
+    "bytes": 1140,
+    "sha256": "ac074c45d1ac12db7acaf8ff92f02cf33c25f655ddfafd91ae02e0139bcee5f8"
+  },
+  {
+    "path": "output/manual-exercises/M5.md",
+    "bytes": 1269,
+    "sha256": "ecc1c57a43291731482458b43f2ec06fbdc7e8a3c72a503676617172cb820201"
+  },
+  {
+    "path": "output/package-hashes.sha256",
+    "bytes": 334,
+    "sha256": "db8cc12711994281b71fa3a134acde9f9efda3c85be7a886eb2f3fc4ed8482e7"
+  },
+  {
+    "path": "output/source-hashes.sha256",
+    "bytes": 1082,
+    "sha256": "d69efe5cfc3d6ed42019f7126ad0532d18c05d78b437fd55e3d7a9c85a4a7a89"
+  }
+]

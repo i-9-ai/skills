@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 import type { Command } from '@oclif/core';
+import BenchmarkPrepareCommand from '../command/benchmark/BenchmarkPrepareCommand.ts';
+import BenchmarkImportRunCommand from '../command/benchmark/BenchmarkImportRunCommand.ts';
+import BenchmarkCompareCommand from '../command/benchmark/BenchmarkCompareCommand.ts';
 import AggregateCheckCommand from '../command/catalog/aggregate/AggregateCheckCommand.ts';
 import AggregateInspectCommand from '../command/catalog/aggregate/AggregateInspectCommand.ts';
 import AggregateRebuildCommand from '../command/catalog/aggregate/AggregateRebuildCommand.ts';
@@ -48,6 +51,9 @@ import SkillsMemoryRetentionCommand from '../command/skill/SkillsMemoryRetention
 /** Owns public command routes independently of class names and source layout. */
 export class CommandConfiguration {
     static readonly commands = {
+        'benchmark:prepare': BenchmarkPrepareCommand,
+        'benchmark:import-run': BenchmarkImportRunCommand,
+        'benchmark:compare': BenchmarkCompareCommand,
         'skills:observe': SkillsObserveCommand,
         'skills:report:bump': SkillsReportBumpCommand,
         'skills:onboarding': SkillsOnboardingCommand,

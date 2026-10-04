@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "synthetic": true,
+  "source": "collections/source/skills/skill-note-transfer",
+  "requested_target": "collections/target/skills/skill-note-transfer",
+  "authority": {
+    "inspect_supplied_files": true,
+    "write_refusal_record": true,
+    "overwrite": false,
+    "replace": false,
+    "rename": false,
+    "create_alternate_target": false,
+    "delete": false,
+    "edit_catalog": false,
+    "initialize_git": false,
+    "install": false,
+    "publish": false
+  },
+  "writable_paths": ["output"],
+  "preservation": "All supplied source, destination, catalog, license and retained-note bytes remain unchanged."
+}

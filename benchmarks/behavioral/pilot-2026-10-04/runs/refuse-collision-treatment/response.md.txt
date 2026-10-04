@@ -1,0 +1,5 @@
+Created [refusal-record.md](<workspace>/output/refusal-record.md).
+
+Migration is blocked: the same-name packages have different responsibilities, and destination replacement is unauthorized. The record specifies the required owner decision.
+
+All 18 supplied files remain byte-for-byte unchanged, including the retained note. No migration or migration validation was performed.

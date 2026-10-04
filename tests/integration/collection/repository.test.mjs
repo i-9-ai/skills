@@ -10,6 +10,7 @@ import { deflateSync } from 'node:zlib';
 import { CollectionValidationService } from '../../../src/service/CollectionValidationService.ts';
 import { CollectionAssetValidationService } from '../../../src/service/CollectionAssetValidationService.ts';
 import { CollectionFilesystemRepository } from '../../../src/repository/CollectionFilesystemRepository.ts';
+import { WikiMirrorRepository } from '../../../src/repository/WikiMirrorRepository.ts';
 import { CollectionValidator } from '../../../src/validator/CollectionValidator.ts';
 import { CollectionValidationError } from '../../../src/validator/CollectionValidationError.ts';
 import { parseSkillSummary, syncCatalog } from '../../../.agents/skills/skills-catalog/scripts/catalog_tools.mjs';
@@ -788,6 +789,72 @@ test('documentation publication verifies inputs before staging and publishing ma
     assert.ok(synchronize > wikiWorkflow.indexOf('clone --depth 1'), 'synchronize after cloning');
     assert.ok(synchronize < wikiWorkflow.indexOf('git add --all'), 'synchronize before staging');
     assert.match(wikiWorkflow, /git add --all\n\s+if git diff --quiet --staged; then/);
+});
+
+test('actual documentation payloads retain the guide and exclude experimental inputs and run evidence', (t) => {
+    const root = fs.mkdtempSync(join(tmpdir(), 'documentation-payloads-'));
+    t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+    const repository = process.cwd();
+    const corpus = join(repository, 'benchmarks/behavioral');
+    const experimentFiles = [
+        'suite.json',
+        'cases/create/prompt.md',
+        'cases/refactor/fixtures/evidence-note/SKILL.md',
+        'pilot-2026-10-04/comparison.json',
+        'pilot-2026-10-04/runs/create-review-intake-treatment/tool-events.json',
+        'pilot-2026-10-04/runs/create-review-intake-treatment/workproducts/deliverables/skill-review-intake/SKILL.md.txt',
+    ];
+    const experimentDigests = new Set(experimentFiles.map((relative) => {
+        const content = fs.readFileSync(join(corpus, relative));
+        assert.ok(content.length > 0, relative);
+        return sha256(content);
+    }));
+    assert.equal(experimentDigests.size, experimentFiles.length);
+
+    const wiki = join(root, 'wiki');
+    fs.mkdirSync(join(wiki, '.git'), { recursive: true });
+    fs.mkdirSync(join(wiki, 'assets/behavioral-benchmark'), { recursive: true });
+    fs.copyFileSync(join(corpus, 'suite.json'), join(wiki, 'assets/behavioral-benchmark/suite.json'));
+    new WikiMirrorRepository().synchronize(join(repository, 'docs'), wiki, 'i-9-ai/skills');
+    const guide = fs.readFileSync(join(wiki, 'Behavioral Benchmark.md'), 'utf8');
+    assert.match(guide, /benchmarks\/behavioral\/suite\.json/);
+    assert.match(guide, /comparison_status: incomplete/);
+    assert.match(guide, /observed_treatment_result: fail/);
+    assert.equal(fs.existsSync(join(wiki, 'assets/behavioral-benchmark')), false);
+
+    // Reproduce the workflow's complete asset copy, including its exclusions.
+    const site = join(root, 'site');
+    const assets = join(repository, 'docs/assets');
+    fs.mkdirSync(site);
+    fs.writeFileSync(join(site, 'index.html'), '<h1>Catalog stays available</h1>');
+    fs.cpSync(assets, site, {
+        recursive: true,
+        filter: (source) => {
+            const relative = source.slice(assets.length + 1);
+            const name = source.split(/[\\/]/).at(-1);
+            return relative !== 'index.html' && name !== 'AGENTS.md' && !name.includes('.visual-check.');
+        },
+    });
+    assert.equal(fs.readFileSync(join(site, 'index.html'), 'utf8'), '<h1>Catalog stays available</h1>');
+    assert.deepEqual(
+        fs.readFileSync(join(site, 'skill-management-entry-paths.html')),
+        fs.readFileSync(join(assets, 'skill-management-entry-paths.html')),
+    );
+
+    const inspectPayload = (directory) => {
+        for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+            if (entry.name === '.git') continue;
+            const filename = join(directory, entry.name);
+            if (entry.isDirectory()) inspectPayload(filename);
+            else {
+                assert.equal(entry.isFile(), true, filename);
+                assert.equal(experimentDigests.has(sha256(fs.readFileSync(filename))), false,
+                    `${filename} contains experiment input, workproduct or run evidence`);
+            }
+        }
+    };
+    inspectPayload(wiki);
+    inspectPayload(site);
 });
 
 test('portable catalog helper does not impose repository-specific AGENTS wording', (t) => {

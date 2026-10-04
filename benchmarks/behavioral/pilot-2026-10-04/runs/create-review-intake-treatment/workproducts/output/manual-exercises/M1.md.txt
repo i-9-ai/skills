@@ -1,0 +1,27 @@
+# Review intake: skill-map
+
+## 1. Supplied package identity and review kind
+- Skill: skill-map
+- Package reference: candidate/skill-map, caller supplied; revision not supplied
+- Review kind: structure
+- Reason: not supplied
+- Output path: output/manual-exercises/M1.md
+
+## 2. Evidence available and evidence missing
+- Available: caller-supplied tree: SKILL.md and LICENSE.
+- Available: notes/map-check.md, supplied reference, not opened; caller reports
+  a naming check failed because a description was missing. No check rerun.
+- Missing: none for this intake; actual validation is the reviewer's task.
+
+## 3. Requested review scope and actions authorized
+- Scope: structure-review intake for the supplied reference.
+- Authorized and performed: write this intake only.
+
+## 4. Status
+ready_for_review — identity, kind, tree and attributed check record supplied.
+The caller-reported check failure is evidence for review, not our quality verdict.
+
+## 5. Next reviewer handoff and blocking questions
+- Next: structure reviewer, role named by caller; individual not specified.
+- Pass: this record, package reference, supplied tree and check reference.
+- Blocking questions: none for intake.

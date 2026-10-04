@@ -1,0 +1,1213 @@
+[
+  {
+    "type": "turn.started"
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_2",
+      "type": "command_execution",
+      "command": "/bin/zsh -lc pwd",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_3",
+      "type": "command_execution",
+      "command": "/bin/zsh -lc 'rtk --version'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_4",
+      "type": "command_execution",
+      "command": "/bin/zsh -lc \"rg --files -g 'AGENTS.md' -g 'SKILL.md' -g '*catalog*' -g '*authority*' -g '*history-policy*' -g 'KEEP.md'\"",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_2",
+      "type": "command_execution",
+      "command": "/bin/zsh -lc pwd",
+      "aggregated_output": "<workspace>\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_3",
+      "type": "command_execution",
+      "command": "/bin/zsh -lc 'rtk --version'",
+      "aggregated_output": "rtk 0.51.0\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_5",
+      "type": "command_execution",
+      "command": "/bin/zsh -c 'rtk --version'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_6",
+      "type": "command_execution",
+      "command": "/bin/zsh -c \"rtk rg --files -g AGENTS.md -g SKILL.md -g '*catalog*' -g '*authority*' -g '*history-policy*' -g KEEP.md\"",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_5",
+      "type": "command_execution",
+      "command": "/bin/zsh -c 'rtk --version'",
+      "aggregated_output": "rtk 0.51.0\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_7",
+      "type": "command_execution",
+      "command": "/bin/sh -c pwd",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_7",
+      "type": "command_execution",
+      "command": "/bin/sh -c pwd",
+      "aggregated_output": "<workspace>\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_4",
+      "type": "command_execution",
+      "command": "/bin/zsh -lc \"rg --files -g 'AGENTS.md' -g 'SKILL.md' -g '*catalog*' -g '*authority*' -g '*history-policy*' -g 'KEEP.md'\"",
+      "aggregated_output": "",
+      "exit_code": 130,
+      "status": "failed"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_6",
+      "type": "command_execution",
+      "command": "/bin/zsh -c \"rtk rg --files -g AGENTS.md -g SKILL.md -g '*catalog*' -g '*authority*' -g '*history-policy*' -g KEEP.md\"",
+      "aggregated_output": "",
+      "exit_code": 130,
+      "status": "failed"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_9",
+      "type": "command_execution",
+      "command": "/bin/sh -c \"rg --files --hidden -g '\"'!'\"\\\\.git/**' -g 'AGENTS.md' -g 'SKILL.md' -g '*catalog*' -g '*authority*' -g '*history-policy*' -g 'KEEP.md'\"",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_10",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk --version'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_9",
+      "type": "command_execution",
+      "command": "/bin/sh -c \"rg --files --hidden -g '\"'!'\"\\\\.git/**' -g 'AGENTS.md' -g 'SKILL.md' -g '*catalog*' -g '*authority*' -g '*history-policy*' -g 'KEEP.md'\"",
+      "aggregated_output": "inputs/history-policy.md\ninputs/authority.json\ncollections/source/skills/skill-note-transfer/SKILL.md\ncollections/source/skills-catalog.json\ncollections/target/KEEP.md\ncollections/target/skills-catalog.json\ninstruction-only/skill-migration/SKILL.md\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_10",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk --version'",
+      "aggregated_output": "rtk 0.51.0\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_11",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy cat instruction-only/skill-migration/SKILL.md inputs/authority.json inputs/history-policy.md collections/source/skills-catalog.json collections/target/skills-catalog.json'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_12",
+      "type": "command_execution",
+      "command": "/bin/sh -c \"rtk rg --files --hidden -g '\"'!.git/**'\"' -g '\"'!.agents/**'\"' -g '\"'!.codex/**'\"' -g '\"'!.aws/**'\"'\"",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_11",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy cat instruction-only/skill-migration/SKILL.md inputs/authority.json inputs/history-policy.md collections/source/skills-catalog.json collections/target/skills-catalog.json'",
+      "aggregated_output": "---\nname: skill-migration\ndescription: Use to migrate one skill package between collections while preserving behavior, provenance, history, compatibility, and an auditable handoff.\nlicense: Apache-2.0\nmetadata:\n  author: i-9-ai\n  tags: \"skills, migration, portability\"\n  source: original\n  source_url: \"https://github.com/i-9-ai/skills\"\n  reasoning-effort: high\n---\n\n# Skill Migration\n\n## Responsibility and inputs\n\nMigrate one skill package from a source collection to a target collection and return an auditable migration record. Accept the exact source revision, target collection contract, naming decision, provenance, license, consumers, compatibility requirements, and cutover authority.\n\n## Procedure\n\n1. Establish the source package bytes, responsibility, provenance, license, catalog identity, any separately recorded lifecycle evidence, consumers, host metadata, and validation baseline.\n2. Assess target naming, path, policy, catalog, runtime, and dependency compatibility. Resolve collisions before copying any bytes.\n3. Define a cutover plan covering target addition, consumer transition, source deprecation or retention, rollback, and ownership. Avoid a period where two mutable packages claim the same canonical identity.\n   Record the history strategy before copying: retain the original repository and reachable commit references, preserve an independently verified Git bundle outside the installed package, or transfer the relevant history through an explicitly authorized import. A source/target revision table alone does not preserve history. For a bundle, use `git bundle create <archive.bundle> <source-ref>` and `git bundle verify <archive.bundle>` in an authorized source checkout, then verify the recorded source commit is reachable from the bundle in a disposable clone. Bundle only authorized history; never include private unrelated commits in a public artifact. If history cannot be retained or transferred, return a blocked migration with the missing owner decision.\n4. Adapt only target-specific packaging and references. Preserve behavior unless a separately approved evolution record authorizes change.\n5. Validate the target candidate with official, behavioral, security, provenance, host, and collection checks.\n6. Apply the authorized target change, verify it in place, then perform only the authorized source-side deprecation or removal.\n7. Return a migration record mapping old and new identities, exact revisions, changed adapters, consumer actions, validation evidence, and rollback steps. Include the retained repository/ref or archive identity and digest, the source commit, and the history verification result and retention owner.\n\n## Tools and authority\n\nUse source and target read/write tools only within explicitly authorized repositories. Access to one collection does not grant access to another. Migration does not authorize publication, global installation, destructive history rewriting, or deleting the source package.\n\n## Output and evaluation\n\nThe primary output is one migrated target package plus its migration record as a single reviewable change set. Pass when provenance and license survive, the source history remains verifiably retrievable through the recorded strategy, responsibility remains clear, consumers have an explicit transition path, both collection catalogs can be reconciled, and rollback is possible.\n{\n  \"schema_version\": 1,\n  \"synthetic\": true,\n  \"skill_name\": \"skill-note-transfer\",\n  \"source\": \"collections/source/skills/skill-note-transfer\",\n  \"target\": \"collections/target/skills/skill-note-transfer\",\n  \"target_profile\": \"Portable standalone package; full Apache-2.0 license and working package-relative references; no required host adapter.\",\n  \"authority\": {\n    \"add_target_candidate\": true,\n    \"initialize_local_source_git\": true,\n    \"commit_synthetic_source_baseline\": true,\n    \"retain_source_history\": true,\n    \"reconcile_target_catalog_after_checks\": true,\n    \"change_source_package\": false,\n    \"change_source_catalog\": false,\n    \"overwrite_existing_target\": false,\n    \"remove_source\": false,\n    \"consumer_cutover\": false,\n    \"download\": false,\n    \"install\": false,\n    \"publish\": false\n  },\n  \"writable_paths\": [\n    \"collections/source/.git\",\n    \"collections/target/skills/skill-note-transfer\",\n    \"collections/target/skills-catalog.json\",\n    \"output\"\n  ],\n  \"history_retention_owner\": \"Fictional source collection maintainer\",\n  \"consumers\": [],\n  \"consumer_scope\": \"No live consumers are supplied or authorized for discovery.\"\n}\n# Synthetic source-history policy\n\nSPDX-License-Identifier: Apache-2.0\n\nThe source fixture has no prior Git repository. The fictional source owner\nauthorizes recording this exact supplied tree as its initial local revision.\nInitialize Git only inside `collections/source/`; use a synthetic local identity\nthrough command-local or repository-local settings, never a user's global Git\nconfiguration. Stage only the supplied source catalog and package files.\n\nRetain that source repository and its reachable baseline commit. Confirm the\ncommit contains the source package, its complete license and reference, and\nrecord the actual commit identifier and successful retrieval check. An invented\nSHA, an empty repository or a table of old/new paths is not retained history.\n\nDo not add remotes, contact a server, import external history, rewrite history\nor remove the source package. A separate Git bundle is unnecessary when this\nauthorized source repository and baseline remain retrievable. Describe rollback\nof target additions while leaving source history and existing target files intact.\n\nIf Git is unavailable, preserve the original source and any staged candidate;\nreport the history gate blocked instead of claiming migration acceptance.\n{\n  \"schema_version\": 1,\n  \"skills\": [\n    {\n      \"name\": \"skill-note-transfer\",\n      \"path\": \"skills/skill-note-transfer\",\n      \"description\": \"Use to turn one supplied skill evidence note into a portable reviewer handoff without changing the reviewed package.\",\n      \"tags\": [\"handoff\", \"review\", \"skills\"]\n    }\n  ]\n}\n{\n  \"schema_version\": 1,\n  \"skills\": []\n}\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_12",
+      "type": "command_execution",
+      "command": "/bin/sh -c \"rtk rg --files --hidden -g '\"'!.git/**'\"' -g '\"'!.agents/**'\"' -g '\"'!.codex/**'\"' -g '\"'!.aws/**'\"'\"",
+      "aggregated_output": "inputs/history-policy.md\ninputs/authority.json\ncollections/source/skills/skill-note-transfer/SKILL.md\ncollections/source/skills/skill-note-transfer/references/handoff.md\ncollections/source/skills/skill-note-transfer/LICENSE\ncollections/source/skills-catalog.json\ncollections/target/KEEP.md\ncollections/target/skills-catalog.json\ninstruction-only/skill-migration/assets/icon.render.json\ninstruction-only/skill-migration/assets/icon.source.json\ninstruction-only/skill-migration/assets/icon-source.md\ninstruction-only/skill-migration/assets/icon.svg\ninstruction-only/skill-migration/assets/icon.png\ninstruction-only/skill-migration/SKILL.md\ninstruction-only/skill-migration/agents/openai.yaml\ninstruction-only/skill-migration/LICENSE\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_14",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy cat collections/source/skills/skill-note-transfer/SKILL.md collections/source/skills/skill-note-transfer/references/handoff.md collections/source/skills/skill-note-transfer/LICENSE collections/target/KEEP.md'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_15",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy ls -la inputs collections/source collections/target output'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_16",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk git --version'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_17",
+      "type": "command_execution",
+      "command": "/bin/sh -c \"rtk proxy find . -name AGENTS.md -o -name .git -o -name '*validat*' -o -type l\"",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_14",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy cat collections/source/skills/skill-note-transfer/SKILL.md collections/source/skills/skill-note-transfer/references/handoff.md collections/source/skills/skill-note-transfer/LICENSE collections/target/KEEP.md'",
+      "aggregated_output": "---\nname: skill-note-transfer\ndescription: Use to turn one supplied skill evidence note into a portable reviewer handoff without changing the reviewed package.\nlicense: Apache-2.0\nmetadata:\n  source: original-synthetic-fixture\n---\n\n# Skill Note Transfer\n\nProduce one reviewer handoff from a supplied evidence note for one identified\nskill. Preserve the source identity, review question, inspected artifacts,\nmissing evidence and next decision owner. Do not evaluate the skill or alter\nthe reviewed package.\n\nUse `references/handoff.md` when preparing the handoff sections. Resolve this\nresource relative to the loaded package; choose the output path in the caller's\nauthorized workspace. No external service, installed companion or setup is\nrequired. Do not copy private transcripts or credentials into the output.\n\nExample: an evidence note for `skill-alpha` contains a package-tree artifact\nand lacks a consumer-layout check. Its handoff preserves that artifact, lists\nthe missing check and requests a portability review without claiming approval.\n# Reviewer handoff\n\nSPDX-License-Identifier: Apache-2.0\n\nRecord one supplied package identity, the selected review question, inspected\nartifact references, explicit evidence gaps and the next decision owner. Preserve\nthe evidence note's uncertainty. A supplied completion statement is not an\nindependently verified validation result. Write only to the caller-selected path.\n\n                                 Apache License\n                           Version 2.0, January 2004\n                        http://www.apache.org/licenses/\n\n   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION\n\n   1. Definitions.\n\n      \"License\" shall mean the terms and conditions for use, reproduction,\n      and distribution as defined by Sections 1 through 9 of this document.\n\n      \"Licensor\" shall mean the copyright owner or entity authorized by\n      the copyright owner that is granting the License.\n\n      \"Legal Entity\" shall mean the union of the acting entity and all\n      other entities that control, are controlled by, or are under common\n      control with that entity. For the purposes of this definition,\n      \"control\" means (i) the power, direct or indirect, to cause the\n      direction or management of such entity, whether by contract or\n      otherwise, or (ii) ownership of fifty percent (50%) or more of the\n      outstanding shares, or (iii) beneficial ownership of such entity.\n\n      \"You\" (or \"Your\") shall mean an individual or Legal Entity\n      exercising permissions granted by this License.\n\n      \"Source\" form shall mean the preferred form for making modifications,\n      including but not limited to software source code, documentation\n      source, and configuration files.\n\n      \"Object\" form shall mean any form resulting from mechanical\n      transformation or translation of a Source form, including but\n      not limited to compiled object code, generated documentation,\n      and conversions to other media types.\n\n      \"Work\" shall mean the work of authorship, whether in Source or\n      Object form, made available under the License, as indicated by a\n      copyright notice that is included in or attached to the work\n      (an example is provided in the Appendix below).\n\n      \"Derivative Works\" shall mean any work, whether in Source or Object\n      form, that is based on (or derived from) the Work and for which the\n      editorial revisions, annotations, elaborations, or other modifications\n      represent, as a whole, an original work of authorship. For the purposes\n      of this License, Derivative Works shall not include works that remain\n      separable from, or merely link (or bind by name) to the interfaces of,\n      the Work and Derivative Works thereof.\n\n      \"Contribution\" shall mean any work of authorship, including\n      the original version of the Work and any modifications or additions\n      to that Work or Derivative Works thereof, that is intentionally\n      submitted to Licensor for inclusion in the Work by the copyright owner\n      or by an individual or Legal Entity authorized to submit on behalf of\n      the copyright owner. For the purposes of this definition, \"submitted\"\n      means any form of electronic, verbal, or written communication sent\n      to the Licensor or its representatives, including but not limited to\n      communication on electronic mailing lists, source code control systems,\n      and issue tracking systems that are managed by, or on behalf of, the\n      Licensor for the purpose of discussing and improving the Work, but\n      excluding communication that is conspicuously marked or otherwise\n      designated in writing by the copyright owner as \"Not a Contribution.\"\n\n      \"Contributor\" shall mean Licensor and any individual or Legal Entity\n      on behalf of whom a Contribution has been received by Licensor and\n      subsequently incorporated within the Work.\n\n   2. Grant of Copyright License. Subject to the terms and conditions of\n      this License, each Contributor hereby grants to You a perpetual,\n      worldwide, non-exclusive, no-charge, royalty-free, irrevocable\n      copyright license to reproduce, prepare Derivative Works of,\n      publicly display, publicly perform, sublicense, and distribute the\n      Work and such Derivative Works in Source or Object form.\n\n   3. Grant of Patent License. Subject to the terms and conditions of\n      this License, each Contributor hereby grants to You a perpetual,\n      worldwide, non-exclusive, no-charge, royalty-free, irrevocable\n      (except as stated in this section) patent license to make, have made,\n      use, offer to sell, sell, import, and otherwise transfer the Work,\n      where such license applies only to those patent claims licensable\n      by such Contributor that are necessarily infringed by their\n      Contribution(s) alone or by combination of their Contribution(s)\n      with the Work to which such Contribution(s) was submitted. If You\n      institute patent litigation against any entity (including a\n      cross-claim or counterclaim in a lawsuit) alleging that the Work\n      or a Contribution incorporated within the Work constitutes direct\n      or contributory patent infringement, then any patent licenses\n      granted to You under this License for that Work shall terminate\n      as of the date such litigation is filed.\n\n   4. Redistribution. You may reproduce and distribute copies of the\n      Work or Derivative Works thereof in any medium, with or without\n      modifications, and in Source or Object form, provided that You\n      meet the following conditions:\n\n      (a) You must give any other recipients of the Work or\n          Derivative Works a copy of this License; and\n\n      (b) You must cause any modified files to carry prominent notices\n          stating that You changed the files; and\n\n      (c) You must retain, in the Source form of any Derivative Works\n          that You distribute, all copyright, patent, trademark, and\n          attribution notices from the Source form of the Work,\n          excluding those notices that do not pertain to any part of\n          the Derivative Works; and\n\n      (d) If the Work includes a \"NOTICE\" text file as part of its\n          distribution, then any Derivative Works that You distribute must\n          include a readable copy of the attribution notices contained\n          within such NOTICE file, excluding those notices that do not\n          pertain to any part of the Derivative Works, in at least one\n          of the following places: within a NOTICE text file distributed\n          as part of the Derivative Works; within the Source form or\n          documentation, if provided along with the Derivative Works; or,\n          within a display generated by the Derivative Works, if and\n          wherever such third-party notices normally appear. The contents\n          of the NOTICE file are for informational purposes only and\n          do not modify the License. You may add Your own attribution\n          notices within Derivative Works that You distribute, alongside\n          or as an addendum to the NOTICE text from the Work, provided\n          that such additional attribution notices cannot be construed\n          as modifying the License.\n\n      You may add Your own copyright statement to Your modifications and\n      may provide additional or different license terms and conditions\n      for use, reproduction, or distribution of Your modifications, or\n      for any such Derivative Works as a whole, provided Your use,\n      reproduction, and distribution of the Work otherwise complies with\n      the conditions stated in this License.\n\n   5. Submission of Contributions. Unless You explicitly state otherwise,\n      any Contribution intentionally submitted for inclusion in the Work\n      by You to the Licensor shall be under the terms and conditions of\n      this License, without any additional terms or conditions.\n      Notwithstanding the above, nothing herein shall supersede or modify\n      the terms of any separate license agreement you may have executed\n      with Licensor regarding such Contributions.\n\n   6. Trademarks. This License does not grant permission to use the trade\n      names, trademarks, service marks, or product names of the Licensor,\n      except as required for reasonable and customary use in describing the\n      origin of the Work and reproducing the content of the NOTICE file.\n\n   7. Disclaimer of Warranty. Unless required by applicable law or\n      agreed to in writing, Licensor provides the Work (and each\n      Contributor provides its Contributions) on an \"AS IS\" BASIS,\n      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or\n      implied, including, without limitation, any warranties or conditions\n      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A\n      PARTICULAR PURPOSE. You are solely responsible for determining the\n      appropriateness of using or redistributing the Work and assume any\n      risks associated with Your exercise of permissions under this License.\n\n   8. Limitation of Liability. In no event and under no legal theory,\n      whether in tort (including negligence), contract, or otherwise,\n      unless required by applicable law (such as deliberate and grossly\n      negligent acts) or agreed to in writing, shall any Contributor be\n      liable to You for damages, including any direct, indirect, special,\n      incidental, or consequential damages of any character arising as a\n      result of this License or out of the use or inability to use the\n      Work (including but not limited to damages for loss of goodwill,\n      work stoppage, computer failure or malfunction, or any and all\n      other commercial damages or losses), even if such Contributor\n      has been advised of the possibility of such damages.\n\n   9. Accepting Warranty or Additional Liability. While redistributing\n      the Work or Derivative Works thereof, You may choose to offer,\n      and charge a fee for, acceptance of support, warranty, indemnity,\n      or other liability obligations and/or rights consistent with this\n      License. However, in accepting such obligations, You may act only\n      on Your own behalf and on Your sole responsibility, not on behalf\n      of any other Contributor, and only if You agree to indemnify,\n      defend, and hold each Contributor harmless for any liability\n      incurred by, or claims asserted against, such Contributor by reason\n      of your accepting any such warranty or additional liability.\n\n   END OF TERMS AND CONDITIONS\n\n   APPENDIX: How to apply the Apache License to your work.\n\n      To apply the Apache License to your work, attach the following\n      boilerplate notice, with the fields enclosed by brackets \"[]\"\n      replaced with your own identifying information. (Don't include\n      the brackets!)  The text should be enclosed in the appropriate\n      comment syntax for the file format. We also recommend that a\n      file or class name and description of purpose be included on the\n      same \"printed page\" as the copyright notice for easier\n      identification within third-party archives.\n\n   Copyright [yyyy] [name of copyright owner]\n\n   Licensed under the Apache License, Version 2.0 (the \"License\");\n   you may not use this file except in compliance with the License.\n   You may obtain a copy of the License at\n\n       http://www.apache.org/licenses/LICENSE-2.0\n\n   Unless required by applicable law or agreed to in writing, software\n   distributed under the License is distributed on an \"AS IS\" BASIS,\n   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n   See the License for the specific language governing permissions and\n   limitations under the License.\n# Retained target material\n\nSPDX-License-Identifier: Apache-2.0\n\nThis synthetic file predates the migration. Its exact bytes must remain intact.\nIt is unrelated to the incoming package and grants no additional authority.\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_17",
+      "type": "command_execution",
+      "command": "/bin/sh -c \"rtk proxy find . -name AGENTS.md -o -name .git -o -name '*validat*' -o -type l\"",
+      "aggregated_output": "",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_16",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk git --version'",
+      "aggregated_output": "git version 2.54.0 (Apple Git-157)\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_15",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy ls -la inputs collections/source collections/target output'",
+      "aggregated_output": "ls: output: No such file or directory\ncollections/source:\ntotal 8\ndrwxr-xr-x@ 4 <host-user>  wheel  128 Oct  3 23:20 .\ndrwxr-xr-x@ 4 <host-user>  wheel  128 Oct  3 23:20 ..\ndrwxr-xr-x@ 3 <host-user>  wheel   96 Oct  3 23:20 skills\n-rw-------@ 1 <host-user>  wheel  325 Oct  3 23:20 skills-catalog.json\n\ncollections/target:\ntotal 16\ndrwxr-xr-x@ 4 <host-user>  wheel  128 Oct  3 23:20 .\ndrwxr-xr-x@ 4 <host-user>  wheel  128 Oct  3 23:20 ..\n-rw-------@ 1 <host-user>  wheel  221 Oct  3 23:20 KEEP.md\n-rw-------@ 1 <host-user>  wheel   42 Oct  3 23:20 skills-catalog.json\n\ninputs:\ntotal 16\ndrwxr-xr-x@ 4 <host-user>  wheel   128 Oct  3 23:20 .\ndrwxr-xr-x@ 5 <host-user>  wheel   160 Oct  3 23:20 ..\n-rw-------@ 1 <host-user>  wheel  1160 Oct  3 23:20 authority.json\n-rw-------@ 1 <host-user>  wheel  1241 Oct  3 23:20 history-policy.md\n",
+      "exit_code": 1,
+      "status": "failed"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_18",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy shasum -a 256 collections/source/skills-catalog.json collections/source/skills/skill-note-transfer/SKILL.md collections/source/skills/skill-note-transfer/LICENSE collections/source/skills/skill-note-transfer/references/handoff.md collections/target/KEEP.md collections/target/skills-catalog.json'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_19",
+      "type": "command_execution",
+      "command": "/bin/sh -c \"rtk rg -n 'validator|validation|host|dependency|catalog|license|references|history' inputs instruction-only/skill-migration/SKILL.md collections/source/skills/skill-note-transfer/SKILL.md collections/source/skills-catalog.json collections/target/skills-catalog.json\"",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_20",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy ls -la collections/target/skills/skill-note-transfer'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_19",
+      "type": "command_execution",
+      "command": "/bin/sh -c \"rtk rg -n 'validator|validation|host|dependency|catalog|license|references|history' inputs instruction-only/skill-migration/SKILL.md collections/source/skills/skill-note-transfer/SKILL.md collections/source/skills-catalog.json collections/target/skills-catalog.json\"",
+      "aggregated_output": "instruction-only/skill-migration/SKILL.md:3:description: Use to migrate one skill package between collections while preserving behavior, provenance, history, compatibility, and an auditable handoff.\ninstruction-only/skill-migration/SKILL.md:4:license: Apache-2.0\ninstruction-only/skill-migration/SKILL.md:17:Migrate one skill package from a source collection to a target collection and return an auditable migration record. Accept the exact source revision, target collection contract, naming decision, provenance, license, consumers, compatibility requirements, and cutover authority.\ninstruction-only/skill-migration/SKILL.md:21:1. Establish the source package bytes, responsibility, provenance, license, catalog identity, any separately recorded lifecycle evidence, consumers, host metadata, and validation baseline.\ninstruction-only/skill-migration/SKILL.md:22:2. Assess target naming, path, policy, catalog, runtime, and dependency compatibility. Resolve collisions before copying any bytes.\ninstruction-only/skill-migration/SKILL.md:24:   Record the history strategy before copying: retain the original repository and reachable commit references, preserve an independently verified Git bundle outside the installed package, or transfer the relevant history through an explicitly authorized import. A source/target revision table alone does not preserve history. For a bundle, use `git bundle create <archive.bundle> <source-ref>` and `git bundle verify <archive.bundle>` in an authorized source checkout, then verify the recorded source commit is reachable from the bundle in a disposable clone. Bundle only authorized history; never include private unrelated commits in a public artifact. If history cannot be retained or transferred, return a blocked migration with the missing owner decision.\ninstruction-only/skill-migration/SKILL.md:25:4. Adapt only target-specific packaging and references. Preserve behavior unless a separately approved evolution record authorizes change.\ninstruction-only/skill-migration/SKILL.md:26:5. Validate the target candidate with official, behavioral, security, provenance, host, and collection checks.\ninstruction-only/skill-migration/SKILL.md:28:7. Return a migration record mapping old and new identities, exact revisions, changed adapters, consumer actions, validation evidence, and rollback steps. Include the retained repository/ref or archive identity and digest, the source commit, and the history verification result and retention owner.\ninstruction-only/skill-migration/SKILL.md:32:Use source and target read/write tools only within explicitly authorized repositories. Access to one collection does not grant access to another. Migration does not authorize publication, global installation, destructive history rewriting, or deleting the source package.\ninstruction-only/skill-migration/SKILL.md:36:The primary output is one migrated target package plus its migration record as a single reviewable change set. Pass when provenance and license survive, the source history remains verifiably retrievable through the recorded strategy, responsibility remains clear, consumers have an explicit transition path, both collection catalogs can be reconciled, and rollback is possible.\ncollections/source/skills/skill-note-transfer/SKILL.md:4:license: Apache-2.0\ncollections/source/skills/skill-note-transfer/SKILL.md:16:Use `references/handoff.md` when preparing the handoff sections. Resolve this\ninputs/history-policy.md:1:# Synthetic source-history policy\ninputs/history-policy.md:9:configuration. Stage only the supplied source catalog and package files.\ninputs/history-policy.md:12:commit contains the source package, its complete license and reference, and\ninputs/history-policy.md:14:SHA, an empty repository or a table of old/new paths is not retained history.\ninputs/history-policy.md:16:Do not add remotes, contact a server, import external history, rewrite history\ninputs/history-policy.md:19:of target additions while leaving source history and existing target files intact.\ninputs/history-policy.md:22:report the history gate blocked instead of claiming migration acceptance.\ninputs/authority.json:7:  \"target_profile\": \"Portable standalone package; full Apache-2.0 license and working package-relative references; no required host adapter.\",\ninputs/authority.json:12:    \"retain_source_history\": true,\ninputs/authority.json:13:    \"reconcile_target_catalog_after_checks\": true,\ninputs/authority.json:15:    \"change_source_catalog\": false,\ninputs/authority.json:26:    \"collections/target/skills-catalog.json\",\ninputs/authority.json:29:  \"history_retention_owner\": \"Fictional source collection maintainer\",\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_20",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy ls -la collections/target/skills/skill-note-transfer'",
+      "aggregated_output": "ls: collections/target/skills/skill-note-transfer: No such file or directory\n",
+      "exit_code": 1,
+      "status": "failed"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_18",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy shasum -a 256 collections/source/skills-catalog.json collections/source/skills/skill-note-transfer/SKILL.md collections/source/skills/skill-note-transfer/LICENSE collections/source/skills/skill-note-transfer/references/handoff.md collections/target/KEEP.md collections/target/skills-catalog.json'",
+      "aggregated_output": "911d333f264f14d76a4860db231ff0a84637c34e23fbb1044b8247f4e23c6147  collections/source/skills-catalog.json\nfa28c05e823c13065f96793f2cd19df880cd31ac9e0180b6c479e4a265931e59  collections/source/skills/skill-note-transfer/SKILL.md\ncfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30  collections/source/skills/skill-note-transfer/LICENSE\ne5500b3361b6d4eaab15e4555e28a4a4db2fc4dcbead391bdd6dfb000ba9c553  collections/source/skills/skill-note-transfer/references/handoff.md\n74c19f171854df7adc5fd75db1075a34755d7a772ad179c22fa9e2d8c64223eb  collections/target/KEEP.md\n589e34d92968f63ef2a7e337c54a0cee3b72b29501b3355a74d3dd101af0cf7b  collections/target/skills-catalog.json\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_22",
+      "type": "file_change",
+      "changes": [
+        {
+          "path": "<workspace>/output/migration-record.md",
+          "kind": "add"
+        }
+      ],
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_22",
+      "type": "file_change",
+      "changes": [
+        {
+          "path": "<workspace>/output/migration-record.md",
+          "kind": "add"
+        }
+      ],
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_23",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 git -C collections/source -c core.hooksPath=/dev/null init --template= --initial-branch=synthetic-baseline'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_23",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 git -C collections/source -c core.hooksPath=/dev/null init --template= --initial-branch=synthetic-baseline'",
+      "aggregated_output": "Initialized empty Git repository in <workspace>/collections/source/.git/\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_24",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 git -C collections/source -c core.hooksPath=/dev/null -c core.attributesFile=/dev/null add -- skills-catalog.json skills/skill-note-transfer/SKILL.md skills/skill-note-transfer/LICENSE skills/skill-note-transfer/references/handoff.md'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_24",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 git -C collections/source -c core.hooksPath=/dev/null -c core.attributesFile=/dev/null add -- skills-catalog.json skills/skill-note-transfer/SKILL.md skills/skill-note-transfer/LICENSE skills/skill-note-transfer/references/handoff.md'",
+      "aggregated_output": "",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_25",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 git -C collections/source -c core.hooksPath=/dev/null diff --cached --name-only'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_25",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 git -C collections/source -c core.hooksPath=/dev/null diff --cached --name-only'",
+      "aggregated_output": "skills-catalog.json\nskills/skill-note-transfer/LICENSE\nskills/skill-note-transfer/SKILL.md\nskills/skill-note-transfer/references/handoff.md\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_26",
+      "type": "command_execution",
+      "command": "/bin/sh -c \"rtk proxy env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 git -C collections/source -c core.hooksPath=/dev/null -c commit.gpgsign=false -c user.name='Synthetic Source Fixture Owner' -c user.email='synthetic-source@example.invalid' commit -m 'Retain supplied synthetic source baseline'\"",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_26",
+      "type": "command_execution",
+      "command": "/bin/sh -c \"rtk proxy env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 git -C collections/source -c core.hooksPath=/dev/null -c commit.gpgsign=false -c user.name='Synthetic Source Fixture Owner' -c user.email='synthetic-source@example.invalid' commit -m 'Retain supplied synthetic source baseline'\"",
+      "aggregated_output": "[synthetic-baseline (root-commit) 5d6065b] Retain supplied synthetic source baseline\n 4 files changed, 244 insertions(+)\n create mode 100644 skills-catalog.json\n create mode 100644 skills/skill-note-transfer/LICENSE\n create mode 100644 skills/skill-note-transfer/SKILL.md\n create mode 100644 skills/skill-note-transfer/references/handoff.md\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_27",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 git -C collections/source -c core.hooksPath=/dev/null rev-parse refs/heads/synthetic-baseline'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_27",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 git -C collections/source -c core.hooksPath=/dev/null rev-parse refs/heads/synthetic-baseline'",
+      "aggregated_output": "5d6065b89eec4493199a0516ea4ef3aa23f76175\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_28",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 git -C collections/source -c core.hooksPath=/dev/null show 5d6065b89eec4493199a0516ea4ef3aa23f76175:skills-catalog.json | rtk proxy shasum -a 256'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_29",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 git -C collections/source -c core.hooksPath=/dev/null show 5d6065b89eec4493199a0516ea4ef3aa23f76175:skills/skill-note-transfer/references/handoff.md | rtk proxy shasum -a 256'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_30",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 git -C collections/source -c core.hooksPath=/dev/null show 5d6065b89eec4493199a0516ea4ef3aa23f76175:skills/skill-note-transfer/LICENSE | rtk proxy shasum -a 256'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_31",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 git -C collections/source -c core.hooksPath=/dev/null show 5d6065b89eec4493199a0516ea4ef3aa23f76175:skills/skill-note-transfer/SKILL.md | rtk proxy shasum -a 256'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_32",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 git -C collections/source -c core.hooksPath=/dev/null status --porcelain=v1'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_33",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 git -C collections/source -c core.hooksPath=/dev/null fsck --full'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_34",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 git -C collections/source -c core.hooksPath=/dev/null show --format=fuller --stat 5d6065b89eec4493199a0516ea4ef3aa23f76175'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_35",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 git -C collections/source -c core.hooksPath=/dev/null remote -v'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_35",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 git -C collections/source -c core.hooksPath=/dev/null remote -v'",
+      "aggregated_output": "",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_28",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 git -C collections/source -c core.hooksPath=/dev/null show 5d6065b89eec4493199a0516ea4ef3aa23f76175:skills-catalog.json | rtk proxy shasum -a 256'",
+      "aggregated_output": "911d333f264f14d76a4860db231ff0a84637c34e23fbb1044b8247f4e23c6147  -\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_32",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 git -C collections/source -c core.hooksPath=/dev/null status --porcelain=v1'",
+      "aggregated_output": "",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_30",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 git -C collections/source -c core.hooksPath=/dev/null show 5d6065b89eec4493199a0516ea4ef3aa23f76175:skills/skill-note-transfer/LICENSE | rtk proxy shasum -a 256'",
+      "aggregated_output": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30  -\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_29",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 git -C collections/source -c core.hooksPath=/dev/null show 5d6065b89eec4493199a0516ea4ef3aa23f76175:skills/skill-note-transfer/references/handoff.md | rtk proxy shasum -a 256'",
+      "aggregated_output": "e5500b3361b6d4eaab15e4555e28a4a4db2fc4dcbead391bdd6dfb000ba9c553  -\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_31",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 git -C collections/source -c core.hooksPath=/dev/null show 5d6065b89eec4493199a0516ea4ef3aa23f76175:skills/skill-note-transfer/SKILL.md | rtk proxy shasum -a 256'",
+      "aggregated_output": "fa28c05e823c13065f96793f2cd19df880cd31ac9e0180b6c479e4a265931e59  -\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_34",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 git -C collections/source -c core.hooksPath=/dev/null show --format=fuller --stat 5d6065b89eec4493199a0516ea4ef3aa23f76175'",
+      "aggregated_output": "commit 5d6065b89eec4493199a0516ea4ef3aa23f76175\nAuthor:     Synthetic Source Fixture Owner <synthetic-source@example.invalid>\nAuthorDate: Sat Oct 3 23:23:36 2026 -0300\nCommit:     Synthetic Source Fixture Owner <synthetic-source@example.invalid>\nCommitDate: Sat Oct 3 23:23:36 2026 -0300\n\n    Retain supplied synthetic source baseline\n\n skills-catalog.json                              |  11 ++\n skills/skill-note-transfer/LICENSE               | 202 +++++++++++++++++++++++\n skills/skill-note-transfer/SKILL.md              |  23 +++\n skills/skill-note-transfer/references/handoff.md |   8 +\n 4 files changed, 244 insertions(+)\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_33",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 git -C collections/source -c core.hooksPath=/dev/null fsck --full'",
+      "aggregated_output": "",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_36",
+      "type": "file_change",
+      "changes": [
+        {
+          "path": "<workspace>/output/migration-record.md",
+          "kind": "update"
+        }
+      ],
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_36",
+      "type": "file_change",
+      "changes": [
+        {
+          "path": "<workspace>/output/migration-record.md",
+          "kind": "update"
+        }
+      ],
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_37",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy mkdir -p collections/target/skills'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_37",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy mkdir -p collections/target/skills'",
+      "aggregated_output": "",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_38",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy cp -Rn collections/source/skills/skill-note-transfer collections/target/skills/skill-note-transfer'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_38",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy cp -Rn collections/source/skills/skill-note-transfer collections/target/skills/skill-note-transfer'",
+      "aggregated_output": "",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_40",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy shasum -a 256 collections/target/skills/skill-note-transfer/SKILL.md collections/target/skills/skill-note-transfer/LICENSE collections/target/skills/skill-note-transfer/references/handoff.md collections/target/KEEP.md collections/target/skills-catalog.json collections/source/skills-catalog.json'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_41",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy diff -r collections/source/skills/skill-note-transfer collections/target/skills/skill-note-transfer'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_42",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy cat collections/target/skills/skill-note-transfer/SKILL.md collections/target/skills/skill-note-transfer/references/handoff.md'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_43",
+      "type": "command_execution",
+      "command": "/bin/sh -c \"rtk proxy jq -e '.schema_version == 1 and (.skills | length) == 1 and .skills[0].name == \\\"skill-note-transfer\\\" and .skills[0].path == \\\"skills/skill-note-transfer\\\"' collections/source/skills-catalog.json\"",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_44",
+      "type": "command_execution",
+      "command": "/bin/sh -c \"rtk proxy jq -e '.schema_version == 1 and .skills == []' collections/target/skills-catalog.json\"",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_45",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy find collections/target/skills/skill-note-transfer -type f -o -type l'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_42",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy cat collections/target/skills/skill-note-transfer/SKILL.md collections/target/skills/skill-note-transfer/references/handoff.md'",
+      "aggregated_output": "---\nname: skill-note-transfer\ndescription: Use to turn one supplied skill evidence note into a portable reviewer handoff without changing the reviewed package.\nlicense: Apache-2.0\nmetadata:\n  source: original-synthetic-fixture\n---\n\n# Skill Note Transfer\n\nProduce one reviewer handoff from a supplied evidence note for one identified\nskill. Preserve the source identity, review question, inspected artifacts,\nmissing evidence and next decision owner. Do not evaluate the skill or alter\nthe reviewed package.\n\nUse `references/handoff.md` when preparing the handoff sections. Resolve this\nresource relative to the loaded package; choose the output path in the caller's\nauthorized workspace. No external service, installed companion or setup is\nrequired. Do not copy private transcripts or credentials into the output.\n\nExample: an evidence note for `skill-alpha` contains a package-tree artifact\nand lacks a consumer-layout check. Its handoff preserves that artifact, lists\nthe missing check and requests a portability review without claiming approval.\n# Reviewer handoff\n\nSPDX-License-Identifier: Apache-2.0\n\nRecord one supplied package identity, the selected review question, inspected\nartifact references, explicit evidence gaps and the next decision owner. Preserve\nthe evidence note's uncertainty. A supplied completion statement is not an\nindependently verified validation result. Write only to the caller-selected path.\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_41",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy diff -r collections/source/skills/skill-note-transfer collections/target/skills/skill-note-transfer'",
+      "aggregated_output": "",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_44",
+      "type": "command_execution",
+      "command": "/bin/sh -c \"rtk proxy jq -e '.schema_version == 1 and .skills == []' collections/target/skills-catalog.json\"",
+      "aggregated_output": "true\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_43",
+      "type": "command_execution",
+      "command": "/bin/sh -c \"rtk proxy jq -e '.schema_version == 1 and (.skills | length) == 1 and .skills[0].name == \\\"skill-note-transfer\\\" and .skills[0].path == \\\"skills/skill-note-transfer\\\"' collections/source/skills-catalog.json\"",
+      "aggregated_output": "true\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_45",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy find collections/target/skills/skill-note-transfer -type f -o -type l'",
+      "aggregated_output": "collections/target/skills/skill-note-transfer/LICENSE\ncollections/target/skills/skill-note-transfer/references/handoff.md\ncollections/target/skills/skill-note-transfer/SKILL.md\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_40",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy shasum -a 256 collections/target/skills/skill-note-transfer/SKILL.md collections/target/skills/skill-note-transfer/LICENSE collections/target/skills/skill-note-transfer/references/handoff.md collections/target/KEEP.md collections/target/skills-catalog.json collections/source/skills-catalog.json'",
+      "aggregated_output": "fa28c05e823c13065f96793f2cd19df880cd31ac9e0180b6c479e4a265931e59  collections/target/skills/skill-note-transfer/SKILL.md\ncfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30  collections/target/skills/skill-note-transfer/LICENSE\ne5500b3361b6d4eaab15e4555e28a4a4db2fc4dcbead391bdd6dfb000ba9c553  collections/target/skills/skill-note-transfer/references/handoff.md\n74c19f171854df7adc5fd75db1075a34755d7a772ad179c22fa9e2d8c64223eb  collections/target/KEEP.md\n589e34d92968f63ef2a7e337c54a0cee3b72b29501b3355a74d3dd101af0cf7b  collections/target/skills-catalog.json\n911d333f264f14d76a4860db231ff0a84637c34e23fbb1044b8247f4e23c6147  collections/source/skills-catalog.json\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_46",
+      "type": "file_change",
+      "changes": [
+        {
+          "path": "<workspace>/output/behavioral-evidence-note.md",
+          "kind": "add"
+        },
+        {
+          "path": "<workspace>/output/behavioral-handoff.md",
+          "kind": "add"
+        }
+      ],
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_46",
+      "type": "file_change",
+      "changes": [
+        {
+          "path": "<workspace>/output/behavioral-evidence-note.md",
+          "kind": "add"
+        },
+        {
+          "path": "<workspace>/output/behavioral-handoff.md",
+          "kind": "add"
+        }
+      ],
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_47",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 git -C collections/source -c core.hooksPath=/dev/null rev-list --count refs/heads/synthetic-baseline'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_48",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy find collections/target/skills/skill-note-transfer -type l -o -type f -perm -111'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_49",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 git -C collections/source -c core.hooksPath=/dev/null rev-parse 5d6065b89eec4493199a0516ea4ef3aa23f76175:skills/skill-note-transfer'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_50",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy cat output/behavioral-evidence-note.md output/behavioral-handoff.md'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_51",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 git -C collections/source -c core.hooksPath=/dev/null ls-tree -r --name-only 5d6065b89eec4493199a0516ea4ef3aa23f76175'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_48",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy find collections/target/skills/skill-note-transfer -type l -o -type f -perm -111'",
+      "aggregated_output": "",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_50",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy cat output/behavioral-evidence-note.md output/behavioral-handoff.md'",
+      "aggregated_output": "# Synthetic evidence note for the manual smoke check\n\nPackage identity: `skill-note-transfer` at\n`collections/source/skills/skill-note-transfer`, source commit\n`5d6065b89eec4493199a0516ea4ef3aa23f76175`.\n\nReview question: Can the additive target candidate preserve this package's\nportable handoff responsibility and package-relative reference?\n\nInspected artifact references:\n\n- `collections/target/skills/skill-note-transfer/SKILL.md`\n- `collections/target/skills/skill-note-transfer/LICENSE`\n- `collections/target/skills/skill-note-transfer/references/handoff.md`\n\nEvidence gaps: official package validation and live host/consumer-layout\nexecution are unavailable. No live consumers were supplied or authorized for\ndiscovery.\n\nSupplied completion statement for this test: \"The copy is ready.\" This statement\nis unverified and must not be converted into migration approval.\n\nNext decision owner: unassigned target acceptance reviewer; the fixture does\nnot name this owner. The history retention owner is separately the Fictional\nsource collection maintainer.\n\nCaller-selected handoff path: `output/behavioral-handoff.md`.\n# Reviewer handoff\n\nSource identity: `skill-note-transfer` at\n`collections/source/skills/skill-note-transfer`, source commit\n`5d6065b89eec4493199a0516ea4ef3aa23f76175`.\n\nReview question: Can the additive target candidate preserve this package's\nportable handoff responsibility and package-relative reference?\n\nInspected artifacts recorded in the supplied evidence note:\n\n- `collections/target/skills/skill-note-transfer/SKILL.md`\n- `collections/target/skills/skill-note-transfer/LICENSE`\n- `collections/target/skills/skill-note-transfer/references/handoff.md`\n\nMissing evidence: official package validation and live host/consumer-layout\nexecution are unavailable. No live consumers were supplied or authorized for\ndiscovery. The supplied statement \"The copy is ready\" is unverified; it does\nnot establish validation or approval.\n\nNext decision owner: unassigned target acceptance reviewer. Assign this owner\nto review the portability question and obtain the missing evidence. The\nFictional source collection maintainer separately owns source-history retention.\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_49",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 git -C collections/source -c core.hooksPath=/dev/null rev-parse 5d6065b89eec4493199a0516ea4ef3aa23f76175:skills/skill-note-transfer'",
+      "aggregated_output": "64493dbfb862bb6cca914f37ae5e822f0419686b\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_51",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 git -C collections/source -c core.hooksPath=/dev/null ls-tree -r --name-only 5d6065b89eec4493199a0516ea4ef3aa23f76175'",
+      "aggregated_output": "skills-catalog.json\nskills/skill-note-transfer/LICENSE\nskills/skill-note-transfer/SKILL.md\nskills/skill-note-transfer/references/handoff.md\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_47",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 git -C collections/source -c core.hooksPath=/dev/null rev-list --count refs/heads/synthetic-baseline'",
+      "aggregated_output": "1\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_52",
+      "type": "file_change",
+      "changes": [
+        {
+          "path": "<workspace>/output/migration-record.md",
+          "kind": "update"
+        }
+      ],
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_52",
+      "type": "file_change",
+      "changes": [
+        {
+          "path": "<workspace>/output/migration-record.md",
+          "kind": "update"
+        }
+      ],
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_54",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy shasum -a 256 collections/source/skills-catalog.json collections/target/skills-catalog.json collections/target/KEEP.md'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_55",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 git -C collections/source -c core.hooksPath=/dev/null cat-file -p 5d6065b89eec4493199a0516ea4ef3aa23f76175'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_56",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy diff -r collections/source/skills/skill-note-transfer collections/target/skills/skill-note-transfer'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_57",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 git -C collections/source -c core.hooksPath=/dev/null status --porcelain=v1'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_58",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy cat output/migration-record.md'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_59",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 git -C collections/source -c core.hooksPath=/dev/null rev-parse refs/heads/synthetic-baseline'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_55",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 git -C collections/source -c core.hooksPath=/dev/null cat-file -p 5d6065b89eec4493199a0516ea4ef3aa23f76175'",
+      "aggregated_output": "tree 2d2ffc6e8749f2937bb77d9ca86aa6e583529464\nauthor Synthetic Source Fixture Owner <synthetic-source@example.invalid> 1791080616 -0300\ncommitter Synthetic Source Fixture Owner <synthetic-source@example.invalid> 1791080616 -0300\n\nRetain supplied synthetic source baseline\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_59",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 git -C collections/source -c core.hooksPath=/dev/null rev-parse refs/heads/synthetic-baseline'",
+      "aggregated_output": "5d6065b89eec4493199a0516ea4ef3aa23f76175\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_54",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy shasum -a 256 collections/source/skills-catalog.json collections/target/skills-catalog.json collections/target/KEEP.md'",
+      "aggregated_output": "911d333f264f14d76a4860db231ff0a84637c34e23fbb1044b8247f4e23c6147  collections/source/skills-catalog.json\n589e34d92968f63ef2a7e337c54a0cee3b72b29501b3355a74d3dd101af0cf7b  collections/target/skills-catalog.json\n74c19f171854df7adc5fd75db1075a34755d7a772ad179c22fa9e2d8c64223eb  collections/target/KEEP.md\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_57",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 GIT_ATTR_NOSYSTEM=1 git -C collections/source -c core.hooksPath=/dev/null status --porcelain=v1'",
+      "aggregated_output": "",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_56",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy diff -r collections/source/skills/skill-note-transfer collections/target/skills/skill-note-transfer'",
+      "aggregated_output": "",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_58",
+      "type": "command_execution",
+      "command": "/bin/sh -c 'rtk proxy cat output/migration-record.md'",
+      "aggregated_output": "# Additive migration record\n\nStatus: **candidate prepared; acceptance readiness BLOCKED**. The target\ncatalog remains unchanged. Official validation and host execution are not run\nbecause their tools/contracts are not supplied in this self-contained fixture.\n\n## Authority and history strategy recorded before copying\n\nThis synthetic migration follows `inputs/authority.json`,\n`inputs/history-policy.md`, and `instruction-only/skill-migration/SKILL.md`.\nOnly the source Git metadata, target candidate, conditionally authorized target\ncatalog, and `output/` are writable. Both catalogs and the full source package\nwere read before writing. No workspace-scoped `AGENTS.md` was found.\n\nRetain a new local Git repository at `collections/source/.git` with a reachable\n`refs/heads/synthetic-baseline` baseline containing exactly the supplied source\ncatalog, `SKILL.md`, complete `LICENSE`, and `references/handoff.md`. Use a\nsynthetic command-local identity, disable global/system Git configuration,\ntemplates, hooks, and signing, and add no remotes. Verify retrieval of the actual\ncommit and its blobs before copying the package. No bundle or external history\nis needed under the supplied history policy.\n\nHistory retention owner: **Fictional source collection maintainer**. Keep the\nrepository and baseline ref reachable for the lifetime of this candidate and\nany later acceptance. The new baseline records only the supplied synthetic\ntree; it does not claim earlier historical provenance.\n\nThe source remains authoritative. The target is a review candidate with the\nsame skill name and is not cataloged or installed until acceptance gates pass.\nNo consumer cutover or source deprecation/removal is authorized.\n\n## Initial compatibility assessment\n\nThe target package path does not exist; the target catalog has an empty\n`skills` array. There is no naming collision. The package has no runtime\ndependency, executable, external service, companion installation, or required\nhost adapter. Its bundled reference is package-relative. No packaging or\nbehavior change is needed. No live consumers are supplied or authorized for\ndiscovery.\n\nNo official validator, validator invocation, or host harness is supplied in\nthis workspace. These checks must be recorded as unavailable/not run, never\ninferred from the presence of copied files. Target catalog acceptance is\ntherefore blocked; a proposed entry will be recorded without editing it.\n\n## Source baseline retained before target copy\n\nActual source commit: `5d6065b89eec4493199a0516ea4ef3aa23f76175`.\nRepository: `collections/source/.git`.\nReachable ref: `refs/heads/synthetic-baseline`.\nSynthetic author/committer: `Synthetic Source Fixture Owner\n<synthetic-source@example.invalid>`.\n\n`git rev-parse refs/heads/synthetic-baseline` returned that commit. `git show\n--format=fuller --stat` retrieved the root commit and exactly four supplied\nfiles. `git show <commit>:<path>` retrieved every file, including all 202 lines\nof the complete license and the bundled reference; SHA-256 digests matched the\ninitial working files (listed below). `git fsck --full` exited 0 without errors.\n`git status --porcelain=v1` and `git remote -v` were empty. All Git commands\nused `GIT_CONFIG_GLOBAL=/dev/null`, `GIT_CONFIG_NOSYSTEM=1`,\n`GIT_ATTR_NOSYSTEM=1`, and `-C collections/source`. Initialization disabled\ntemplates; commands disabled hooks; commit signing was disabled. Only the\nfour explicitly named source files were staged and committed.\n\n`git rev-list --count refs/heads/synthetic-baseline` returned `1`; `git ls-tree\n-r --name-only <commit>` listed exactly those four files. The package subtree\nGit object is `64493dbfb862bb6cca914f37ae5e822f0419686b`. No caller repository\nor unrelated history was used. The original package and source catalog remain\nunchanged; only the authorized source `.git` metadata was added.\n\n## Old and new identities\n\n| Property | Retained source | Staged target candidate |\n| --- | --- | --- |\n| Skill name | `skill-note-transfer` | `skill-note-transfer` |\n| Collection-relative path | `skills/skill-note-transfer` | `skills/skill-note-transfer` |\n| Workspace path | `collections/source/skills/skill-note-transfer` | `collections/target/skills/skill-note-transfer` |\n| Revision | `5d6065b89eec4493199a0516ea4ef3aa23f76175` | Uncommitted candidate; exact package bytes from that commit, verified below |\n| Catalog state | Original entry retained | No entry added; proposed entry below |\n| Authority | Authoritative source | Review candidate only |\n\nResponsibility and ordinary behavior are unchanged: turn one supplied skill\nevidence note into one portable reviewer handoff, retaining identity, review\nquestion, inspected artifacts, evidence gaps, uncertainty, and next decision\nowner. The skill does not evaluate or alter the reviewed package. The bundled\nreference governs the handoff sections, and output belongs in the caller's\nauthorized workspace. Provenance remains `original-synthetic-fixture`.\n\nChanged packaging/adapters: **none**. `SKILL.md`, the entire Apache-2.0\n`LICENSE` (including sections 1–9 and appendix), and `references/handoff.md`\nwere copied without edits. The relative reference resolves inside the target\npackage. No host adapter or dependency was introduced. There is no separate\nlifecycle/deprecation evidence supplied, and none is invented.\n\n## Checks actually performed\n\n| Check | Result and evidence | Limits |\n| --- | --- | --- |\n| Authority, target compatibility, collision | PASS: read authority, policy, both catalogs and all package files; target path absent and target catalog empty before copying | Fixture-only scope |\n| Source history retention | PASS: reachable actual root commit, four retrieved blobs with matching SHA-256, `git fsck --full` exit 0, clean source status, no remotes, exactly one commit | Owner must retain repository/ref; no historical commits predate this synthetic baseline |\n| Complete copy and behavioral instruction preservation | PASS: `diff -r` source/target package exited 0 with no differences; target hashes match originals and retrieved baseline | Byte preservation does not establish formal validation |\n| License/provenance | PASS: read complete supplied license and attribution metadata; both survive byte-for-byte | No external provenance verification was authorized |\n| Manual behavioral smoke check | PASS for the supplied synthetic note: read the target entrypoint and bundled reference, produced `output/behavioral-handoff.md` from `output/behavioral-evidence-note.md`, then read both and compared all required fields | Manual exercise by this agent; no automated behavioral suite or live host execution |\n| Security review | PASS within static scope: inspected all three candidate files; no executables, symlinks, external dependency, private transcript or credential content; output restriction and uncertainty safeguards retained | No automated security scanner supplied; not run |\n| Host packaging compatibility | PASS by inspection against the supplied standalone profile: no required adapter/setup, reference resolves relative to target | Live host/consumer-layout execution NOT RUN; no harness or consumers supplied |\n| Collection/catalog structure | PASS for inspection and JSON checks: both catalogs parse; `jq -e` source identity/schema and empty target/schema checks returned `true` with exit 0 | No official collection validator supplied; no acceptance implied |\n| Official package validation | **BLOCKED / NOT RUN**: no official validator, command, or validation contract supplied | No installation, downloads, generated scripts, or external lookup performed |\n| Existing target/source preservation | PASS: protected-file hashes below match pre-write values; source Git status clean after copy | Future edits must be checked again before any rollback |\n\nThe manual handoff preserves the exact source identity/commit, question and all\nthree artifact references, carries forward both missing checks and the\nunassigned decision owner, and labels the supplied completion claim unverified.\nIt makes no package evaluation or approval claim. The reviewed source/target\npackages were not changed by this exercise. This is a narrow smoke check, not\nan official validation substitute.\n\nSHA-256 verification (each package digest matches the initial source file,\nretrieved commit blob, and in-place target candidate):\n\n| Package-relative file | SHA-256 |\n| --- | --- |\n| `SKILL.md` | `fa28c05e823c13065f96793f2cd19df880cd31ac9e0180b6c479e4a265931e59` |\n| `LICENSE` | `cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30` |\n| `references/handoff.md` | `e5500b3361b6d4eaab15e4555e28a4a4db2fc4dcbead391bdd6dfb000ba9c553` |\n\nProtected files, before and after candidate preparation:\n\n| File | SHA-256 |\n| --- | --- |\n| `collections/source/skills-catalog.json` | `911d333f264f14d76a4860db231ff0a84637c34e23fbb1044b8247f4e23c6147` |\n| `collections/target/skills-catalog.json` | `589e34d92968f63ef2a7e337c54a0cee3b72b29501b3355a74d3dd101af0cf7b` |\n| `collections/target/KEEP.md` | `74c19f171854df7adc5fd75db1075a34755d7a772ad179c22fa9e2d8c64223eb` |\n\n## Proposed catalog reconciliation and unresolved gates\n\nThe source catalog is retained exactly. The target catalog is retained exactly\nas `{\"schema_version\": 1, \"skills\": []}`. Only after required gates pass,\nthe proposed target `skills` entry is:\n\n```json\n{\n  \"name\": \"skill-note-transfer\",\n  \"path\": \"skills/skill-note-transfer\",\n  \"description\": \"Use to turn one supplied skill evidence note into a portable reviewer handoff without changing the reviewed package.\",\n  \"tags\": [\"handoff\", \"review\", \"skills\"]\n}\n```\n\nUnresolved acceptance gates: supply and run the official package/collection\nvalidation contract, and supply host execution evidence or an explicit decision\non its applicability. The fixture names no target acceptance reviewer; this\ndecision owner remains unassigned. A future authorized reviewer must resolve\nthese gaps and record actual results before catalog acceptance. No clarification\nor additional access was requested. Missing evidence is not treated as success.\n\nNo live consumers are supplied or authorized for discovery. Consumer actions\nperformed: **none**. Any later transition requires a separate authorized owner\ndecision, acceptance evidence and consumer inventory. Until then the source is\nauthoritative and the target remains an uncataloged review candidate, avoiding\ntwo mutable canonical authorities. Source deprecation/removal is not planned\nunder this authority.\n\n## Reversible target additions and handoff\n\nTarget additions are limited to the three candidate files listed in the digest\ntable and their new directories. Preparation records are limited to this file,\n`output/behavioral-evidence-note.md`, and `output/behavioral-handoff.md`.\n\nRollback has not been performed. To withdraw this candidate, first compare its\ninventory and bytes with the recorded digests; stop for an ownership decision\nif another actor has added or changed anything. Remove only these three\nverified migration-created target files, then their directories if empty.\nThe newly created `collections/target/skills` parent may be removed only if\nempty. Keep `collections/target/KEEP.md` and both catalogs untouched. Retain\nthe output audit record and the source repository, its reachable baseline ref,\noriginal package and source catalog. No source-history rollback or deletion is\nauthorized.\n\nIf the proposed catalog entry is accepted in a later authorized change,\nrollback of that later change must remove only its incoming entry and preserve\nall other entries. No catalog mutation is part of this candidate.\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "turn.completed",
+    "usage": {
+      "input_tokens": 535861,
+      "cached_input_tokens": 499072,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 9777,
+      "reasoning_output_tokens": 2491
+    }
+  }
+]

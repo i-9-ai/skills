@@ -1,0 +1,13 @@
+{
+  "case_id": "create-review-intake",
+  "variant": "treatment",
+  "executor": "Codex CLI 0.160.0",
+  "model": "gpt-6.1-sol",
+  "settings": "reasoning=high; ephemeral; user-config=ignored; host-skill-discovery=disabled; hooks=disabled; plugins=disabled; workspace-write; approval=never",
+  "fresh_context": true,
+  "started_at": "2026-10-04T02:27:52.309Z",
+  "wall_time_ms": 600010,
+  "timed_out": true,
+  "exit_code": null,
+  "signal": "SIGTERM"
+}

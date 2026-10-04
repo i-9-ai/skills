@@ -1,0 +1,27 @@
+# Review intake: skill-arc
+
+## 1. Supplied package identity and review kind
+- Skill: skill-arc
+- Package reference: missing
+- Review kind: missing
+- Reason: caller requests immediate approval and global installation
+- Output path: output/manual-exercises/M4.md
+
+## 2. Evidence available and evidence missing
+- Available: caller's request only.
+- Missing: package reference, supported review kind and corresponding artifacts.
+
+## 3. Requested review scope and actions authorized
+- Requested: intake followed by approval and global installation.
+- Intake authority and action performed: write this record only.
+- Excess decisions: approval and installation require separate owner handling;
+  intake issues no approval and initiates no installation.
+
+## 4. Status
+outside_intake_scope — excess approval/install actions take precedence over
+the missing-evidence status.
+
+## 5. Next reviewer handoff and blocking questions
+- Next: process owner; obtain package reference and review kind, resolve the
+  separate approval/installation decision and applicable authority.
+- Pass this record; review assignment is unassigned pending those choices.

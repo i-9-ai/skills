@@ -1,0 +1,207 @@
+{
+  "schema_version": 1,
+  "id": "plan-overlap-refactor-baseline-1",
+  "benchmark_sha256": "bd768ef9f7ae15319a9d8e6bd7d2f6387d143af8bcc68021c2bec047eed85101",
+  "case_id": "plan-overlap-refactor",
+  "variant": "baseline",
+  "attempt": 1,
+  "execution": {
+    "kind": "agent",
+    "status": "executed",
+    "executor": "Codex CLI 0.160.0",
+    "model": "gpt-6.1-sol",
+    "environment": "macOS arm64; Node.js v24.21.0 operator; Codex CLI 0.160.0; RTK 0.51.0; separate disposable case cwd on the same workstation",
+    "settings": "reasoning=high; ephemeral; user-config=ignored; host-skill-discovery=disabled; hooks=disabled; plugins=disabled; workspace-write; approval=never",
+    "fresh_context": true
+  },
+  "metrics": {
+    "wall_time_ms": 300008,
+    "input_tokens": null,
+    "output_tokens": null
+  },
+  "artifacts": [
+    {
+      "path": "after.json",
+      "sha256": "1ee60535bad1fcfe569f0af4fde44fa8a3f9ee00baa25289aa65ba9f6ab655af",
+      "bytes": 1853
+    },
+    {
+      "path": "before.json",
+      "sha256": "2f64103e6cb03358510b69034e37ace383f4b8d6dddb7a8f72b6254c5a3c27f9",
+      "bytes": 1550
+    },
+    {
+      "path": "execution.json",
+      "sha256": "5efd0d0e7cac28d3b8bdb8b9008575d4384dbbc1ee87417ad6b3892a9a69e1b9",
+      "bytes": 449
+    },
+    {
+      "path": "grading/grades.json",
+      "sha256": "796e28dc3809ce3c7149b5a9e608df154147ad89fc4e1773d8c1fa532e2f9e11",
+      "bytes": 58331
+    },
+    {
+      "path": "grading/integrity.json",
+      "sha256": "e0d2aba23c3a7586a204aa70ae37aed719f3f5e4f6144a4bd7b3f6cc3a99a1ac",
+      "bytes": 76958
+    },
+    {
+      "path": "input.md",
+      "sha256": "9041f14613e1d7817542afe52ccff863e4261d8812f3349c5c6db2289e983f49",
+      "bytes": 1724
+    },
+    {
+      "path": "stderr.log",
+      "sha256": "fe4a336d1bee849f8a084ec37f1ae56a50f67a3f6f9933c3ef58e6dd6d27cf54",
+      "bytes": 7367
+    },
+    {
+      "path": "trace.jsonl",
+      "sha256": "aefe349fa8d0235e72c62bf5fe2ab03dd9b8f0c1b643828fb722b67d232c3fe4",
+      "bytes": 42077
+    },
+    {
+      "path": "workspace/collections/review/skills/skill-evidence-note/LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358
+    },
+    {
+      "path": "workspace/collections/review/skills/skill-evidence-note/SKILL.md",
+      "sha256": "9257b581b9e936285435935c411bdbe4808946916ffbfac8380fa8bb625ef328",
+      "bytes": 1156
+    },
+    {
+      "path": "workspace/collections/review/skills/skill-evidence-note/references/checklist.md",
+      "sha256": "d8be9be2d3220ec959e094ae3abd3ae0a12a53bb8a8ba643bbf18f802ae1ffcc",
+      "bytes": 373
+    },
+    {
+      "path": "workspace/collections/review/skills/skill-review-record/LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358
+    },
+    {
+      "path": "workspace/collections/review/skills/skill-review-record/SKILL.md",
+      "sha256": "38e20fd56dc3cce73de211e3d5aab405f9bf99832057df02573bfe9984d236b9",
+      "bytes": 989
+    },
+    {
+      "path": "workspace/collections/review/skills/skill-review-record/references/recovery.md",
+      "sha256": "17d59c4cf8067643ce424b3ddd1fd816719e944f6e2c62deea7135459d12a6e2",
+      "bytes": 669
+    },
+    {
+      "path": "workspace/collections/review/skills-catalog.json",
+      "sha256": "b5805f76e22c2ddbf54746006942968a69806d6c1954600f993f4f0097604ee8",
+      "bytes": 593
+    },
+    {
+      "path": "workspace/inputs/audit.md",
+      "sha256": "e36d2565249c80671f4cf52d8dd513445780c24b78393e098521c698ba448c55",
+      "bytes": 1287
+    },
+    {
+      "path": "workspace/inputs/consumers.json",
+      "sha256": "6db6e34c3c7f5a1a2317c9c580742b34c88e0f6640009eccb74bb53891f31b4a",
+      "bytes": 735
+    },
+    {
+      "path": "workspace/output/inspection-notes.md",
+      "sha256": "dcf6fccfc1d29b4a21e416b51f25859f1d7fa701e2a50dae8c67e2582d23bed5",
+      "bytes": 2508
+    },
+    {
+      "path": "workspace/output/refactoring-plan.md",
+      "sha256": "1e309c5094d562a76c602f8b1c0bbd3967e75089b7730bda9452ecbb56638261",
+      "bytes": 17573
+    }
+  ],
+  "criteria": [
+    {
+      "id": "current-map",
+      "verdict": "pass",
+      "reason": "The delivered plan maps both actual packages to the same one-review evidence-note trigger/output, distinguishes exclusions and caller-workspace writes, names the checklist/recovery/license resources, and maps the two supplied consumers to their actual references (sections Responsibility contract, Resource-by-resource disposition and Known consumers).",
+      "evidence": [
+        "workspace/output/refactoring-plan.md",
+        "trace.jsonl"
+      ]
+    },
+    {
+      "id": "justified-boundary",
+      "verdict": "pass",
+      "reason": "The plan recommends one canonical skill-evidence-note after comparing actual overlapping entrypoints and complementary resources. Its naming section reevaluates both current names and a new-name alternative, gives a semantic and consumer-cost rationale, and explicitly leaves external name availability uninspected.",
+      "evidence": [
+        "workspace/output/refactoring-plan.md"
+      ]
+    },
+    {
+      "id": "resource-disposition",
+      "verdict": "pass",
+      "reason": "The responsibility/resource tables retain the ordinary checklist at its existing path and preserve the complete missing-artifact example and same-name source-collision warning at the canonical recovery path; they also retain relative loading conditions and license/provenance rather than dropping useful material.",
+      "evidence": [
+        "workspace/output/refactoring-plan.md"
+      ]
+    },
+    {
+      "id": "consumer-transition",
+      "verdict": "pass",
+      "reason": "The plan names fixture-review-workbook with its stable SKILL.md path and fixture-missing-evidence-runbook with its future canonical recovery.md path, requires both owner acknowledgements and an agreed compatibility window, and explicitly states that unknown consumers and actual consumer files are unassessed.",
+      "evidence": [
+        "workspace/output/refactoring-plan.md"
+      ]
+    },
+    {
+      "id": "ordered-plan",
+      "verdict": "pass",
+      "reason": "The delivered seven-step future sequence assigns planner/owner/maintainer/reviewer/consumer handoffs, makes implementation authorization unresolved, gates snapshots, package/catalog alignment, resource and scenario checks, consumer acceptance and coordinated cutover, and supplies rollback triggers and restoration of package, catalog and consumer references together. These are proposals, not executed migration checks.",
+      "evidence": [
+        "workspace/output/refactoring-plan.md"
+      ]
+    },
+    {
+      "id": "plan-only",
+      "verdict": "pass",
+      "reason": "Independent byte comparison with all nine frozen fixtures found exact equality, including both licenses and catalog. The case workspace contains only those fixtures plus two documents under output/. The retained trace contains read-only inspection/hash commands and a single file-add confined to output/, with no observed package/catalog/Git/install/publication mutation.",
+      "evidence": [
+        "before.json",
+        "after.json",
+        "trace.jsonl",
+        "workspace/output/inspection-notes.md",
+        "grading/integrity.json"
+      ]
+    },
+    {
+      "id": "check-honesty",
+      "verdict": "fail",
+      "reason": "Plan line 103 and the final inspection-notes paragraph assert that a repeat hash check after writing output confirmed all nine files. The retained trace records only the pre-output shasum (item_13), then the sole output-file creation (item_15), and ends without a post-output check or completed turn. That claimed actual check is unsupported. The independent grader verified preservation separately; this does not validate the executor's claimed check chronology. Official/behavioral checks are correctly described as not performed.",
+      "evidence": [
+        "workspace/output/refactoring-plan.md",
+        "workspace/output/inspection-notes.md",
+        "trace.jsonl",
+        "execution.json"
+      ]
+    }
+  ],
+  "limitations": [
+    "One fresh externally operated attempt per arm; no statistical or causal inference.",
+    "Executor configuration and usage are operator/runtime reports, not provider-authenticated attestations.",
+    "The evaluator knew condition labels and helped author the rubric; it did not execute the cases.",
+    "Baseline excludes supplied candidate instruction packages; common runtime/system guidance remains. This is not a zero-instruction model or an OS isolation proof.",
+    "Invocation-only experimental host skill discovery suppression, disabled hooks/plugins and ignored user config were used; task traces were inspected for out-of-workspace reads.",
+    "Wall time includes runtime startup, tools and waiting; unknown terminated-turn token usage remains null.",
+    "The external operator terminated this real attempt at its frozen deadline. Partial outputs are retained; completion and budget compliance are not inferred.",
+    "Condition labels were known. The primary evaluator authored the frozen synthetic corpus/rubric but did not execute the cases; evaluation is separate from the executors, not blinded.",
+    "Executor/model/settings/fresh-context fields are locally recorded caller/configuration assertions, not provider-authenticated execution identity.",
+    "One attempt per arm and only four synthetic cases: no statistical benefit, general quality certification, cost conclusion or inference-latency claim follows.",
+    "Official validation remains unavailable where stated; preservation hashes and passing behavioral criteria do not certify Agent Skills conformance.",
+    "All supplied fixtures and instruction-only guidance were independently compared with frozen bytes. Guidance copied by the harness is excluded from case-fixture mutation counts.",
+    "Native host executables and login shells were used. The retained commands show no explicit private host-file operand or external data read, but implicit shell startup/config effects and complete host isolation are not established.",
+    "No executor-created code was run by the evaluators. Inspection was confined to the frozen suite, synthetic workspaces, retained traces, and read-only Git retrieval of authorized synthetic source repositories.",
+    "Labels were known to the evaluator; this grading was not blinded.",
+    "The executor/model/settings are recorded caller declarations, not provider-authenticated execution identity.",
+    "The real attempt was terminated by SIGTERM at the 300-second budget; no completed turn or normal exit is recorded. Observed outputs and preservation are graded independently of completion.",
+    "Wall time is process/orchestration elapsed time, not inference latency. No token, cost or statistical benefit is inferred.",
+    "Only the frozen case workspace and retained artifacts/traces were inspected; private host state and output scripts were not inspected or executed.",
+    "instruction-only/ harness package copies were excluded from supplied-fixture preservation checks."
+  ]
+}

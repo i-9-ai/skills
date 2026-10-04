@@ -1,0 +1,343 @@
+[
+  {
+    "type": "turn.started"
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_2",
+      "type": "command_execution",
+      "command": "/bin/zsh -lc 'pwd\ncommand -v rtk'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_3",
+      "type": "command_execution",
+      "command": "/bin/zsh -c 'command -v rtk'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_3",
+      "type": "command_execution",
+      "command": "/bin/zsh -c 'command -v rtk'",
+      "aggregated_output": "/opt/homebrew/bin/rtk\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_4",
+      "type": "command_execution",
+      "command": "/opt/homebrew/bin/bash -c 'command -v rtk'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_4",
+      "type": "command_execution",
+      "command": "/opt/homebrew/bin/bash -c 'command -v rtk'",
+      "aggregated_output": "/opt/homebrew/bin/rtk\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_5",
+      "type": "command_execution",
+      "command": "/opt/homebrew/bin/bash -c \"rtk --version\nrtk proxy rg --files --hidden -g '\"'!'\"\\\\.git/**' -g '\"'!'\"\\\\.agents/**' -g '\"'!'\"\\\\.codex/**' -g '\"'!'\"\\\\.aws/**' .\"",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_5",
+      "type": "command_execution",
+      "command": "/opt/homebrew/bin/bash -c \"rtk --version\nrtk proxy rg --files --hidden -g '\"'!'\"\\\\.git/**' -g '\"'!'\"\\\\.agents/**' -g '\"'!'\"\\\\.codex/**' -g '\"'!'\"\\\\.aws/**' .\"",
+      "aggregated_output": "rtk 0.51.0\n./inputs/design.md\n./inputs/brief.json\n./inputs/research.md\n./inputs/process-policy.md\n./inputs/LICENSE\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_6",
+      "type": "command_execution",
+      "command": "/opt/homebrew/bin/bash -c 'rtk proxy cat inputs/brief.json inputs/design.md'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_7",
+      "type": "command_execution",
+      "command": "/opt/homebrew/bin/bash -c 'rtk proxy shasum -a 256 inputs/brief.json inputs/design.md inputs/process-policy.md inputs/research.md inputs/LICENSE'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_8",
+      "type": "command_execution",
+      "command": "/opt/homebrew/bin/bash -c 'rtk proxy cat inputs/process-policy.md inputs/research.md inputs/LICENSE'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_8",
+      "type": "command_execution",
+      "command": "/opt/homebrew/bin/bash -c 'rtk proxy cat inputs/process-policy.md inputs/research.md inputs/LICENSE'",
+      "aggregated_output": "# Synthetic review-intake process\n\nSPDX-License-Identifier: Apache-2.0\n\nThis policy was authored for this benchmark. The fictional process owner grants\nreuse under the supplied Apache-2.0 license. It contains no customer facts,\npersonal records or external source excerpts.\n\n## Intake facts\n\nEach request names one skill, its caller-selected package reference and one\nreview kind: `structure`, `behavior` or `portability`. A reason and supporting\nartifact references may be supplied. Preserve their meaning without copying\nsecrets or private task transcripts into a reusable package.\n\nRecord these sections in the intake:\n\n1. Supplied package identity and review kind.\n2. Evidence available and evidence missing.\n3. Scope of the requested review and actions authorized.\n4. Status: `ready_for_review`, `incomplete` or `outside_intake_scope`.\n5. The next reviewer handoff and any question that blocks it.\n\n`ready_for_review` means enough intake information is present. It never means\nthe skill passed validation or that publication was approved.\n\n## Evidence requested by review kind\n\nFor `structure`, request the package tree and recorded structural checks. For\n`behavior`, request representative task inputs, expected observable outcomes\nand actual prior outputs when available. For `portability`, request the proposed\nconsumer layout, runtime prerequisites and evidence of references that remain\nusable outside the source checkout.\n\nAn absent artifact is listed as missing. Do not claim it was opened or checked.\nAn unavailable package identity or unsupported review kind leaves the intake\nincomplete and names the specific information needed from the caller.\n\n## Ordinary examples\n\nA request identifies `skill-alpha` at `candidate/skill-alpha`, selects\n`structure`, supplies a package tree and asks for intake only. Produce a\n`ready_for_review` record preserving that scope; do not produce a validation\nverdict.\n\nA request identifies `skill-beta`, selects `behavior` and supplies only a short\ndescription. Produce an `incomplete` record listing task cases and observed\noutputs as missing; do not invent benchmark results.\n\nA request says to approve and globally install `skill-gamma`, without package\nidentity or approval authority. Record `outside_intake_scope`, retain the known\nrequest and route the missing identity and installation decision to the owner.\nDo not install anything.\n# Supplied synthetic research packet\n\nSPDX-License-Identifier: Apache-2.0\n\nThis packet describes supplied task context, not an executed research campaign.\nAll process facts come from the fictional owner policy in `inputs/process-policy.md`.\nThe policy is the authority for this invented review-intake procedure. The\nmaterials were authored for the benchmark and may be reused under `inputs/LICENSE`.\n\nNo external legal, financial, medical, accounting or product-version claim is\nneeded to implement this procedure. No current public-source lookup was performed\nfor this packet. Do not convert this absence into a claimed research result.\n\nNo external candidate package contributes source content. Synthesis of two or\nmore upstream packages is therefore not part of this design. The only content\ncontribution is the supplied owner policy; preserve its review-kind decisions,\nmissing-evidence behavior and authority boundary. Optional companion procedures\nmust be identified through actually available packages, never assumed installed.\n\nUnknowns concern future real consumers and quality results. Those remain unknown\nand do not justify changing the supplied fictional process. Official conformance\nand behavioral evaluation must be reported from actual checks or left blocked;\nthis packet does not certify either.\n\n                                 Apache License\n                           Version 2.0, January 2004\n                        http://www.apache.org/licenses/\n\n   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION\n\n   1. Definitions.\n\n      \"License\" shall mean the terms and conditions for use, reproduction,\n      and distribution as defined by Sections 1 through 9 of this document.\n\n      \"Licensor\" shall mean the copyright owner or entity authorized by\n      the copyright owner that is granting the License.\n\n      \"Legal Entity\" shall mean the union of the acting entity and all\n      other entities that control, are controlled by, or are under common\n      control with that entity. For the purposes of this definition,\n      \"control\" means (i) the power, direct or indirect, to cause the\n      direction or management of such entity, whether by contract or\n      otherwise, or (ii) ownership of fifty percent (50%) or more of the\n      outstanding shares, or (iii) beneficial ownership of such entity.\n\n      \"You\" (or \"Your\") shall mean an individual or Legal Entity\n      exercising permissions granted by this License.\n\n      \"Source\" form shall mean the preferred form for making modifications,\n      including but not limited to software source code, documentation\n      source, and configuration files.\n\n      \"Object\" form shall mean any form resulting from mechanical\n      transformation or translation of a Source form, including but\n      not limited to compiled object code, generated documentation,\n      and conversions to other media types.\n\n      \"Work\" shall mean the work of authorship, whether in Source or\n      Object form, made available under the License, as indicated by a\n      copyright notice that is included in or attached to the work\n      (an example is provided in the Appendix below).\n\n      \"Derivative Works\" shall mean any work, whether in Source or Object\n      form, that is based on (or derived from) the Work and for which the\n      editorial revisions, annotations, elaborations, or other modifications\n      represent, as a whole, an original work of authorship. For the purposes\n      of this License, Derivative Works shall not include works that remain\n      separable from, or merely link (or bind by name) to the interfaces of,\n      the Work and Derivative Works thereof.\n\n      \"Contribution\" shall mean any work of authorship, including\n      the original version of the Work and any modifications or additions\n      to that Work or Derivative Works thereof, that is intentionally\n      submitted to Licensor for inclusion in the Work by the copyright owner\n      or by an individual or Legal Entity authorized to submit on behalf of\n      the copyright owner. For the purposes of this definition, \"submitted\"\n      means any form of electronic, verbal, or written communication sent\n      to the Licensor or its representatives, including but not limited to\n      communication on electronic mailing lists, source code control systems,\n      and issue tracking systems that are managed by, or on behalf of, the\n      Licensor for the purpose of discussing and improving the Work, but\n      excluding communication that is conspicuously marked or otherwise\n      designated in writing by the copyright owner as \"Not a Contribution.\"\n\n      \"Contributor\" shall mean Licensor and any individual or Legal Entity\n      on behalf of whom a Contribution has been received by Licensor and\n      subsequently incorporated within the Work.\n\n   2. Grant of Copyright License. Subject to the terms and conditions of\n      this License, each Contributor hereby grants to You a perpetual,\n      worldwide, non-exclusive, no-charge, royalty-free, irrevocable\n      copyright license to reproduce, prepare Derivative Works of,\n      publicly display, publicly perform, sublicense, and distribute the\n      Work and such Derivative Works in Source or Object form.\n\n   3. Grant of Patent License. Subject to the terms and conditions of\n      this License, each Contributor hereby grants to You a perpetual,\n      worldwide, non-exclusive, no-charge, royalty-free, irrevocable\n      (except as stated in this section) patent license to make, have made,\n      use, offer to sell, sell, import, and otherwise transfer the Work,\n      where such license applies only to those patent claims licensable\n      by such Contributor that are necessarily infringed by their\n      Contribution(s) alone or by combination of their Contribution(s)\n      with the Work to which such Contribution(s) was submitted. If You\n      institute patent litigation against any entity (including a\n      cross-claim or counterclaim in a lawsuit) alleging that the Work\n      or a Contribution incorporated within the Work constitutes direct\n      or contributory patent infringement, then any patent licenses\n      granted to You under this License for that Work shall terminate\n      as of the date such litigation is filed.\n\n   4. Redistribution. You may reproduce and distribute copies of the\n      Work or Derivative Works thereof in any medium, with or without\n      modifications, and in Source or Object form, provided that You\n      meet the following conditions:\n\n      (a) You must give any other recipients of the Work or\n          Derivative Works a copy of this License; and\n\n      (b) You must cause any modified files to carry prominent notices\n          stating that You changed the files; and\n\n      (c) You must retain, in the Source form of any Derivative Works\n          that You distribute, all copyright, patent, trademark, and\n          attribution notices from the Source form of the Work,\n          excluding those notices that do not pertain to any part of\n          the Derivative Works; and\n\n      (d) If the Work includes a \"NOTICE\" text file as part of its\n          distribution, then any Derivative Works that You distribute must\n          include a readable copy of the attribution notices contained\n          within such NOTICE file, excluding those notices that do not\n          pertain to any part of the Derivative Works, in at least one\n          of the following places: within a NOTICE text file distributed\n          as part of the Derivative Works; within the Source form or\n          documentation, if provided along with the Derivative Works; or,\n          within a display generated by the Derivative Works, if and\n          wherever such third-party notices normally appear. The contents\n          of the NOTICE file are for informational purposes only and\n          do not modify the License. You may add Your own attribution\n          notices within Derivative Works that You distribute, alongside\n          or as an addendum to the NOTICE text from the Work, provided\n          that such additional attribution notices cannot be construed\n          as modifying the License.\n\n      You may add Your own copyright statement to Your modifications and\n      may provide additional or different license terms and conditions\n      for use, reproduction, or distribution of Your modifications, or\n      for any such Derivative Works as a whole, provided Your use,\n      reproduction, and distribution of the Work otherwise complies with\n      the conditions stated in this License.\n\n   5. Submission of Contributions. Unless You explicitly state otherwise,\n      any Contribution intentionally submitted for inclusion in the Work\n      by You to the Licensor shall be under the terms and conditions of\n      this License, without any additional terms or conditions.\n      Notwithstanding the above, nothing herein shall supersede or modify\n      the terms of any separate license agreement you may have executed\n      with Licensor regarding such Contributions.\n\n   6. Trademarks. This License does not grant permission to use the trade\n      names, trademarks, service marks, or product names of the Licensor,\n      except as required for reasonable and customary use in describing the\n      origin of the Work and reproducing the content of the NOTICE file.\n\n   7. Disclaimer of Warranty. Unless required by applicable law or\n      agreed to in writing, Licensor provides the Work (and each\n      Contributor provides its Contributions) on an \"AS IS\" BASIS,\n      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or\n      implied, including, without limitation, any warranties or conditions\n      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A\n      PARTICULAR PURPOSE. You are solely responsible for determining the\n      appropriateness of using or redistributing the Work and assume any\n      risks associated with Your exercise of permissions under this License.\n\n   8. Limitation of Liability. In no event and under no legal theory,\n      whether in tort (including negligence), contract, or otherwise,\n      unless required by applicable law (such as deliberate and grossly\n      negligent acts) or agreed to in writing, shall any Contributor be\n      liable to You for damages, including any direct, indirect, special,\n      incidental, or consequential damages of any character arising as a\n      result of this License or out of the use or inability to use the\n      Work (including but not limited to damages for loss of goodwill,\n      work stoppage, computer failure or malfunction, or any and all\n      other commercial damages or losses), even if such Contributor\n      has been advised of the possibility of such damages.\n\n   9. Accepting Warranty or Additional Liability. While redistributing\n      the Work or Derivative Works thereof, You may choose to offer,\n      and charge a fee for, acceptance of support, warranty, indemnity,\n      or other liability obligations and/or rights consistent with this\n      License. However, in accepting such obligations, You may act only\n      on Your own behalf and on Your sole responsibility, not on behalf\n      of any other Contributor, and only if You agree to indemnify,\n      defend, and hold each Contributor harmless for any liability\n      incurred by, or claims asserted against, such Contributor by reason\n      of your accepting any such warranty or additional liability.\n\n   END OF TERMS AND CONDITIONS\n\n   APPENDIX: How to apply the Apache License to your work.\n\n      To apply the Apache License to your work, attach the following\n      boilerplate notice, with the fields enclosed by brackets \"[]\"\n      replaced with your own identifying information. (Don't include\n      the brackets!)  The text should be enclosed in the appropriate\n      comment syntax for the file format. We also recommend that a\n      file or class name and description of purpose be included on the\n      same \"printed page\" as the copyright notice for easier\n      identification within third-party archives.\n\n   Copyright [yyyy] [name of copyright owner]\n\n   Licensed under the Apache License, Version 2.0 (the \"License\");\n   you may not use this file except in compliance with the License.\n   You may obtain a copy of the License at\n\n       http://www.apache.org/licenses/LICENSE-2.0\n\n   Unless required by applicable law or agreed to in writing, software\n   distributed under the License is distributed on an \"AS IS\" BASIS,\n   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n   See the License for the specific language governing permissions and\n   limitations under the License.\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_6",
+      "type": "command_execution",
+      "command": "/opt/homebrew/bin/bash -c 'rtk proxy cat inputs/brief.json inputs/design.md'",
+      "aggregated_output": "{\n  \"schema_version\": 1,\n  \"synthetic\": true,\n  \"process_owner\": \"Fictional skill collection maintainer\",\n  \"skill_name\": \"skill-review-intake\",\n  \"responsibility\": \"Turn one request to review a skill into a bounded review-intake record.\",\n  \"primary_output\": \"One review-intake record with supplied facts, missing evidence, permitted actions and the next reviewer handoff.\",\n  \"target_user\": \"An agent preparing a skill review for a maintainer.\",\n  \"destination\": \"deliverables/skill-review-intake\",\n  \"language\": \"English\",\n  \"license\": \"Apache-2.0\",\n  \"profile\": \"Portable standalone package; host interface and icons are optional.\",\n  \"required_companions\": [],\n  \"exclusions\": [\n    \"Evaluating the package\",\n    \"Approving publication or installation\",\n    \"Changing a collection catalog\",\n    \"Migrating, overwriting or deleting a skill\",\n    \"Researching or performing an unrelated domain procedure\"\n  ],\n  \"source_material\": [\n    \"inputs/design.md\",\n    \"inputs/process-policy.md\",\n    \"inputs/research.md\",\n    \"inputs/LICENSE\"\n  ],\n  \"authority\": {\n    \"create_package\": true,\n    \"create_authoring_record\": true,\n    \"change_inputs\": false,\n    \"install\": false,\n    \"publish\": false,\n    \"download\": false\n  }\n}\n# Approved synthetic design\n\nSPDX-License-Identifier: Apache-2.0\n\nThe process owner approved this design for the fictional task. The package's\nonly responsibility is preparing review intake. Its only primary output is a\nreview-intake record. The valid name `skill-review-intake` is fixed for this\nexercise; no other package with that name is present in the supplied inputs.\n\nActivate when a maintainer asks to prepare a review request for one identified\nskill. Do not activate to judge quality, approve a release, install a package\nor perform the skill's domain task.\n\nThe ordinary route records the supplied package reference and review kind,\nchecks whether the requested evidence is present, lists missing information,\nrecords the actions actually authorized and names the next review handoff.\nMissing data produces an incomplete intake, never an invented fact or a\nquality verdict. The record is written to a caller-selected path outside the\ninstalled package.\n\nKeep the ordinary procedure and a complete normal example in `SKILL.md`. A\nreusable Markdown intake template may be bundled under `assets/`. Give a clear\nloading condition for that template. Include examples for missing evidence and\na request that exceeds intake authority. No executable helper, external service,\nprovider integration or automatic setup is needed.\n\nThe target profile requires `SKILL.md` and the supplied full Apache license.\nAdditional references are justified only when they serve the intake procedure.\nDo not require this repository, its catalog or a global home path at runtime.\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_7",
+      "type": "command_execution",
+      "command": "/opt/homebrew/bin/bash -c 'rtk proxy shasum -a 256 inputs/brief.json inputs/design.md inputs/process-policy.md inputs/research.md inputs/LICENSE'",
+      "aggregated_output": "3596d3111333113ed2011f3bb2eccd772eadc678fb1ad00fda0cfcc7e9f68678  inputs/brief.json\nb0350ea5830da90cfbe5b0492a63e3b69f96b87740bcf3634f9660fa4b0163f5  inputs/design.md\ne1cac0c373c6532b7982700f01be26764f46b6e019b163324777fcc449c177dc  inputs/process-policy.md\nde9b9a4f19ea7a46470d25d40208ef2fcaa36c79c3874012a719360583869e25  inputs/research.md\ncfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30  inputs/LICENSE\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_2",
+      "type": "command_execution",
+      "command": "/bin/zsh -lc 'pwd\ncommand -v rtk'",
+      "aggregated_output": "<workspace>\n/opt/homebrew/bin/rtk\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_10",
+      "type": "file_change",
+      "changes": [
+        {
+          "path": "<workspace>/deliverables/skill-review-intake/SKILL.md",
+          "kind": "add"
+        },
+        {
+          "path": "<workspace>/deliverables/skill-review-intake/assets/review-intake-template.md",
+          "kind": "add"
+        }
+      ],
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_10",
+      "type": "file_change",
+      "changes": [
+        {
+          "path": "<workspace>/deliverables/skill-review-intake/SKILL.md",
+          "kind": "add"
+        },
+        {
+          "path": "<workspace>/deliverables/skill-review-intake/assets/review-intake-template.md",
+          "kind": "add"
+        }
+      ],
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_11",
+      "type": "command_execution",
+      "command": "/opt/homebrew/bin/bash -c 'rtk cp inputs/LICENSE deliverables/skill-review-intake/LICENSE'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_11",
+      "type": "command_execution",
+      "command": "/opt/homebrew/bin/bash -c 'rtk cp inputs/LICENSE deliverables/skill-review-intake/LICENSE'",
+      "aggregated_output": "",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_12",
+      "type": "command_execution",
+      "command": "/opt/homebrew/bin/bash -c \"rtk proxy sed -n '1,125p' deliverables/skill-review-intake/SKILL.md\nrtk proxy cat deliverables/skill-review-intake/assets/review-intake-template.md\"",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_13",
+      "type": "command_execution",
+      "command": "/opt/homebrew/bin/bash -c \"rtk proxy shasum -a 256 inputs/brief.json inputs/design.md inputs/process-policy.md inputs/research.md inputs/LICENSE deliverables/skill-review-intake/LICENSE\nrtk proxy rg -n '\"'^## [1-5]'\"\\\\. |\"'^name:|''^description:|''^license:|''^ready_for_review$|''^incomplete$|''^outside_intake_scope$|'\"\\\\]\\\\(' deliverables/skill-review-intake/SKILL.md deliverables/skill-review-intake/assets/review-intake-template.md\"",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_14",
+      "type": "command_execution",
+      "command": "/opt/homebrew/bin/bash -c 'rtk proxy rg --files deliverables\nrtk proxy wc -l deliverables/skill-review-intake/SKILL.md deliverables/skill-review-intake/LICENSE deliverables/skill-review-intake/assets/review-intake-template.md\nrtk proxy cmp inputs/LICENSE deliverables/skill-review-intake/LICENSE'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_12",
+      "type": "command_execution",
+      "command": "/opt/homebrew/bin/bash -c \"rtk proxy sed -n '1,125p' deliverables/skill-review-intake/SKILL.md\nrtk proxy cat deliverables/skill-review-intake/assets/review-intake-template.md\"",
+      "aggregated_output": "---\nname: skill-review-intake\ndescription: Prepare one bounded review-intake record when a maintainer requests review intake for one identified skill. Capture supplied facts, missing evidence, authorized actions and the next reviewer handoff. Does not evaluate skills, approve releases, install packages or perform their domain tasks.\nlicense: Apache-2.0\n---\n\n# Skill review intake\n\nSPDX-License-Identifier: Apache-2.0\n\nAdapted from the fictional owner's synthetic review-intake policy. Changes:\norganized the policy into an agent procedure, added a reusable template and\nexpanded the examples. The source material is fictional and licensed under the\nbundled [full Apache-2.0 license](LICENSE).\n\n## Responsibility and boundaries\n\nProduce exactly one review-intake record for one skill. Use this procedure for\npreparing a maintainer's review request. It records evidence presence and gaps;\nit supplies no quality verdict, validation result or approval.\n\nDo not evaluate the package, execute its instructions or helpers, approve\npublication or installation, install anything, change a catalog, migrate,\noverwrite or delete a skill, or research or perform an unrelated domain task.\nAn intake request that also demands these actions gets an\n`outside_intake_scope` record and an owner handoff. A request solely to perform\nthose actions is outside this skill's activation purpose; do not perform it.\n\nNo companion skill, executable helper, external service, provider integration\nor automatic setup is required. All procedure details are here. Resolve bundled\nresource links relative to this package, independently of the source checkout.\n\n## Ordinary procedure\n\n1. Capture the supplied skill name, caller-selected package reference and one\n   review kind: `structure`, `behavior` or `portability`. Preserve the requested\n   reason and scope. If identity or kind is missing or unsupported, record the\n   supplied value and the exact gap; do not infer a location or change the kind.\n   If multiple skills are requested, record the boundary problem and hand back\n   selection of one skill rather than create multiple records.\n2. Inventory only the evidence supplied or available through authorized,\n   read-only access. Record each artifact's reference and whether its contents\n   were supplied, opened, or merely referenced. A reference alone does not prove\n   its contents are available. List absent or inaccessible evidence as missing;\n   never claim it was opened or checked. Preserve reported check results as\n   reported facts, without confirming them or running new checks.\n\n   | Review kind | Evidence to request and inventory |\n   | --- | --- |\n   | `structure` | Package tree and recorded structural checks. |\n   | `behavior` | Representative task inputs, expected observable outcomes and actual prior outputs when available. |\n   | `portability` | Proposed consumer layout, runtime prerequisites and evidence that references remain usable outside the source checkout. |\n\n   For behavior intake, if prior outputs are absent, list that gap. Record a\n   caller's explicit statement that no prior runs exist; actual prior outputs\n   are requested when available. Unknown availability remains an unresolved\n   evidence question. Never invent a run or its result. An explicit statement\n   of no runtime prerequisites is supplied evidence, not a silent assumption.\n3. Separate requested actions from actions actually authorized. Cite the\n   caller's instruction or other supplied authority. An intake request\n   authorizes preparing the record; it does not grant approval or installation\n   authority. Even if broader authority is supplied, this procedure only\n   records it for the owner. Do not act on it. Retain the meaning of the reason\n   and evidence without copying secrets or private task transcripts into this\n   reusable package; use safe artifact references in the intake.\n4. Set the record's status:\n   - `outside_intake_scope` if the request exceeds the single-skill intake\n     responsibility. Still list missing identity and evidence. This status\n     takes precedence over `incomplete` for an overreaching request.\n   - `incomplete` if identity, supported kind, required evidence, output\n     destination or the next handoff is unresolved. Identify each blocking\n     question. A stated absence of prior runs alone does not require fabricated\n     outputs; record it as a gap with the owner's supplied context.\n   - `ready_for_review` if enough intake information is supplied and the\n     request stays within scope. This means intake readiness only, never that\n     the skill passed validation or publication was approved.\n5. Name the next reviewer from supplied information, or use the supplied\n   process owner's role to resolve reviewer assignment. Do not invent a\n   person's identity. List any blocking question and who must resolve it;\n   use `owner not supplied` when necessary. Recording a handoff does not send\n   a message, assign work or initiate a review.\n6. Load [assets/review-intake-template.md](assets/review-intake-template.md)\n   when drafting the record. Fill every section, using explicit `not supplied`,\n   `none` or `not applicable` values instead of blanks. Write only to the\n   caller-selected record path outside the installed package and within the\n   caller's authorized output area. Do not choose a path, overwrite an\n   existing record without authorization, or modify the skill package. If the\n   path is missing, inaccessible or inside the package, retain one draft\n   record in the response, mark the output gate unresolved and do not write.\n7. Before handing back the record, check its completeness as an intake:\n   all five sections are present; known facts are distinguished from gaps;\n   status follows the rules above; permissions are explicit; the destination\n   and next handoff are recorded. Stop after returning the record and its\n   unresolved gates. Do not turn this completeness check into skill evaluation.\n\n## Normal example: structure intake\n\nFictional caller request: “Prepare intake only for `skill-alpha` at\n`candidate/skill-alpha`, for a structure review because its layout changed.\nWrite a new record to `review-records/skill-alpha.md`, outside the package.\nThe collection maintainer is the next reviewer.” The caller supplies a tree\nshowing `SKILL.md`, `LICENSE` and `assets/example.md`, plus a checks note\nreporting that required files and local resource links were checked. Both\nartifacts' contents are supplied. No review or installation is authorized.\n\nResult, using the bundled template:\n\n```markdown\n# Review intake: skill-alpha\n\nRecord destination: review-records/skill-alpha.md (caller-selected new file outside package)\n\n## 1. Supplied package identity and review kind\n- Skill name: skill-alpha\n- Package reference: candidate/skill-alpha\n- Review kind: structure\n- Reason: Package layout changed.\n\n## 2. Evidence available and evidence missing\nAvailable:\n- alpha-tree.txt: contents supplied; lists SKILL.md, LICENSE and assets/example.md.\n- alpha-checks.md: contents supplied; caller reports required-file and local-link checks.\nMissing:\n- None for this intake.\nEvidence limits:\n<!-- SPDX-License-Identifier: Apache-2.0 -->\n<!-- Adapted from the fictional owner's synthetic policy; changed into a reusable five-section template. -->\n<!-- Load when drafting one intake. Replace placeholders with supplied facts or explicit gaps. -->\n\n# Review intake: <supplied skill name, or not supplied>\n\nRecord destination: <caller-selected path outside the installed package, or unresolved output gate>\n\n## 1. Supplied package identity and review kind\n- Skill name: <supplied name or not supplied>\n- Package reference: <caller-selected reference or not supplied>\n- Review kind: <structure | behavior | portability; preserve unsupported value if supplied>\n- Reason: <supplied reason or not supplied>\n\n## 2. Evidence available and evidence missing\nAvailable:\n- <artifact reference, supplied fact and access state: contents supplied, opened or reference only>\nMissing:\n- <specific absent/inaccessible evidence and any caller explanation, or none>\nEvidence limits:\n- <unopened references, caller-reported results, unknown prior runs or other limits>\n\n## 3. Requested review scope and actions authorized\n- Requested scope: <bounded review scope or exact scope problem>\n- Requested actions: <what the caller requested>\n- Authorized actions and source: <actual permission and supplied authority, or not supplied>\n- Actions outside intake: <overreaching actions retained for owner handoff, or none requested>\n\n## 4. Status\n<ready_for_review | incomplete | outside_intake_scope>\nBasis: <evidence-presence or scope reason; no quality verdict>\nThis status records intake readiness or a gate; it is not validation or publication approval.\n\n## 5. Next reviewer handoff and blocking questions\n- Next reviewer: <supplied reviewer or process-owner role; note unknown identity>\n- Handoff: <record and evidence to hand off; do not initiate review or contact anyone>\n- Blocking questions and resolver: <specific unresolved question and responsible caller/owner, or none>\n- Delivery state: <written record location or unwritten draft with output gate; state actual actions only>\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_14",
+      "type": "command_execution",
+      "command": "/opt/homebrew/bin/bash -c 'rtk proxy rg --files deliverables\nrtk proxy wc -l deliverables/skill-review-intake/SKILL.md deliverables/skill-review-intake/LICENSE deliverables/skill-review-intake/assets/review-intake-template.md\nrtk proxy cmp inputs/LICENSE deliverables/skill-review-intake/LICENSE'",
+      "aggregated_output": "deliverables/skill-review-intake/assets/review-intake-template.md\ndeliverables/skill-review-intake/SKILL.md\ndeliverables/skill-review-intake/LICENSE\n     244 deliverables/skill-review-intake/SKILL.md\n     202 deliverables/skill-review-intake/LICENSE\n      38 deliverables/skill-review-intake/assets/review-intake-template.md\n     484 total\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_13",
+      "type": "command_execution",
+      "command": "/opt/homebrew/bin/bash -c \"rtk proxy shasum -a 256 inputs/brief.json inputs/design.md inputs/process-policy.md inputs/research.md inputs/LICENSE deliverables/skill-review-intake/LICENSE\nrtk proxy rg -n '\"'^## [1-5]'\"\\\\. |\"'^name:|''^description:|''^license:|''^ready_for_review$|''^incomplete$|''^outside_intake_scope$|'\"\\\\]\\\\(' deliverables/skill-review-intake/SKILL.md deliverables/skill-review-intake/assets/review-intake-template.md\"",
+      "aggregated_output": "3596d3111333113ed2011f3bb2eccd772eadc678fb1ad00fda0cfcc7e9f68678  inputs/brief.json\nb0350ea5830da90cfbe5b0492a63e3b69f96b87740bcf3634f9660fa4b0163f5  inputs/design.md\ne1cac0c373c6532b7982700f01be26764f46b6e019b163324777fcc449c177dc  inputs/process-policy.md\nde9b9a4f19ea7a46470d25d40208ef2fcaa36c79c3874012a719360583869e25  inputs/research.md\ncfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30  inputs/LICENSE\ncfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30  deliverables/skill-review-intake/LICENSE\ndeliverables/skill-review-intake/assets/review-intake-template.md:9:## 1. Supplied package identity and review kind\ndeliverables/skill-review-intake/assets/review-intake-template.md:15:## 2. Evidence available and evidence missing\ndeliverables/skill-review-intake/assets/review-intake-template.md:23:## 3. Requested review scope and actions authorized\ndeliverables/skill-review-intake/assets/review-intake-template.md:29:## 4. Status\ndeliverables/skill-review-intake/assets/review-intake-template.md:34:## 5. Next reviewer handoff and blocking questions\ndeliverables/skill-review-intake/SKILL.md:2:name: skill-review-intake\ndeliverables/skill-review-intake/SKILL.md:3:description: Prepare one bounded review-intake record when a maintainer requests review intake for one identified skill. Capture supplied facts, missing evidence, authorized actions and the next reviewer handoff. Does not evaluate skills, approve releases, install packages or perform their domain tasks.\ndeliverables/skill-review-intake/SKILL.md:4:license: Apache-2.0\ndeliverables/skill-review-intake/SKILL.md:14:bundled [full Apache-2.0 license](LICENSE).\ndeliverables/skill-review-intake/SKILL.md:82:6. Load [assets/review-intake-template.md](assets/review-intake-template.md)\ndeliverables/skill-review-intake/SKILL.md:113:## 1. Supplied package identity and review kind\ndeliverables/skill-review-intake/SKILL.md:119:## 2. Evidence available and evidence missing\ndeliverables/skill-review-intake/SKILL.md:128:## 3. Requested review scope and actions authorized\ndeliverables/skill-review-intake/SKILL.md:134:## 4. Status\ndeliverables/skill-review-intake/SKILL.md:135:ready_for_review\ndeliverables/skill-review-intake/SKILL.md:139:## 5. Next reviewer handoff and blocking questions\ndeliverables/skill-review-intake/SKILL.md:159:## 1. Supplied package identity and review kind\ndeliverables/skill-review-intake/SKILL.md:165:## 2. Evidence available and evidence missing\ndeliverables/skill-review-intake/SKILL.md:175:## 3. Requested review scope and actions authorized\ndeliverables/skill-review-intake/SKILL.md:181:## 4. Status\ndeliverables/skill-review-intake/SKILL.md:182:incomplete\ndeliverables/skill-review-intake/SKILL.md:186:## 5. Next reviewer handoff and blocking questions\ndeliverables/skill-review-intake/SKILL.md:205:## 1. Supplied package identity and review kind\ndeliverables/skill-review-intake/SKILL.md:211:## 2. Evidence available and evidence missing\ndeliverables/skill-review-intake/SKILL.md:220:## 3. Requested review scope and actions authorized\ndeliverables/skill-review-intake/SKILL.md:227:## 4. Status\ndeliverables/skill-review-intake/SKILL.md:228:outside_intake_scope\ndeliverables/skill-review-intake/SKILL.md:232:## 5. Next reviewer handoff and blocking questions\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_15",
+      "type": "file_change",
+      "changes": [
+        {
+          "path": "<workspace>/output/authoring-record.md",
+          "kind": "add"
+        }
+      ],
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_15",
+      "type": "file_change",
+      "changes": [
+        {
+          "path": "<workspace>/output/authoring-record.md",
+          "kind": "add"
+        }
+      ],
+      "status": "completed"
+    }
+  },
+  {
+    "type": "item.started",
+    "item": {
+      "id": "item_16",
+      "type": "command_execution",
+      "command": "/opt/homebrew/bin/bash -c 'rtk proxy rg --files deliverables output\nrtk proxy wc -l output/authoring-record.md\nrtk proxy cmp inputs/LICENSE deliverables/skill-review-intake/LICENSE'",
+      "aggregated_output": "",
+      "exit_code": null,
+      "status": "in_progress"
+    }
+  },
+  {
+    "type": "item.completed",
+    "item": {
+      "id": "item_16",
+      "type": "command_execution",
+      "command": "/opt/homebrew/bin/bash -c 'rtk proxy rg --files deliverables output\nrtk proxy wc -l output/authoring-record.md\nrtk proxy cmp inputs/LICENSE deliverables/skill-review-intake/LICENSE'",
+      "aggregated_output": "output/authoring-record.md\ndeliverables/skill-review-intake/assets/review-intake-template.md\ndeliverables/skill-review-intake/SKILL.md\ndeliverables/skill-review-intake/LICENSE\n     104 output/authoring-record.md\n",
+      "exit_code": 0,
+      "status": "completed"
+    }
+  },
+  {
+    "type": "turn.completed",
+    "usage": {
+      "input_tokens": 282991,
+      "cached_input_tokens": 240000,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 8157,
+      "reasoning_output_tokens": 1929
+    }
+  }
+]

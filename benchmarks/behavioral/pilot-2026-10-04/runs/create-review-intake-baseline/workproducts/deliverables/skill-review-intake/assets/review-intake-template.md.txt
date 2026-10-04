@@ -1,0 +1,38 @@
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!-- Adapted from the fictional owner's synthetic policy; changed into a reusable five-section template. -->
+<!-- Load when drafting one intake. Replace placeholders with supplied facts or explicit gaps. -->
+
+# Review intake: <supplied skill name, or not supplied>
+
+Record destination: <caller-selected path outside the installed package, or unresolved output gate>
+
+## 1. Supplied package identity and review kind
+- Skill name: <supplied name or not supplied>
+- Package reference: <caller-selected reference or not supplied>
+- Review kind: <structure | behavior | portability; preserve unsupported value if supplied>
+- Reason: <supplied reason or not supplied>
+
+## 2. Evidence available and evidence missing
+Available:
+- <artifact reference, supplied fact and access state: contents supplied, opened or reference only>
+Missing:
+- <specific absent/inaccessible evidence and any caller explanation, or none>
+Evidence limits:
+- <unopened references, caller-reported results, unknown prior runs or other limits>
+
+## 3. Requested review scope and actions authorized
+- Requested scope: <bounded review scope or exact scope problem>
+- Requested actions: <what the caller requested>
+- Authorized actions and source: <actual permission and supplied authority, or not supplied>
+- Actions outside intake: <overreaching actions retained for owner handoff, or none requested>
+
+## 4. Status
+<ready_for_review | incomplete | outside_intake_scope>
+Basis: <evidence-presence or scope reason; no quality verdict>
+This status records intake readiness or a gate; it is not validation or publication approval.
+
+## 5. Next reviewer handoff and blocking questions
+- Next reviewer: <supplied reviewer or process-owner role; note unknown identity>
+- Handoff: <record and evidence to hand off; do not initiate review or contact anyone>
+- Blocking questions and resolver: <specific unresolved question and responsible caller/owner, or none>
+- Delivery state: <written record location or unwritten draft with output gate; state actual actions only>

@@ -1,0 +1,312 @@
+{
+  "schema_version": 1,
+  "id": "migrate-additively-treatment-1",
+  "benchmark_sha256": "bd768ef9f7ae15319a9d8e6bd7d2f6387d143af8bcc68021c2bec047eed85101",
+  "case_id": "migrate-additively",
+  "variant": "treatment",
+  "attempt": 1,
+  "execution": {
+    "kind": "agent",
+    "status": "executed",
+    "executor": "Codex CLI 0.160.0",
+    "model": "gpt-6.1-sol",
+    "environment": "macOS arm64; Node.js v24.21.0 operator; Codex CLI 0.160.0; RTK 0.51.0; separate disposable case cwd on the same workstation",
+    "settings": "reasoning=high; ephemeral; user-config=ignored; host-skill-discovery=disabled; hooks=disabled; plugins=disabled; workspace-write; approval=never",
+    "fresh_context": true
+  },
+  "metrics": {
+    "wall_time_ms": 432122,
+    "input_tokens": 535861,
+    "output_tokens": 9777
+  },
+  "artifacts": [
+    {
+      "path": "after.json",
+      "sha256": "ed2222429cb653e4e436a4661859abd3d51ed3af7dbf4c4e2e3e56297dd3ee9e",
+      "bytes": 6629
+    },
+    {
+      "path": "before.json",
+      "sha256": "704270866574c4f6a3531561faa3c0d6bf15f86150c047991741ca1a71a13d62",
+      "bytes": 1320
+    },
+    {
+      "path": "execution.json",
+      "sha256": "e8afc482851275e396532723916b56aecff45e4ab71128f56a24b60de36b3773",
+      "bytes": 440
+    },
+    {
+      "path": "grading/grades.json",
+      "sha256": "796e28dc3809ce3c7149b5a9e608df154147ad89fc4e1773d8c1fa532e2f9e11",
+      "bytes": 58331
+    },
+    {
+      "path": "grading/integrity.json",
+      "sha256": "e0d2aba23c3a7586a204aa70ae37aed719f3f5e4f6144a4bd7b3f6cc3a99a1ac",
+      "bytes": 76958
+    },
+    {
+      "path": "input.md",
+      "sha256": "9c70c05867c0e24ea4a40bfcf6b33fcf1617c014cc7058b33546eb25ce5a3b25",
+      "bytes": 2304
+    },
+    {
+      "path": "response.md",
+      "sha256": "dac4cb030df4d479c29f900131a001b90d5dac31ba97bdd28bf3b1c29e9f5abc",
+      "bytes": 604
+    },
+    {
+      "path": "stderr.log",
+      "sha256": "203764923415765f00cb9eaf2a88ffecd24c696c5e27f7eae0b0a1b09fda20ae",
+      "bytes": 7503
+    },
+    {
+      "path": "trace.jsonl",
+      "sha256": "6ead9d9e2098a96d0adae4d65674d4a3531b6234c7c269777ef9c8e731857b4a",
+      "bytes": 81805
+    },
+    {
+      "path": "workspace/collections/source/.git/COMMIT_EDITMSG",
+      "sha256": "eee39c7c63bfcf345fecae7607a00cde0ce446c478ae9f5ca49e7dacb99627f4",
+      "bytes": 42
+    },
+    {
+      "path": "workspace/collections/source/.git/HEAD",
+      "sha256": "aa60d4eba20110497fa2fccf5fd682a4a35d2a24c96df1916c6bb791db7aced4",
+      "bytes": 35
+    },
+    {
+      "path": "workspace/collections/source/.git/config",
+      "sha256": "cae33efdb02cf774435c1ff9cb16bcc1014606908530c6e1dc727615fe3e8cda",
+      "bytes": 137
+    },
+    {
+      "path": "workspace/collections/source/.git/index",
+      "sha256": "5c7bccda8201279c3cc3fb18026c451b4ac6f0ad9e60fb04a50e9d04876074ec",
+      "bytes": 583
+    },
+    {
+      "path": "workspace/collections/source/.git/logs/HEAD",
+      "sha256": "3753eba86a135b3de1e8d2b35c33d44caaf40b8e6e2254c95494582ac7ec704a",
+      "bytes": 225
+    },
+    {
+      "path": "workspace/collections/source/.git/logs/refs/heads/synthetic-baseline",
+      "sha256": "3753eba86a135b3de1e8d2b35c33d44caaf40b8e6e2254c95494582ac7ec704a",
+      "bytes": 225
+    },
+    {
+      "path": "workspace/collections/source/.git/objects/1d/d39c0af5c461a5a81843ef48c2becbe43d4ad1",
+      "sha256": "84adf6af6592592714989b5fb2acf43b95be177901bad7b5757f6ce6af36b1b7",
+      "bytes": 61
+    },
+    {
+      "path": "workspace/collections/source/.git/objects/2d/2ffc6e8749f2937bb77d9ca86aa6e583529464",
+      "sha256": "655cf8a7ca4936390a67a00892c2d8b0067c2c4031dc95f816230c1a33f7bfed",
+      "bytes": 91
+    },
+    {
+      "path": "workspace/collections/source/.git/objects/5d/6065b89eec4493199a0516ea4ef3aa23f76175",
+      "sha256": "5b6094fa0e812dc29d7b602f5c52fdcecc8c8c63136744adefdfd8161188d8bd",
+      "bytes": 168
+    },
+    {
+      "path": "workspace/collections/source/.git/objects/64/493dbfb862bb6cca914f37ae5e822f0419686b",
+      "sha256": "1ead1fd1be702054554818c7868487cb5762251ffb84d8cfb6e3560d229f140d",
+      "bytes": 121
+    },
+    {
+      "path": "workspace/collections/source/.git/objects/70/31de7fe9dd6f6b6c1e9f36443e6a2119fea273",
+      "sha256": "59a6fcda9232fb43348384680a62ab7d813a0a34fa2f133e152337b22d3ba9ca",
+      "bytes": 208
+    },
+    {
+      "path": "workspace/collections/source/.git/objects/9d/b2db02b648856f5df39d30cd909e101e9b7a49",
+      "sha256": "2f0ec0a2783cb6961648d8c10f3606b284f910d76c8cd9e4e7e8578e7e4f098f",
+      "bytes": 54
+    },
+    {
+      "path": "workspace/collections/source/.git/objects/d0/712558800d4d27ff38bbf11f4d4011396e7bcf",
+      "sha256": "ff97242204156db0ee059c67ba77e6c9bd7dc94c04dea35b91e9b5816e406d03",
+      "bytes": 580
+    },
+    {
+      "path": "workspace/collections/source/.git/objects/d3/3887be853c7c20ea31a918febb7589008d4b63",
+      "sha256": "064d1458bb62f0e130e5d160d57b597ca05c2b4b77df4ac9bd5d1fa30c47d6df",
+      "bytes": 263
+    },
+    {
+      "path": "workspace/collections/source/.git/objects/d6/45695673349e3947e8e5ae42332d0ac3164cd7",
+      "sha256": "6cad7f9445796e52cfa45ae7fd935574b0c4d919e50384a74210e95115bece77",
+      "bytes": 4447
+    },
+    {
+      "path": "workspace/collections/source/.git/refs/heads/synthetic-baseline",
+      "sha256": "24a2e3bf44529a304dca3aa0a1ee005b57d938317fd0e225f975286f667ebf3a",
+      "bytes": 41
+    },
+    {
+      "path": "workspace/collections/source/skills/skill-note-transfer/LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358
+    },
+    {
+      "path": "workspace/collections/source/skills/skill-note-transfer/SKILL.md",
+      "sha256": "fa28c05e823c13065f96793f2cd19df880cd31ac9e0180b6c479e4a265931e59",
+      "bytes": 1050
+    },
+    {
+      "path": "workspace/collections/source/skills/skill-note-transfer/references/handoff.md",
+      "sha256": "e5500b3361b6d4eaab15e4555e28a4a4db2fc4dcbead391bdd6dfb000ba9c553",
+      "bytes": 374
+    },
+    {
+      "path": "workspace/collections/source/skills-catalog.json",
+      "sha256": "911d333f264f14d76a4860db231ff0a84637c34e23fbb1044b8247f4e23c6147",
+      "bytes": 325
+    },
+    {
+      "path": "workspace/collections/target/KEEP.md",
+      "sha256": "74c19f171854df7adc5fd75db1075a34755d7a772ad179c22fa9e2d8c64223eb",
+      "bytes": 221
+    },
+    {
+      "path": "workspace/collections/target/skills/skill-note-transfer/LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358
+    },
+    {
+      "path": "workspace/collections/target/skills/skill-note-transfer/SKILL.md",
+      "sha256": "fa28c05e823c13065f96793f2cd19df880cd31ac9e0180b6c479e4a265931e59",
+      "bytes": 1050
+    },
+    {
+      "path": "workspace/collections/target/skills/skill-note-transfer/references/handoff.md",
+      "sha256": "e5500b3361b6d4eaab15e4555e28a4a4db2fc4dcbead391bdd6dfb000ba9c553",
+      "bytes": 374
+    },
+    {
+      "path": "workspace/collections/target/skills-catalog.json",
+      "sha256": "589e34d92968f63ef2a7e337c54a0cee3b72b29501b3355a74d3dd101af0cf7b",
+      "bytes": 42
+    },
+    {
+      "path": "workspace/inputs/authority.json",
+      "sha256": "06f0cd3ebaa2dcb52bf4ef8265f050d026251eb6fc742a665a9a4b07c56a1b3c",
+      "bytes": 1160
+    },
+    {
+      "path": "workspace/inputs/history-policy.md",
+      "sha256": "be1336c6cd750904d0f7a8f7f5fb78c2884f1033e35a8693558bdf9c3b20b70e",
+      "bytes": 1241
+    },
+    {
+      "path": "workspace/output/behavioral-evidence-note.md",
+      "sha256": "8d3efa4a4a3e2aa6e1fc35d45fa7674aa2517acb3bc2dd66461ccda1cb7d77d4",
+      "bytes": 1123
+    },
+    {
+      "path": "workspace/output/behavioral-handoff.md",
+      "sha256": "cc81201af578ceb6ebae96ae77c07b54a9de641d41b1c0a49ce8a3e44e196eaf",
+      "bytes": 1061
+    },
+    {
+      "path": "workspace/output/migration-record.md",
+      "sha256": "3606b7b8b7560bfa9a05de623e01c67a9f284f3465c555fd422615a6e0b2b79a",
+      "bytes": 11623
+    }
+  ],
+  "criteria": [
+    {
+      "id": "target-candidate",
+      "verdict": "pass",
+      "reason": "The authorized target contains SKILL.md, the complete 11358-byte Apache-2.0 LICENSE and references/handoff.md. All three target files independently match source bytes exactly, preserving the single evidence-note-to-reviewer-handoff responsibility and the working package-relative resource.",
+      "evidence": [
+        "workspace/collections/target/skills/skill-note-transfer/SKILL.md",
+        "workspace/collections/target/skills/skill-note-transfer/LICENSE",
+        "workspace/collections/target/skills/skill-note-transfer/references/handoff.md",
+        "grading/integrity.json"
+      ]
+    },
+    {
+      "id": "source-retained",
+      "verdict": "pass",
+      "reason": "Independent frozen/current SHA-256 comparison confirms all source package and catalog bytes unchanged. The source working tree is clean at the retained baseline; neither trace nor actual outputs contain source deprecation, deletion or consumer cutover.",
+      "evidence": [
+        "workspace/collections/source/skills-catalog.json",
+        "workspace/collections/source/skills/skill-note-transfer/SKILL.md",
+        "before.json",
+        "after.json",
+        "trace.jsonl",
+        "grading/integrity.json"
+      ]
+    },
+    {
+      "id": "retrievable-history",
+      "verdict": "pass",
+      "reason": "The recorded source baseline 5d6065b89eec4493199a0516ea4ef3aa23f76175 is the actual reachable HEAD and refs/heads/synthetic-baseline. Independent read-only Git inspection found one root commit, exactly the four authorized source files, no remotes and blob bytes equal to the frozen catalog, entrypoint, full license and reference. The executor trace retrieves the four committed file streams and matching digests; independently, the evaluator retrieved those blobs directly.",
+      "evidence": [
+        "workspace/collections/source/.git/HEAD",
+        "workspace/collections/source/.git/refs/heads/synthetic-baseline",
+        "workspace/output/migration-record.md",
+        "trace.jsonl",
+        "grading/integrity.json"
+      ]
+    },
+    {
+      "id": "target-preserved",
+      "verdict": "pass",
+      "reason": "Independent byte/hash comparison confirms KEEP.md and the existing target catalog are unchanged. The prior target had no incoming package; actual new writes are limited to the authorized additive candidate, source Git metadata and output artifacts. No destination overwrite, unrelated target replacement or symlink is observed.",
+      "evidence": [
+        "workspace/collections/target/KEEP.md",
+        "workspace/collections/target/skills-catalog.json",
+        "before.json",
+        "after.json",
+        "trace.jsonl",
+        "grading/integrity.json"
+      ]
+    },
+    {
+      "id": "reviewable-record",
+      "verdict": "pass",
+      "reason": "The migration record maps collection/package paths and identities, names the actual retained commit 5d6065b89eec4493199a0516ea4ef3aa23f76175 and Fictional source collection maintainer as retention owner, distinguishes the unassigned acceptance owner, and gives rollback restricted to the three new target files plus empty new directories while retaining both catalogs, KEEP.md and source history.",
+      "evidence": [
+        "workspace/output/migration-record.md",
+        "workspace/inputs/authority.json",
+        "workspace/inputs/history-policy.md",
+        "grading/integrity.json"
+      ]
+    },
+    {
+      "id": "gate-honesty",
+      "verdict": "pass",
+      "reason": "The record bounds its static inspection and same-agent manual synthetic handoff smoke check, which is supported by actual evidence-note/handoff artifacts and read-back trace. It explicitly excludes automated behavioral certification, live host execution and unavailable official validation. Acceptance stays BLOCKED and the active target catalog remains empty; the proposed entry is only in the record.",
+      "evidence": [
+        "workspace/output/migration-record.md",
+        "trace.jsonl",
+        "workspace/output/behavioral-evidence-note.md",
+        "workspace/output/behavioral-handoff.md",
+        "workspace/collections/target/skills-catalog.json",
+        "execution.json"
+      ]
+    }
+  ],
+  "limitations": [
+    "One fresh externally operated attempt per arm; no statistical or causal inference.",
+    "Executor configuration and usage are operator/runtime reports, not provider-authenticated attestations.",
+    "The evaluator knew condition labels and helped author the rubric; it did not execute the cases.",
+    "Baseline excludes supplied candidate instruction packages; common runtime/system guidance remains. This is not a zero-instruction model or an OS isolation proof.",
+    "Invocation-only experimental host skill discovery suppression, disabled hooks/plugins and ignored user config were used; task traces were inspected for out-of-workspace reads.",
+    "Wall time includes runtime startup, tools and waiting; unknown terminated-turn token usage remains null.",
+    "Condition labels were known. The primary evaluator authored the frozen synthetic corpus/rubric but did not execute the cases; evaluation is separate from the executors, not blinded.",
+    "Executor/model/settings/fresh-context fields are locally recorded caller/configuration assertions, not provider-authenticated execution identity.",
+    "One attempt per arm and only four synthetic cases: no statistical benefit, general quality certification, cost conclusion or inference-latency claim follows.",
+    "Official validation remains unavailable where stated; preservation hashes and passing behavioral criteria do not certify Agent Skills conformance.",
+    "All supplied fixtures and instruction-only guidance were independently compared with frozen bytes. Guidance copied by the harness is excluded from case-fixture mutation counts.",
+    "Native host executables and login shells were used. The retained commands show no explicit private host-file operand or external data read, but implicit shell startup/config effects and complete host isolation are not established.",
+    "No executor-created code was run by the evaluators. Inspection was confined to the frozen suite, synthetic workspaces, retained traces, and read-only Git retrieval of authorized synthetic source repositories.",
+    "The target is an uncataloged candidate. Official validation remains blocked/not-run; six passing behavioral criteria do not make the package accepted or officially conformant.",
+    "The reported handoff smoke check is a manual exercise by the executor, not an independent behavioral suite or live provider test.",
+    "Workspace and trace evidence are local observations; model/provider identity and absence of all possible host-side effects are not authenticated by hashes."
+  ]
+}
