@@ -23,6 +23,7 @@ flowchart LR
     Hook -->|verified metadata observations| Evidence[Shared usage database]
     CLI -->|optional setup preview / explicit write| Settings[Selected host settings and receipt]
     CLI -->|plugin submission preview / explicit write| Submission[Skills-only folder and ZIP]
+    CLI -->|benchmark prepare / import-run / compare| Benchmark[Retained behavioral experiment]
     MCP -->|catalog tools| Catalog
     Catalog --> Read
     Read --> Work[Portable meta-skill workflow]
@@ -316,6 +317,34 @@ Only catalog synchronization is supported automatically. Malformed catalogs and
 package content changes retain their own handoffs. Recovery captures only the
 catalog preimage, not an entire repository. See [collection maintenance](https://github.com/i-9-ai/skills/wiki/Collection-Maintenance)
 for explicit selections, limits and receipt semantics.
+
+## Retained behavioral experiments
+
+The candidate benchmark interface freezes a selected suite and exact package
+bytes, imports externally produced artifacts, and compares paired baseline and
+treatment observations. It has no model runner or evaluator. Its filesystem
+records are separate from the usage database and catalog indexes.
+
+```mermaid
+flowchart LR
+    Inputs[Declared synthetic suite and selected packages] --> Prepare[benchmark prepare]
+    Prepare --> Freeze[Frozen inputs and package digests]
+    Freeze --> Executor[Separately authorized fresh baseline and treatment contexts]
+    Executor --> Grade[Independent grading against frozen criteria]
+    Grade --> Import[benchmark import-run]
+    Freeze --> Import
+    Import --> Retained[Run receipts and verified artifacts]
+    Retained --> Compare[benchmark compare]
+    Compare --> Report[Coverage, limitations and critical failures]
+```
+
+Case scripts and model calls are never executed by these commands. Artifact
+hashes bind the retained bytes; executor identity, configuration, metrics and
+grading remain caller assertions. Missing runs, unknown controls and exceeded
+budgets remain visible. A passing observation does not establish official
+conformance, native-host integration or release readiness. See the
+[behavioral benchmark guide](https://github.com/i-9-ai/skills/wiki/Behavioral-Benchmark)
+for the candidate commands and the separate executor/evaluator handoff.
 
 ## Provenance and evolution
 

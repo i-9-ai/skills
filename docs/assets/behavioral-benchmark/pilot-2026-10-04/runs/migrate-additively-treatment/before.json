@@ -1,0 +1,42 @@
+[
+  {
+    "path": "collections/source/skills/skill-note-transfer/LICENSE",
+    "bytes": 11358,
+    "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+  },
+  {
+    "path": "collections/source/skills/skill-note-transfer/SKILL.md",
+    "bytes": 1050,
+    "sha256": "fa28c05e823c13065f96793f2cd19df880cd31ac9e0180b6c479e4a265931e59"
+  },
+  {
+    "path": "collections/source/skills/skill-note-transfer/references/handoff.md",
+    "bytes": 374,
+    "sha256": "e5500b3361b6d4eaab15e4555e28a4a4db2fc4dcbead391bdd6dfb000ba9c553"
+  },
+  {
+    "path": "collections/source/skills-catalog.json",
+    "bytes": 325,
+    "sha256": "911d333f264f14d76a4860db231ff0a84637c34e23fbb1044b8247f4e23c6147"
+  },
+  {
+    "path": "collections/target/KEEP.md",
+    "bytes": 221,
+    "sha256": "74c19f171854df7adc5fd75db1075a34755d7a772ad179c22fa9e2d8c64223eb"
+  },
+  {
+    "path": "collections/target/skills-catalog.json",
+    "bytes": 42,
+    "sha256": "589e34d92968f63ef2a7e337c54a0cee3b72b29501b3355a74d3dd101af0cf7b"
+  },
+  {
+    "path": "inputs/authority.json",
+    "bytes": 1160,
+    "sha256": "06f0cd3ebaa2dcb52bf4ef8265f050d026251eb6fc742a665a9a4b07c56a1b3c"
+  },
+  {
+    "path": "inputs/history-policy.md",
+    "bytes": 1241,
+    "sha256": "be1336c6cd750904d0f7a8f7f5fb78c2884f1033e35a8693558bdf9c3b20b70e"
+  }
+]

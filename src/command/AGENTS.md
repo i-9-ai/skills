@@ -29,6 +29,8 @@ Run command integration tests under `tests/integration/cli/`, strict type checki
 
 ## Child DOX index
 
+- [Behavioral benchmark](../../docs/Behavioral%20Benchmark.md): `benchmark prepare`, `benchmark import-run` and `benchmark compare` retain bounded local evidence without model execution, installation or telemetry effects.
+
 - [Skill memory inspection](../../docs/Skill%20Memory.md): `skills memory summarize` and `skills memory retention` inspect an explicit period and collection without modifying evidence or deciding deletion policy.
 
 - [Skill change reports](../../docs/Skill%20Change%20Reports.md): `skills observe`, `skills report bump` and `skills onboarding`, with explicit snapshots, review evidence and no automatic mutations.

@@ -1,0 +1,5 @@
+Prepared the byte-identical target candidate, preserving behavior, the full license, and bundled reference.
+
+Source baseline commit `5d6065b89eec4493199a0516ea4ef3aa23f76175` is retained and verified retrievable. Both catalogs and `KEEP.md` remain unchanged.
+
+Acceptance is **blocked**: official validation and host execution are unavailable and were not run. The [migration record](<workspace>/output/migration-record.md) documents actual checks, unresolved gates, the proposed catalog entry, retention ownership, and rollback.

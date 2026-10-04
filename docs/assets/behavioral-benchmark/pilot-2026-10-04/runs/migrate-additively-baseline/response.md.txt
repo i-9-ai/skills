@@ -1,0 +1,5 @@
+Prepared the additive candidate and [migration record](<workspace>/output/migration-record.md).
+
+Source commit `fb61b10f1e56607c4a1ccf4822a9a48036941bf5` is retained and verified retrievable. Preservation checks passed.
+
+Acceptance is **blocked** because no official validator was supplied. The target catalog, source files, and `KEEP.md` remain unchanged.

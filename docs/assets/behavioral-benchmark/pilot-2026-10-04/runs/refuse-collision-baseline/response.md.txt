@@ -1,0 +1,3 @@
+Migration is blocked by the occupied destination and missing replacement authority. Recorded the responsibility difference and required owner decision in [output/refusal-record.md](<workspace>/output/refusal-record.md).
+
+All existing fixtures remain unchanged. No migration or migration validation was performed.

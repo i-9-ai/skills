@@ -1,0 +1,104 @@
+# Authoring record: skill-review-intake
+
+Delivered the approved portable package at
+[deliverables/skill-review-intake](../deliverables/skill-review-intake/SKILL.md).
+Its single responsibility is producing one bounded review-intake record for
+one skill. Package authoring is complete within this case's output boundary;
+official conformance and behavioral evaluation remain unverified.
+
+## Delivered artifacts
+
+```text
+deliverables/skill-review-intake/
+├── SKILL.md
+├── LICENSE
+└── assets/
+    └── review-intake-template.md
+```
+
+`SKILL.md` contains portable frontmatter, activation and authority boundaries,
+the ordinary procedure, the evidence requirements for all three review kinds,
+status rules and a caller-selected output-path rule. Three complete worked
+records use the template's five sections: normal structure intake, missing
+behavior evidence and an approval/installation request outside intake scope.
+A portability gap example connects the same procedure to the third review kind.
+These examples are fictional teaching material, not observed execution results.
+
+The template is loaded when drafting a record. It includes explicit fields for
+artifact access state, evidence limits, permission sources, blocking questions
+and delivery state. The supplied full Apache-2.0 license was copied unchanged.
+No helper scripts, host icons, provider metadata or runtime dependencies were
+added. The package needs no companion skill, source checkout, collection
+catalog, global home path or external service.
+
+## Sources and reuse
+
+| Supplied source | Use in this delivery |
+| --- | --- |
+| `inputs/brief.json` | Fixed package name, English language, single responsibility, portable profile and authoring authority. Required companions are an empty list. |
+| `inputs/design.md` | Approved activation, ordinary route, caller-selected external record destination, inline normal example and reusable template design. |
+| `inputs/process-policy.md` | Sole substantive process authority: five record sections, three review kinds, evidence requirements, missing-evidence handling, status meanings and owner handoff. Adapted into procedure, template and expanded fictional examples. |
+| `inputs/research.md` | Supplied context and limits: no executed research campaign, external source contribution, upstream-package synthesis or certification. |
+| `inputs/LICENSE` | Full Apache-2.0 text copied byte for byte into the package. |
+
+The adapted documents retain Apache-2.0 identifiers and carry notices describing
+the changes from the fictional owner policy. No external candidate instruction
+package was supplied or used. No companion availability was assumed. The
+user's case-specific workspace restriction governed this exercise; global skill
+discovery and external research were not used.
+
+The procedure explicitly distinguishes a referenced artifact from supplied or
+opened content, and a caller-reported check from a verified check. Unavailable
+prior behavior outputs remain listed as missing; an explicit statement that no
+prior runs exist is retained as context for the policy's “when available” rule.
+Output-path and reviewer uncertainty become named gates rather than invented
+facts. Overreaching actions remain an owner handoff and are never executed.
+
+## Checks actually performed
+
+| Stage | Result | Evidence and limits |
+| --- | --- | --- |
+| Local structure and case alignment | Completed; the inspected artifacts meet the supplied case's local requirements. | Read all five fixtures. Used `rg --files` to inspect the workspace and package file inventory; no workspace `AGENTS.md` was listed. Inspected the frontmatter and template text with `sed` and `cat`; used `rg -n` to locate the name, description, license, resource links, five-section headings and three example statuses. Manually compared procedure and examples against the supplied design and policy. This is static inspection, not official validation. |
+| License fidelity | Passed byte comparison. | `cmp inputs/LICENSE deliverables/skill-review-intake/LICENSE` exited 0. SHA-256 values also match. The delivered license has 202 lines, including terms and appendix. |
+| Input preservation | Passed checksum comparison. | SHA-256 checksums taken before authoring and after package creation are identical for all five inputs; values below. |
+| Official conformance | Not run; blocked by unavailable official tooling/specification in this case. | No official validator or candidate companion package was supplied. No official specification or current public source was consulted. Visual frontmatter inspection does not certify official conformance. |
+| Behavioral evaluation | Not run. | No evaluation runner or observed agent execution was supplied or invoked. Authored examples and manual policy comparison are not behavioral test results. Dependencies were not installed and generated scripts were not executed. |
+
+All completed external inspection and copy commands used RTK, confirmed as
+`rtk 0.51.0`. Raw output was requested through `rtk proxy` for file inspection,
+checksums, line counts and byte comparison. File creation used the patch tool;
+the license copy used `rtk cp`. The two relative resource links in `SKILL.md`
+target the license and template, both present in the inspected package tree.
+No automated link resolver or YAML parser was run.
+
+Input SHA-256 values, unchanged after authoring:
+
+| Input | SHA-256 |
+| --- | --- |
+| `inputs/brief.json` | `3596d3111333113ed2011f3bb2eccd772eadc678fb1ad00fda0cfcc7e9f68678` |
+| `inputs/design.md` | `b0350ea5830da90cfbe5b0492a63e3b69f96b87740bcf3634f9660fa4b0163f5` |
+| `inputs/process-policy.md` | `e1cac0c373c6532b7982700f01be26764f46b6e019b163324777fcc449c177dc` |
+| `inputs/research.md` | `de9b9a4f19ea7a46470d25d40208ef2fcaa36c79c3874012a719360583869e25` |
+| `inputs/LICENSE` | `cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30` |
+
+The delivered license has the same SHA-256 as `inputs/LICENSE`.
+
+## Unresolved handoffs
+
+The fictional collection maintainer owns any future official-conformance gate:
+provide the intended consumer's official specification and an authorized
+validator in a separate permitted execution. No official-conformance pass is
+claimed here.
+
+The maintainer also owns behavioral evaluation: arrange a separate authorized
+agent run against representative intake requests, capture actual records and
+compare observable behavior with the policy. Useful cases include normal
+structure intake, missing behavior evidence, portability reference gaps,
+unsupported review kind, absent package identity and output paths inside the
+installed package. No behavioral outcome is claimed here.
+
+Real consumer layouts and quality results remain unknown. No clarification is
+needed to retain this completed package. Publication, installation, catalog
+changes and migrations are outside this delivery's authority and were not
+performed. All authored files are under `deliverables/` or `output/`; supplied
+inputs were preserved.

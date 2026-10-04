@@ -1,0 +1,27 @@
+# Inspection and preservation notes
+
+This is a planning-only inspection of synthetic fixtures. No supplied package was invoked or changed. Commands used RTK 0.51.0; no dependencies were installed and no generated scripts were executed. Hashes were collected after read-only inspection and before creating output documents.
+
+## Supplied-file baseline
+
+| File relative to workspace | SHA-256 |
+| --- | --- |
+| `inputs/audit.md` | `e36d2565249c80671f4cf52d8dd513445780c24b78393e098521c698ba448c55` |
+| `inputs/consumers.json` | `6db6e34c3c7f5a1a2317c9c580742b34c88e0f6640009eccb74bb53891f31b4a` |
+| `collections/review/skills-catalog.json` | `b5805f76e22c2ddbf54746006942968a69806d6c1954600f993f4f0097604ee8` |
+| `collections/review/skills/skill-evidence-note/SKILL.md` | `9257b581b9e936285435935c411bdbe4808946916ffbfac8380fa8bb625ef328` |
+| `collections/review/skills/skill-evidence-note/references/checklist.md` | `d8be9be2d3220ec959e094ae3abd3ae0a12a53bb8a8ba643bbf18f802ae1ffcc` |
+| `collections/review/skills/skill-evidence-note/LICENSE` | `cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30` |
+| `collections/review/skills/skill-review-record/SKILL.md` | `38e20fd56dc3cce73de211e3d5aab405f9bf99832057df02573bfe9984d236b9` |
+| `collections/review/skills/skill-review-record/references/recovery.md` | `17d59c4cf8067643ce424b3ddd1fd816719e944f6e2c62deea7135459d12a6e2` |
+| `collections/review/skills/skill-review-record/LICENSE` | `cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30` |
+
+## Planning findings
+
+- Both entrypoints organize evidence for one review; there is no separate verdict or execution responsibility to preserve as a second package.
+- The checklist, missing-artifact example and source-collision warning all remain useful. They fit one package as two references.
+- Only the supplied workbook and runbook consumers are known. Actual consumer files and owner acknowledgements are absent.
+- The supplied map explicitly records `implementation_authorized: false`. The audit leaves the transition window open.
+- Hash equality of the two licenses supports retaining one complete Apache-2.0 license in a future canonical package, while preserving original notices and snapshots.
+
+Post-output verification: all nine supplied-file hashes were compared with this baseline and matched. The final file inventory contained the same nine supplied files plus the two planning documents under `output/`. Behavioral validation and migration/rollback checks were not performed.

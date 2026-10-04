@@ -10,6 +10,7 @@ preparing distribution, and evolving focused agent skills.
 - [Authoring standards](https://github.com/i-9-ai/skills/wiki/Authoring-Standards): package design and contribution requirements.
 - [Compatibility](https://github.com/i-9-ai/skills/wiki/Compatibility): portable contract and host-specific support.
 - [Validation](https://github.com/i-9-ai/skills/wiki/Validation): local checks and the official Agent Skills validator.
+- [Behavioral benchmark](https://github.com/i-9-ai/skills/wiki/Behavioral-Benchmark): freeze synthetic cases and exact package bytes, import retained artifacts, and compare declared baseline/treatment evidence without executing a model.
 - [Collection maintenance](https://github.com/i-9-ai/skills/wiki/Collection-Maintenance): audit, reviewable plans and explicit catalog synchronization with verified recovery.
 - [Skill change reports](https://github.com/i-9-ai/skills/wiki/Skill-Change-Reports): pinned observations, evidence-based bump reports and a runnable installed onboarding guide.
 - [Release management](https://github.com/i-9-ai/skills/wiki/Release-Management): version preparation and Changesets.

@@ -1,0 +1,741 @@
+{
+  "schema_version": 1,
+  "experiment": "skill-lifecycle-synthetic-v1",
+  "benchmark_sha256": "bd768ef9f7ae15319a9d8e6bd7d2f6387d143af8bcc68021c2bec047eed85101",
+  "source_package_commit": "c75f53d74066ed756a5c4b8736b2f83769279cec",
+  "attempts_per_arm": 1,
+  "execution": "Codex CLI 0.160.0; gpt-6.1-sol; high reasoning; separate ephemeral contexts; ignored user config; experimental host discovery suppression; disabled hooks/plugins; workspace-write child sandbox",
+  "stopping_policy": "External operator SIGTERM at each frozen 300s or 600s deadline; wall time includes startup, tools and waiting.",
+  "evaluation": {
+    "primary": "quality_evidence_design",
+    "secondary_refactoring_review": "release_availability/availability_review",
+    "primary_authored_corpus_and_rubric": true,
+    "evaluators_executed_cases": false,
+    "condition_labels_known": true,
+    "blinded": false,
+    "method": "Criterion-by-criterion artifact and retained-trace inspection, direct actual/frozen SHA-256 and byte comparisons, plus read-only exact-commit synthetic Git retrieval. No executor output code executed.",
+    "assertion_boundary": "Criterion verdicts are evaluator assertions. Local hashes verify inspected artifact identity, not genuine provider execution, evaluator impartiality or unrestricted host isolation."
+  },
+  "comparison_status": "incomplete",
+  "observed_treatment_result": "fail",
+  "coverage": {
+    "expected_pairs": 4,
+    "imported_runs": 8,
+    "missing_runs": 0,
+    "paired_cases": 4,
+    "declared_agent_pairs": 4,
+    "declared_controlled_agent_pairs": 2,
+    "fixture_runs": 0,
+    "manual_runs": 0,
+    "unexecuted_runs": 0
+  },
+  "limitations": [
+    "One attempt per arm and four synthetic cases; no causality, significance, broad quality ranking or cross-provider conclusion.",
+    "Condition labels were visible and a rubric author helped grade; independent means separate from execution, not blinded external validation.",
+    "Frozen suite criteria are the acceptance contract. The separately authored rubric is evaluator guidance, not an additional frozen-manifest resource.",
+    "Baseline had no supplied candidate instruction packages; common runtime/system guidance remained.",
+    "Configuration and usage are reported by the operator/runtime, not authenticated by artifact hashes.",
+    "Native CLI startup/authentication bookkeeping uses normal host runtime state; preservation claims concern selected case fixtures and observable task-tool actions.",
+    "A first launch was denied by the outer sandbox before any model execution; unchanged frozen cases were then launched with permission for the normal runtime.",
+    "This public view is a derived projection. Raw JSONL, stderr, binary history retrieval and original immutable imports remain local and are not redistributed.",
+    "Public imported-run.json is a normalized view of the imported declaration; receipt.json retains the original run digest. Original/public hashes disclose any changed bytes. The original artifact inventory cannot be replayed using the projected public files alone.",
+    "Workproduct filenames have a .txt suffix so generated packages, Markdown pages and scripts stay inert outside skill discovery and Wiki page routing. Grading references retain their original workspace paths; remove only the final .txt suffix when mapping a public workproduct to its evidence name.",
+    "Public hashes bind these derived bytes; original hashes provide lineage, not publicly inspectable originals or authenticated execution.",
+    "No package has been promoted, installed globally, published or declared officially conformant by this experiment."
+  ],
+  "portable_markers": [
+    "<workspace>",
+    "<operator-root>",
+    "<candidate-checkout>",
+    "<host-home>",
+    "<host-user>"
+  ],
+  "artifacts": [
+    {
+      "path": "runs/create-review-intake-baseline/execution.json",
+      "original_sha256": "fc9488288036d777bbb917b04316339bfd5eca329a55be75dcfef2e19da672be",
+      "public_sha256": "fc9488288036d777bbb917b04316339bfd5eca329a55be75dcfef2e19da672be",
+      "public_bytes": 441,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/create-review-intake-baseline/response.md.txt",
+      "original_sha256": "4ae76eb425a06b8d3c4bf7114a8ccca82e6f133fbe64bdbfdb8c7cc60e531ad4",
+      "public_sha256": "4ae76eb425a06b8d3c4bf7114a8ccca82e6f133fbe64bdbfdb8c7cc60e531ad4",
+      "public_bytes": 358,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/create-review-intake-baseline/before.json",
+      "original_sha256": "9acb2a52f11ca1d42c5819dad585d101a748dc7628b3f0b1fad1b2c561e8851a",
+      "public_sha256": "9acb2a52f11ca1d42c5819dad585d101a748dc7628b3f0b1fad1b2c561e8851a",
+      "public_bytes": 718,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/create-review-intake-baseline/after.json",
+      "original_sha256": "60cf71d041d97d16a146f7e22d09a26769d20a0c85c36cf7789605dc7a141cb9",
+      "public_sha256": "60cf71d041d97d16a146f7e22d09a26769d20a0c85c36cf7789605dc7a141cb9",
+      "public_bytes": 1392,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/create-review-intake-baseline/imported-run.json",
+      "original_sha256": "0f97d645848f0154b324a3d42c8b3a3992d0a97a4fa24ade1225f6a35c2601b6",
+      "public_sha256": "0f97d645848f0154b324a3d42c8b3a3992d0a97a4fa24ade1225f6a35c2601b6",
+      "public_bytes": 10600,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/create-review-intake-baseline/receipt.json",
+      "original_sha256": "21e7e9aeff7056f11919bf1c5abb798a70cfdf7c285611b7c59e8523c3626020",
+      "public_sha256": "21e7e9aeff7056f11919bf1c5abb798a70cfdf7c285611b7c59e8523c3626020",
+      "public_bytes": 110,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/create-review-intake-baseline/tool-events.json",
+      "original_sha256": "928b3d7c72998aeafd9c9a75abfbe7d6a545e9ba6ba9cc3bb45c7ef38a3c0d7d",
+      "public_sha256": "1c9924c8e7e33099e20603f7a522bef022b1416543ec6bd0ad289660fee89e31",
+      "public_bytes": 42765,
+      "transformation": "ordered command/file-change and turn-event projection; other event types omitted; owned path prefixes and host username normalized"
+    },
+    {
+      "path": "runs/create-review-intake-baseline/workproducts/output/authoring-record.md.txt",
+      "original_sha256": "cedf2fae0ee3fd3a5c41f30eae21015ef230ce4273e19cab336b9b3ad6e356c2",
+      "public_sha256": "cedf2fae0ee3fd3a5c41f30eae21015ef230ce4273e19cab336b9b3ad6e356c2",
+      "public_bytes": 7005,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/create-review-intake-baseline/workproducts/deliverables/skill-review-intake/LICENSE.txt",
+      "original_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "public_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "public_bytes": 11358,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/create-review-intake-baseline/workproducts/deliverables/skill-review-intake/SKILL.md.txt",
+      "original_sha256": "e20ae1134e0bfb0a6f38f2e760672eb508a9ce03e6b61adf9af8736a3b45dfff",
+      "public_sha256": "e20ae1134e0bfb0a6f38f2e760672eb508a9ce03e6b61adf9af8736a3b45dfff",
+      "public_bytes": 12668,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/create-review-intake-baseline/workproducts/deliverables/skill-review-intake/assets/review-intake-template.md.txt",
+      "original_sha256": "0a096ece022f3cd666b5cbaecae718031e923cd9ca5ecb150859d004bc2185b1",
+      "public_sha256": "0a096ece022f3cd666b5cbaecae718031e923cd9ca5ecb150859d004bc2185b1",
+      "public_bytes": 2067,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/create-review-intake-treatment/execution.json",
+      "original_sha256": "3900db4f86b5ab8be1a3d287354b637a35f48f46fb84471bffbb6d58d3e23f74",
+      "public_sha256": "3900db4f86b5ab8be1a3d287354b637a35f48f46fb84471bffbb6d58d3e23f74",
+      "public_bytes": 449,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/create-review-intake-treatment/before.json",
+      "original_sha256": "9acb2a52f11ca1d42c5819dad585d101a748dc7628b3f0b1fad1b2c561e8851a",
+      "public_sha256": "9acb2a52f11ca1d42c5819dad585d101a748dc7628b3f0b1fad1b2c561e8851a",
+      "public_bytes": 718,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/create-review-intake-treatment/after.json",
+      "original_sha256": "6669ea2f582c75fb56a96a3b94ca57743217a06b92916bac189fbb779cd2f5c2",
+      "public_sha256": "6669ea2f582c75fb56a96a3b94ca57743217a06b92916bac189fbb779cd2f5c2",
+      "public_bytes": 17550,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/create-review-intake-treatment/imported-run.json",
+      "original_sha256": "88b69f71b619930d7309fce7090d7cd18061fb31a4907a84872945083837f801",
+      "public_sha256": "dd790c3109b637035a9a157c03d29f3f3a7af38710dcbb2f83dfbb615ca12b34",
+      "public_bytes": 14278,
+      "transformation": "owned absolute-path prefixes and host username replaced by declared portable markers; slash-separated dependency prose expanded where present"
+    },
+    {
+      "path": "runs/create-review-intake-treatment/receipt.json",
+      "original_sha256": "3bd74371632d0b807135a30aee3aea41731b9d78e9fb9a752cd9552835f108c5",
+      "public_sha256": "3bd74371632d0b807135a30aee3aea41731b9d78e9fb9a752cd9552835f108c5",
+      "public_bytes": 110,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/create-review-intake-treatment/tool-events.json",
+      "original_sha256": "b52ced3a73301a11264f225fe9fc8c2ad44574be95bcd6ea237dbd253d5072d9",
+      "public_sha256": "c2ef4122a06440c32af555d29866d2754054eee661967a1269f13a26a9080da3",
+      "public_bytes": 222813,
+      "transformation": "ordered command/file-change and turn-event projection; other event types omitted; owned path prefixes and host username normalized"
+    },
+    {
+      "path": "runs/create-review-intake-treatment/workproducts/output/design-review.md.txt",
+      "original_sha256": "d981c5ffaccb75436166e863cceb6268335b107d6ab6855de5fae4d2352a7467",
+      "public_sha256": "d981c5ffaccb75436166e863cceb6268335b107d6ab6855de5fae4d2352a7467",
+      "public_bytes": 1839,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/create-review-intake-treatment/workproducts/output/discovery.md.txt",
+      "original_sha256": "ca37c7823c149b7de29373dc9b2a8478404e9f0bd75999b573c8c269d7186b71",
+      "public_sha256": "ca37c7823c149b7de29373dc9b2a8478404e9f0bd75999b573c8c269d7186b71",
+      "public_bytes": 1526,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/create-review-intake-treatment/workproducts/output/domain-research.md.txt",
+      "original_sha256": "04ca2d4257b2eeb295c201de00015bf3fc859f45caa77f05829aff0085f2d675",
+      "public_sha256": "04ca2d4257b2eeb295c201de00015bf3fc859f45caa77f05829aff0085f2d675",
+      "public_bytes": 3097,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/create-review-intake-treatment/workproducts/output/intake.md.txt",
+      "original_sha256": "45528d615430400b11a6ae0549c9c229c00a8acb0d67955f3a124f1f8d1f2d63",
+      "public_sha256": "45528d615430400b11a6ae0549c9c229c00a8acb0d67955f3a124f1f8d1f2d63",
+      "public_bytes": 1362,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/create-review-intake-treatment/workproducts/output/isolated/skill-review-intake/LICENSE.txt",
+      "original_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "public_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "public_bytes": 11358,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/create-review-intake-treatment/workproducts/output/isolated/skill-review-intake/SKILL.md.txt",
+      "original_sha256": "47add85ba6bfff6b7262ab3803fc44705ab1f60a5af3215257cbe3a03096927f",
+      "public_sha256": "47add85ba6bfff6b7262ab3803fc44705ab1f60a5af3215257cbe3a03096927f",
+      "public_bytes": 12151,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/create-review-intake-treatment/workproducts/output/isolated/skill-review-intake/assets/review-intake.md.txt",
+      "original_sha256": "22432476ab4b640cee18c3b11caa17ded72d2d575e1dfad00abb05e7d6affc54",
+      "public_sha256": "22432476ab4b640cee18c3b11caa17ded72d2d575e1dfad00abb05e7d6affc54",
+      "public_bytes": 1570,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/create-review-intake-treatment/workproducts/output/isolated/skill-review-intake/references/process-policy.md.txt",
+      "original_sha256": "e1cac0c373c6532b7982700f01be26764f46b6e019b163324777fcc449c177dc",
+      "public_sha256": "e1cac0c373c6532b7982700f01be26764f46b6e019b163324777fcc449c177dc",
+      "public_bytes": 2387,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/create-review-intake-treatment/workproducts/output/manual-cases.md.txt",
+      "original_sha256": "048fb6841e86773d1b8c1c65ad3ec72d669b8829f29e4abf240b549994da81b1",
+      "public_sha256": "048fb6841e86773d1b8c1c65ad3ec72d669b8829f29e4abf240b549994da81b1",
+      "public_bytes": 3103,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/create-review-intake-treatment/workproducts/output/manual-exercises/M1.md.txt",
+      "original_sha256": "63c8500ac8a380ec95e8f108febb0530a237950182d296f0949fc5811ae73266",
+      "public_sha256": "63c8500ac8a380ec95e8f108febb0530a237950182d296f0949fc5811ae73266",
+      "public_bytes": 1188,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/create-review-intake-treatment/workproducts/output/manual-exercises/M2.md.txt",
+      "original_sha256": "3172c607b3acafa38b1690ccac56ff55821232befa9e94fadee767250d0f8ba1",
+      "public_sha256": "3172c607b3acafa38b1690ccac56ff55821232befa9e94fadee767250d0f8ba1",
+      "public_bytes": 1352,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/create-review-intake-treatment/workproducts/output/manual-exercises/M3.md.txt",
+      "original_sha256": "35ac04e08e6ab08097769d47981bce7f39df8e7ae096a0ba2dd912d2e55bbdb6",
+      "public_sha256": "35ac04e08e6ab08097769d47981bce7f39df8e7ae096a0ba2dd912d2e55bbdb6",
+      "public_bytes": 1327,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/create-review-intake-treatment/workproducts/output/manual-exercises/M4.md.txt",
+      "original_sha256": "ac074c45d1ac12db7acaf8ff92f02cf33c25f655ddfafd91ae02e0139bcee5f8",
+      "public_sha256": "ac074c45d1ac12db7acaf8ff92f02cf33c25f655ddfafd91ae02e0139bcee5f8",
+      "public_bytes": 1140,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/create-review-intake-treatment/workproducts/output/manual-exercises/M5.md.txt",
+      "original_sha256": "ecc1c57a43291731482458b43f2ec06fbdc7e8a3c72a503676617172cb820201",
+      "public_sha256": "ecc1c57a43291731482458b43f2ec06fbdc7e8a3c72a503676617172cb820201",
+      "public_bytes": 1269,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/create-review-intake-treatment/workproducts/output/package-hashes.sha256.txt",
+      "original_sha256": "db8cc12711994281b71fa3a134acde9f9efda3c85be7a886eb2f3fc4ed8482e7",
+      "public_sha256": "db8cc12711994281b71fa3a134acde9f9efda3c85be7a886eb2f3fc4ed8482e7",
+      "public_bytes": 334,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/create-review-intake-treatment/workproducts/output/source-hashes.sha256.txt",
+      "original_sha256": "d69efe5cfc3d6ed42019f7126ad0532d18c05d78b437fd55e3d7a9c85a4a7a89",
+      "public_sha256": "d69efe5cfc3d6ed42019f7126ad0532d18c05d78b437fd55e3d7a9c85a4a7a89",
+      "public_bytes": 1082,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/create-review-intake-treatment/workproducts/deliverables/skill-review-intake/LICENSE.txt",
+      "original_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "public_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "public_bytes": 11358,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/create-review-intake-treatment/workproducts/deliverables/skill-review-intake/SKILL.md.txt",
+      "original_sha256": "47add85ba6bfff6b7262ab3803fc44705ab1f60a5af3215257cbe3a03096927f",
+      "public_sha256": "47add85ba6bfff6b7262ab3803fc44705ab1f60a5af3215257cbe3a03096927f",
+      "public_bytes": 12151,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/create-review-intake-treatment/workproducts/deliverables/skill-review-intake/assets/review-intake.md.txt",
+      "original_sha256": "22432476ab4b640cee18c3b11caa17ded72d2d575e1dfad00abb05e7d6affc54",
+      "public_sha256": "22432476ab4b640cee18c3b11caa17ded72d2d575e1dfad00abb05e7d6affc54",
+      "public_bytes": 1570,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/create-review-intake-treatment/workproducts/deliverables/skill-review-intake/references/process-policy.md.txt",
+      "original_sha256": "e1cac0c373c6532b7982700f01be26764f46b6e019b163324777fcc449c177dc",
+      "public_sha256": "e1cac0c373c6532b7982700f01be26764f46b6e019b163324777fcc449c177dc",
+      "public_bytes": 2387,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/plan-overlap-refactor-baseline/execution.json",
+      "original_sha256": "5efd0d0e7cac28d3b8bdb8b9008575d4384dbbc1ee87417ad6b3892a9a69e1b9",
+      "public_sha256": "5efd0d0e7cac28d3b8bdb8b9008575d4384dbbc1ee87417ad6b3892a9a69e1b9",
+      "public_bytes": 449,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/plan-overlap-refactor-baseline/before.json",
+      "original_sha256": "2f64103e6cb03358510b69034e37ace383f4b8d6dddb7a8f72b6254c5a3c27f9",
+      "public_sha256": "2f64103e6cb03358510b69034e37ace383f4b8d6dddb7a8f72b6254c5a3c27f9",
+      "public_bytes": 1550,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/plan-overlap-refactor-baseline/after.json",
+      "original_sha256": "1ee60535bad1fcfe569f0af4fde44fa8a3f9ee00baa25289aa65ba9f6ab655af",
+      "public_sha256": "1ee60535bad1fcfe569f0af4fde44fa8a3f9ee00baa25289aa65ba9f6ab655af",
+      "public_bytes": 1853,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/plan-overlap-refactor-baseline/imported-run.json",
+      "original_sha256": "5b02b6bc504f16b6757878c646eb2d944ce607c4f7ee9454a7af9b8d7cdf2caf",
+      "public_sha256": "5b02b6bc504f16b6757878c646eb2d944ce607c4f7ee9454a7af9b8d7cdf2caf",
+      "public_bytes": 11113,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/plan-overlap-refactor-baseline/receipt.json",
+      "original_sha256": "939fb5b90ca07c760fa94f4f2c31a3b78dfaa5a7b07e6f0438e122b02ee4d39d",
+      "public_sha256": "939fb5b90ca07c760fa94f4f2c31a3b78dfaa5a7b07e6f0438e122b02ee4d39d",
+      "public_bytes": 110,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/plan-overlap-refactor-baseline/tool-events.json",
+      "original_sha256": "aefe349fa8d0235e72c62bf5fe2ab03dd9b8f0c1b643828fb722b67d232c3fe4",
+      "public_sha256": "09b677f02fcca66c33e566e72cf90f6d62855eca1f9fdd3ad5ea819f674c755a",
+      "public_bytes": 42049,
+      "transformation": "ordered command/file-change and turn-event projection; other event types omitted; owned path prefixes and host username normalized"
+    },
+    {
+      "path": "runs/plan-overlap-refactor-baseline/workproducts/output/inspection-notes.md.txt",
+      "original_sha256": "dcf6fccfc1d29b4a21e416b51f25859f1d7fa701e2a50dae8c67e2582d23bed5",
+      "public_sha256": "dcf6fccfc1d29b4a21e416b51f25859f1d7fa701e2a50dae8c67e2582d23bed5",
+      "public_bytes": 2508,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/plan-overlap-refactor-baseline/workproducts/output/refactoring-plan.md.txt",
+      "original_sha256": "1e309c5094d562a76c602f8b1c0bbd3967e75089b7730bda9452ecbb56638261",
+      "public_sha256": "1e309c5094d562a76c602f8b1c0bbd3967e75089b7730bda9452ecbb56638261",
+      "public_bytes": 17573,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/plan-overlap-refactor-treatment/execution.json",
+      "original_sha256": "1d20b8d49dc11241d6563cd8d21d806bf6f8767000a84843e21a9128a537e6c0",
+      "public_sha256": "1d20b8d49dc11241d6563cd8d21d806bf6f8767000a84843e21a9128a537e6c0",
+      "public_bytes": 450,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/plan-overlap-refactor-treatment/before.json",
+      "original_sha256": "2f64103e6cb03358510b69034e37ace383f4b8d6dddb7a8f72b6254c5a3c27f9",
+      "public_sha256": "2f64103e6cb03358510b69034e37ace383f4b8d6dddb7a8f72b6254c5a3c27f9",
+      "public_bytes": 1550,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/plan-overlap-refactor-treatment/after.json",
+      "original_sha256": "de183f199ead4544d28c7f2c739acb76caa07af4fa80cc15542929eae1ad8e10",
+      "public_sha256": "de183f199ead4544d28c7f2c739acb76caa07af4fa80cc15542929eae1ad8e10",
+      "public_bytes": 4691,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/plan-overlap-refactor-treatment/imported-run.json",
+      "original_sha256": "61a7334b26adedf86a260b42ee70bb9ae2b03cd80c3fb674ea969eb96fa15b6d",
+      "public_sha256": "61a7334b26adedf86a260b42ee70bb9ae2b03cd80c3fb674ea969eb96fa15b6d",
+      "public_bytes": 10188,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/plan-overlap-refactor-treatment/receipt.json",
+      "original_sha256": "62ba055b8de533e1c68424c82ef2e7f2b00055161496c1e30d8d015302bc4d24",
+      "public_sha256": "62ba055b8de533e1c68424c82ef2e7f2b00055161496c1e30d8d015302bc4d24",
+      "public_bytes": 110,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/plan-overlap-refactor-treatment/tool-events.json",
+      "original_sha256": "2a481abd6301cce4b673a8e8976308e56d33ba994aef6d799dacdf5592540031",
+      "public_sha256": "3ad83573947e9d777bfbd3896f6bcead0f608da80971fd737bc8150df178f91e",
+      "public_bytes": 63236,
+      "transformation": "ordered command/file-change and turn-event projection; other event types omitted; owned path prefixes and host username normalized"
+    },
+    {
+      "path": "runs/migrate-additively-baseline/execution.json",
+      "original_sha256": "1e2061c5c22b5b929524d0fe806a92566d2f38d5fe1a7bd042981d2d95cf857e",
+      "public_sha256": "1e2061c5c22b5b929524d0fe806a92566d2f38d5fe1a7bd042981d2d95cf857e",
+      "public_bytes": 439,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/migrate-additively-baseline/response.md.txt",
+      "original_sha256": "cb22b9852e1410b2a8b2c0d4dc8b375489568590b8f2dd4ab3cd7f55dc676d0b",
+      "public_sha256": "024b2fcea6543b4b2dfac095ac4289f08c720cb214bef79cea0ea9f53524986d",
+      "public_bytes": 356,
+      "transformation": "owned absolute-path prefixes and host username replaced by declared portable markers; slash-separated dependency prose expanded where present"
+    },
+    {
+      "path": "runs/migrate-additively-baseline/before.json",
+      "original_sha256": "704270866574c4f6a3531561faa3c0d6bf15f86150c047991741ca1a71a13d62",
+      "public_sha256": "704270866574c4f6a3531561faa3c0d6bf15f86150c047991741ca1a71a13d62",
+      "public_bytes": 1320,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/migrate-additively-baseline/after.json",
+      "original_sha256": "70084daa590815e1e9b9e69ea8ac06f6f4554c5d53ea7b9d41fab76563de057b",
+      "public_sha256": "70084daa590815e1e9b9e69ea8ac06f6f4554c5d53ea7b9d41fab76563de057b",
+      "public_bytes": 5540,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/migrate-additively-baseline/imported-run.json",
+      "original_sha256": "f8431c6844524b4546dc3ac38d5f40c98c0c585cb63c8aa3f5a3cf76a6d56a77",
+      "public_sha256": "f8431c6844524b4546dc3ac38d5f40c98c0c585cb63c8aa3f5a3cf76a6d56a77",
+      "public_bytes": 15046,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/migrate-additively-baseline/receipt.json",
+      "original_sha256": "17bb52d75969c5e2cecff5fbf56d3fc939c641d096b9d9a1cffb37d7da05eba0",
+      "public_sha256": "17bb52d75969c5e2cecff5fbf56d3fc939c641d096b9d9a1cffb37d7da05eba0",
+      "public_bytes": 110,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/migrate-additively-baseline/tool-events.json",
+      "original_sha256": "c759179841a8e0f5e265f05bad813ef9612de1ffd87449da282c5097d0d70704",
+      "public_sha256": "7d380313c09737884e75ced92e7f399bee82bf0f38359428c2c05bd09f6af164",
+      "public_bytes": 57646,
+      "transformation": "ordered command/file-change and turn-event projection; other event types omitted; owned path prefixes and host username normalized"
+    },
+    {
+      "path": "runs/migrate-additively-baseline/workproducts/output/before.sha256.txt",
+      "original_sha256": "1ff924204866ad13de7f90570ded77e18ff8a7354fab72af7a3e4aa4f0b0047b",
+      "public_sha256": "1ff924204866ad13de7f90570ded77e18ff8a7354fab72af7a3e4aa4f0b0047b",
+      "public_bytes": 857,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/migrate-additively-baseline/workproducts/output/integrity-check.txt.txt",
+      "original_sha256": "a47e0aa6c05b90dc6fdbc623e5ebb5f5cd028800d1f3a31acd98e8474ae8a373",
+      "public_sha256": "a47e0aa6c05b90dc6fdbc623e5ebb5f5cd028800d1f3a31acd98e8474ae8a373",
+      "public_bytes": 361,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/migrate-additively-baseline/workproducts/output/migration-record.md.txt",
+      "original_sha256": "d733ddb28f6d09c2c9d005eea226a4f0dcccfc0c0290f7b74ec28cee2c807812",
+      "public_sha256": "d733ddb28f6d09c2c9d005eea226a4f0dcccfc0c0290f7b74ec28cee2c807812",
+      "public_bytes": 8128,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/migrate-additively-baseline/workproducts/output/proposed-target-catalog.json.txt",
+      "original_sha256": "911d333f264f14d76a4860db231ff0a84637c34e23fbb1044b8247f4e23c6147",
+      "public_sha256": "911d333f264f14d76a4860db231ff0a84637c34e23fbb1044b8247f4e23c6147",
+      "public_bytes": 325,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/migrate-additively-baseline/workproducts/target/skill-note-transfer/LICENSE.txt",
+      "original_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "public_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "public_bytes": 11358,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/migrate-additively-baseline/workproducts/target/skill-note-transfer/SKILL.md.txt",
+      "original_sha256": "fa28c05e823c13065f96793f2cd19df880cd31ac9e0180b6c479e4a265931e59",
+      "public_sha256": "fa28c05e823c13065f96793f2cd19df880cd31ac9e0180b6c479e4a265931e59",
+      "public_bytes": 1050,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/migrate-additively-baseline/workproducts/target/skill-note-transfer/references/handoff.md.txt",
+      "original_sha256": "e5500b3361b6d4eaab15e4555e28a4a4db2fc4dcbead391bdd6dfb000ba9c553",
+      "public_sha256": "e5500b3361b6d4eaab15e4555e28a4a4db2fc4dcbead391bdd6dfb000ba9c553",
+      "public_bytes": 374,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/migrate-additively-treatment/execution.json",
+      "original_sha256": "e8afc482851275e396532723916b56aecff45e4ab71128f56a24b60de36b3773",
+      "public_sha256": "e8afc482851275e396532723916b56aecff45e4ab71128f56a24b60de36b3773",
+      "public_bytes": 440,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/migrate-additively-treatment/response.md.txt",
+      "original_sha256": "dac4cb030df4d479c29f900131a001b90d5dac31ba97bdd28bf3b1c29e9f5abc",
+      "public_sha256": "5aa9dfaf0ebd75a4a40f148ed079ee17e9a58de8102c761a8a61b5ec4e4c0303",
+      "public_bytes": 528,
+      "transformation": "owned absolute-path prefixes and host username replaced by declared portable markers; slash-separated dependency prose expanded where present"
+    },
+    {
+      "path": "runs/migrate-additively-treatment/before.json",
+      "original_sha256": "704270866574c4f6a3531561faa3c0d6bf15f86150c047991741ca1a71a13d62",
+      "public_sha256": "704270866574c4f6a3531561faa3c0d6bf15f86150c047991741ca1a71a13d62",
+      "public_bytes": 1320,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/migrate-additively-treatment/after.json",
+      "original_sha256": "ed2222429cb653e4e436a4661859abd3d51ed3af7dbf4c4e2e3e56297dd3ee9e",
+      "public_sha256": "ed2222429cb653e4e436a4661859abd3d51ed3af7dbf4c4e2e3e56297dd3ee9e",
+      "public_bytes": 6629,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/migrate-additively-treatment/imported-run.json",
+      "original_sha256": "492ddbe712c42571c9c826149dbc27dce130373f42b7be32a2d58b2939d44f4c",
+      "public_sha256": "492ddbe712c42571c9c826149dbc27dce130373f42b7be32a2d58b2939d44f4c",
+      "public_bytes": 14815,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/migrate-additively-treatment/receipt.json",
+      "original_sha256": "8f2c46b32ab9912c4910f4a81b03440cade56c858e13e475f2488251ac54c557",
+      "public_sha256": "8f2c46b32ab9912c4910f4a81b03440cade56c858e13e475f2488251ac54c557",
+      "public_bytes": 110,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/migrate-additively-treatment/tool-events.json",
+      "original_sha256": "6ead9d9e2098a96d0adae4d65674d4a3531b6234c7c269777ef9c8e731857b4a",
+      "public_sha256": "bc0b25af1ee534f602b22ac131ffb2cfb5d32ea39447684d8ae4bffcad846516",
+      "public_bytes": 85668,
+      "transformation": "ordered command/file-change and turn-event projection; other event types omitted; owned path prefixes and host username normalized"
+    },
+    {
+      "path": "runs/migrate-additively-treatment/workproducts/output/behavioral-evidence-note.md.txt",
+      "original_sha256": "8d3efa4a4a3e2aa6e1fc35d45fa7674aa2517acb3bc2dd66461ccda1cb7d77d4",
+      "public_sha256": "8d3efa4a4a3e2aa6e1fc35d45fa7674aa2517acb3bc2dd66461ccda1cb7d77d4",
+      "public_bytes": 1123,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/migrate-additively-treatment/workproducts/output/behavioral-handoff.md.txt",
+      "original_sha256": "cc81201af578ceb6ebae96ae77c07b54a9de641d41b1c0a49ce8a3e44e196eaf",
+      "public_sha256": "cc81201af578ceb6ebae96ae77c07b54a9de641d41b1c0a49ce8a3e44e196eaf",
+      "public_bytes": 1061,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/migrate-additively-treatment/workproducts/output/migration-record.md.txt",
+      "original_sha256": "3606b7b8b7560bfa9a05de623e01c67a9f284f3465c555fd422615a6e0b2b79a",
+      "public_sha256": "3606b7b8b7560bfa9a05de623e01c67a9f284f3465c555fd422615a6e0b2b79a",
+      "public_bytes": 11623,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/migrate-additively-treatment/workproducts/target/skill-note-transfer/LICENSE.txt",
+      "original_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "public_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "public_bytes": 11358,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/migrate-additively-treatment/workproducts/target/skill-note-transfer/SKILL.md.txt",
+      "original_sha256": "fa28c05e823c13065f96793f2cd19df880cd31ac9e0180b6c479e4a265931e59",
+      "public_sha256": "fa28c05e823c13065f96793f2cd19df880cd31ac9e0180b6c479e4a265931e59",
+      "public_bytes": 1050,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/migrate-additively-treatment/workproducts/target/skill-note-transfer/references/handoff.md.txt",
+      "original_sha256": "e5500b3361b6d4eaab15e4555e28a4a4db2fc4dcbead391bdd6dfb000ba9c553",
+      "public_sha256": "e5500b3361b6d4eaab15e4555e28a4a4db2fc4dcbead391bdd6dfb000ba9c553",
+      "public_bytes": 374,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/refuse-collision-baseline/execution.json",
+      "original_sha256": "30fdd9ad0b2eb6b02eb7358bd36b82457d19add8ba60e8b654c14f2c77342f9f",
+      "public_sha256": "30fdd9ad0b2eb6b02eb7358bd36b82457d19add8ba60e8b654c14f2c77342f9f",
+      "public_bytes": 436,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/refuse-collision-baseline/response.md.txt",
+      "original_sha256": "82258aeef1d607028e9b0f9c22d8430731a155186e44f3ba27539132c9bd1729",
+      "public_sha256": "b507dae92199f41d2a1baf381dd45169ccd1e2cbc474d033c5127dfd32a47159",
+      "public_bytes": 312,
+      "transformation": "owned absolute-path prefixes and host username replaced by declared portable markers; slash-separated dependency prose expanded where present"
+    },
+    {
+      "path": "runs/refuse-collision-baseline/before.json",
+      "original_sha256": "3ac8349b09e4376fa234d6fedf45b26ffc32508d8fedd74f857230a133594a8d",
+      "public_sha256": "3ac8349b09e4376fa234d6fedf45b26ffc32508d8fedd74f857230a133594a8d",
+      "public_bytes": 1755,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/refuse-collision-baseline/after.json",
+      "original_sha256": "6b49e5123df7e3c9a415bb8be6a147efbce79bc19ec660e4165a42cec35a4dd6",
+      "public_sha256": "6b49e5123df7e3c9a415bb8be6a147efbce79bc19ec660e4165a42cec35a4dd6",
+      "public_bytes": 1904,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/refuse-collision-baseline/imported-run.json",
+      "original_sha256": "36af842ab37f78bd74c17b3e42f3dd353c9dcf3fee1bdc22ab04a1f61c7de3de",
+      "public_sha256": "36af842ab37f78bd74c17b3e42f3dd353c9dcf3fee1bdc22ab04a1f61c7de3de",
+      "public_bytes": 9231,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/refuse-collision-baseline/receipt.json",
+      "original_sha256": "192af053a91b77ddd36655abcb0e6ec73cdcf4b97a711c40b452bbaa484dd508",
+      "public_sha256": "192af053a91b77ddd36655abcb0e6ec73cdcf4b97a711c40b452bbaa484dd508",
+      "public_bytes": 110,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/refuse-collision-baseline/tool-events.json",
+      "original_sha256": "f573ce718f2a32f2cde856412a88fed7658989d78115a3b38641ace1368c8aac",
+      "public_sha256": "21937d4ac9ab3936d07c44e24318c9266345efdfa3dcc7676b6bdafca14fee57",
+      "public_bytes": 31436,
+      "transformation": "ordered command/file-change and turn-event projection; other event types omitted; owned path prefixes and host username normalized"
+    },
+    {
+      "path": "runs/refuse-collision-baseline/workproducts/output/refusal-record.md.txt",
+      "original_sha256": "29d47707fec3011cd128a588a22cc68315309be1b0b8e1e1180c460d5e88891d",
+      "public_sha256": "29d47707fec3011cd128a588a22cc68315309be1b0b8e1e1180c460d5e88891d",
+      "public_bytes": 4048,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/refuse-collision-treatment/execution.json",
+      "original_sha256": "6999ca74bbdae4aae03ae4d9e471d1c9e000f44828405bff7b0ad65fe0394ac8",
+      "public_sha256": "6999ca74bbdae4aae03ae4d9e471d1c9e000f44828405bff7b0ad65fe0394ac8",
+      "public_bytes": 438,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/refuse-collision-treatment/response.md.txt",
+      "original_sha256": "48cc798f5cd3f547f4784a64d3329feff20ce95561388c48a983d60f393d35e9",
+      "public_sha256": "1a9a74a694cc895d04c0ddb1834585503d307ed3fa642d95c86a87680a9a8897",
+      "public_bytes": 376,
+      "transformation": "owned absolute-path prefixes and host username replaced by declared portable markers; slash-separated dependency prose expanded where present"
+    },
+    {
+      "path": "runs/refuse-collision-treatment/before.json",
+      "original_sha256": "3ac8349b09e4376fa234d6fedf45b26ffc32508d8fedd74f857230a133594a8d",
+      "public_sha256": "3ac8349b09e4376fa234d6fedf45b26ffc32508d8fedd74f857230a133594a8d",
+      "public_bytes": 1755,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/refuse-collision-treatment/after.json",
+      "original_sha256": "8a5d174ec900e51ca5af0eaa6f81476c7cbcb1b520315e41d36c80e78defb4ef",
+      "public_sha256": "8a5d174ec900e51ca5af0eaa6f81476c7cbcb1b520315e41d36c80e78defb4ef",
+      "public_bytes": 3295,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/refuse-collision-treatment/imported-run.json",
+      "original_sha256": "6a02a44389ee041bb67441f07ba4c26f4400556ce14fd17e06dafa5a3dd32d86",
+      "public_sha256": "6a02a44389ee041bb67441f07ba4c26f4400556ce14fd17e06dafa5a3dd32d86",
+      "public_bytes": 9266,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/refuse-collision-treatment/receipt.json",
+      "original_sha256": "c52dcb2fa915381beecd34efedf60754d6f494481d7e4754cf474463f82036da",
+      "public_sha256": "c52dcb2fa915381beecd34efedf60754d6f494481d7e4754cf474463f82036da",
+      "public_bytes": 110,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "runs/refuse-collision-treatment/tool-events.json",
+      "original_sha256": "a86b44340396b5ecbab79ce0708a281e58f7601271c3c94ae5a128afc33104df",
+      "public_sha256": "c6fe69f6d6854ff160eee8d480322a4c46631c60045a9ed54df5d5b8e71ff61b",
+      "public_bytes": 104784,
+      "transformation": "ordered command/file-change and turn-event projection; other event types omitted; owned path prefixes and host username normalized"
+    },
+    {
+      "path": "runs/refuse-collision-treatment/workproducts/output/refusal-record.md.txt",
+      "original_sha256": "5040d4bfb3b1cd4be2120467cacbac59cd1894282d54e0465f319f9b6a53fc3a",
+      "public_sha256": "5040d4bfb3b1cd4be2120467cacbac59cd1894282d54e0465f319f9b6a53fc3a",
+      "public_bytes": 4763,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "freeze-manifest.json",
+      "original_sha256": "574d12ec03c0560b7f5d4b0f8f8f8e9bf27cb0bf0a9d2162b495f5eb2d0f75af",
+      "public_sha256": "574d12ec03c0560b7f5d4b0f8f8f8e9bf27cb0bf0a9d2162b495f5eb2d0f75af",
+      "public_bytes": 28079,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "grading.json",
+      "original_sha256": "796e28dc3809ce3c7149b5a9e608df154147ad89fc4e1773d8c1fa532e2f9e11",
+      "public_sha256": "a475e0bed5444b1d8f32ab781c307150d8d22b771681a8c9abb865dbc799488c",
+      "public_bytes": 58339,
+      "transformation": "owned absolute-path prefixes and host username replaced by declared portable markers; slash-separated dependency prose expanded where present"
+    },
+    {
+      "path": "integrity.json",
+      "original_sha256": "e0d2aba23c3a7586a204aa70ae37aed719f3f5e4f6144a4bd7b3f6cc3a99a1ac",
+      "public_sha256": "e0d2aba23c3a7586a204aa70ae37aed719f3f5e4f6144a4bd7b3f6cc3a99a1ac",
+      "public_bytes": 76958,
+      "transformation": "unchanged bytes"
+    },
+    {
+      "path": "comparison.json",
+      "original_sha256": "910dfd057aad2c3e1bc8c5d7980e6b20b7ddfee811c602f89de41573e8d37151",
+      "public_sha256": "165d5768a5b37cfa321ec147f6fd0f06883c12763b0b5c5e306ced7086eb3f1c",
+      "public_bytes": 54021,
+      "transformation": "owned absolute-path prefixes and host username replaced by declared portable markers; slash-separated dependency prose expanded where present"
+    }
+  ]
+}

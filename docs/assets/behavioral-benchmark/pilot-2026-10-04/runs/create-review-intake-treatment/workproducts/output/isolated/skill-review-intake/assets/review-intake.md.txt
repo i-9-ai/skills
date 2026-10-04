@@ -1,0 +1,33 @@
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!-- Original reusable template adapted from the fictional owner's process.
+     Replace placeholders with supplied facts or explicit missing/unavailable
+     statements. This file is not a completed review or an approval. -->
+# Review intake: <skill name or missing>
+
+## 1. Supplied package identity and review kind
+- Skill:
+- Package reference (caller supplied; revision if supplied):
+- Review kind (structure / behavior / portability; otherwise missing/unsupported):
+- Reason or description (optional):
+- Caller-selected output path (outside installed package; write gate if any):
+
+## 2. Evidence available and evidence missing
+- Available (artifact reference, origin, supplied/opened/reported state):
+- Missing or unavailable (item, availability, supplier and whether blocking):
+- Sensitive material omitted (sanitized description only, when relevant):
+
+## 3. Requested review scope and actions authorized
+- Requested scope:
+- Actions actually authorized:
+- Actions performed for intake:
+- Excess actions and unresolved authority (when relevant):
+
+## 4. Status
+<ready_for_review / incomplete / outside_intake_scope> — <reason>
+Intake status is not a validation, quality, publication or installation verdict.
+
+## 5. Next reviewer handoff and blocking questions
+- Next role/person (supplied assignment or unassigned role):
+- Pass this record and these authorized evidence references:
+- Blocking questions, needed evidence and responsible caller/owner:
+- Reviewer/capability unavailable (when known; next action blocked):

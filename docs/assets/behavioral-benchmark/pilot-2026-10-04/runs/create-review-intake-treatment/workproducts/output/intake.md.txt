@@ -1,0 +1,22 @@
+# Authoring intake
+
+Date: 2026-10-03. Synthetic fixture; supplied owner approval has no stated date.
+Single outcome: author `deliverables/skill-review-intake`, teaching preparation of
+one Markdown review-intake record. Name, English language, scope, Apache-2.0
+license and portable profile are fixed by `inputs/brief.json` and `inputs/design.md`.
+
+Acceptance: one responsibility; five record sections; three review-kind evidence
+rules; three statuses; inline complete normal and missing/excess examples; useful
+bundled template; supplied full license; self-contained use; exact reporting of
+structure, official conformance and behavior. No runtime companions are required.
+
+Authority: create files only under `deliverables/` and `output/`; preserve inputs
+and instruction-only. No home/global inspection, networking, dependencies,
+generated-script execution, installation, publication, catalog edit or migration.
+Read-only local shell commands use RTK. No clarification is requested; unresolved
+questions remain gates. Budget: at most two correction rounds; no model benchmark
+or external research budget is authorized.
+
+Positive trigger: prepare intake for one identified candidate and review kind.
+Negative triggers: evaluate/approve/install a package or perform its domain task.
+An excess action received during intake is retained in an outside-scope record.

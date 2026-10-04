@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "skills": [
+    {
+      "name": "skill-evidence-note",
+      "path": "skills/skill-evidence-note",
+      "description": "Use to organize supplied evidence for one skill review into a review-evidence note without judging quality.",
+      "tags": ["evidence", "review", "skills"]
+    },
+    {
+      "name": "skill-review-record",
+      "path": "skills/skill-review-record",
+      "description": "Use to prepare a review-evidence note for one skill, preserving missing-artifact recovery and source identity.",
+      "tags": ["evidence", "review", "skills"]
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "synthetic": true,
+  "skill_name": "skill-note-transfer",
+  "source": "collections/source/skills/skill-note-transfer",
+  "target": "collections/target/skills/skill-note-transfer",
+  "target_profile": "Portable standalone package; full Apache-2.0 license and working package-relative references; no required host adapter.",
+  "authority": {
+    "add_target_candidate": true,
+    "initialize_local_source_git": true,
+    "commit_synthetic_source_baseline": true,
+    "retain_source_history": true,
+    "reconcile_target_catalog_after_checks": true,
+    "change_source_package": false,
+    "change_source_catalog": false,
+    "overwrite_existing_target": false,
+    "remove_source": false,
+    "consumer_cutover": false,
+    "download": false,
+    "install": false,
+    "publish": false
+  },
+  "writable_paths": [
+    "collections/source/.git",
+    "collections/target/skills/skill-note-transfer",
+    "collections/target/skills-catalog.json",
+    "output"
+  ],
+  "history_retention_owner": "Fictional source collection maintainer",
+  "consumers": [],
+  "consumer_scope": "No live consumers are supplied or authorized for discovery."
+}

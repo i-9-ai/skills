@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "synthetic": true,
+  "consumers": [
+    {
+      "id": "fixture-review-workbook",
+      "package": "skill-evidence-note",
+      "reference": "skills/skill-evidence-note/SKILL.md",
+      "transition": "Its owner can update the explicit package reference in a reviewed change."
+    },
+    {
+      "id": "fixture-missing-evidence-runbook",
+      "package": "skill-review-record",
+      "reference": "skills/skill-review-record/references/recovery.md",
+      "transition": "Its owner requires the missing-artifact example and source-collision warning to remain accessible."
+    }
+  ],
+  "implementation_authorized": false,
+  "unknown_consumers": "Not inspected; do not infer absence outside this supplied map."
+}

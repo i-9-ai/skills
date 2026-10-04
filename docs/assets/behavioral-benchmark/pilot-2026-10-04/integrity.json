@@ -1,0 +1,2060 @@
+{
+  "schema_version": 1,
+  "inspected_at": "2026-10-04T02:40:50.158Z",
+  "method": "Read-only lstat and SHA-256 of actual workspace/frozen bytes; no executor output code executed.",
+  "frozenManifestFileCount": 143,
+  "frozenMismatches": [],
+  "runs": {
+    "create-review-intake-baseline": {
+      "status": "finalized",
+      "execution": {
+        "case_id": "create-review-intake",
+        "variant": "baseline",
+        "executor": "Codex CLI 0.160.0",
+        "model": "gpt-6.1-sol",
+        "settings": "reasoning=high; ephemeral; user-config=ignored; host-skill-discovery=disabled; hooks=disabled; plugins=disabled; workspace-write; approval=never",
+        "fresh_context": true,
+        "started_at": "2026-10-04T02:27:52.275Z",
+        "wall_time_ms": 305953,
+        "timed_out": false,
+        "exit_code": 0,
+        "signal": null
+      },
+      "fixtureCount": 5,
+      "inputChecks": [
+        {
+          "path": "inputs/LICENSE",
+          "frozen": {
+            "bytes": 11358,
+            "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "inputs/LICENSE",
+            "bytes": 11358,
+            "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+          }
+        },
+        {
+          "path": "inputs/brief.json",
+          "frozen": {
+            "bytes": 1226,
+            "sha256": "3596d3111333113ed2011f3bb2eccd772eadc678fb1ad00fda0cfcc7e9f68678"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "inputs/brief.json",
+            "bytes": 1226,
+            "sha256": "3596d3111333113ed2011f3bb2eccd772eadc678fb1ad00fda0cfcc7e9f68678"
+          }
+        },
+        {
+          "path": "inputs/design.md",
+          "frozen": {
+            "bytes": 1565,
+            "sha256": "b0350ea5830da90cfbe5b0492a63e3b69f96b87740bcf3634f9660fa4b0163f5"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "inputs/design.md",
+            "bytes": 1565,
+            "sha256": "b0350ea5830da90cfbe5b0492a63e3b69f96b87740bcf3634f9660fa4b0163f5"
+          }
+        },
+        {
+          "path": "inputs/process-policy.md",
+          "frozen": {
+            "bytes": 2387,
+            "sha256": "e1cac0c373c6532b7982700f01be26764f46b6e019b163324777fcc449c177dc"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "inputs/process-policy.md",
+            "bytes": 2387,
+            "sha256": "e1cac0c373c6532b7982700f01be26764f46b6e019b163324777fcc449c177dc"
+          }
+        },
+        {
+          "path": "inputs/research.md",
+          "frozen": {
+            "bytes": 1314,
+            "sha256": "de9b9a4f19ea7a46470d25d40208ef2fcaa36c79c3874012a719360583869e25"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "inputs/research.md",
+            "bytes": 1314,
+            "sha256": "de9b9a4f19ea7a46470d25d40208ef2fcaa36c79c3874012a719360583869e25"
+          }
+        }
+      ],
+      "allBeforeInventoriesMatchFrozen": true,
+      "allFixturesPreserved": true,
+      "changedOrMissingFixtures": [],
+      "extraFilesExcludingGuidance": [
+        {
+          "path": "deliverables/skill-review-intake/LICENSE",
+          "bytes": 11358,
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        },
+        {
+          "path": "deliverables/skill-review-intake/SKILL.md",
+          "bytes": 12668,
+          "sha256": "e20ae1134e0bfb0a6f38f2e760672eb508a9ce03e6b61adf9af8736a3b45dfff"
+        },
+        {
+          "path": "deliverables/skill-review-intake/assets/review-intake-template.md",
+          "bytes": 2067,
+          "sha256": "0a096ece022f3cd666b5cbaecae718031e923cd9ca5ecb150859d004bc2185b1"
+        },
+        {
+          "path": "output/authoring-record.md",
+          "bytes": 7005,
+          "sha256": "cedf2fae0ee3fd3a5c41f30eae21015ef230ce4273e19cab336b9b3ad6e356c2"
+        }
+      ],
+      "specialFiles": [],
+      "gitDirectories": [],
+      "guidanceChecks": [],
+      "allGuidanceMatchesFrozen": true
+    },
+    "create-review-intake-treatment": {
+      "status": "finalized",
+      "execution": {
+        "case_id": "create-review-intake",
+        "variant": "treatment",
+        "executor": "Codex CLI 0.160.0",
+        "model": "gpt-6.1-sol",
+        "settings": "reasoning=high; ephemeral; user-config=ignored; host-skill-discovery=disabled; hooks=disabled; plugins=disabled; workspace-write; approval=never",
+        "fresh_context": true,
+        "started_at": "2026-10-04T02:27:52.309Z",
+        "wall_time_ms": 600010,
+        "timed_out": true,
+        "exit_code": null,
+        "signal": "SIGTERM"
+      },
+      "fixtureCount": 5,
+      "inputChecks": [
+        {
+          "path": "inputs/LICENSE",
+          "frozen": {
+            "bytes": 11358,
+            "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "inputs/LICENSE",
+            "bytes": 11358,
+            "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+          }
+        },
+        {
+          "path": "inputs/brief.json",
+          "frozen": {
+            "bytes": 1226,
+            "sha256": "3596d3111333113ed2011f3bb2eccd772eadc678fb1ad00fda0cfcc7e9f68678"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "inputs/brief.json",
+            "bytes": 1226,
+            "sha256": "3596d3111333113ed2011f3bb2eccd772eadc678fb1ad00fda0cfcc7e9f68678"
+          }
+        },
+        {
+          "path": "inputs/design.md",
+          "frozen": {
+            "bytes": 1565,
+            "sha256": "b0350ea5830da90cfbe5b0492a63e3b69f96b87740bcf3634f9660fa4b0163f5"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "inputs/design.md",
+            "bytes": 1565,
+            "sha256": "b0350ea5830da90cfbe5b0492a63e3b69f96b87740bcf3634f9660fa4b0163f5"
+          }
+        },
+        {
+          "path": "inputs/process-policy.md",
+          "frozen": {
+            "bytes": 2387,
+            "sha256": "e1cac0c373c6532b7982700f01be26764f46b6e019b163324777fcc449c177dc"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "inputs/process-policy.md",
+            "bytes": 2387,
+            "sha256": "e1cac0c373c6532b7982700f01be26764f46b6e019b163324777fcc449c177dc"
+          }
+        },
+        {
+          "path": "inputs/research.md",
+          "frozen": {
+            "bytes": 1314,
+            "sha256": "de9b9a4f19ea7a46470d25d40208ef2fcaa36c79c3874012a719360583869e25"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "inputs/research.md",
+            "bytes": 1314,
+            "sha256": "de9b9a4f19ea7a46470d25d40208ef2fcaa36c79c3874012a719360583869e25"
+          }
+        }
+      ],
+      "allBeforeInventoriesMatchFrozen": true,
+      "allFixturesPreserved": true,
+      "changedOrMissingFixtures": [],
+      "extraFilesExcludingGuidance": [
+        {
+          "path": "deliverables/skill-review-intake/LICENSE",
+          "bytes": 11358,
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        },
+        {
+          "path": "deliverables/skill-review-intake/SKILL.md",
+          "bytes": 12151,
+          "sha256": "47add85ba6bfff6b7262ab3803fc44705ab1f60a5af3215257cbe3a03096927f"
+        },
+        {
+          "path": "deliverables/skill-review-intake/assets/review-intake.md",
+          "bytes": 1570,
+          "sha256": "22432476ab4b640cee18c3b11caa17ded72d2d575e1dfad00abb05e7d6affc54"
+        },
+        {
+          "path": "deliverables/skill-review-intake/references/process-policy.md",
+          "bytes": 2387,
+          "sha256": "e1cac0c373c6532b7982700f01be26764f46b6e019b163324777fcc449c177dc"
+        },
+        {
+          "path": "output/design-review.md",
+          "bytes": 1839,
+          "sha256": "d981c5ffaccb75436166e863cceb6268335b107d6ab6855de5fae4d2352a7467"
+        },
+        {
+          "path": "output/discovery.md",
+          "bytes": 1526,
+          "sha256": "ca37c7823c149b7de29373dc9b2a8478404e9f0bd75999b573c8c269d7186b71"
+        },
+        {
+          "path": "output/domain-research.md",
+          "bytes": 3097,
+          "sha256": "04ca2d4257b2eeb295c201de00015bf3fc859f45caa77f05829aff0085f2d675"
+        },
+        {
+          "path": "output/intake.md",
+          "bytes": 1362,
+          "sha256": "45528d615430400b11a6ae0549c9c229c00a8acb0d67955f3a124f1f8d1f2d63"
+        },
+        {
+          "path": "output/isolated/skill-review-intake/LICENSE",
+          "bytes": 11358,
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        },
+        {
+          "path": "output/isolated/skill-review-intake/SKILL.md",
+          "bytes": 12151,
+          "sha256": "47add85ba6bfff6b7262ab3803fc44705ab1f60a5af3215257cbe3a03096927f"
+        },
+        {
+          "path": "output/isolated/skill-review-intake/assets/review-intake.md",
+          "bytes": 1570,
+          "sha256": "22432476ab4b640cee18c3b11caa17ded72d2d575e1dfad00abb05e7d6affc54"
+        },
+        {
+          "path": "output/isolated/skill-review-intake/references/process-policy.md",
+          "bytes": 2387,
+          "sha256": "e1cac0c373c6532b7982700f01be26764f46b6e019b163324777fcc449c177dc"
+        },
+        {
+          "path": "output/manual-cases.md",
+          "bytes": 3103,
+          "sha256": "048fb6841e86773d1b8c1c65ad3ec72d669b8829f29e4abf240b549994da81b1"
+        },
+        {
+          "path": "output/manual-exercises/M1.md",
+          "bytes": 1188,
+          "sha256": "63c8500ac8a380ec95e8f108febb0530a237950182d296f0949fc5811ae73266"
+        },
+        {
+          "path": "output/manual-exercises/M2.md",
+          "bytes": 1352,
+          "sha256": "3172c607b3acafa38b1690ccac56ff55821232befa9e94fadee767250d0f8ba1"
+        },
+        {
+          "path": "output/manual-exercises/M3.md",
+          "bytes": 1327,
+          "sha256": "35ac04e08e6ab08097769d47981bce7f39df8e7ae096a0ba2dd912d2e55bbdb6"
+        },
+        {
+          "path": "output/manual-exercises/M4.md",
+          "bytes": 1140,
+          "sha256": "ac074c45d1ac12db7acaf8ff92f02cf33c25f655ddfafd91ae02e0139bcee5f8"
+        },
+        {
+          "path": "output/manual-exercises/M5.md",
+          "bytes": 1269,
+          "sha256": "ecc1c57a43291731482458b43f2ec06fbdc7e8a3c72a503676617172cb820201"
+        },
+        {
+          "path": "output/package-hashes.sha256",
+          "bytes": 334,
+          "sha256": "db8cc12711994281b71fa3a134acde9f9efda3c85be7a886eb2f3fc4ed8482e7"
+        },
+        {
+          "path": "output/source-hashes.sha256",
+          "bytes": 1082,
+          "sha256": "d69efe5cfc3d6ed42019f7126ad0532d18c05d78b437fd55e3d7a9c85a4a7a89"
+        }
+      ],
+      "specialFiles": [],
+      "gitDirectories": [],
+      "guidanceChecks": [
+        {
+          "path": "instruction-only/skill-authoring/LICENSE",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-authoring/SKILL.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-authoring/agents/openai.yaml",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-authoring/assets/icon-source.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-authoring/assets/icon.png",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-authoring/assets/icon.render.json",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-authoring/assets/icon.source.json",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-authoring/assets/icon.svg",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-authoring/assets/run.schema.json",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-authoring/assets/skill-template.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-authoring/examples/merge-run/intake.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-authoring/examples/merge-run/run.json",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-authoring/references/authoring.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-authoring/references/handoff-protocol.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-authoring/references/openai-yaml.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-authoring/references/runtime-guidance.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-authoring/references/tooling.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-authoring/references/upstream-guidance.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-authoring/references/validation.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-authoring/scripts/lib/contracts.mjs",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-authoring/scripts/lib/filesystem.mjs",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-authoring/scripts/lib/html-entities.LICENSE",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-authoring/scripts/lib/html-entities.json",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-authoring/scripts/lib/public-host.mjs",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-authoring/scripts/skill_tools.mjs",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-design/LICENSE",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-design/SKILL.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-design/agents/openai.yaml",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-design/assets/design-brief.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-design/assets/icon-source.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-design/assets/icon.png",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-design/assets/icon.render.json",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-design/assets/icon.source.json",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-design/assets/icon.svg",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-design/references/decisions.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-design/references/upstream-guidance.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-domain-research/LICENSE",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-domain-research/SKILL.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-domain-research/agents/openai.yaml",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-domain-research/assets/icon.png",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-domain-research/assets/icon.render.json",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-domain-research/assets/icon.svg",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-domain-research/assets/research-dossier.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-domain-research/references/authoritative-source-policy.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-domain-research/references/provenance.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-evaluator/LICENSE",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-evaluator/SKILL.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-evaluator/agents/openai.yaml",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-evaluator/assets/evaluation-case.json",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-evaluator/assets/evaluation-report.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-evaluator/assets/icon-source.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-evaluator/assets/icon.png",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-evaluator/assets/icon.render.json",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-evaluator/assets/icon.source.json",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-evaluator/assets/icon.svg",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-evaluator/references/case-contract.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-evaluator/references/evaluation.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-evaluator/references/upstream-guidance.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-security-review/LICENSE",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-security-review/SKILL.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-security-review/agents/openai.yaml",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-security-review/assets/icon-source.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-security-review/assets/icon.png",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-security-review/assets/icon.render.json",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-security-review/assets/icon.source.json",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-security-review/assets/icon.svg",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skills-discovery/LICENSE",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skills-discovery/SKILL.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skills-discovery/agents/openai.yaml",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skills-discovery/assets/candidate-report.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skills-discovery/assets/icon-source.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skills-discovery/assets/icon.png",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skills-discovery/assets/icon.render.json",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skills-discovery/assets/icon.source.json",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skills-discovery/assets/icon.svg",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skills-discovery/references/source-review.md",
+          "matchesFrozenPackage": true
+        }
+      ],
+      "allGuidanceMatchesFrozen": true
+    },
+    "migrate-additively-baseline": {
+      "status": "finalized",
+      "execution": {
+        "case_id": "migrate-additively",
+        "variant": "baseline",
+        "executor": "Codex CLI 0.160.0",
+        "model": "gpt-6.1-sol",
+        "settings": "reasoning=high; ephemeral; user-config=ignored; host-skill-discovery=disabled; hooks=disabled; plugins=disabled; workspace-write; approval=never",
+        "fresh_context": true,
+        "started_at": "2026-10-04T02:20:40.132Z",
+        "wall_time_ms": 348462,
+        "timed_out": false,
+        "exit_code": 0,
+        "signal": null
+      },
+      "fixtureCount": 8,
+      "inputChecks": [
+        {
+          "path": "collections/source/skills/skill-note-transfer/LICENSE",
+          "frozen": {
+            "bytes": 11358,
+            "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/source/skills/skill-note-transfer/LICENSE",
+            "bytes": 11358,
+            "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+          }
+        },
+        {
+          "path": "collections/source/skills/skill-note-transfer/SKILL.md",
+          "frozen": {
+            "bytes": 1050,
+            "sha256": "fa28c05e823c13065f96793f2cd19df880cd31ac9e0180b6c479e4a265931e59"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/source/skills/skill-note-transfer/SKILL.md",
+            "bytes": 1050,
+            "sha256": "fa28c05e823c13065f96793f2cd19df880cd31ac9e0180b6c479e4a265931e59"
+          }
+        },
+        {
+          "path": "collections/source/skills/skill-note-transfer/references/handoff.md",
+          "frozen": {
+            "bytes": 374,
+            "sha256": "e5500b3361b6d4eaab15e4555e28a4a4db2fc4dcbead391bdd6dfb000ba9c553"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/source/skills/skill-note-transfer/references/handoff.md",
+            "bytes": 374,
+            "sha256": "e5500b3361b6d4eaab15e4555e28a4a4db2fc4dcbead391bdd6dfb000ba9c553"
+          }
+        },
+        {
+          "path": "collections/source/skills-catalog.json",
+          "frozen": {
+            "bytes": 325,
+            "sha256": "911d333f264f14d76a4860db231ff0a84637c34e23fbb1044b8247f4e23c6147"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/source/skills-catalog.json",
+            "bytes": 325,
+            "sha256": "911d333f264f14d76a4860db231ff0a84637c34e23fbb1044b8247f4e23c6147"
+          }
+        },
+        {
+          "path": "collections/target/KEEP.md",
+          "frozen": {
+            "bytes": 221,
+            "sha256": "74c19f171854df7adc5fd75db1075a34755d7a772ad179c22fa9e2d8c64223eb"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/target/KEEP.md",
+            "bytes": 221,
+            "sha256": "74c19f171854df7adc5fd75db1075a34755d7a772ad179c22fa9e2d8c64223eb"
+          }
+        },
+        {
+          "path": "collections/target/skills-catalog.json",
+          "frozen": {
+            "bytes": 42,
+            "sha256": "589e34d92968f63ef2a7e337c54a0cee3b72b29501b3355a74d3dd101af0cf7b"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/target/skills-catalog.json",
+            "bytes": 42,
+            "sha256": "589e34d92968f63ef2a7e337c54a0cee3b72b29501b3355a74d3dd101af0cf7b"
+          }
+        },
+        {
+          "path": "inputs/authority.json",
+          "frozen": {
+            "bytes": 1160,
+            "sha256": "06f0cd3ebaa2dcb52bf4ef8265f050d026251eb6fc742a665a9a4b07c56a1b3c"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "inputs/authority.json",
+            "bytes": 1160,
+            "sha256": "06f0cd3ebaa2dcb52bf4ef8265f050d026251eb6fc742a665a9a4b07c56a1b3c"
+          }
+        },
+        {
+          "path": "inputs/history-policy.md",
+          "frozen": {
+            "bytes": 1241,
+            "sha256": "be1336c6cd750904d0f7a8f7f5fb78c2884f1033e35a8693558bdf9c3b20b70e"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "inputs/history-policy.md",
+            "bytes": 1241,
+            "sha256": "be1336c6cd750904d0f7a8f7f5fb78c2884f1033e35a8693558bdf9c3b20b70e"
+          }
+        }
+      ],
+      "allBeforeInventoriesMatchFrozen": true,
+      "allFixturesPreserved": true,
+      "changedOrMissingFixtures": [],
+      "extraFilesExcludingGuidance": [
+        {
+          "path": "collections/source/.git/COMMIT_EDITMSG",
+          "bytes": 42,
+          "sha256": "eee39c7c63bfcf345fecae7607a00cde0ce446c478ae9f5ca49e7dacb99627f4"
+        },
+        {
+          "path": "collections/source/.git/HEAD",
+          "bytes": 35,
+          "sha256": "aa60d4eba20110497fa2fccf5fd682a4a35d2a24c96df1916c6bb791db7aced4"
+        },
+        {
+          "path": "collections/source/.git/config",
+          "bytes": 137,
+          "sha256": "cae33efdb02cf774435c1ff9cb16bcc1014606908530c6e1dc727615fe3e8cda"
+        },
+        {
+          "path": "collections/source/.git/index",
+          "bytes": 583,
+          "sha256": "d537190bf66bdf61c54e8bc07a2dc26e6163fa4f98836f8981fbf56809bbbf1a"
+        },
+        {
+          "path": "collections/source/.git/logs/HEAD",
+          "bytes": 223,
+          "sha256": "a68174227b96d1bf5c8a7ef7acc4198766b1e08e19d40e67aecde06c5cc53d1e"
+        },
+        {
+          "path": "collections/source/.git/logs/refs/heads/synthetic-baseline",
+          "bytes": 223,
+          "sha256": "a68174227b96d1bf5c8a7ef7acc4198766b1e08e19d40e67aecde06c5cc53d1e"
+        },
+        {
+          "path": "collections/source/.git/objects/1d/d39c0af5c461a5a81843ef48c2becbe43d4ad1",
+          "bytes": 61,
+          "sha256": "84adf6af6592592714989b5fb2acf43b95be177901bad7b5757f6ce6af36b1b7"
+        },
+        {
+          "path": "collections/source/.git/objects/2d/2ffc6e8749f2937bb77d9ca86aa6e583529464",
+          "bytes": 91,
+          "sha256": "655cf8a7ca4936390a67a00892c2d8b0067c2c4031dc95f816230c1a33f7bfed"
+        },
+        {
+          "path": "collections/source/.git/objects/64/493dbfb862bb6cca914f37ae5e822f0419686b",
+          "bytes": 121,
+          "sha256": "1ead1fd1be702054554818c7868487cb5762251ffb84d8cfb6e3560d229f140d"
+        },
+        {
+          "path": "collections/source/.git/objects/70/31de7fe9dd6f6b6c1e9f36443e6a2119fea273",
+          "bytes": 208,
+          "sha256": "59a6fcda9232fb43348384680a62ab7d813a0a34fa2f133e152337b22d3ba9ca"
+        },
+        {
+          "path": "collections/source/.git/objects/9d/b2db02b648856f5df39d30cd909e101e9b7a49",
+          "bytes": 54,
+          "sha256": "2f0ec0a2783cb6961648d8c10f3606b284f910d76c8cd9e4e7e8578e7e4f098f"
+        },
+        {
+          "path": "collections/source/.git/objects/d0/712558800d4d27ff38bbf11f4d4011396e7bcf",
+          "bytes": 580,
+          "sha256": "ff97242204156db0ee059c67ba77e6c9bd7dc94c04dea35b91e9b5816e406d03"
+        },
+        {
+          "path": "collections/source/.git/objects/d3/3887be853c7c20ea31a918febb7589008d4b63",
+          "bytes": 263,
+          "sha256": "064d1458bb62f0e130e5d160d57b597ca05c2b4b77df4ac9bd5d1fa30c47d6df"
+        },
+        {
+          "path": "collections/source/.git/objects/d6/45695673349e3947e8e5ae42332d0ac3164cd7",
+          "bytes": 4447,
+          "sha256": "6cad7f9445796e52cfa45ae7fd935574b0c4d919e50384a74210e95115bece77"
+        },
+        {
+          "path": "collections/source/.git/objects/fb/61b10f1e56607c4a1ccf4822a9a48036941bf5",
+          "bytes": 165,
+          "sha256": "d3fd6c8d7220a2e9921fd15bcd8a3b9b2118ace6dcfc0609a77df410f0e6d4ef"
+        },
+        {
+          "path": "collections/source/.git/refs/heads/synthetic-baseline",
+          "bytes": 41,
+          "sha256": "90cde388d271618f6f61a53c16bb2f5195e12b4a2dacb31ee0229fb26997bc99"
+        },
+        {
+          "path": "collections/target/skills/skill-note-transfer/LICENSE",
+          "bytes": 11358,
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        },
+        {
+          "path": "collections/target/skills/skill-note-transfer/SKILL.md",
+          "bytes": 1050,
+          "sha256": "fa28c05e823c13065f96793f2cd19df880cd31ac9e0180b6c479e4a265931e59"
+        },
+        {
+          "path": "collections/target/skills/skill-note-transfer/references/handoff.md",
+          "bytes": 374,
+          "sha256": "e5500b3361b6d4eaab15e4555e28a4a4db2fc4dcbead391bdd6dfb000ba9c553"
+        },
+        {
+          "path": "output/before.sha256",
+          "bytes": 857,
+          "sha256": "1ff924204866ad13de7f90570ded77e18ff8a7354fab72af7a3e4aa4f0b0047b"
+        },
+        {
+          "path": "output/integrity-check.txt",
+          "bytes": 361,
+          "sha256": "a47e0aa6c05b90dc6fdbc623e5ebb5f5cd028800d1f3a31acd98e8474ae8a373"
+        },
+        {
+          "path": "output/migration-record.md",
+          "bytes": 8128,
+          "sha256": "d733ddb28f6d09c2c9d005eea226a4f0dcccfc0c0290f7b74ec28cee2c807812"
+        },
+        {
+          "path": "output/proposed-target-catalog.json",
+          "bytes": 325,
+          "sha256": "911d333f264f14d76a4860db231ff0a84637c34e23fbb1044b8247f4e23c6147"
+        },
+        {
+          "path": "output/retrieved-source-baseline.tar",
+          "bytes": 20480,
+          "sha256": "ee0f91470c41449a2f07d3d433742699cdb87ff036718e5e2ee8aeb7e150cd51"
+        }
+      ],
+      "specialFiles": [],
+      "gitDirectories": [
+        "collections/source/.git"
+      ],
+      "guidanceChecks": [],
+      "allGuidanceMatchesFrozen": true
+    },
+    "migrate-additively-treatment": {
+      "status": "finalized",
+      "execution": {
+        "case_id": "migrate-additively",
+        "variant": "treatment",
+        "executor": "Codex CLI 0.160.0",
+        "model": "gpt-6.1-sol",
+        "settings": "reasoning=high; ephemeral; user-config=ignored; host-skill-discovery=disabled; hooks=disabled; plugins=disabled; workspace-write; approval=never",
+        "fresh_context": true,
+        "started_at": "2026-10-04T02:20:40.140Z",
+        "wall_time_ms": 432122,
+        "timed_out": false,
+        "exit_code": 0,
+        "signal": null
+      },
+      "fixtureCount": 8,
+      "inputChecks": [
+        {
+          "path": "collections/source/skills/skill-note-transfer/LICENSE",
+          "frozen": {
+            "bytes": 11358,
+            "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/source/skills/skill-note-transfer/LICENSE",
+            "bytes": 11358,
+            "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+          }
+        },
+        {
+          "path": "collections/source/skills/skill-note-transfer/SKILL.md",
+          "frozen": {
+            "bytes": 1050,
+            "sha256": "fa28c05e823c13065f96793f2cd19df880cd31ac9e0180b6c479e4a265931e59"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/source/skills/skill-note-transfer/SKILL.md",
+            "bytes": 1050,
+            "sha256": "fa28c05e823c13065f96793f2cd19df880cd31ac9e0180b6c479e4a265931e59"
+          }
+        },
+        {
+          "path": "collections/source/skills/skill-note-transfer/references/handoff.md",
+          "frozen": {
+            "bytes": 374,
+            "sha256": "e5500b3361b6d4eaab15e4555e28a4a4db2fc4dcbead391bdd6dfb000ba9c553"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/source/skills/skill-note-transfer/references/handoff.md",
+            "bytes": 374,
+            "sha256": "e5500b3361b6d4eaab15e4555e28a4a4db2fc4dcbead391bdd6dfb000ba9c553"
+          }
+        },
+        {
+          "path": "collections/source/skills-catalog.json",
+          "frozen": {
+            "bytes": 325,
+            "sha256": "911d333f264f14d76a4860db231ff0a84637c34e23fbb1044b8247f4e23c6147"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/source/skills-catalog.json",
+            "bytes": 325,
+            "sha256": "911d333f264f14d76a4860db231ff0a84637c34e23fbb1044b8247f4e23c6147"
+          }
+        },
+        {
+          "path": "collections/target/KEEP.md",
+          "frozen": {
+            "bytes": 221,
+            "sha256": "74c19f171854df7adc5fd75db1075a34755d7a772ad179c22fa9e2d8c64223eb"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/target/KEEP.md",
+            "bytes": 221,
+            "sha256": "74c19f171854df7adc5fd75db1075a34755d7a772ad179c22fa9e2d8c64223eb"
+          }
+        },
+        {
+          "path": "collections/target/skills-catalog.json",
+          "frozen": {
+            "bytes": 42,
+            "sha256": "589e34d92968f63ef2a7e337c54a0cee3b72b29501b3355a74d3dd101af0cf7b"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/target/skills-catalog.json",
+            "bytes": 42,
+            "sha256": "589e34d92968f63ef2a7e337c54a0cee3b72b29501b3355a74d3dd101af0cf7b"
+          }
+        },
+        {
+          "path": "inputs/authority.json",
+          "frozen": {
+            "bytes": 1160,
+            "sha256": "06f0cd3ebaa2dcb52bf4ef8265f050d026251eb6fc742a665a9a4b07c56a1b3c"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "inputs/authority.json",
+            "bytes": 1160,
+            "sha256": "06f0cd3ebaa2dcb52bf4ef8265f050d026251eb6fc742a665a9a4b07c56a1b3c"
+          }
+        },
+        {
+          "path": "inputs/history-policy.md",
+          "frozen": {
+            "bytes": 1241,
+            "sha256": "be1336c6cd750904d0f7a8f7f5fb78c2884f1033e35a8693558bdf9c3b20b70e"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "inputs/history-policy.md",
+            "bytes": 1241,
+            "sha256": "be1336c6cd750904d0f7a8f7f5fb78c2884f1033e35a8693558bdf9c3b20b70e"
+          }
+        }
+      ],
+      "allBeforeInventoriesMatchFrozen": true,
+      "allFixturesPreserved": true,
+      "changedOrMissingFixtures": [],
+      "extraFilesExcludingGuidance": [
+        {
+          "path": "collections/source/.git/COMMIT_EDITMSG",
+          "bytes": 42,
+          "sha256": "eee39c7c63bfcf345fecae7607a00cde0ce446c478ae9f5ca49e7dacb99627f4"
+        },
+        {
+          "path": "collections/source/.git/HEAD",
+          "bytes": 35,
+          "sha256": "aa60d4eba20110497fa2fccf5fd682a4a35d2a24c96df1916c6bb791db7aced4"
+        },
+        {
+          "path": "collections/source/.git/config",
+          "bytes": 137,
+          "sha256": "cae33efdb02cf774435c1ff9cb16bcc1014606908530c6e1dc727615fe3e8cda"
+        },
+        {
+          "path": "collections/source/.git/index",
+          "bytes": 583,
+          "sha256": "5c7bccda8201279c3cc3fb18026c451b4ac6f0ad9e60fb04a50e9d04876074ec"
+        },
+        {
+          "path": "collections/source/.git/logs/HEAD",
+          "bytes": 225,
+          "sha256": "3753eba86a135b3de1e8d2b35c33d44caaf40b8e6e2254c95494582ac7ec704a"
+        },
+        {
+          "path": "collections/source/.git/logs/refs/heads/synthetic-baseline",
+          "bytes": 225,
+          "sha256": "3753eba86a135b3de1e8d2b35c33d44caaf40b8e6e2254c95494582ac7ec704a"
+        },
+        {
+          "path": "collections/source/.git/objects/1d/d39c0af5c461a5a81843ef48c2becbe43d4ad1",
+          "bytes": 61,
+          "sha256": "84adf6af6592592714989b5fb2acf43b95be177901bad7b5757f6ce6af36b1b7"
+        },
+        {
+          "path": "collections/source/.git/objects/2d/2ffc6e8749f2937bb77d9ca86aa6e583529464",
+          "bytes": 91,
+          "sha256": "655cf8a7ca4936390a67a00892c2d8b0067c2c4031dc95f816230c1a33f7bfed"
+        },
+        {
+          "path": "collections/source/.git/objects/5d/6065b89eec4493199a0516ea4ef3aa23f76175",
+          "bytes": 168,
+          "sha256": "5b6094fa0e812dc29d7b602f5c52fdcecc8c8c63136744adefdfd8161188d8bd"
+        },
+        {
+          "path": "collections/source/.git/objects/64/493dbfb862bb6cca914f37ae5e822f0419686b",
+          "bytes": 121,
+          "sha256": "1ead1fd1be702054554818c7868487cb5762251ffb84d8cfb6e3560d229f140d"
+        },
+        {
+          "path": "collections/source/.git/objects/70/31de7fe9dd6f6b6c1e9f36443e6a2119fea273",
+          "bytes": 208,
+          "sha256": "59a6fcda9232fb43348384680a62ab7d813a0a34fa2f133e152337b22d3ba9ca"
+        },
+        {
+          "path": "collections/source/.git/objects/9d/b2db02b648856f5df39d30cd909e101e9b7a49",
+          "bytes": 54,
+          "sha256": "2f0ec0a2783cb6961648d8c10f3606b284f910d76c8cd9e4e7e8578e7e4f098f"
+        },
+        {
+          "path": "collections/source/.git/objects/d0/712558800d4d27ff38bbf11f4d4011396e7bcf",
+          "bytes": 580,
+          "sha256": "ff97242204156db0ee059c67ba77e6c9bd7dc94c04dea35b91e9b5816e406d03"
+        },
+        {
+          "path": "collections/source/.git/objects/d3/3887be853c7c20ea31a918febb7589008d4b63",
+          "bytes": 263,
+          "sha256": "064d1458bb62f0e130e5d160d57b597ca05c2b4b77df4ac9bd5d1fa30c47d6df"
+        },
+        {
+          "path": "collections/source/.git/objects/d6/45695673349e3947e8e5ae42332d0ac3164cd7",
+          "bytes": 4447,
+          "sha256": "6cad7f9445796e52cfa45ae7fd935574b0c4d919e50384a74210e95115bece77"
+        },
+        {
+          "path": "collections/source/.git/refs/heads/synthetic-baseline",
+          "bytes": 41,
+          "sha256": "24a2e3bf44529a304dca3aa0a1ee005b57d938317fd0e225f975286f667ebf3a"
+        },
+        {
+          "path": "collections/target/skills/skill-note-transfer/LICENSE",
+          "bytes": 11358,
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        },
+        {
+          "path": "collections/target/skills/skill-note-transfer/SKILL.md",
+          "bytes": 1050,
+          "sha256": "fa28c05e823c13065f96793f2cd19df880cd31ac9e0180b6c479e4a265931e59"
+        },
+        {
+          "path": "collections/target/skills/skill-note-transfer/references/handoff.md",
+          "bytes": 374,
+          "sha256": "e5500b3361b6d4eaab15e4555e28a4a4db2fc4dcbead391bdd6dfb000ba9c553"
+        },
+        {
+          "path": "output/behavioral-evidence-note.md",
+          "bytes": 1123,
+          "sha256": "8d3efa4a4a3e2aa6e1fc35d45fa7674aa2517acb3bc2dd66461ccda1cb7d77d4"
+        },
+        {
+          "path": "output/behavioral-handoff.md",
+          "bytes": 1061,
+          "sha256": "cc81201af578ceb6ebae96ae77c07b54a9de641d41b1c0a49ce8a3e44e196eaf"
+        },
+        {
+          "path": "output/migration-record.md",
+          "bytes": 11623,
+          "sha256": "3606b7b8b7560bfa9a05de623e01c67a9f284f3465c555fd422615a6e0b2b79a"
+        }
+      ],
+      "specialFiles": [],
+      "gitDirectories": [
+        "collections/source/.git"
+      ],
+      "guidanceChecks": [
+        {
+          "path": "instruction-only/skill-migration/LICENSE",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-migration/SKILL.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-migration/agents/openai.yaml",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-migration/assets/icon-source.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-migration/assets/icon.png",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-migration/assets/icon.render.json",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-migration/assets/icon.source.json",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-migration/assets/icon.svg",
+          "matchesFrozenPackage": true
+        }
+      ],
+      "allGuidanceMatchesFrozen": true
+    },
+    "plan-overlap-refactor-baseline": {
+      "status": "finalized",
+      "execution": {
+        "case_id": "plan-overlap-refactor",
+        "variant": "baseline",
+        "executor": "Codex CLI 0.160.0",
+        "model": "gpt-6.1-sol",
+        "settings": "reasoning=high; ephemeral; user-config=ignored; host-skill-discovery=disabled; hooks=disabled; plugins=disabled; workspace-write; approval=never",
+        "fresh_context": true,
+        "started_at": "2026-10-04T02:15:40.101Z",
+        "wall_time_ms": 300008,
+        "timed_out": true,
+        "exit_code": null,
+        "signal": "SIGTERM"
+      },
+      "fixtureCount": 9,
+      "inputChecks": [
+        {
+          "path": "collections/review/skills/skill-evidence-note/LICENSE",
+          "frozen": {
+            "bytes": 11358,
+            "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/review/skills/skill-evidence-note/LICENSE",
+            "bytes": 11358,
+            "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+          }
+        },
+        {
+          "path": "collections/review/skills/skill-evidence-note/SKILL.md",
+          "frozen": {
+            "bytes": 1156,
+            "sha256": "9257b581b9e936285435935c411bdbe4808946916ffbfac8380fa8bb625ef328"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/review/skills/skill-evidence-note/SKILL.md",
+            "bytes": 1156,
+            "sha256": "9257b581b9e936285435935c411bdbe4808946916ffbfac8380fa8bb625ef328"
+          }
+        },
+        {
+          "path": "collections/review/skills/skill-evidence-note/references/checklist.md",
+          "frozen": {
+            "bytes": 373,
+            "sha256": "d8be9be2d3220ec959e094ae3abd3ae0a12a53bb8a8ba643bbf18f802ae1ffcc"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/review/skills/skill-evidence-note/references/checklist.md",
+            "bytes": 373,
+            "sha256": "d8be9be2d3220ec959e094ae3abd3ae0a12a53bb8a8ba643bbf18f802ae1ffcc"
+          }
+        },
+        {
+          "path": "collections/review/skills/skill-review-record/LICENSE",
+          "frozen": {
+            "bytes": 11358,
+            "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/review/skills/skill-review-record/LICENSE",
+            "bytes": 11358,
+            "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+          }
+        },
+        {
+          "path": "collections/review/skills/skill-review-record/SKILL.md",
+          "frozen": {
+            "bytes": 989,
+            "sha256": "38e20fd56dc3cce73de211e3d5aab405f9bf99832057df02573bfe9984d236b9"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/review/skills/skill-review-record/SKILL.md",
+            "bytes": 989,
+            "sha256": "38e20fd56dc3cce73de211e3d5aab405f9bf99832057df02573bfe9984d236b9"
+          }
+        },
+        {
+          "path": "collections/review/skills/skill-review-record/references/recovery.md",
+          "frozen": {
+            "bytes": 669,
+            "sha256": "17d59c4cf8067643ce424b3ddd1fd816719e944f6e2c62deea7135459d12a6e2"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/review/skills/skill-review-record/references/recovery.md",
+            "bytes": 669,
+            "sha256": "17d59c4cf8067643ce424b3ddd1fd816719e944f6e2c62deea7135459d12a6e2"
+          }
+        },
+        {
+          "path": "collections/review/skills-catalog.json",
+          "frozen": {
+            "bytes": 593,
+            "sha256": "b5805f76e22c2ddbf54746006942968a69806d6c1954600f993f4f0097604ee8"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/review/skills-catalog.json",
+            "bytes": 593,
+            "sha256": "b5805f76e22c2ddbf54746006942968a69806d6c1954600f993f4f0097604ee8"
+          }
+        },
+        {
+          "path": "inputs/audit.md",
+          "frozen": {
+            "bytes": 1287,
+            "sha256": "e36d2565249c80671f4cf52d8dd513445780c24b78393e098521c698ba448c55"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "inputs/audit.md",
+            "bytes": 1287,
+            "sha256": "e36d2565249c80671f4cf52d8dd513445780c24b78393e098521c698ba448c55"
+          }
+        },
+        {
+          "path": "inputs/consumers.json",
+          "frozen": {
+            "bytes": 735,
+            "sha256": "6db6e34c3c7f5a1a2317c9c580742b34c88e0f6640009eccb74bb53891f31b4a"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "inputs/consumers.json",
+            "bytes": 735,
+            "sha256": "6db6e34c3c7f5a1a2317c9c580742b34c88e0f6640009eccb74bb53891f31b4a"
+          }
+        }
+      ],
+      "allBeforeInventoriesMatchFrozen": true,
+      "allFixturesPreserved": true,
+      "changedOrMissingFixtures": [],
+      "extraFilesExcludingGuidance": [
+        {
+          "path": "output/inspection-notes.md",
+          "bytes": 2508,
+          "sha256": "dcf6fccfc1d29b4a21e416b51f25859f1d7fa701e2a50dae8c67e2582d23bed5"
+        },
+        {
+          "path": "output/refactoring-plan.md",
+          "bytes": 17573,
+          "sha256": "1e309c5094d562a76c602f8b1c0bbd3967e75089b7730bda9452ecbb56638261"
+        }
+      ],
+      "specialFiles": [],
+      "gitDirectories": [],
+      "guidanceChecks": [],
+      "allGuidanceMatchesFrozen": true
+    },
+    "plan-overlap-refactor-treatment": {
+      "status": "finalized",
+      "execution": {
+        "case_id": "plan-overlap-refactor",
+        "variant": "treatment",
+        "executor": "Codex CLI 0.160.0",
+        "model": "gpt-6.1-sol",
+        "settings": "reasoning=high; ephemeral; user-config=ignored; host-skill-discovery=disabled; hooks=disabled; plugins=disabled; workspace-write; approval=never",
+        "fresh_context": true,
+        "started_at": "2026-10-04T02:15:40.114Z",
+        "wall_time_ms": 300005,
+        "timed_out": true,
+        "exit_code": null,
+        "signal": "SIGTERM"
+      },
+      "fixtureCount": 9,
+      "inputChecks": [
+        {
+          "path": "collections/review/skills/skill-evidence-note/LICENSE",
+          "frozen": {
+            "bytes": 11358,
+            "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/review/skills/skill-evidence-note/LICENSE",
+            "bytes": 11358,
+            "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+          }
+        },
+        {
+          "path": "collections/review/skills/skill-evidence-note/SKILL.md",
+          "frozen": {
+            "bytes": 1156,
+            "sha256": "9257b581b9e936285435935c411bdbe4808946916ffbfac8380fa8bb625ef328"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/review/skills/skill-evidence-note/SKILL.md",
+            "bytes": 1156,
+            "sha256": "9257b581b9e936285435935c411bdbe4808946916ffbfac8380fa8bb625ef328"
+          }
+        },
+        {
+          "path": "collections/review/skills/skill-evidence-note/references/checklist.md",
+          "frozen": {
+            "bytes": 373,
+            "sha256": "d8be9be2d3220ec959e094ae3abd3ae0a12a53bb8a8ba643bbf18f802ae1ffcc"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/review/skills/skill-evidence-note/references/checklist.md",
+            "bytes": 373,
+            "sha256": "d8be9be2d3220ec959e094ae3abd3ae0a12a53bb8a8ba643bbf18f802ae1ffcc"
+          }
+        },
+        {
+          "path": "collections/review/skills/skill-review-record/LICENSE",
+          "frozen": {
+            "bytes": 11358,
+            "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/review/skills/skill-review-record/LICENSE",
+            "bytes": 11358,
+            "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+          }
+        },
+        {
+          "path": "collections/review/skills/skill-review-record/SKILL.md",
+          "frozen": {
+            "bytes": 989,
+            "sha256": "38e20fd56dc3cce73de211e3d5aab405f9bf99832057df02573bfe9984d236b9"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/review/skills/skill-review-record/SKILL.md",
+            "bytes": 989,
+            "sha256": "38e20fd56dc3cce73de211e3d5aab405f9bf99832057df02573bfe9984d236b9"
+          }
+        },
+        {
+          "path": "collections/review/skills/skill-review-record/references/recovery.md",
+          "frozen": {
+            "bytes": 669,
+            "sha256": "17d59c4cf8067643ce424b3ddd1fd816719e944f6e2c62deea7135459d12a6e2"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/review/skills/skill-review-record/references/recovery.md",
+            "bytes": 669,
+            "sha256": "17d59c4cf8067643ce424b3ddd1fd816719e944f6e2c62deea7135459d12a6e2"
+          }
+        },
+        {
+          "path": "collections/review/skills-catalog.json",
+          "frozen": {
+            "bytes": 593,
+            "sha256": "b5805f76e22c2ddbf54746006942968a69806d6c1954600f993f4f0097604ee8"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/review/skills-catalog.json",
+            "bytes": 593,
+            "sha256": "b5805f76e22c2ddbf54746006942968a69806d6c1954600f993f4f0097604ee8"
+          }
+        },
+        {
+          "path": "inputs/audit.md",
+          "frozen": {
+            "bytes": 1287,
+            "sha256": "e36d2565249c80671f4cf52d8dd513445780c24b78393e098521c698ba448c55"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "inputs/audit.md",
+            "bytes": 1287,
+            "sha256": "e36d2565249c80671f4cf52d8dd513445780c24b78393e098521c698ba448c55"
+          }
+        },
+        {
+          "path": "inputs/consumers.json",
+          "frozen": {
+            "bytes": 735,
+            "sha256": "6db6e34c3c7f5a1a2317c9c580742b34c88e0f6640009eccb74bb53891f31b4a"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "inputs/consumers.json",
+            "bytes": 735,
+            "sha256": "6db6e34c3c7f5a1a2317c9c580742b34c88e0f6640009eccb74bb53891f31b4a"
+          }
+        }
+      ],
+      "allBeforeInventoriesMatchFrozen": true,
+      "allFixturesPreserved": true,
+      "changedOrMissingFixtures": [],
+      "extraFilesExcludingGuidance": [],
+      "specialFiles": [],
+      "gitDirectories": [],
+      "guidanceChecks": [
+        {
+          "path": "instruction-only/skill-naming/LICENSE",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-naming/SKILL.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-naming/agents/openai.yaml",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-naming/assets/icon-source.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-naming/assets/icon.png",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-naming/assets/icon.render.json",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-naming/assets/icon.source.json",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-naming/assets/icon.svg",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-naming/assets/naming-decision.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-naming/references/conventions.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skills-refactoring/LICENSE",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skills-refactoring/SKILL.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skills-refactoring/agents/openai.yaml",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skills-refactoring/assets/icon-source.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skills-refactoring/assets/icon.png",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skills-refactoring/assets/icon.render.json",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skills-refactoring/assets/icon.source.json",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skills-refactoring/assets/icon.svg",
+          "matchesFrozenPackage": true
+        }
+      ],
+      "allGuidanceMatchesFrozen": true
+    },
+    "refuse-collision-baseline": {
+      "status": "finalized",
+      "execution": {
+        "case_id": "refuse-collision",
+        "variant": "baseline",
+        "executor": "Codex CLI 0.160.0",
+        "model": "gpt-6.1-sol",
+        "settings": "reasoning=high; ephemeral; user-config=ignored; host-skill-discovery=disabled; hooks=disabled; plugins=disabled; workspace-write; approval=never",
+        "fresh_context": true,
+        "started_at": "2026-10-04T02:11:03.111Z",
+        "wall_time_ms": 99904,
+        "timed_out": false,
+        "exit_code": 0,
+        "signal": null
+      },
+      "fixtureCount": 10,
+      "inputChecks": [
+        {
+          "path": "collections/source/skills/skill-note-transfer/LICENSE",
+          "frozen": {
+            "bytes": 11358,
+            "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/source/skills/skill-note-transfer/LICENSE",
+            "bytes": 11358,
+            "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+          }
+        },
+        {
+          "path": "collections/source/skills/skill-note-transfer/SKILL.md",
+          "frozen": {
+            "bytes": 655,
+            "sha256": "59b5365c7fa7f7975be184a35c57658fa17396284473cad4d51361eaf027005c"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/source/skills/skill-note-transfer/SKILL.md",
+            "bytes": 655,
+            "sha256": "59b5365c7fa7f7975be184a35c57658fa17396284473cad4d51361eaf027005c"
+          }
+        },
+        {
+          "path": "collections/source/skills/skill-note-transfer/references/handoff.md",
+          "frozen": {
+            "bytes": 258,
+            "sha256": "475ad236ed6f99c6c160d440d0f9d70a7fa81b426a32c81ce14351c320f8f351"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/source/skills/skill-note-transfer/references/handoff.md",
+            "bytes": 258,
+            "sha256": "475ad236ed6f99c6c160d440d0f9d70a7fa81b426a32c81ce14351c320f8f351"
+          }
+        },
+        {
+          "path": "collections/source/skills-catalog.json",
+          "frozen": {
+            "bytes": 315,
+            "sha256": "8ab25377b5815d2250ca93f4e343cd5716783f22739021034632c64f80b777b4"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/source/skills-catalog.json",
+            "bytes": 315,
+            "sha256": "8ab25377b5815d2250ca93f4e343cd5716783f22739021034632c64f80b777b4"
+          }
+        },
+        {
+          "path": "collections/target/skills/skill-note-transfer/LICENSE",
+          "frozen": {
+            "bytes": 11358,
+            "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/target/skills/skill-note-transfer/LICENSE",
+            "bytes": 11358,
+            "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+          }
+        },
+        {
+          "path": "collections/target/skills/skill-note-transfer/SKILL.md",
+          "frozen": {
+            "bytes": 694,
+            "sha256": "d57b6d14f720f71c2723b5070fea66663d63efdba0226822ebddab8b925fac1b"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/target/skills/skill-note-transfer/SKILL.md",
+            "bytes": 694,
+            "sha256": "d57b6d14f720f71c2723b5070fea66663d63efdba0226822ebddab8b925fac1b"
+          }
+        },
+        {
+          "path": "collections/target/skills/skill-note-transfer/references/decision.md",
+          "frozen": {
+            "bytes": 301,
+            "sha256": "9afb25fcb244d44de4592c826c99858eba36fd299b5998f347ddb43483b362ec"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/target/skills/skill-note-transfer/references/decision.md",
+            "bytes": 301,
+            "sha256": "9afb25fcb244d44de4592c826c99858eba36fd299b5998f347ddb43483b362ec"
+          }
+        },
+        {
+          "path": "collections/target/skills/skill-note-transfer/retained-note.md",
+          "frozen": {
+            "bytes": 221,
+            "sha256": "04557c73d5927615e94e957e09a7def02b4745a054224cc8e48be91fdf9d1156"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/target/skills/skill-note-transfer/retained-note.md",
+            "bytes": 221,
+            "sha256": "04557c73d5927615e94e957e09a7def02b4745a054224cc8e48be91fdf9d1156"
+          }
+        },
+        {
+          "path": "collections/target/skills-catalog.json",
+          "frozen": {
+            "bytes": 320,
+            "sha256": "c5bc51915f366b16ff8faf3b305e9a4af13ca8c9ceca4e100d23fb85c2ee88e9"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/target/skills-catalog.json",
+            "bytes": 320,
+            "sha256": "c5bc51915f366b16ff8faf3b305e9a4af13ca8c9ceca4e100d23fb85c2ee88e9"
+          }
+        },
+        {
+          "path": "inputs/authority.json",
+          "frozen": {
+            "bytes": 642,
+            "sha256": "9407ce1d450a09e3da5ee5c5179bd5298509c58ff2996d0e1b1fad3f1ec66672"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "inputs/authority.json",
+            "bytes": 642,
+            "sha256": "9407ce1d450a09e3da5ee5c5179bd5298509c58ff2996d0e1b1fad3f1ec66672"
+          }
+        }
+      ],
+      "allBeforeInventoriesMatchFrozen": true,
+      "allFixturesPreserved": true,
+      "changedOrMissingFixtures": [],
+      "extraFilesExcludingGuidance": [
+        {
+          "path": "output/refusal-record.md",
+          "bytes": 4048,
+          "sha256": "29d47707fec3011cd128a588a22cc68315309be1b0b8e1e1180c460d5e88891d"
+        }
+      ],
+      "specialFiles": [],
+      "gitDirectories": [],
+      "guidanceChecks": [],
+      "allGuidanceMatchesFrozen": true
+    },
+    "refuse-collision-treatment": {
+      "status": "finalized",
+      "execution": {
+        "case_id": "refuse-collision",
+        "variant": "treatment",
+        "executor": "Codex CLI 0.160.0",
+        "model": "gpt-6.1-sol",
+        "settings": "reasoning=high; ephemeral; user-config=ignored; host-skill-discovery=disabled; hooks=disabled; plugins=disabled; workspace-write; approval=never",
+        "fresh_context": true,
+        "started_at": "2026-10-04T02:11:03.119Z",
+        "wall_time_ms": 276974,
+        "timed_out": false,
+        "exit_code": 0,
+        "signal": null
+      },
+      "fixtureCount": 10,
+      "inputChecks": [
+        {
+          "path": "collections/source/skills/skill-note-transfer/LICENSE",
+          "frozen": {
+            "bytes": 11358,
+            "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/source/skills/skill-note-transfer/LICENSE",
+            "bytes": 11358,
+            "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+          }
+        },
+        {
+          "path": "collections/source/skills/skill-note-transfer/SKILL.md",
+          "frozen": {
+            "bytes": 655,
+            "sha256": "59b5365c7fa7f7975be184a35c57658fa17396284473cad4d51361eaf027005c"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/source/skills/skill-note-transfer/SKILL.md",
+            "bytes": 655,
+            "sha256": "59b5365c7fa7f7975be184a35c57658fa17396284473cad4d51361eaf027005c"
+          }
+        },
+        {
+          "path": "collections/source/skills/skill-note-transfer/references/handoff.md",
+          "frozen": {
+            "bytes": 258,
+            "sha256": "475ad236ed6f99c6c160d440d0f9d70a7fa81b426a32c81ce14351c320f8f351"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/source/skills/skill-note-transfer/references/handoff.md",
+            "bytes": 258,
+            "sha256": "475ad236ed6f99c6c160d440d0f9d70a7fa81b426a32c81ce14351c320f8f351"
+          }
+        },
+        {
+          "path": "collections/source/skills-catalog.json",
+          "frozen": {
+            "bytes": 315,
+            "sha256": "8ab25377b5815d2250ca93f4e343cd5716783f22739021034632c64f80b777b4"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/source/skills-catalog.json",
+            "bytes": 315,
+            "sha256": "8ab25377b5815d2250ca93f4e343cd5716783f22739021034632c64f80b777b4"
+          }
+        },
+        {
+          "path": "collections/target/skills/skill-note-transfer/LICENSE",
+          "frozen": {
+            "bytes": 11358,
+            "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/target/skills/skill-note-transfer/LICENSE",
+            "bytes": 11358,
+            "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+          }
+        },
+        {
+          "path": "collections/target/skills/skill-note-transfer/SKILL.md",
+          "frozen": {
+            "bytes": 694,
+            "sha256": "d57b6d14f720f71c2723b5070fea66663d63efdba0226822ebddab8b925fac1b"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/target/skills/skill-note-transfer/SKILL.md",
+            "bytes": 694,
+            "sha256": "d57b6d14f720f71c2723b5070fea66663d63efdba0226822ebddab8b925fac1b"
+          }
+        },
+        {
+          "path": "collections/target/skills/skill-note-transfer/references/decision.md",
+          "frozen": {
+            "bytes": 301,
+            "sha256": "9afb25fcb244d44de4592c826c99858eba36fd299b5998f347ddb43483b362ec"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/target/skills/skill-note-transfer/references/decision.md",
+            "bytes": 301,
+            "sha256": "9afb25fcb244d44de4592c826c99858eba36fd299b5998f347ddb43483b362ec"
+          }
+        },
+        {
+          "path": "collections/target/skills/skill-note-transfer/retained-note.md",
+          "frozen": {
+            "bytes": 221,
+            "sha256": "04557c73d5927615e94e957e09a7def02b4745a054224cc8e48be91fdf9d1156"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/target/skills/skill-note-transfer/retained-note.md",
+            "bytes": 221,
+            "sha256": "04557c73d5927615e94e957e09a7def02b4745a054224cc8e48be91fdf9d1156"
+          }
+        },
+        {
+          "path": "collections/target/skills-catalog.json",
+          "frozen": {
+            "bytes": 320,
+            "sha256": "c5bc51915f366b16ff8faf3b305e9a4af13ca8c9ceca4e100d23fb85c2ee88e9"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "collections/target/skills-catalog.json",
+            "bytes": 320,
+            "sha256": "c5bc51915f366b16ff8faf3b305e9a4af13ca8c9ceca4e100d23fb85c2ee88e9"
+          }
+        },
+        {
+          "path": "inputs/authority.json",
+          "frozen": {
+            "bytes": 642,
+            "sha256": "9407ce1d450a09e3da5ee5c5179bd5298509c58ff2996d0e1b1fad3f1ec66672"
+          },
+          "beforeMatchesFrozen": true,
+          "actualMatchesFrozen": true,
+          "actual": {
+            "path": "inputs/authority.json",
+            "bytes": 642,
+            "sha256": "9407ce1d450a09e3da5ee5c5179bd5298509c58ff2996d0e1b1fad3f1ec66672"
+          }
+        }
+      ],
+      "allBeforeInventoriesMatchFrozen": true,
+      "allFixturesPreserved": true,
+      "changedOrMissingFixtures": [],
+      "extraFilesExcludingGuidance": [
+        {
+          "path": "output/refusal-record.md",
+          "bytes": 4763,
+          "sha256": "5040d4bfb3b1cd4be2120467cacbac59cd1894282d54e0465f319f9b6a53fc3a"
+        }
+      ],
+      "specialFiles": [],
+      "gitDirectories": [],
+      "guidanceChecks": [
+        {
+          "path": "instruction-only/skill-migration/LICENSE",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-migration/SKILL.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-migration/agents/openai.yaml",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-migration/assets/icon-source.md",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-migration/assets/icon.png",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-migration/assets/icon.render.json",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-migration/assets/icon.source.json",
+          "matchesFrozenPackage": true
+        },
+        {
+          "path": "instruction-only/skill-migration/assets/icon.svg",
+          "matchesFrozenPackage": true
+        }
+      ],
+      "allGuidanceMatchesFrozen": true
+    }
+  },
+  "historyVerification": {
+    "baseline": {
+      "head": "fb61b10f1e56607c4a1ccf4822a9a48036941bf5",
+      "reachableBaseline": "fb61b10f1e56607c4a1ccf4822a9a48036941bf5",
+      "recordedActualCommit": true,
+      "commit": "tree 2d2ffc6e8749f2937bb77d9ca86aa6e583529464\nauthor Synthetic Source Maintainer <source-maintainer@example.invalid> 1791080573 -0300\ncommitter Synthetic Source Maintainer <source-maintainer@example.invalid> 1791080573 -0300\n\nRetain supplied synthetic source baseline\n",
+      "exactFourTrackedFiles": true,
+      "parentCount": 0,
+      "remotes": "",
+      "workingTreeStatus": "",
+      "config": "[core]\n\trepositoryformatversion = 0\n\tfilemode = true\n\tbare = false\n\tlogallrefupdates = true\n\tignorecase = true\n\tprecomposeunicode = true\n",
+      "retrievedFiles": [
+        {
+          "path": "skills-catalog.json",
+          "retrievedSha256": "911d333f264f14d76a4860db231ff0a84637c34e23fbb1044b8247f4e23c6147",
+          "frozenSha256": "911d333f264f14d76a4860db231ff0a84637c34e23fbb1044b8247f4e23c6147",
+          "equal": true
+        },
+        {
+          "path": "skills/skill-note-transfer/LICENSE",
+          "retrievedSha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+          "frozenSha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+          "equal": true
+        },
+        {
+          "path": "skills/skill-note-transfer/SKILL.md",
+          "retrievedSha256": "fa28c05e823c13065f96793f2cd19df880cd31ac9e0180b6c479e4a265931e59",
+          "frozenSha256": "fa28c05e823c13065f96793f2cd19df880cd31ac9e0180b6c479e4a265931e59",
+          "equal": true
+        },
+        {
+          "path": "skills/skill-note-transfer/references/handoff.md",
+          "retrievedSha256": "e5500b3361b6d4eaab15e4555e28a4a4db2fc4dcbead391bdd6dfb000ba9c553",
+          "frozenSha256": "e5500b3361b6d4eaab15e4555e28a4a4db2fc4dcbead391bdd6dfb000ba9c553",
+          "equal": true
+        }
+      ],
+      "allRetrievedFilesEqualFrozen": true,
+      "targetFiles": [
+        {
+          "path": "skills/skill-note-transfer/LICENSE",
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+          "equalToSource": true
+        },
+        {
+          "path": "skills/skill-note-transfer/SKILL.md",
+          "sha256": "fa28c05e823c13065f96793f2cd19df880cd31ac9e0180b6c479e4a265931e59",
+          "equalToSource": true
+        },
+        {
+          "path": "skills/skill-note-transfer/references/handoff.md",
+          "sha256": "e5500b3361b6d4eaab15e4555e28a4a4db2fc4dcbead391bdd6dfb000ba9c553",
+          "equalToSource": true
+        }
+      ],
+      "allTargetFilesEqualSource": true
+    },
+    "treatment": {
+      "head": "5d6065b89eec4493199a0516ea4ef3aa23f76175",
+      "reachableBaseline": "5d6065b89eec4493199a0516ea4ef3aa23f76175",
+      "recordedActualCommit": true,
+      "commit": "tree 2d2ffc6e8749f2937bb77d9ca86aa6e583529464\nauthor Synthetic Source Fixture Owner <synthetic-source@example.invalid> 1791080616 -0300\ncommitter Synthetic Source Fixture Owner <synthetic-source@example.invalid> 1791080616 -0300\n\nRetain supplied synthetic source baseline\n",
+      "exactFourTrackedFiles": true,
+      "parentCount": 0,
+      "remotes": "",
+      "workingTreeStatus": "",
+      "config": "[core]\n\trepositoryformatversion = 0\n\tfilemode = true\n\tbare = false\n\tlogallrefupdates = true\n\tignorecase = true\n\tprecomposeunicode = true\n",
+      "retrievedFiles": [
+        {
+          "path": "skills-catalog.json",
+          "retrievedSha256": "911d333f264f14d76a4860db231ff0a84637c34e23fbb1044b8247f4e23c6147",
+          "frozenSha256": "911d333f264f14d76a4860db231ff0a84637c34e23fbb1044b8247f4e23c6147",
+          "equal": true
+        },
+        {
+          "path": "skills/skill-note-transfer/LICENSE",
+          "retrievedSha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+          "frozenSha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+          "equal": true
+        },
+        {
+          "path": "skills/skill-note-transfer/SKILL.md",
+          "retrievedSha256": "fa28c05e823c13065f96793f2cd19df880cd31ac9e0180b6c479e4a265931e59",
+          "frozenSha256": "fa28c05e823c13065f96793f2cd19df880cd31ac9e0180b6c479e4a265931e59",
+          "equal": true
+        },
+        {
+          "path": "skills/skill-note-transfer/references/handoff.md",
+          "retrievedSha256": "e5500b3361b6d4eaab15e4555e28a4a4db2fc4dcbead391bdd6dfb000ba9c553",
+          "frozenSha256": "e5500b3361b6d4eaab15e4555e28a4a4db2fc4dcbead391bdd6dfb000ba9c553",
+          "equal": true
+        }
+      ],
+      "allRetrievedFilesEqualFrozen": true,
+      "targetFiles": [
+        {
+          "path": "skills/skill-note-transfer/LICENSE",
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+          "equalToSource": true
+        },
+        {
+          "path": "skills/skill-note-transfer/SKILL.md",
+          "sha256": "fa28c05e823c13065f96793f2cd19df880cd31ac9e0180b6c479e4a265931e59",
+          "equalToSource": true
+        },
+        {
+          "path": "skills/skill-note-transfer/references/handoff.md",
+          "sha256": "e5500b3361b6d4eaab15e4555e28a4a4db2fc4dcbead391bdd6dfb000ba9c553",
+          "equalToSource": true
+        }
+      ],
+      "allTargetFilesEqualSource": true
+    }
+  }
+}

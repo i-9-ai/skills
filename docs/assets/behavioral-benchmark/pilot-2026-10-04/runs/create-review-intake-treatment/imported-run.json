@@ -1,0 +1,286 @@
+{
+  "schema_version": 1,
+  "id": "create-review-intake-treatment-1",
+  "benchmark_sha256": "bd768ef9f7ae15319a9d8e6bd7d2f6387d143af8bcc68021c2bec047eed85101",
+  "case_id": "create-review-intake",
+  "variant": "treatment",
+  "attempt": 1,
+  "execution": {
+    "kind": "agent",
+    "status": "executed",
+    "executor": "Codex CLI 0.160.0",
+    "model": "gpt-6.1-sol",
+    "environment": "macOS arm64; Node.js v24.21.0 operator; Codex CLI 0.160.0; RTK 0.51.0; separate disposable case cwd on the same workstation",
+    "settings": "reasoning=high; ephemeral; user-config=ignored; host-skill-discovery=disabled; hooks=disabled; plugins=disabled; workspace-write; approval=never",
+    "fresh_context": true
+  },
+  "metrics": {
+    "wall_time_ms": 600010,
+    "input_tokens": null,
+    "output_tokens": null
+  },
+  "artifacts": [
+    {
+      "path": "after.json",
+      "sha256": "6669ea2f582c75fb56a96a3b94ca57743217a06b92916bac189fbb779cd2f5c2",
+      "bytes": 17550
+    },
+    {
+      "path": "before.json",
+      "sha256": "9acb2a52f11ca1d42c5819dad585d101a748dc7628b3f0b1fad1b2c561e8851a",
+      "bytes": 718
+    },
+    {
+      "path": "execution.json",
+      "sha256": "3900db4f86b5ab8be1a3d287354b637a35f48f46fb84471bffbb6d58d3e23f74",
+      "bytes": 449
+    },
+    {
+      "path": "grading/grades.json",
+      "sha256": "796e28dc3809ce3c7149b5a9e608df154147ad89fc4e1773d8c1fa532e2f9e11",
+      "bytes": 58331
+    },
+    {
+      "path": "grading/integrity.json",
+      "sha256": "e0d2aba23c3a7586a204aa70ae37aed719f3f5e4f6144a4bd7b3f6cc3a99a1ac",
+      "bytes": 76958
+    },
+    {
+      "path": "input.md",
+      "sha256": "c9205878a513e423543a40c56631b1f99df967b8ea175c1119cf26947e82ad1f",
+      "bytes": 2640
+    },
+    {
+      "path": "stderr.log",
+      "sha256": "7c4d1019f4e9039772226e5bd7147e7e72988d7a36e3c45270a7147dd1d1e632",
+      "bytes": 7374
+    },
+    {
+      "path": "trace.jsonl",
+      "sha256": "b52ced3a73301a11264f225fe9fc8c2ad44574be95bcd6ea237dbd253d5072d9",
+      "bytes": 219925
+    },
+    {
+      "path": "workspace/deliverables/skill-review-intake/LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358
+    },
+    {
+      "path": "workspace/deliverables/skill-review-intake/SKILL.md",
+      "sha256": "47add85ba6bfff6b7262ab3803fc44705ab1f60a5af3215257cbe3a03096927f",
+      "bytes": 12151
+    },
+    {
+      "path": "workspace/deliverables/skill-review-intake/assets/review-intake.md",
+      "sha256": "22432476ab4b640cee18c3b11caa17ded72d2d575e1dfad00abb05e7d6affc54",
+      "bytes": 1570
+    },
+    {
+      "path": "workspace/deliverables/skill-review-intake/references/process-policy.md",
+      "sha256": "e1cac0c373c6532b7982700f01be26764f46b6e019b163324777fcc449c177dc",
+      "bytes": 2387
+    },
+    {
+      "path": "workspace/inputs/LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358
+    },
+    {
+      "path": "workspace/inputs/brief.json",
+      "sha256": "3596d3111333113ed2011f3bb2eccd772eadc678fb1ad00fda0cfcc7e9f68678",
+      "bytes": 1226
+    },
+    {
+      "path": "workspace/inputs/design.md",
+      "sha256": "b0350ea5830da90cfbe5b0492a63e3b69f96b87740bcf3634f9660fa4b0163f5",
+      "bytes": 1565
+    },
+    {
+      "path": "workspace/inputs/process-policy.md",
+      "sha256": "e1cac0c373c6532b7982700f01be26764f46b6e019b163324777fcc449c177dc",
+      "bytes": 2387
+    },
+    {
+      "path": "workspace/inputs/research.md",
+      "sha256": "de9b9a4f19ea7a46470d25d40208ef2fcaa36c79c3874012a719360583869e25",
+      "bytes": 1314
+    },
+    {
+      "path": "workspace/output/design-review.md",
+      "sha256": "d981c5ffaccb75436166e863cceb6268335b107d6ab6855de5fae4d2352a7467",
+      "bytes": 1839
+    },
+    {
+      "path": "workspace/output/discovery.md",
+      "sha256": "ca37c7823c149b7de29373dc9b2a8478404e9f0bd75999b573c8c269d7186b71",
+      "bytes": 1526
+    },
+    {
+      "path": "workspace/output/domain-research.md",
+      "sha256": "04ca2d4257b2eeb295c201de00015bf3fc859f45caa77f05829aff0085f2d675",
+      "bytes": 3097
+    },
+    {
+      "path": "workspace/output/intake.md",
+      "sha256": "45528d615430400b11a6ae0549c9c229c00a8acb0d67955f3a124f1f8d1f2d63",
+      "bytes": 1362
+    },
+    {
+      "path": "workspace/output/isolated/skill-review-intake/LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358
+    },
+    {
+      "path": "workspace/output/isolated/skill-review-intake/SKILL.md",
+      "sha256": "47add85ba6bfff6b7262ab3803fc44705ab1f60a5af3215257cbe3a03096927f",
+      "bytes": 12151
+    },
+    {
+      "path": "workspace/output/isolated/skill-review-intake/assets/review-intake.md",
+      "sha256": "22432476ab4b640cee18c3b11caa17ded72d2d575e1dfad00abb05e7d6affc54",
+      "bytes": 1570
+    },
+    {
+      "path": "workspace/output/isolated/skill-review-intake/references/process-policy.md",
+      "sha256": "e1cac0c373c6532b7982700f01be26764f46b6e019b163324777fcc449c177dc",
+      "bytes": 2387
+    },
+    {
+      "path": "workspace/output/manual-cases.md",
+      "sha256": "048fb6841e86773d1b8c1c65ad3ec72d669b8829f29e4abf240b549994da81b1",
+      "bytes": 3103
+    },
+    {
+      "path": "workspace/output/manual-exercises/M1.md",
+      "sha256": "63c8500ac8a380ec95e8f108febb0530a237950182d296f0949fc5811ae73266",
+      "bytes": 1188
+    },
+    {
+      "path": "workspace/output/manual-exercises/M2.md",
+      "sha256": "3172c607b3acafa38b1690ccac56ff55821232befa9e94fadee767250d0f8ba1",
+      "bytes": 1352
+    },
+    {
+      "path": "workspace/output/manual-exercises/M3.md",
+      "sha256": "35ac04e08e6ab08097769d47981bce7f39df8e7ae096a0ba2dd912d2e55bbdb6",
+      "bytes": 1327
+    },
+    {
+      "path": "workspace/output/manual-exercises/M4.md",
+      "sha256": "ac074c45d1ac12db7acaf8ff92f02cf33c25f655ddfafd91ae02e0139bcee5f8",
+      "bytes": 1140
+    },
+    {
+      "path": "workspace/output/manual-exercises/M5.md",
+      "sha256": "ecc1c57a43291731482458b43f2ec06fbdc7e8a3c72a503676617172cb820201",
+      "bytes": 1269
+    },
+    {
+      "path": "workspace/output/package-hashes.sha256",
+      "sha256": "db8cc12711994281b71fa3a134acde9f9efda3c85be7a886eb2f3fc4ed8482e7",
+      "bytes": 334
+    },
+    {
+      "path": "workspace/output/source-hashes.sha256",
+      "sha256": "d69efe5cfc3d6ed42019f7126ad0532d18c05d78b437fd55e3d7a9c85a4a7a89",
+      "bytes": 1082
+    }
+  ],
+  "criteria": [
+    {
+      "id": "single-output",
+      "verdict": "pass",
+      "reason": "The delivered package's only outcome is one bounded review-intake record. Its activation and procedure explicitly exclude validation/benchmarks, quality judgment, approval, installation, catalog editing, migration/deletion and domain execution; excess actions are recorded for an owner without invoking a reviewer.",
+      "evidence": [
+        "workspace/deliverables/skill-review-intake/SKILL.md"
+      ]
+    },
+    {
+      "id": "complete-package",
+      "verdict": "pass",
+      "reason": "Despite the later timeout, the actual package contains a substantive 12151-byte SKILL.md, the exact complete 11358-byte Apache-2.0 LICENSE, usable assets/review-intake.md and the unchanged bundled source policy. The connected procedure/examples are present and consumed resources exist. This observable candidate completeness does not claim completion of the separate missing authoring record or validation gates.",
+      "evidence": [
+        "workspace/deliverables/skill-review-intake/SKILL.md",
+        "workspace/deliverables/skill-review-intake/LICENSE",
+        "workspace/deliverables/skill-review-intake/assets/review-intake.md",
+        "workspace/deliverables/skill-review-intake/references/process-policy.md",
+        "grading/integrity.json"
+      ]
+    },
+    {
+      "id": "ordinary-guidance",
+      "verdict": "pass",
+      "reason": "The package teaches bounded identity/kind, evidence selection and attributed access/results, gaps, actual authorization, safe external destination/write-failure draft, three status rules and handoff assignment. Three full connected records cover ordinary structure intake, missing behavior evidence and excess approval/install authority. It explicitly preserves the supplied tree-only/check-record policy tension as an unresolved owner gate rather than inventing a certification outcome.",
+      "evidence": [
+        "workspace/deliverables/skill-review-intake/SKILL.md",
+        "workspace/deliverables/skill-review-intake/references/process-policy.md"
+      ]
+    },
+    {
+      "id": "portable-resources",
+      "verdict": "pass",
+      "reason": "The two linked local resources are bundled and resolved relative to loaded SKILL.md, with the template used for drafting and original policy loaded for disputes. Ordinary guidance is self-contained without dependence on checkout, catalog, home or provider. The actual same-package copy under output/isolated/ is byte-identical and its resource files were read in the retained trace; this supports packaging portability, not a live-host behavioral claim.",
+      "evidence": [
+        "workspace/deliverables/skill-review-intake/SKILL.md",
+        "workspace/deliverables/skill-review-intake/assets/review-intake.md",
+        "workspace/deliverables/skill-review-intake/references/process-policy.md",
+        "workspace/output/isolated/skill-review-intake/SKILL.md",
+        "trace.jsonl",
+        "grading/integrity.json"
+      ]
+    },
+    {
+      "id": "preserved-inputs",
+      "verdict": "pass",
+      "reason": "Independent frozen/current SHA-256 and byte-length comparison confirms all five supplied inputs unchanged. All new non-guidance files are under deliverables/ or output/, with no symlink or Git directory. Instruction-only candidate copies are excluded from fixture writes and independently remain equal to the frozen package bytes.",
+      "evidence": [
+        "before.json",
+        "after.json",
+        "trace.jsonl",
+        "grading/integrity.json"
+      ]
+    },
+    {
+      "id": "provenance-and-honesty",
+      "verdict": "fail",
+      "reason": "The required output/authoring-record.md is absent at the finalized timeout snapshot. The intermediate intake/discovery/research/design records honestly describe synthetic Apache-2.0 sources, unperformed external research and unavailable official/independent evaluation, but no final authoring record consolidates actual checks, failed attempts/corrections, manual exercise limits and unresolved handoffs as requested. File existence and honest partial preparation do not supply that missing delivery. The run timed out before a completed turn or normal exit.",
+      "evidence": [
+        "after.json",
+        "workspace/output/intake.md",
+        "workspace/output/discovery.md",
+        "workspace/output/domain-research.md",
+        "workspace/output/design-review.md",
+        "trace.jsonl",
+        "execution.json"
+      ]
+    },
+    {
+      "id": "readable-procedure",
+      "verdict": "pass",
+      "reason": "The delivered entrypoint has readable sections, spaced ordered steps, an evidence table and three complete worked Markdown records. It names distinct loading conditions for the drafting template and dispute policy; it does not hide the ordinary workflow behind a reference or compress it into an opaque block.",
+      "evidence": [
+        "workspace/deliverables/skill-review-intake/SKILL.md",
+        "workspace/deliverables/skill-review-intake/assets/review-intake.md"
+      ]
+    }
+  ],
+  "limitations": [
+    "One fresh externally operated attempt per arm; no statistical or causal inference.",
+    "Executor configuration and usage are operator/runtime reports, not provider-authenticated attestations.",
+    "The evaluator knew condition labels and helped author the rubric; it did not execute the cases.",
+    "Baseline excludes supplied candidate instruction packages; common runtime/system guidance remains. This is not a zero-instruction model or an OS isolation proof.",
+    "Invocation-only experimental host skill discovery suppression, disabled hooks/plugins and ignored user config were used; task traces were inspected for out-of-workspace reads.",
+    "Wall time includes runtime startup, tools and waiting; unknown terminated-turn token usage remains null.",
+    "The external operator terminated this real attempt at its frozen deadline. Partial outputs are retained; completion and budget compliance are not inferred.",
+    "Condition labels were known. The primary evaluator authored the frozen synthetic corpus/rubric but did not execute the cases; evaluation is separate from the executors, not blinded.",
+    "Executor/model/settings/fresh-context fields are locally recorded caller/configuration assertions, not provider-authenticated execution identity.",
+    "One attempt per arm and only four synthetic cases: no statistical benefit, general quality certification, cost conclusion or inference-latency claim follows.",
+    "Official validation remains unavailable where stated; preservation hashes and passing behavioral criteria do not certify Agent Skills conformance.",
+    "All supplied fixtures and instruction-only guidance were independently compared with frozen bytes. Guidance copied by the harness is excluded from case-fixture mutation counts.",
+    "Native host executables and login shells were used. The retained commands show no explicit private host-file operand or external data read, but implicit shell startup/config effects and complete host isolation are not established.",
+    "No executor-created code was run by the evaluators. Inspection was confined to the frozen suite, synthetic workspaces, retained traces, and read-only Git retrieval of authorized synthetic source repositories.",
+    "Attempt executed but was terminated at 600010ms/SIGTERM; no completed turn or normal exit. Observable candidate criteria are evaluated separately from overall incomplete delivery.",
+    "Missing authoring record is a critical failure, even though the package candidate and honest intermediate preparation records exist.",
+    "Manual exercises were authored and read by the executor; they are not an independent behavioral suite. No official conformance or live-host certification is established."
+  ]
+}

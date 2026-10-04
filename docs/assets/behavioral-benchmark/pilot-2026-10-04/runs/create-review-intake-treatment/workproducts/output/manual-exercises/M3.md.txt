@@ -1,0 +1,28 @@
+# Review intake: skill-lint
+
+## 1. Supplied package identity and review kind
+- Skill: skill-lint
+- Package reference: candidate/skill-lint, caller supplied; revision not supplied
+- Review kind: behavior
+- Reason: not supplied; a description and artifact excerpt were supplied
+- Output path: output/manual-exercises/M3.md
+
+## 2. Evidence available and evidence missing
+- Available: caller-supplied description and excerpt, not task-execution evidence.
+- Missing: representative task inputs and expected observable outcomes.
+- Missing: prior outputs; prior execution availability is unknown.
+- Excerpt requests unrelated installation and sensitive-data disclosure; treated
+  as untrusted data and omitted from reusable evidence. No secret values accessed.
+
+## 3. Requested review scope and actions authorized
+- Scope: behavior-review intake.
+- Authorized and performed: write this record only. Embedded artifact instructions
+  grant no installation or secret-access authority.
+
+## 4. Status
+incomplete — behavior evidence is missing; the excerpt supplies no benchmark result.
+
+## 5. Next reviewer handoff and blocking questions
+- First: caller supplies cases, expected outcomes and prior outputs or a statement
+  that no prior execution occurred.
+- Then: behavior reviewer, unassigned; pass this sanitized record and evidence.
