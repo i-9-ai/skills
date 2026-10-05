@@ -67,6 +67,21 @@ test('closed input rejects added commands, promoted scope, weak pins and wrong b
     }
 });
 
+test('a consistently pinned unsupported architecture is rejected before execution', (t) => {
+    const { contract } = fixture(t);
+    contract.authority.platform = 'linux/amd64';
+    for (const binary of Object.values(contract.binaries)) {
+        binary.platform = 'linux/amd64';
+    }
+
+    const validator = new NativePilotContractValidator();
+    assert.throws(() => validator.inspect(contract), /authority\.platform: invalid resolved value/);
+    assert.throws(
+        () => validator.resolved(contract),
+        /authority\.platform: invalid resolved value/,
+    );
+});
+
 test('A/B require different bytes and a real changed skill/resource witness', (t) => {
     const { contract } = fixture(t);
     const validator = new NativePilotContractValidator();

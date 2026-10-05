@@ -54,9 +54,27 @@ export class NativePilotCommonObservationService {
         const evidence: NativePilotProjectionReceipt[] = facts.evidence.map((file) => ({
             ...file,
         }));
+        let retentionBytes = 0;
+        let ordinaryBytes = 0;
+        let receiptCount = 0;
+        const admit = (file: Pick<NativePilotProjectionReceipt, 'bytes' | 'kind'>) => {
+            const limit = NativePilotConfiguration.evidenceFileLimit(file.kind);
+            if (
+                ++receiptCount > NativePilotConfiguration.evidence.receipts ||
+                !Number.isSafeInteger(file.bytes) ||
+                file.bytes < 0 ||
+                file.bytes > limit
+            )
+                throw new Error('projection_evidence_bound');
+            if (file.kind === 'retention') retentionBytes += file.bytes;
+            else ordinaryBytes += file.bytes;
+            if (!NativePilotConfiguration.evidenceBytesWithinBounds(retentionBytes, ordinaryBytes))
+                throw new Error('projection_evidence_bound');
+        };
+        evidence.forEach(admit);
         const retained = evidence.map((file) => ({
             file,
-            value: this.files.json(file),
+            value: this.files.json(file, NativePilotConfiguration.evidenceFileLimit(file.kind)),
         }));
         const finalWrapper = retained.find(
             (row) => row.value?.format === 'inert-json-records-never-extracted',
@@ -66,8 +84,12 @@ export class NativePilotCommonObservationService {
             const path = relative(this.files.root, raw.path);
             if (!projectionPath(path)) throw new Error('projection_final_retention_path');
             const file = { path, bytes: raw.bytes, sha256: raw.sha256, kind: 'retention' as const };
+            admit(file);
             evidence.push(file);
-            retained.push({ file, value: this.files.json(file) });
+            retained.push({
+                file,
+                value: this.files.json(file, NativePilotConfiguration.evidenceFileLimit(file.kind)),
+            });
         }
         const checkpoint = retained.find(
             (row) => row.file.kind === 'retention' && row.value?.operation === 'export',
@@ -78,6 +100,7 @@ export class NativePilotCommonObservationService {
         if (bundle) this.nonce ??= bundle.nonce;
         const prefix = `${selection.run_id}-${selection.host}-${selection.repetition}-${step.id}`;
         const append = (bytes: Uint8Array, kind: NativePilotProjectionReceipt['kind']) => {
+            admit({ bytes: bytes.length, kind });
             const receipt = this.files.retain(prefix, evidence.length, bytes, kind);
             evidence.push(receipt);
             return receipt;
@@ -360,7 +383,7 @@ export class NativePilotCommonObservationService {
                 'measured-network-isolation',
                 JSON.stringify(probe.interfaces) === '["lo"]' &&
                     probe.routes?.length === 0 &&
-                    probe.external_connect === 'ENETUNREACH',
+                    NativePilotConfiguration.isUnreachableNetworkResult(probe.external_connect),
             );
             const denied = (paths: string[]) =>
                 paths.every((path) =>
@@ -1079,6 +1102,7 @@ export class NativePilotCommonObservationService {
             )?.value;
             const receipt = this.prior.get('final-retention');
             if (cleanup && receipt) {
+                admit(receipt);
                 this.files.read(receipt);
                 evidence.push({ ...receipt });
                 const exact =

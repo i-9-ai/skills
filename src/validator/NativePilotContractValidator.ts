@@ -72,7 +72,7 @@ export class NativePilotContractValidator {
             else if (!valid(value)) throw new Error(`${label}: invalid resolved value.`);
         };
         const identifier = (value: unknown) => match(/^[a-z0-9][a-z0-9._:/-]{0,199}$/, value);
-        const platform = (value: unknown) => value === 'linux/arm64' || value === 'linux/amd64';
+        const platform = (value: unknown) => value === 'linux/arm64';
         const authority = closedObject(
             raw.authority,
             [

@@ -211,6 +211,7 @@ function preflight(f, selectedNonce = nonce, options = {}) {
         },
         home_seed_sha256: projectionDigest('same normal image seed'),
     };
+    options.probe?.(probe);
     const entries = [];
     const add = (path, value) => {
         const item = exportedFile(
@@ -573,6 +574,31 @@ test('actual-shape confinement, fixed version bytes and a unique home volume yie
         f.remove();
     }
 });
+test('network projection accepts both unreachable errors while rejecting other outcomes', async () => {
+    for (const error of ['ENETUNREACH', 'EHOSTUNREACH', 'ECONNREFUSED', 'connected']) {
+        const f = fixture();
+        try {
+            const { step, facts } = preflight(f, nonce, {
+                probe(value) {
+                    value.external_connect = error;
+                },
+            });
+            const result = await new NativePilotCommonObservationService({
+                prepared,
+                evidenceRoot: f.root,
+            }).project(step, selection, facts);
+
+            assert.equal(
+                result.checks.find((check) => check.id === 'measured-network-isolation').satisfied,
+                ['ENETUNREACH', 'EHOSTUNREACH'].includes(error),
+                error,
+            );
+        } finally {
+            f.remove();
+        }
+    }
+});
+
 test('identical image seed bytes do not collapse two measured profile instances', async () => {
     const first = fixture(),
         second = fixture();

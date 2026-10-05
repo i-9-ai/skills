@@ -445,6 +445,60 @@ function rewritePacket(f, change) {
     }
 }
 
+test('complete Claude projector evidence including an export above 32 MiB reaches Driver', async (t) => {
+    const f = packetFixture();
+    try {
+        const evidenceRoot = join(f.root, 'evidence');
+        const bytes = Buffer.alloc(24 * 1_048_576, 'x');
+        f.exported.roots
+            .find((root) => root.name === 'home')
+            .entries.push({
+                path: 'inert-unrelated-padding',
+                kind: 'file',
+                bytes: bytes.length,
+                sha256: pilotDigest(bytes),
+                target: null,
+                base64: bytes.toString('base64'),
+            });
+        const exportReceipt = f.facts.evidence.find((row) => row.kind === 'retention');
+        const encoded = Buffer.from(JSON.stringify(f.exported) + '\n');
+        writeFileSync(join(evidenceRoot, exportReceipt.path), encoded);
+        exportReceipt.bytes = encoded.length;
+        exportReceipt.sha256 = pilotDigest(encoded);
+        assert.ok(encoded.length > NativePilotConfiguration.limits.file_bytes);
+        assert.ok(encoded.length < NativePilotConfiguration.retention.encoded_bytes);
+        const service = new NativePilotCommonObservationService({
+            prepared: f.prepared,
+            evidenceRoot,
+        });
+        service.prior.set('probe', { environment: f.environment });
+        const projected = await service.project(f.step, f.selection, f.facts);
+        assert.ok(projected.checks.every((row) => row.satisfied));
+        const copied = projected.evidence.reduce((sum, row) => sum + row.bytes, 0);
+        assert.ok(copied > NativePilotConfiguration.limits.file_bytes);
+        const lane = await consumeLoadedProjection(
+            t,
+            f,
+            projected,
+            f.selection,
+            evidenceRoot,
+            'candidate-pass',
+            { completeEvidence: true },
+        );
+        assert.equal(lane.native_acceptance, false);
+        assert.equal(lane.data_compatibility, 'not-exercised');
+        t.diagnostic(
+            JSON.stringify({
+                encoded_export_bytes: encoded.length,
+                complete_projection_bytes: copied,
+                complete_projection_receipts: projected.evidence.length,
+            }),
+        );
+    } finally {
+        f.remove();
+    }
+});
+
 for (const [label, change] of [
     [
         'empty existing inventory',

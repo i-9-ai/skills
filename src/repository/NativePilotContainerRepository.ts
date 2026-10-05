@@ -447,6 +447,8 @@ export class NativePilotContainerRepository {
                     requireContainer(
                         typeof e.base64 === 'string' &&
                             e.target === null &&
+                            e.bytes <= containerLimits.retention_file_bytes &&
+                            e.base64.length === 4 * Math.ceil(e.bytes / 3) &&
                             /^[a-f0-9]{64}$/.test(e.sha256),
                         'Invalid retained file.',
                     );

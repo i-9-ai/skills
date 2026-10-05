@@ -123,6 +123,60 @@ export class NativePilotConfiguration {
         binary_bytes: 536_870_912,
     });
 
+    /** Ordinary retained files use the existing file class, independently of export totals. */
+    static readonly retention = Object.freeze({
+        file_bytes: NativePilotConfiguration.limits.file_bytes,
+        raw_bytes: 67_108_864,
+        encoded_bytes: 100_663_296,
+    });
+
+    /** Current fixed recipes copy an exported file at most three times; control is shared. */
+    static readonly evidence = Object.freeze({
+        receipts: 128,
+        decoded_copy_bytes: 3 * NativePilotConfiguration.retention.raw_bytes,
+        loaded_bytes: NativePilotConfiguration.limits.loaded_inventory_bytes,
+        control_bytes: NativePilotConfiguration.limits.file_bytes,
+        phase_bytes:
+            NativePilotConfiguration.retention.encoded_bytes +
+            3 * NativePilotConfiguration.retention.raw_bytes +
+            NativePilotConfiguration.limits.loaded_inventory_bytes +
+            NativePilotConfiguration.limits.file_bytes,
+    });
+
+    static evidenceFileLimit(kind: unknown): number {
+        if (kind === 'retention') return this.retention.encoded_bytes;
+        if (
+            typeof kind !== 'string' ||
+            !['native-log', 'process', 'inventory', 'state', 'confinement'].includes(kind)
+        )
+            throw new Error('Unknown retained evidence kind.');
+        return this.limits.file_bytes;
+    }
+
+    static evidenceBytesWithinBounds(retention: number, ordinary: number): boolean {
+        if (
+            !Number.isSafeInteger(retention) ||
+            !Number.isSafeInteger(ordinary) ||
+            retention < 0 ||
+            ordinary < 0
+        )
+            return false;
+        const retentionControl = Math.max(0, retention - this.retention.encoded_bytes);
+        const ordinaryControl = Math.max(
+            0,
+            ordinary - this.evidence.decoded_copy_bytes - this.evidence.loaded_bytes,
+        );
+        return (
+            retentionControl + ordinaryControl <= this.evidence.control_bytes &&
+            retention + ordinary <= this.evidence.phase_bytes
+        );
+    }
+
+    /** Kernel refusal alone is insufficient; callers also verify interfaces and routes. */
+    static isUnreachableNetworkResult(result: unknown): boolean {
+        return result === 'ENETUNREACH' || result === 'EHOSTUNREACH';
+    }
+
     /** Nested observation reserves fit within observe_ms; none extend the container deadline. */
     static readonly observation = Object.freeze({
         ordinary_child_ms: 12_000,

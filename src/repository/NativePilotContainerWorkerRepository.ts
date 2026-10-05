@@ -427,6 +427,7 @@ export class NativePilotContainerWorkerRepository {
                     requireContainer(
                         stat.isFile() &&
                             stat.nlink === 1 &&
+                            stat.size <= containerLimits.retention_file_bytes &&
                             stat.size <= containerLimits.retention_bytes - bytes,
                         'Unsupported or oversized retained file.',
                     );
@@ -444,7 +445,8 @@ export class NativePilotContainerWorkerRepository {
                             if (count === 0) break;
                             total += count;
                             requireContainer(
-                                total <= containerLimits.retention_bytes - bytes,
+                                total <= containerLimits.retention_file_bytes &&
+                                    total <= containerLimits.retention_bytes - bytes,
                                 'Retained file grew beyond its bound.',
                             );
                             chunks.push(chunk.subarray(0, count));

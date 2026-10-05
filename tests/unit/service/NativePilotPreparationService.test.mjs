@@ -58,6 +58,17 @@ test('all pin checks precede output creation and an existing output is preserved
     assert.equal(readFileSync(join(output, 'sentinel'), 'utf8'), 'preserve');
 });
 
+test('unsupported architecture is refused before materializing a preparation', (t) => {
+    const fx = fixture(t);
+    fx.contract.authority.platform = 'linux/amd64';
+    for (const binary of Object.values(fx.contract.binaries)) {
+        binary.platform = 'linux/amd64';
+    }
+
+    assert.throws(() => fx.prepare(), /authority\.platform: invalid resolved value/);
+    assert.equal(existsSync(join(fx.root, 'prepared')), false);
+});
+
 test('inventory refuses escaping aliases, hardlinks, Git metadata and linked input roots', (t) => {
     const fx = fixture(t);
     const source = fx.inputs.source_a;

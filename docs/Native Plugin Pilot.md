@@ -48,6 +48,12 @@ the contract binds their complete inventories and exact review receipts. The
 container pin binds the local Docker boundary, platform image and measured normal
 account. A caller assertion does not replace those byte and runtime checks.
 
+The implemented native observers require Linux ARM64. A consistently pinned
+AMD64 selection is rejected during contract validation, before preparation or
+container creation. Network isolation requires only loopback interfaces, no
+external routes and an unreachable connection result; both `ENETUNREACH` and
+`EHOSTUNREACH` satisfy that last condition in the validator and projector.
+
 The request selects immutable source A/B, reviewed driver and observer bytes,
 native executable identities, a measured container image and fresh lane outputs.
 It cannot select an arbitrary shell command. Without `--execute`, the command
@@ -149,10 +155,25 @@ lifecycle acceptance. Earlier failed captures keep their original results.
 The driver reads loaded inventories through a separate fixed 32 MiB reader,
 bound to the already verified evidence receipt. It checks ordinary single-link
 files, a no-follow descriptor, stable identity and complete bytes before parsing.
-Generic request and review JSON stays capped at 1 MiB; command output, total
-evidence and observation deadlines are unchanged. Synthetic tests exercise the
+Generic request and review JSON stays capped at 1 MiB; command output and
+observation deadlines are unchanged. Synthetic tests exercise the
 complete six-inventory producer envelope through the driver and reject oversized,
 altered or contradictory inputs. They do not reclassify the failed native capture.
+
+Retention has separate fixed bounds: 32 MiB per ordinary file, 64 MiB of combined
+decoded files and 96 MiB for the encoded export. The worker rejects an oversized
+file before reading it and while it grows; the controller checks declared size
+and encoded length before decoding. Retention receipts use the export bound,
+while other evidence files and loaded inventories remain capped at 32 MiB.
+
+A phase permits at most 128 receipts and 352 MiB in total. That total reserves
+one encoded export, up to three copies of decoded evidence, one loaded inventory
+and a shared 32 MiB control allowance. Retention above 96 MiB and ordinary
+evidence above 224 MiB consume that same control allowance; it cannot be spent
+twice. The projector admits each receipt before new derived writes, and the
+driver rejects overflowing declarations before hashing files. A complete
+Common-to-Driver test transports an export above 32 MiB and all its actual
+derived receipts. This is synthetic pipeline verification, not native acceptance.
 
 SQLite preservation has two explicit outcomes: absent storage stays absent, or
 existing storage stays unchanged during read-only operations. Seeded lanes retain

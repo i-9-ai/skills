@@ -67,7 +67,7 @@ export class NativePilotObservationEvidenceRepository {
 
     read(
         receipt: Pick<NativePilotProjectionReceipt, 'path' | 'bytes' | 'sha256'>,
-        limit = 100_663_296,
+        limit: number = NativePilotConfiguration.retention.encoded_bytes,
     ): Buffer {
         if (
             !projectionPath(receipt.path) ||
@@ -232,7 +232,8 @@ export class NativePilotObservationEvidenceRepository {
                         throw new Error('projection_export_alias');
                     if (claudeDebugAlias) claudeAliases.push(entry);
                 } else throw new Error('projection_export_kind');
-                if (bytes > 67_108_864) throw new Error('projection_export_bytes');
+                if (bytes > NativePilotConfiguration.retention.raw_bytes)
+                    throw new Error('projection_export_bytes');
                 files.set(entry.path, entry);
             }
             // This is inert retained link text, never a filesystem resolution.
@@ -256,7 +257,7 @@ export class NativePilotObservationEvidenceRepository {
             entry.kind !== 'file' ||
             entry.target !== null ||
             typeof entry.base64 !== 'string' ||
-            entry.bytes > 33_554_432 ||
+            entry.bytes > NativePilotConfiguration.retention.file_bytes ||
             entry.base64.length !== 4 * Math.ceil(entry.bytes / 3) ||
             !/^[a-f0-9]{64}$/.test(entry.sha256 ?? '')
         )
@@ -282,7 +283,7 @@ export class NativePilotObservationEvidenceRepository {
             !Number.isSafeInteger(index) ||
             index < 0 ||
             index > 127 ||
-            bytes.length > 33_554_432
+            bytes.length > NativePilotConfiguration.limits.file_bytes
         )
             throw new Error('projection_retention_selection');
         const path = `${prefix}-${String(index).padStart(3, '0')}.evidence`;
@@ -293,7 +294,7 @@ export class NativePilotObservationEvidenceRepository {
             sha256: projectionDigest(bytes),
             kind,
         };
-        this.read(receipt, 33_554_432);
+        this.read(receipt, NativePilotConfiguration.limits.file_bytes);
         return receipt;
     }
 }

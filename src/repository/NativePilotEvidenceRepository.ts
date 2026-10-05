@@ -2,6 +2,7 @@
 import { dirname, join } from 'node:path';
 import { mkdirSync, realpathSync } from 'node:fs';
 import { homedir } from 'node:os';
+import { NativePilotConfiguration } from '../config/NativePilotConfiguration.ts';
 import { NativePilotInventoryRepository, pilotDigest } from './NativePilotInventoryRepository.ts';
 import { relativePilotPath } from '../validator/NativePilotContractValidator.ts';
 
@@ -18,10 +19,20 @@ export class NativePilotEvidenceRepository {
 
     verify(root: string, evidence: NativePilotEvidence[]) {
         this.inventory.canonicalDirectory(root);
-        if (!evidence.length || evidence.length > 128)
+        if (!evidence.length || evidence.length > NativePilotConfiguration.evidence.receipts)
             throw new Error('Retained private evidence is required.');
+        let retentionBytes = 0;
+        let ordinaryBytes = 0;
+        for (const item of evidence) {
+            const limit = NativePilotConfiguration.evidenceFileLimit(item.kind);
+            if (!Number.isSafeInteger(item.bytes) || item.bytes < 0 || item.bytes > limit)
+                throw new Error('Retained evidence exceeds its file-kind byte bound.');
+            if (item.kind === 'retention') retentionBytes += item.bytes;
+            else ordinaryBytes += item.bytes;
+            if (!NativePilotConfiguration.evidenceBytesWithinBounds(retentionBytes, ordinaryBytes))
+                throw new Error('One phase exceeds the private evidence byte bound.');
+        }
         const paths = new Set();
-        let bytes = 0;
         for (const item of evidence) {
             if (!relativePilotPath(item.path) || paths.has(item.path))
                 throw new Error('Invalid or duplicate evidence locator.');
@@ -32,10 +43,10 @@ export class NativePilotEvidenceRepository {
             ) {
                 throw new Error('Linked or escaping evidence parent.');
             }
-            const actual = this.inventory.file(path);
-            bytes += actual.bytes;
-            if (bytes > 33_554_432)
-                throw new Error('One phase exceeds the private evidence byte bound.');
+            const actual = this.inventory.file(
+                path,
+                NativePilotConfiguration.evidenceFileLimit(item.kind),
+            );
             if (actual.sha256 !== item.sha256 || actual.bytes !== item.bytes)
                 throw new Error('Retained evidence does not match its receipt.');
             paths.add(item.path);

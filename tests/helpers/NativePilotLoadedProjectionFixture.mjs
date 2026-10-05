@@ -15,6 +15,7 @@ export async function consumeLoadedProjection(
     selection,
     evidenceRoot,
     expectedVerdict = 'candidate-pass',
+    { completeEvidence = false } = {},
 ) {
     const f = fixture(t);
     const prepared = f.prepare();
@@ -76,14 +77,20 @@ export async function consumeLoadedProjection(
     assert.equal(pilotDigest(actualBytes), receipt.sha256);
     const adapter = fakeAdapter(prepared, f.root, selection, (observation, step, owned) => {
         if (step.id !== producer.step.id) return;
-        const destination = join(owned.evidenceRoot, inventoryPath);
-        mkdirSync(dirname(destination), { recursive: true });
-        writeFileSync(destination, actualBytes, { flag: 'wx' });
-        observation.evidence.push({ ...receipt });
+        const selectedEvidence = completeEvidence ? projected.evidence : [receipt];
+        for (const selected of selectedEvidence) {
+            const bytes = readFileSync(join(evidenceRoot, selected.path));
+            assert.equal(bytes.length, selected.bytes);
+            assert.equal(pilotDigest(bytes), selected.sha256);
+            const destination = join(owned.evidenceRoot, selected.path);
+            mkdirSync(dirname(destination), { recursive: true });
+            writeFileSync(destination, bytes, { flag: 'wx' });
+            observation.evidence.push({ ...selected });
+        }
         observation.loaded = structuredClone(projected.loaded);
         if (step.id === 'observe-restored-a') {
             observation.rollback_state = structuredClone(projected.rollback_state);
-            for (const path of projected.rollback_state?.evidence ?? []) {
+            for (const path of completeEvidence ? [] : (projected.rollback_state?.evidence ?? [])) {
                 const stateReceipt = projected.evidence.find(
                     (row) => row.path === path && row.kind === 'state',
                 );

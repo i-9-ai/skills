@@ -43,8 +43,9 @@ export const containerLimits = Object.freeze({
     kill_ms: 10_000,
     output_bytes: 1_048_576,
     worker_output_bytes: 8_388_608,
-    retention_bytes: 67_108_864,
-    retention_output: 100_663_296,
+    retention_file_bytes: NativePilotConfiguration.retention.file_bytes,
+    retention_bytes: NativePilotConfiguration.retention.raw_bytes,
+    retention_output: NativePilotConfiguration.retention.encoded_bytes,
     retention_entries: 20_000,
     memory: 2_147_483_648,
     nano_cpus: 2_000_000_000,
@@ -439,7 +440,7 @@ export class NativePilotContainerValidator {
             equal(p.interfaces, ['lo']) &&
                 Array.isArray(p.routes) &&
                 p.routes.length === 0 &&
-                ['ENETUNREACH', 'EHOSTUNREACH'].includes(p.external_connect),
+                NativePilotConfiguration.isUnreachableNetworkResult(p.external_connect),
             'Network isolation was not measured.',
         );
         requireContainer(equal(p.hashes, expected), 'Measured input or binary bytes differ.');
