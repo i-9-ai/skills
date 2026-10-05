@@ -490,6 +490,7 @@ test('the outer change preserves the native lifetime, child reserves and unrelat
         tree_files: 10000,
         tree_bytes: 536870912,
         file_bytes: 33554432,
+        loaded_inventory_bytes: 33554432,
         binary_bytes: 536870912,
     });
 });

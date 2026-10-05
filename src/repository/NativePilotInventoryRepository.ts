@@ -8,7 +8,6 @@ import {
     lstatSync,
     mkdirSync,
     openSync,
-    readFileSync,
     readSync,
     readdirSync,
     readlinkSync,
@@ -17,6 +16,7 @@ import {
     chmodSync,
     writeFileSync,
 } from 'node:fs';
+import type { BigIntStats } from 'node:fs';
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { NativePilotConfiguration } from '../config/NativePilotConfiguration.ts';
 import type { NativePilotExecutableTreePin } from '../config/NativePilotConfiguration.ts';
@@ -268,10 +268,83 @@ export class NativePilotInventoryRepository {
     }
 
     readJson(path: string): unknown {
-        const before = this.file(path, 1_048_576);
-        const data = readFileSync(path);
-        if (pilotDigest(data) !== before.sha256)
-            throw new Error('JSON input changed while reading.');
+        return this.jsonFile(path, 1_048_576);
+    }
+
+    readLoadedInventoryJson(path: string, expected: { bytes: number; sha256: string }): unknown {
+        const limit = NativePilotConfiguration.limits.loaded_inventory_bytes;
+        if (
+            !expected ||
+            !Number.isSafeInteger(expected.bytes) ||
+            expected.bytes < 0 ||
+            expected.bytes > limit ||
+            typeof expected.sha256 !== 'string' ||
+            expected.sha256.length !== 64 ||
+            !/^[a-f0-9]{64}$/.test(expected.sha256)
+        )
+            throw new Error('Loaded inventory requires its bounded verified evidence receipt.');
+        this.canonicalDirectory(dirname(path));
+        return this.jsonFile(path, limit, expected);
+    }
+
+    private sameJsonFile(before: BigIntStats, after: BigIntStats): boolean {
+        return (
+            before.isFile() &&
+            after.isFile() &&
+            before.nlink === 1n &&
+            after.nlink === 1n &&
+            before.ino === after.ino &&
+            before.dev === after.dev &&
+            before.size === after.size &&
+            before.mode === after.mode &&
+            before.mtimeNs === after.mtimeNs &&
+            before.ctimeNs === after.ctimeNs
+        );
+    }
+
+    private jsonFile(
+        path: string,
+        limit: number,
+        expected?: { bytes: number; sha256: string },
+    ): unknown {
+        const selected = lstatSync(path, { bigint: true });
+        const observed = this.file(path, limit);
+        if (expected && (observed.bytes !== expected.bytes || observed.sha256 !== expected.sha256))
+            throw new Error('Loaded inventory bytes differ from their verified evidence receipt.');
+        const handle = openSync(path, constants.O_RDONLY | constants.O_NOFOLLOW);
+        let data: Buffer;
+        try {
+            const initial = fstatSync(handle, { bigint: true });
+            if (!this.sameJsonFile(selected, initial) || initial.size !== BigInt(observed.bytes))
+                throw new Error('JSON input changed while opening.');
+            data = Buffer.alloc(observed.bytes);
+            let offset = 0;
+            while (offset < data.length) {
+                const count = readSync(
+                    handle,
+                    data,
+                    offset,
+                    Math.min(65_536, data.length - offset),
+                    null,
+                );
+                if (!count) break;
+                offset += count;
+            }
+            const tail = Buffer.alloc(1);
+            const extra = readSync(handle, tail, 0, 1, null);
+            const after = fstatSync(handle, { bigint: true });
+            const current = lstatSync(path, { bigint: true });
+            if (
+                offset !== observed.bytes ||
+                extra !== 0 ||
+                !this.sameJsonFile(initial, after) ||
+                !this.sameJsonFile(after, current) ||
+                pilotDigest(data) !== observed.sha256
+            )
+                throw new Error('JSON input changed while reading.');
+        } finally {
+            closeSync(handle);
+        }
         return JSON.parse(data.toString('utf8'));
     }
 

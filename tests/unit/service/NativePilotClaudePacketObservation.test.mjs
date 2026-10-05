@@ -19,12 +19,13 @@ import { NativePilotCommonPhaseService } from '../../../src/service/NativePilotC
 import { NativeClaudeObservationValidator } from '../../../src/validator/NativeClaudeObservationValidator.ts';
 import { NativePilotNpmEnvironmentRepository } from '../../../src/repository/NativePilotNpmEnvironmentRepository.ts';
 import { NativePilotStateSnapshotRepository } from '../../../src/repository/NativePilotStateSnapshotRepository.ts';
+import { NativePilotConfiguration } from '../../../src/config/NativePilotConfiguration.ts';
 import {
     NativePilotInventoryRepository,
     pilotDigest,
 } from '../../../src/repository/NativePilotInventoryRepository.ts';
 
-function packetFixture(phase = 'observe-a') {
+function packetFixture(phase = 'observe-a', additionalResources = 0) {
     const root = mkdtempSync(join(realpathSync(tmpdir()), 'i9-native-state-fixture-'));
     const output = join(root, 'output');
     const home = join(root, 'home');
@@ -38,7 +39,12 @@ function packetFixture(phase = 'observe-a') {
     const trees = {};
     for (const pin of ['a', 'b']) {
         const sourceRoot = join(root, 'input', 'source_' + pin);
-        for (const [path, bytes] of Object.entries(sourceFiles(pin))) {
+        const files = { ...sourceFiles(pin) };
+        for (let index = 0; index < additionalResources; index++)
+            files[
+                `.agents/skills/skill-fixture/references/complete-resource-${String(index).padStart(4, '0')}.md`
+            ] = Buffer.from(`Synthetic complete resource ${pin}/${index}.\n`);
+        for (const [path, bytes] of Object.entries(files)) {
             mkdirSync(dirname(join(sourceRoot, path)), { recursive: true });
             writeFileSync(join(sourceRoot, path), bytes, { flag: 'wx', mode: 0o600 });
         }
@@ -583,6 +589,108 @@ test('actual Claude producer inventories reach Driver for A, B and restored A wi
         restored.remove();
     }
 });
+
+test('complete six-inventory Claude producer above one MiB reaches Driver without a compatibility claim', async (t) => {
+    const f = packetFixture('observe-a', 1100);
+    try {
+        const evidenceRoot = join(f.root, 'evidence');
+        const service = new NativePilotCommonObservationService({
+            prepared: f.prepared,
+            evidenceRoot,
+        });
+        service.prior.set('probe', { environment: f.environment });
+        const projected = await service.project(f.step, f.selection, f.facts);
+        const path = join(evidenceRoot, projected.loaded.inventory_evidence);
+        const bytes = readFileSync(path);
+        assert.ok(bytes.length > 1_048_576);
+        assert.ok(bytes.length < NativePilotConfiguration.limits.loaded_inventory_bytes);
+        assert.ok(f.prepared.trees.source_a.entries.length >= 1074);
+        t.diagnostic(
+            JSON.stringify({
+                source_entries: f.prepared.trees.source_a.entries.length,
+                loaded_envelope_bytes: bytes.length,
+                repeated_inventories: 6,
+            }),
+        );
+        const envelope = JSON.parse(bytes);
+        for (const inventory of [
+            envelope.source_before.selected_inventory,
+            envelope.source_before.actual_inventory,
+            envelope.source_after.selected_inventory,
+            envelope.source_after.actual_inventory,
+            ...envelope.independent_worker_source,
+        ])
+            assert.deepEqual(inventory, f.prepared.trees.source_a);
+        assert.throws(() => new NativePilotInventoryRepository().readJson(path));
+        const lane = await consumeLoadedProjection(t, f, projected, f.selection, evidenceRoot);
+        assert.equal(lane.data_compatibility, 'not-exercised');
+        assert.equal(lane.native_acceptance, false);
+    } finally {
+        f.remove();
+    }
+});
+
+for (const [label, change] of [
+    [
+        'unknown envelope field',
+        (value) => {
+            value.unrecognized = true;
+        },
+    ],
+    [
+        'omitted complete inventory',
+        (value) => {
+            value.source_after.actual_inventory.entries.pop();
+        },
+    ],
+    [
+        'changed selected source digest',
+        (value) => {
+            value.source_tree_sha256 = '0'.repeat(64);
+        },
+    ],
+])
+    test(`Driver rejects rehashed large Claude ${label} after the dedicated read`, async (t) => {
+        const f = packetFixture('observe-a', 1100);
+        try {
+            const evidenceRoot = join(f.root, 'evidence');
+            const service = new NativePilotCommonObservationService({
+                prepared: f.prepared,
+                evidenceRoot,
+            });
+            service.prior.set('probe', { environment: f.environment });
+            const projected = await service.project(f.step, f.selection, f.facts);
+            const path = join(evidenceRoot, projected.loaded.inventory_evidence);
+            const value = JSON.parse(readFileSync(path));
+            change(value);
+            const bytes = Buffer.from(JSON.stringify(value) + '\n');
+            assert.ok(bytes.length > 1_048_576);
+            writeFileSync(path, bytes);
+            const receipt = projected.evidence.find(
+                (row) => row.path === projected.loaded.inventory_evidence,
+            );
+            receipt.bytes = bytes.length;
+            receipt.sha256 = pilotDigest(bytes);
+            assert.deepEqual(
+                new NativePilotInventoryRepository().readLoadedInventoryJson(path, receipt),
+                value,
+            );
+            const lane = await consumeLoadedProjection(
+                t,
+                f,
+                projected,
+                f.selection,
+                evidenceRoot,
+                'blocked',
+            );
+            assert.equal(
+                lane.steps.find((step) => step.id === 'observe-a').reason,
+                'evidence-integrity-mismatch',
+            );
+        } finally {
+            f.remove();
+        }
+    });
 
 test('missing worker PID correlation rejects before selected Claude collector can become authority', async () => {
     const f = packetFixture();

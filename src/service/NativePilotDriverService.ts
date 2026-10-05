@@ -238,8 +238,16 @@ export class NativePilotDriverService {
                 reason = 'evidence-integrity-mismatch';
                 this.evidence.verify(evidenceRoot, checked.observation.evidence);
                 if (checked.observation.loaded) {
-                    const captured = this.inventory.readJson(
+                    const receipt = checked.observation.evidence.find(
+                        (file) =>
+                            file.path === checked.observation.loaded!.inventory_evidence &&
+                            file.kind === 'inventory',
+                    );
+                    if (!receipt)
+                        throw new Error('Loaded inventory requires its verified evidence receipt.');
+                    const captured = this.inventory.readLoadedInventoryJson(
                         join(evidenceRoot, checked.observation.loaded.inventory_evidence),
+                        { bytes: receipt.bytes, sha256: receipt.sha256 },
                     );
                     const expected =
                         step.pin === 'b' ? prepared.trees.source_b : prepared.trees.source_a;

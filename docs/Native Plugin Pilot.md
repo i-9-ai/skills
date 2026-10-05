@@ -126,6 +126,34 @@ byte-verified debug file for the selected run and repetition. It never follows
 or materializes the link. This diagnostic does not remove the public schema-2
 absence limitation or establish a complete two-host matrix.
 
+Two fresh Codex 0.160.0 repetitions on 2026-10-05, using Node 24.21.0,
+completed all 20 lifecycle candidate phases after these corrections. The
+retained-artifact reconciliation covered the actual process records, loaded
+A/B/A bytes, native hooks, MCP responses and preserved history. One A observation
+needed two complete MCP status rounds (`starting` then `connected`); the other
+runtime observations needed one. These are source-qualified observations from
+owned disposable containers, with a local response fixture. Both selected package
+versions were 0.3.4, so neither hosted updates nor semantic-version upgrades were
+tested. Library source provenance remained unavailable (`missing_receipt`),
+separately from the verified local source/cache inventories.
+
+A fresh private Claude diagnostic with the corrected source passed preparation,
+baseline and installation, then stopped at A with `evidence-integrity-mismatch`.
+Its second repetition was not attempted. The retained complete envelope contained
+six matching source inventories and was 1,197,393 bytes, above the generic JSON
+reader's 1 MiB cap. The driver rejected it before the loaded-inventory validator;
+this explains a sufficient refusal boundary without claiming an observed exception
+stack. It does not change the public schema-2 absence gate or establish Claude
+lifecycle acceptance. Earlier failed captures keep their original results.
+
+The driver reads loaded inventories through a separate fixed 32 MiB reader,
+bound to the already verified evidence receipt. It checks ordinary single-link
+files, a no-follow descriptor, stable identity and complete bytes before parsing.
+Generic request and review JSON stays capped at 1 MiB; command output, total
+evidence and observation deadlines are unchanged. Synthetic tests exercise the
+complete six-inventory producer envelope through the driver and reject oversized,
+altered or contradictory inputs. They do not reclassify the failed native capture.
+
 SQLite preservation has two explicit outcomes: absent storage stays absent, or
 existing storage stays unchanged during read-only operations. Seeded lanes retain
 the original file and sidecar bytes, issued schema identities and prior user-table

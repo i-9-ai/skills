@@ -119,6 +119,7 @@ export class NativePilotConfiguration {
         tree_files: 10_000,
         tree_bytes: 536_870_912,
         file_bytes: 33_554_432,
+        loaded_inventory_bytes: 33_554_432,
         binary_bytes: 536_870_912,
     });
 
