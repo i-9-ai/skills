@@ -70,6 +70,7 @@ node bin/index.mjs telemetry trends --db /absolute/local-data/skill-usage.db --i
 node bin/index.mjs telemetry catalog-observe --db /absolute/local-data/skill-usage.db --file catalog.json
 node bin/index.mjs telemetry lifecycle --db /absolute/local-data/skill-usage.db --from 2026-09-01T00:00:00.000Z --until 2026-10-01T00:00:00.000Z
 node bin/index.mjs plugin prepare --output .work/plugin-preview/i9-skills
+node bin/index.mjs plugin pilot --request /staging/native-pilot/operator.json --execute
 node bin/index.mjs plugin submission --output .work/public-candidate/i9-skills
 ```
 
@@ -348,6 +349,16 @@ silently overwritten. Native host trust remains a separate user action. See the
 [telemetry setup guide](../docs/Optional%20Skill%20Telemetry.md).
 
 ## Failures and the single entrypoint
+
+`plugin pilot --request /staging/native-pilot/operator.json --execute` selects a
+reviewed disposable Codex/Claude lifecycle matrix. Omitting `--execute` rejects
+before preparation. Inputs must already exist with exact source/runtime and
+container identities; no binary download or real-profile installation is
+implicit. The service retains phase journals and returns a local report receipt.
+Blocked or unattempted phases produce nonzero status. Read the
+[native pilot guide](../docs/Native%20Plugin%20Pilot.md) for state-preservation
+branches, cleanup boundaries and the distinction between simulation, native
+observation and independent acceptance.
 
 Argument and validation errors return nonzero. Discovery failures return
 partial or empty context with warnings. Database failures preserve existing

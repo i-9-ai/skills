@@ -27,6 +27,14 @@ Run `npm run check` and inspect the required official workflow result for the ex
 
 ## Child DOX index
 
+- [Native pilot preparation](service/NativePilotPreparationService.ts): verifies selected source/runtime inventories and an inert restore drill before creating a fresh private workspace; preparation never executes candidate code.
+- [Native pilot phases](service/NativePilotDriverService.ts): records bounded sequential source-refresh observations, preserving blocked and unrun phases; supplied receipts do not authenticate an executor.
+- [Disposable pilot containers](service/NativePilotContainerService.ts): coordinates fixed owned container operations and retention before named cleanup; no user profile, provider or shared-resource pruning.
+- [Process audit](repository/NativePilotProcessAuditRepository.ts): retains bounded complete process/socket samples, explicit zombies and closed TIME_WAIT; unknown state cannot become observed absence.
+- [Pilot worker](transport/NativePilotContainerWorkerRunner.ts): fixed internal probe, audit, execution and export ingress inside the measured container; not a second public CLI.
+- [Native Codex observation](service/NativeCodexObservationService.ts): digest-pinned native RPC, loaded package bytes, hook trust, MCP reads and one bounded local response fixture; no provider inference.
+- [Codex schema configuration](config/NativeCodexSchemaConfiguration.ts): immutable official declarative schema identities with bundled license and notices; unsupported protocol messages remain blocked.
+
 - [Skill quality](../docs/Skill%20Quality.md): source-qualified exact-revision receipts with explicit assurance and coverage; structural conformance, behavioral evidence and readiness remain separate.
 - [Quality ingress](service/SkillQualityService.ts): validates closed assertions and selected evidence before storage, privately persisting verified retained-byte or actual official-process observations.
 - [Quality repository](repository/SkillQualityRepository.ts): append-only quality projection, retry/conflict identity and bounded read-only history over the preserved evidence store.

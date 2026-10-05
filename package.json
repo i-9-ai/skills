@@ -123,6 +123,7 @@
   "files": [
     ".codex-plugin/plugin.json",
     "assets/plugin-icon.png",
+    "assets/native-pilot/**",
     "bin/index.mjs",
     "bin/index.md",
     "dist/**/*.js",

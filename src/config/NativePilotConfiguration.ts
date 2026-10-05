@@ -1,0 +1,136 @@
+// SPDX-License-Identifier: Apache-2.0
+import { posix } from 'node:path';
+export type NativePilotHost = 'codex' | 'claude';
+export type NativePilotPin = 'a' | 'b' | 'restored-a';
+export type NativePilotMode = 'synthetic' | 'native';
+
+export interface NativePilotTreePin {
+    revision: string;
+    tree_sha256: string;
+}
+
+export type NativePilotExecutableTreePin =
+    | NativePilotTreePin
+    | (NativePilotTreePin & { origin: 'git' })
+    | {
+          origin: 'reviewed-private-tree';
+          revision: null;
+          tree_sha256: string;
+          review_path: string;
+          review_sha256: string;
+      };
+
+export interface NativePilotBinaryPin {
+    version: string;
+    sha256: string;
+    platform: 'linux/arm64' | 'linux/amd64';
+}
+
+export interface NativePilotContract {
+    schema_version: 2;
+    runtime_layout: 'source-ts' | 'compiled-js';
+    purpose: 'local-source-a-b-a';
+    hosts: ['codex', 'claude'];
+    repetitions: 2;
+    authority: {
+        lane: 'private-ci-vm' | 'local-container';
+        destination: string;
+        authorization_sha256: string;
+        retention_destination: string;
+        retention_authorization_sha256: string;
+        environment_sha256: string;
+        platform: 'linux/arm64' | 'linux/amd64';
+    };
+    source_a: NativePilotTreePin;
+    source_b: NativePilotTreePin;
+    driver: NativePilotExecutableTreePin;
+    observer: NativePilotExecutableTreePin & { entrypoint: string };
+    binaries: Record<'node' | NativePilotHost, NativePilotBinaryPin>;
+    witnesses: Array<{ path: string; a_sha256: string; b_sha256: string }>;
+    mcp: Record<NativePilotHost, { a: string; b: string }>;
+}
+
+export interface NativePilotInputs {
+    source_a: string;
+    source_b: string;
+    driver: string;
+    observer: string;
+    node: string;
+    codex: string;
+    claude: string;
+}
+
+export interface NativePilotSelection {
+    run_id: string;
+    host: NativePilotHost;
+    repetition: 1 | 2;
+}
+
+export interface NativePilotStep {
+    id: string;
+    pin: NativePilotPin | null;
+    operation: 'native' | 'observe' | 'switch';
+    commands: Array<{ executable: string; args: string[]; timeout_ms: number }>;
+    checks: string[];
+}
+
+/** Fixed scope and bounds, not caller-editable command templates. */
+export class NativePilotConfiguration {
+    /** Fixed ordinary image account; this never selects or redirects a host profile. */
+    static readonly accountHome = posix.join('/', 'home', 'node');
+    static readonly runtime_layout = import.meta.url.endsWith('.ts') ? 'source-ts' : 'compiled-js';
+    static readonly runtime_directory =
+        NativePilotConfiguration.runtime_layout === 'source-ts' ? 'src' : 'dist';
+    static readonly runtime_extension =
+        NativePilotConfiguration.runtime_layout === 'source-ts' ? 'ts' : 'js';
+    static entrypoint(
+        name: 'NativePilotContainerWorkerRunner' | 'NativePilotCommonObserverRunner',
+    ) {
+        return `${this.runtime_directory}/transport/${name}.${this.runtime_extension}`;
+    }
+    static readonly phases = Object.freeze([
+        'preflight',
+        'baseline',
+        'install-a',
+        'observe-a',
+        'stop-a',
+        'select-b',
+        'update-b',
+        'observe-b',
+        'stop-b',
+        'select-a',
+        'rollback-a',
+        'observe-restored-a',
+        'stop-restored-a',
+        'uninstall',
+        'verify-preserved',
+        'remove-marketplace',
+        'verify-absent',
+        'cleanup-processes',
+        'retain',
+        'cleanup-owned',
+    ]);
+    static readonly limits = Object.freeze({
+        job_ms: 1_800_000,
+        command_ms: 90_000,
+        observe_ms: 45_000,
+        cleanup_ms: 30_000,
+        output_bytes: 1_048_576,
+        tree_files: 10_000,
+        tree_bytes: 536_870_912,
+        file_bytes: 33_554_432,
+        binary_bytes: 536_870_912,
+    });
+
+    static readonly unclaimed = Object.freeze([
+        'real-model-or-provider',
+        'native-read-tool-telemetry',
+        'hosted-git-update',
+        'semantic-version-cache-upgrade',
+        'interactive-trust-ui',
+        'claude-native-mcp-tool-call',
+        'official-skill-conformance',
+        'independent-native-acceptance',
+        'publication',
+    ]);
+}

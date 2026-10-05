@@ -25,6 +25,8 @@ flowchart LR
     CLI -->|plugin submission preview / explicit write| Submission[Skills-only folder and ZIP]
     CLI -->|benchmark prepare / import-run / compare| Benchmark[Retained behavioral experiment]
     CLI -->|skills quality record / inspect| Quality[Explicit quality receipts]
+    CLI -->|plugin pilot / explicit execution| Pilot[Owned disposable native hosts]
+    Pilot --> PilotEvidence[Private lifecycle journals]
     MCP -->|skill_quality_record / skill_quality_inspect| Quality
     Quality --> Evidence
     MCP -->|catalog tools| Catalog
@@ -46,6 +48,13 @@ queries; the MCP exposes the catalog, onboarding, bump reports and explicit
 evidence tools. See [CLI distribution](https://github.com/i-9-ai/skills/wiki/Distribution-Readiness),
 [plugin preparation](https://github.com/i-9-ai/skills/wiki/Plugin-Preparation) and
 the [interactive entry-path map](https://i-9-ai.github.io/skills/skill-management-entry-paths.html).
+
+The explicit [native pilot operator](https://github.com/i-9-ai/skills/wiki/Native-Plugin-Pilot)
+uses the same CLI and statically bundled observation parser. Selected collector
+code runs only inside measured disposable containers. Its private phase journals
+and preservation exports are separate from the shared usage database. A lifecycle
+exercise is host compatibility evidence; it cannot establish skill task quality
+or grant consumer installation, provider access or publication authority.
 
 ## Responsibility boundaries
 

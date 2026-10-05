@@ -8,6 +8,72 @@ not a claim about every host, model or later revision. The subsequent
 [Codex MCP pilot](https://github.com/i-9-ai/skills/wiki/Codex-MCP-Pilot) adds native tool discovery and explicit
 catalog/read-evidence calls; the historical A/B/A results below remain unchanged.
 
+## Repeatable operator
+
+`plugin pilot` runs an explicitly selected Codex/Claude lifecycle matrix in fresh,
+owned containers. It is an installation and lifecycle check. It does not score
+the usefulness of a skill or establish model task quality. Use concrete tasks
+and privately selected reference packages for those separate evaluations.
+
+```sh
+npx @i-9.ai/skills plugin pilot --request /staging/native-pilot/operator.json --execute
+```
+
+The registry command requires a release containing this interface. In a prepared
+source checkout, use `node bin/index.mjs plugin pilot` with the same flags.
+
+Keep the request and acquired inputs in a separate staging directory. The closed
+request has exactly these fields:
+
+```json
+{
+  "schema_version": 1,
+  "contract_path": "/staging/native-pilot/contract.json",
+  "inputs_path": "/staging/native-pilot/inputs.json",
+  "container_pin_path": "/staging/native-pilot/container-pin.json",
+  "preparation_root": "/staging/native-pilot/new-run",
+  "lanes": [
+    { "run_id": "00000000-0000-4000-8000-000000000001", "host": "codex", "repetition": 1 },
+    { "run_id": "00000000-0000-4000-8000-000000000002", "host": "claude", "repetition": 1 }
+  ]
+}
+```
+
+The paths above are examples, not acquired inputs. Use a fresh UUID and new
+preparation directory for each run. A complete repeated matrix selects both
+hosts at repetitions 1 and 2. `inputs.json` maps `source_a`, `source_b`, `driver`,
+`observer`, `node`, `codex` and `claude` to canonical absolute acquired paths;
+the contract binds their complete inventories and exact review receipts. The
+container pin binds the local Docker boundary, platform image and measured normal
+account. A caller assertion does not replace those byte and runtime checks.
+
+The request selects immutable source A/B, reviewed driver and observer bytes,
+native executable identities, a measured container image and fresh lane outputs.
+It cannot select an arbitrary shell command. Without `--execute`, the command
+rejects the request before preparation or native execution. Inputs must already
+be acquired and reviewed; the operator never downloads clients, installs into a
+real profile or substitutes a real model provider to complete a failing lane.
+
+Each lane records preparation, native versions, baseline state, installation,
+hook/MCP observations, local A → B → A replacement, removal and owned-resource
+cleanup. A failed or unattempted phase remains visible. An unknown process or
+socket state blocks advancement; a measured zombie residual is retained as a
+terminated residual, never relabeled as process absence.
+
+SQLite preservation has two explicit outcomes: absent storage stays absent, or
+existing storage stays unchanged during read-only operations. Seeded lanes retain
+the original file and sidecar bytes, issued schema identities and prior user-table
+payloads. A valid migration ledger cannot hide modified SQL or a removed index.
+Unsupported state is retained as blocked; it is never reset or downgraded merely
+to obtain a passing result.
+
+The CLI returns a local report receipt and a nonzero status when execution is
+incomplete. Raw profiles, RPC/debug output, source exports and research artifacts
+stay outside the repository, npm package, plugin and Wiki. Source identity,
+synthetic orchestration tests, installed native evidence and independent acceptance
+are separate claims. The 2026-09-29 results below apply only to their recorded
+pins; a new operator run does not inherit them.
+
 ## Candidate and environment
 
 | Item | Observed value |

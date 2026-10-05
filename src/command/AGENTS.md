@@ -48,6 +48,7 @@ Run command integration tests under `tests/integration/cli/`, strict type checki
 - [Available skills](context/AvailableSkillsCommand.ts): reusable project/global overview with bounded discovery.
 - [Repository validation](repo/RepositoryValidateCommand.ts): local collection validation through `repo validate`.
 - [Plugin preparation](plugin/PluginPrepareCommand.ts): preview or create an explicit new staging artifact; never registers or installs it.
+- [Native plugin pilot](plugin/NativePilotRunCommand.ts): explicit execution of a reviewed disposable host matrix; retained local evidence does not imply consumer installation or provider approval.
 - [Public plugin submission](plugin/PluginSubmissionCommand.ts): preview or create a skills-only directory submission ZIP; provider identity, review and upload remain separate.
 - [Official skills validation](repo/OfficialSkillsValidateCommand.ts): pinned Agent Skills conformance through `repo validate-official` in prepared CI.
 - [Version preparation](repo/PrepareVersionCommand.ts): `repo prepare-version` writes local release artifacts and returns a no-note no-op; never commits or publishes.

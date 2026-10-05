@@ -23,6 +23,7 @@ Verify every requirement has an implementation and a check or an explicit limit.
 ## Child DOX index
 
 - [GitHub module consumer](2026-10-05-16-07-22-github-module-consumer-pilot.md): concrete module roadmap and publicly reproducible local consumer fixture; owner acceptance, source admission and publication remain separate.
+- [Repeatable native host pilots](2026-10-05-00-43-00-repeatable-native-host-pilots.md): disposable Codex/Claude installation, source-pin refresh and preserved-state observations; no real profile, provider, marketplace update or release effects.
 
 - [Exact-revision skill quality](2026-10-04-23-04-39-exact-revision-skill-quality.md): explicit source-qualified conformance/behavioral receipts, preserved evidence history and bounded CLI/MCP queries; no automatic readiness, installation or publication.
 

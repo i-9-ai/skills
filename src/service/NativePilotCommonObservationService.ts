@@ -1,0 +1,693 @@
+// SPDX-License-Identifier: Apache-2.0
+import type { NativePilotSelection, NativePilotStep } from '../config/NativePilotConfiguration.ts';
+import { NativePilotConfiguration } from '../config/NativePilotConfiguration.ts';
+import type { NativePilotPreparation } from '../repository/NativePilotPreparationRepository.ts';
+import type { NativePilotControllerFacts } from './NativePilotContainerService.ts';
+import { relative } from 'node:path';
+import { NativePilotCommonPhaseService } from './NativePilotCommonPhaseService.ts';
+import {
+    NativePilotObservationEvidenceRepository,
+    projectionDigest,
+    projectionObject,
+    projectionPath,
+} from '../repository/NativePilotObservationEvidenceRepository.ts';
+import type { NativePilotProjectionReceipt } from '../repository/NativePilotObservationEvidenceRepository.ts';
+import { NativePilotStateSchemaValidator } from '../validator/NativePilotStateSchemaValidator.ts';
+import { NativePilotRegistrationObservationValidator } from '../validator/NativePilotRegistrationObservationValidator.ts';
+import type { NativePilotRegistrationRecord } from '../validator/NativePilotRegistrationObservationValidator.ts';
+
+/** Trusted bundled host projection. Selected observer code is never loaded in this process. */
+export class NativePilotCommonObservationService {
+    private readonly prepared: NativePilotPreparation;
+    private readonly files: NativePilotObservationEvidenceRepository;
+    private readonly prior = new Map<string, any>();
+    private profile: string | null = null;
+    private nonce: string | null = null;
+    private baselineReceipts: Array<{ path: string; bytes: number; sha256: string }> = [];
+    constructor(options: { prepared: NativePilotPreparation; evidenceRoot: string }) {
+        this.prepared = structuredClone(options.prepared);
+        this.files = new NativePilotObservationEvidenceRepository(options.evidenceRoot);
+    }
+
+    async project(
+        step: NativePilotStep,
+        selection: NativePilotSelection,
+        facts: NativePilotControllerFacts,
+    ): Promise<unknown> {
+        if (
+            facts.schema_version !== 1 ||
+            facts.native_acceptance !== false ||
+            facts.phase !== step.id ||
+            JSON.stringify(facts.selection) !== JSON.stringify(selection) ||
+            facts.commands.length !== step.commands.length ||
+            !facts.evidence.length
+        )
+            throw new Error('projection_controller_identity');
+        const evidence: NativePilotProjectionReceipt[] = facts.evidence.map((file) => ({
+            ...file,
+        }));
+        const retained = evidence.map((file) => ({
+            file,
+            value: this.files.json(file),
+        }));
+        const finalWrapper = retained.find(
+            (row) => row.value?.format === 'inert-json-records-never-extracted',
+        );
+        if (finalWrapper) {
+            const raw = finalWrapper.value;
+            const path = relative(this.files.root, raw.path);
+            if (!projectionPath(path)) throw new Error('projection_final_retention_path');
+            const file = { path, bytes: raw.bytes, sha256: raw.sha256, kind: 'retention' as const };
+            evidence.push(file);
+            retained.push({ file, value: this.files.json(file) });
+        }
+        const checkpoint = retained.find(
+            (row) => row.file.kind === 'retention' && row.value?.operation === 'export',
+        );
+        const bundle = checkpoint ? this.files.export(checkpoint.value, selection) : null;
+        if (bundle && this.nonce !== null && bundle.nonce !== this.nonce)
+            throw new Error('projection_lane_nonce_changed');
+        if (bundle) this.nonce ??= bundle.nonce;
+        const prefix = `${selection.run_id}-${selection.host}-${selection.repetition}-${step.id}`;
+        const append = (bytes: Uint8Array, kind: NativePilotProjectionReceipt['kind']) => {
+            const receipt = this.files.retain(prefix, evidence.length, bytes, kind);
+            evidence.push(receipt);
+            return receipt;
+        };
+        const nativeFiles = bundle?.roots.get('native-output');
+        const readNative = (receipt: any, kind: NativePilotProjectionReceipt['kind']) => {
+            projectionObject(receipt);
+            if (!projectionPath(receipt.path)) throw new Error('projection_native_locator');
+            const entry = nativeFiles?.get(receipt.path);
+            if (!entry || entry.bytes !== receipt.bytes || entry.sha256 !== receipt.sha256)
+                throw new Error('projection_native_receipt');
+            const data = this.files.decode(entry);
+            return { receipt: append(data, kind), data };
+        };
+        const nativeJson = (receipt: any, kind: NativePilotProjectionReceipt['kind']) => {
+            const file = readNative(receipt, kind);
+            return {
+                ...file,
+                value: JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(file.data)),
+            };
+        };
+        const commandRecords = retained.filter(
+            (row) => row.value?.observation?.operation === 'execute',
+        );
+        for (const [index, command] of facts.commands.entries()) {
+            const actual = commandRecords[index]?.value;
+            if (step.id === 'retain') continue; // The fixed export receipt is independently checked below.
+            if (
+                !actual ||
+                JSON.stringify(actual.observation.process) !== JSON.stringify(command.process) ||
+                actual.observation.stdout !== command.stdout ||
+                actual.observation.stderr !== command.stderr ||
+                actual.observation.phase !== step.id ||
+                actual.observation.index !== index ||
+                JSON.stringify(actual.planned_command) !== JSON.stringify(step.commands[index])
+            )
+                throw new Error('projection_process_receipt');
+            append(Buffer.from(command.stdout), 'native-log');
+            append(Buffer.from(command.stderr), 'native-log');
+        }
+        const satisfied = new Map<string, boolean>();
+        const goodProcess = (value: any) =>
+            value?.status === 'completed' && value.exit_code === 0 && value.signal === null;
+        const probeRecord = retained.find((row) => row.value?.probe?.operation === 'probe');
+        const probe = probeRecord?.value.probe;
+        const audit =
+            retained.filter((row) => row.value?.operation === 'audit').at(-1)?.value ??
+            bundle?.audit;
+        const quiescent =
+            audit?.quiescent === true &&
+            ['quiescent', 'quiescent-with-observed-zombies'].includes(audit?.status) &&
+            Array.isArray(audit.samples) &&
+            audit.samples.length >= 2 &&
+            Array.isArray(audit.blocking_sockets) &&
+            audit.blocking_sockets.length === 0;
+        satisfied.set('owned-native-live-processes-absent', quiescent);
+        satisfied.set('owned-listeners-absent', quiescent && audit.listeners?.length === 0);
+        const source =
+            step.pin === 'b' ? this.prepared.trees.source_b : this.prepared.trees.source_a;
+        satisfied.set('active-source-matches-pin', probe?.hashes?.source === source.tree_sha256);
+        let environment: any = null;
+        let packet: any = null;
+        const registrationRecords: NativePilotRegistrationRecord[] = [];
+        const registrationValidator = new NativePilotRegistrationObservationValidator();
+        const snapshots: Array<{
+            role: string;
+            value: any;
+            receipt: NativePilotProjectionReceipt;
+            data: Buffer;
+            path: string;
+        }> = [];
+        if (facts.commands.length === 1 && step.operation === 'observe' && step.id !== 'retain') {
+            if (facts.commands[0].stdout.length > 1_048_576)
+                throw new Error('projection_packet_bound');
+            const compact = projectionObject(JSON.parse(facts.commands[0].stdout), [
+                'schema_version',
+                'kind',
+                'selection',
+                'phase',
+                'native_acceptance',
+                'report',
+            ]);
+            if (
+                compact.schema_version !== 2 ||
+                compact.kind !== 'native-common-phase-receipt' ||
+                compact.phase !== step.id ||
+                compact.native_acceptance !== false ||
+                JSON.stringify(compact.selection) !== JSON.stringify(selection)
+            )
+                throw new Error('projection_packet_identity');
+            const raw = nativeJson(compact.report, 'process');
+            packet = projectionObject(raw.value, [
+                'schema_version',
+                'kind',
+                'selection',
+                'phase',
+                'pin',
+                'native_acceptance',
+                'context',
+                'processes',
+                'snapshots',
+                'result',
+                'blocked_gate',
+                'unclaimed',
+            ]);
+            if (
+                packet.schema_version !== 2 ||
+                packet.kind !== 'native-common-phase-evidence' ||
+                packet.phase !== step.id ||
+                packet.pin !== step.pin ||
+                packet.native_acceptance !== false ||
+                JSON.stringify(packet.selection) !== JSON.stringify(selection) ||
+                !Array.isArray(packet.snapshots) ||
+                packet.snapshots.length > 64 ||
+                !Array.isArray(packet.processes) ||
+                packet.processes.length > 8
+            )
+                throw new Error('projection_phase_report');
+            for (const value of packet.snapshots) {
+                projectionObject(value, ['role', 'path', 'bytes', 'sha256']);
+                if (value.role === 'state-bytes') {
+                    readNative(value, 'state');
+                    continue;
+                }
+                const rawFile = nativeJson(
+                    value,
+                    value.role.startsWith('state-') ? 'state' : 'inventory',
+                );
+                snapshots.push({ role: value.role, path: value.path, ...rawFile });
+            }
+            for (const call of packet.processes) {
+                projectionObject(call, [
+                    'label',
+                    'executable',
+                    'argv',
+                    'process',
+                    'pid',
+                    'start_ticks',
+                    'stdout',
+                    'stderr',
+                    'identity',
+                ]);
+                const stdout = readNative(call.stdout, 'native-log').data;
+                const stderr = readNative(call.stderr, 'native-log').data;
+                const identity = registrationValidator.childIdentity(
+                    nativeJson(call.identity, 'process').value,
+                    call.executable,
+                );
+                if (
+                    identity &&
+                    (identity.pid !== call.pid || identity.start_ticks !== call.start_ticks)
+                )
+                    throw new Error('projection_native_child_identity');
+                registrationRecords.push({
+                    label: call.label,
+                    executable: call.executable,
+                    argv: call.argv,
+                    process: call.process,
+                    pid: identity?.pid ?? null,
+                    start_ticks: identity?.start_ticks ?? null,
+                    stdout,
+                    stderr,
+                });
+            }
+            const calls = new NativePilotCommonPhaseService().calls(
+                { ...selection, phase: step.id, pin: step.pin },
+                this.prepared.contract,
+            );
+            if (
+                packet.processes.length > calls.length ||
+                packet.processes.some(
+                    (call: any, index: number) =>
+                        call.label !== calls[index].label ||
+                        call.executable !== calls[index].executable ||
+                        JSON.stringify(call.argv) !== JSON.stringify(calls[index].argv),
+                )
+            )
+                throw new Error('projection_fixed_call');
+        }
+        if (step.id === 'baseline' || step.id === 'verify-absent') {
+            const registration = registrationValidator.validate(
+                selection.host,
+                step.id,
+                registrationRecords,
+            );
+            satisfied.set('unauthenticated', registration.unauthenticated);
+            satisfied.set(
+                'owned-plugin-and-marketplace-absent',
+                registration.owned_plugin_and_marketplace_absent,
+            );
+            satisfied.set('fresh-native-process', registration.fresh_native_process);
+            // Registry absence does not establish absence of native hooks or MCP servers.
+            satisfied.set('owned-hooks-and-mcp-absent', registration.owned_hooks_and_mcp_absent);
+        }
+        if (step.id === 'preflight') {
+            if (!probe || !facts.container_id || !/^[a-f0-9]{64}$/.test(facts.container_id))
+                throw new Error('projection_preflight_measurement');
+            const home = retained
+                .flatMap((row) => (Array.isArray(row.value) ? row.value : []))
+                .find((value) => value?.Labels?.['i9.pilot.role'] === 'home');
+            if (
+                !home ||
+                home.Name !== `i9-pilot-${probe.nonce}-home` ||
+                home.Labels?.['i9.pilot.run'] !== selection.run_id ||
+                home.Labels?.['i9.pilot.host'] !== selection.host ||
+                home.Labels?.['i9.pilot.repetition'] !== String(selection.repetition) ||
+                home.Labels?.['i9.pilot.nonce'] !== probe.nonce
+            )
+                throw new Error('projection_owned_home_instance');
+            this.profile = projectionDigest(
+                JSON.stringify({ volume: home.Name, nonce: probe.nonce, home: probe.passwd_home }),
+            );
+            environment = {
+                instance_sha256: projectionDigest(facts.container_id),
+                profile_sha256: this.profile,
+            };
+            satisfied.set(
+                'fresh-disposable-account',
+                probe.uid === 1000 && probe.gid === 1000 && probe.passwd_name === 'node',
+            );
+            satisfied.set(
+                'normal-home-unchanged',
+                probe.home === probe.passwd_home &&
+                    probe.home === NativePilotConfiguration.accountHome,
+            );
+            satisfied.set(
+                'no-home-overrides',
+                Array.isArray(probe.environment) &&
+                    probe.environment.includes(`HOME=${probe.passwd_home}`) &&
+                    !probe.environment.some((value: string) => value.startsWith('CODEX_HOME=')),
+            );
+            satisfied.set(
+                'no-credentials',
+                Array.isArray(probe.credential_paths) && probe.credential_paths.length === 0,
+            );
+            satisfied.set(
+                'input-and-binary-pins-match',
+                ['source_a', 'source_b', 'driver', 'observer'].every(
+                    (key) => probe.hashes?.[key] === (this.prepared.trees as any)[key].tree_sha256,
+                ) &&
+                    ['node', 'codex', 'claude'].every(
+                        (key) =>
+                            probe.hashes?.[key] ===
+                            (this.prepared.contract.binaries as any)[key].sha256,
+                    ),
+            );
+            satisfied.set(
+                'measured-network-isolation',
+                JSON.stringify(probe.interfaces) === '["lo"]' &&
+                    probe.routes?.length === 0 &&
+                    probe.external_connect === 'ENETUNREACH',
+            );
+            const denied = (paths: string[]) =>
+                paths.every((path) =>
+                    probe.denied?.some((row: any) => row.path === path && row.error === 'EROFS'),
+                );
+            satisfied.set(
+                'measured-readonly-source-consumer-runtime',
+                denied([
+                    '/pilot/input',
+                    '/pilot/source',
+                    '/pilot/runtime-bin',
+                    '/pilot/consumer',
+                    '/pilot/control',
+                ]),
+            );
+            satisfied.set('measured-outside-write-denial', denied(['/var/tmp']));
+            satisfied.set(
+                'measured-owned-writes',
+                [
+                    NativePilotConfiguration.accountHome,
+                    '/pilot/state',
+                    '/pilot/work',
+                    '/pilot/native-output',
+                    '/tmp',
+                ].every((path) =>
+                    probe.writable?.some(
+                        (row: any) =>
+                            row.path === path && row.created === true && row.removed === true,
+                    ),
+                ),
+            );
+            satisfied.set(
+                'privileged-sockets-inaccessible',
+                probe.sockets?.length === 4 &&
+                    probe.sockets.every((row: any) => row.present === false),
+            );
+            satisfied.set(
+                'controller-and-native-permissions-separated',
+                probe.no_new_privileges === 1 &&
+                    probe.seccomp === 2 &&
+                    ['effective', 'permitted', 'bounding'].every((key) =>
+                        /^0+$/.test(probe.capabilities?.[key] ?? ''),
+                    ),
+            );
+            const versions = packet?.processes;
+            const versionText = (index: number) =>
+                versions?.[index]
+                    ? new TextDecoder('utf-8', { fatal: true })
+                          .decode(this.files.decode(nativeFiles!.get(versions[index].stdout.path)!))
+                          .replace(/\r?\n$/, '')
+                    : null;
+            const exact =
+                versions?.length === 2 &&
+                versions.every((call: any) => goodProcess(call.process)) &&
+                versionText(0) === `v${this.prepared.contract.binaries.node.version}` &&
+                versionText(1) ===
+                    (selection.host === 'codex'
+                        ? `codex-cli ${this.prepared.contract.binaries.codex.version}`
+                        : `${this.prepared.contract.binaries.claude.version} (Claude Code)`);
+            satisfied.set('exact-native-and-node-versions', !!exact);
+            // This is selected adapter support, not a claim that later native responses conform.
+            satisfied.set(
+                'approved-native-schema',
+                !!exact &&
+                    (selection.host === 'codex'
+                        ? this.prepared.contract.binaries.codex.version === '0.160.0'
+                        : this.prepared.contract.binaries.claude.version === '2.1.285'),
+            );
+        }
+        const role = (name: string) => snapshots.filter((value) => value.role === name);
+        const states = snapshots.filter(
+            (value) => value.role.startsWith('state-') && value.role !== 'state-bytes',
+        );
+        for (const entry of states) this.state(entry.value, entry.path, nativeFiles);
+        const settings = role('unrelated-settings');
+        const data = role('unrelated-data');
+        for (const entry of [...settings, ...data]) this.rawWitness(entry.value);
+        const sourceSnapshots = role('source-inventory');
+        const consumers = role('consumer-inventory');
+        satisfied.set(
+            'source-and-consumer-unchanged',
+            sourceSnapshots.length === 2 &&
+                sourceSnapshots.every(
+                    (item) => JSON.stringify(item.value) === JSON.stringify(source),
+                ) &&
+                consumers.length === 2 &&
+                JSON.stringify(consumers[0].value) === JSON.stringify(consumers[1].value) &&
+                (!this.prior.has('consumer') ||
+                    JSON.stringify(consumers[0].value) ===
+                        JSON.stringify(this.prior.get('consumer'))),
+        );
+        if (consumers.length === 2 && !this.prior.has('consumer'))
+            this.prior.set('consumer', consumers[0].value);
+        if (step.id === 'baseline') {
+            const witnesses =
+                settings.length === 2 &&
+                data.length === 2 &&
+                settings.every((value) => this.settingsWitness(value.value, selection.host)) &&
+                data.every((value) => this.dataWitness(value.value, selection.run_id));
+            satisfied.set('unrelated-settings-and-file-sentinels-recorded', witnesses);
+            satisfied.set(
+                'state-baseline-recorded',
+                states.length === 2 &&
+                    states.every(
+                        (value) => value.value.exists && value.value.status === 'captured',
+                    ) &&
+                    this.stateEqual(states[0]?.value, states[1]?.value),
+            );
+            if (
+                witnesses &&
+                states.length === 2 &&
+                states.every((value) => value.value.status === 'captured')
+            ) {
+                this.prior.set('baseline-state', states.at(-1)!.value);
+                this.prior.set('baseline-data', data.at(-1)!.value);
+                this.baselineReceipts = packet.snapshots.map((value: any) => ({
+                    path: value.path,
+                    bytes: value.bytes,
+                    sha256: value.sha256,
+                }));
+            }
+        }
+        satisfied.set(
+            'unrelated-data-preserved',
+            this.prior.has('baseline-data') &&
+                settings.length === 2 &&
+                settings.every((value) => this.settingsWitness(value.value, selection.host)) &&
+                data.length === 2 &&
+                data.every(
+                    (value) =>
+                        JSON.stringify(value.value) ===
+                        JSON.stringify(this.prior.get('baseline-data')),
+                ),
+        );
+        satisfied.set(
+            'prior-state-rows-preserved',
+            this.prior.has('baseline-state') &&
+                states.length === 2 &&
+                states.every((value) =>
+                    this.statePreserved(this.prior.get('baseline-state'), value.value),
+                ),
+        );
+        // Outer wrapper snapshots include the SessionStart writer. Only a narrow
+        // collector boundary around read-only MCP may establish that gate.
+        satisfied.set('read-only-mcp-preserved-state', false);
+        satisfied.set(
+            'state-closed-and-snapshotted',
+            quiescent &&
+                states.length === 2 &&
+                states.every((value) => value.value.status === 'captured'),
+        );
+        satisfied.set(
+            'snapshots-preserved',
+            quiescent &&
+                bundle !== null &&
+                this.baselineReceipts.length > 0 &&
+                this.baselineReceipts.every(
+                    (file) =>
+                        nativeFiles?.get(file.path)?.sha256 === file.sha256 &&
+                        nativeFiles?.get(file.path)?.bytes === file.bytes,
+                ),
+        );
+        // Native auth/marketplace absence, hook/MCP semantics, loaded process and Claude
+        // plugin data require the selected raw codec. They remain false until bound.
+        let loaded: unknown = null;
+        let rollback: unknown = null;
+        if (step.id === 'retain' && bundle) {
+            satisfied.set('private-evidence-and-state-retained', true);
+            satisfied.set('retention-digest-verified', true);
+            this.prior.set('final-retention', checkpoint!.file);
+        }
+        if (step.id === 'cleanup-owned') {
+            const cleanup = retained.find(
+                (row) => row.value?.stopped && row.value?.removed_volumes,
+            )?.value;
+            const receipt = this.prior.get('final-retention');
+            if (cleanup && receipt) {
+                this.files.read(receipt);
+                evidence.push({ ...receipt });
+                const exact =
+                    cleanup.container_id === facts.container_id &&
+                    cleanup.native_acceptance === false &&
+                    cleanup.removed_volumes.length === 4 &&
+                    new Set(cleanup.removed_volumes).size === 4 &&
+                    ['home', 'state', 'work', 'native-output'].every((role) =>
+                        cleanup.removed_volumes.includes(`i9-pilot-${this.nonce}-${role}`),
+                    ) &&
+                    cleanup.stopped?.State?.Running === false;
+                satisfied.set(
+                    'retention-receipt-rechecked',
+                    cleanup.retained.sha256 === receipt.sha256 &&
+                        cleanup.retained.bytes === receipt.bytes &&
+                        relative(this.files.root, cleanup.retained.path) === receipt.path,
+                );
+                satisfied.set('only-owned-resources-removed', exact);
+                satisfied.set('disposable-profile-destroyed', exact);
+                satisfied.set('retained-evidence-still-present', true);
+            }
+        }
+        return {
+            schema_version: 2,
+            ...selection,
+            phase: step.id,
+            mode: 'native',
+            processes: facts.commands.map((value) => value.process),
+            checks: step.checks.map((id) => ({
+                id,
+                satisfied: satisfied.get(id) === true,
+                evidence: evidence.map((value) => value.path),
+            })),
+            evidence,
+            environment,
+            rollback_state: rollback,
+            loaded,
+        };
+    }
+
+    private rawWitness(value: any) {
+        projectionObject(value, ['path', 'exists', 'bytes', 'sha256', 'base64']);
+        if (
+            typeof value.path !== 'string' ||
+            !value.path.startsWith(`${NativePilotConfiguration.accountHome}/`) ||
+            typeof value.exists !== 'boolean'
+        )
+            throw new Error('projection_witness');
+        if (!value.exists) {
+            if (value.bytes !== 0 || value.sha256 !== null || value.base64 !== null)
+                throw new Error('projection_absent_witness');
+            return;
+        }
+        this.files.decode({ ...value, kind: 'file', target: null });
+    }
+    private settingsWitness(value: any, host: string) {
+        if (!value.exists) return false;
+        const bytes = this.files.decode({ ...value, kind: 'file', target: null });
+        if (host === 'codex') {
+            const text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+            return (
+                text.startsWith(
+                    '# i9-native-pilot unrelated settings\nhide_agent_reasoning = true\n',
+                ) &&
+                text.split('\n').filter((line) => /^\s*hide_agent_reasoning\s*=/.test(line))
+                    .length === 1
+            );
+        }
+        const settings = projectionObject(
+            JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes)),
+        );
+        return settings.enabledPlugins?.['fixture-plugin@independent-owner'] === false;
+    }
+    private dataWitness(value: any, run: string) {
+        return (
+            value.exists &&
+            value.sha256 === projectionDigest(`i9-native-pilot unrelated data\nrun_id=${run}\n`)
+        );
+    }
+    private state(value: any, path: string, files: any) {
+        projectionObject(value, [
+            'schema_version',
+            'exists',
+            'files',
+            'migrations',
+            'schema',
+            'tables',
+            'state_sha256',
+            'status',
+            'reason',
+        ]);
+        if (
+            value.schema_version !== 2 ||
+            typeof value.exists !== 'boolean' ||
+            !Array.isArray(value.files) ||
+            !Array.isArray(value.tables) ||
+            value.tables.length > 64 ||
+            !Array.isArray(value.schema) ||
+            !Array.isArray(value.migrations) ||
+            !['captured', 'blocked'].includes(value.status)
+        )
+            throw new Error('projection_state_shape');
+        if (!value.exists) {
+            if (
+                value.files.length ||
+                value.tables.length ||
+                value.schema.length ||
+                value.migrations.length ||
+                value.state_sha256 !== projectionDigest('absent')
+            )
+                throw new Error('projection_state_absence');
+            return;
+        }
+        if (value.state_sha256 !== projectionDigest(JSON.stringify(value.files)))
+            throw new Error('projection_state_identity');
+        const prefix = path.replace(/-state\.json$/, '-sqlite-copy/');
+        if (prefix === path) throw new Error('projection_state_locator');
+        for (const file of value.files) {
+            projectionObject(file, ['name', 'bytes', 'sha256']);
+            if (!/^skills-usage\.db(?:-wal|-shm)?$/.test(file.name))
+                throw new Error('projection_state_file');
+            const raw = files?.get(prefix + file.name);
+            if (!raw || raw.bytes !== file.bytes || raw.sha256 !== file.sha256)
+                throw new Error('projection_state_byte_receipt');
+            this.files.decode(raw);
+        }
+        if (value.status === 'captured')
+            new NativePilotStateSchemaValidator().validate(value.migrations, value.schema);
+        const names = new Set(value.tables.map((table: any) => table.name));
+        if (
+            names.size !== value.tables.length ||
+            (value.status === 'captured' &&
+                (value.schema.filter((entry: any) => entry.type === 'table').length !==
+                    names.size ||
+                    value.schema.some(
+                        (entry: any) => entry.type === 'table' && !names.has(entry.name),
+                    )))
+        )
+            throw new Error('projection_incomplete_state_tables');
+        let rows = 0;
+        for (const table of value.tables) {
+            projectionObject(table, ['name', 'sql_sha256', 'rows']);
+            if (
+                !Array.isArray(table.rows) ||
+                table.rows.some(
+                    (row: unknown) => typeof row !== 'string' || !/^[a-f0-9]{64}$/.test(row),
+                ) ||
+                (rows += table.rows.length) > 100_000 ||
+                !value.schema.some(
+                    (entry: any) =>
+                        entry.type === 'table' &&
+                        entry.name === table.name &&
+                        entry.sql_sha256 === table.sql_sha256,
+                )
+            )
+                throw new Error('projection_state_rows');
+        }
+    }
+    private stateEqual(a: any, b: any) {
+        return (
+            a?.status === 'captured' &&
+            b?.status === 'captured' &&
+            a.exists === b.exists &&
+            ['files', 'migrations', 'schema', 'tables', 'state_sha256'].every(
+                (key) => JSON.stringify(a[key]) === JSON.stringify(b[key]),
+            )
+        );
+    }
+    private statePreserved(a: any, b: any) {
+        if (a?.status !== 'captured' || b?.status !== 'captured' || (a.exists && !b.exists))
+            return false;
+        if (
+            !a.schema.every((entry: any) =>
+                b.schema.some((current: any) => JSON.stringify(entry) === JSON.stringify(current)),
+            )
+        )
+            return false;
+        return a.tables.every((table: any) => {
+            const current = b.tables.find(
+                (entry: any) => entry.name === table.name && entry.sql_sha256 === table.sql_sha256,
+            );
+            if (!current) return false;
+            const rows = new Map<string, number>();
+            for (const row of current.rows) rows.set(row, (rows.get(row) ?? 0) + 1);
+            for (const row of table.rows) {
+                const count = rows.get(row) ?? 0;
+                if (!count) return false;
+                rows.set(row, count - 1);
+            }
+            return true;
+        });
+    }
+}
