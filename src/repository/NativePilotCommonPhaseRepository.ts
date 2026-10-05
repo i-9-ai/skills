@@ -72,7 +72,7 @@ export class NativePilotCommonPhaseRepository implements NativePilotCommonTransp
         this.execute = execute;
         this.child = child;
         // Node's monotonic process age includes entrypoint imports and setup. A phase is one
-        // fresh common process; constructing a repository never grants a new 45-second window.
+        // fresh common process; constructing a repository never grants a new phase window.
         this.elapsed = elapsed;
     }
 

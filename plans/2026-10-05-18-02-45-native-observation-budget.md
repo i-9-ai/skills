@@ -2,6 +2,10 @@
 
 Issue: [#90](https://github.com/i-9-ai/skills/issues/90).
 
+Source status (2026-10-05): the 60-second outer bound and focused dispatch/deadline
+regressions are implemented. Native validation of this correction remains
+pending; the earlier 45-second failed captures are preserved without regrading.
+
 ## Objective and observed problem
 
 Permit the fixed native observation child to start when the complete input and
@@ -25,7 +29,8 @@ rollback, unregistration or complete native acceptance.
 
 ## Scope and limits
 
-Change only the outer common observation phase from 45 to 60 seconds. Preserve
+The source implementation changes only the outer common phase from 45 to 60
+seconds. It preserves
 the 40-second absolute native lifetime, the 42-second selected-child minimum,
 the existing setup/drain/report reserves, one-second child rescue and one-second
 phase finish, and the job, command, output, resource and confinement bounds.
@@ -68,8 +73,12 @@ Test the measured preparation durations, dispatch at the exact remaining-budget
 boundary, refusal just beyond that boundary, non-finite or negative elapsed
 values, ordinary-child caps and unchanged inner lifetime/reserves. Every
 dispatched child plus preparation and both final reserves must fit within the
-60-second outer phase. Fake executors must prove that a refusal never spawns a
-process. Run `npm run check`, consumer packaging tests,
+60-second outer phase. The focused fake tests cover both selected labels at the
+four measured durations and at 15,999.999, 16,000 and 16,000.001 ms elapsed: exact
+fit dispatches, insufficient remaining time does not spawn a child. They also
+exercise bounded rescue and phase completion without renewing the deadline.
+Canonical checks, exact-commit review and fresh native evidence remain separate.
+Run `npm run check`, consumer packaging tests,
 `npm run changeset:status` and `git diff --check` under Node 24 after `npm ci`.
 
 Retain failures, unrun phases, byte identities and cleanup observations. A manual

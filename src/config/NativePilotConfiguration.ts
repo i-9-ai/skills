@@ -113,7 +113,7 @@ export class NativePilotConfiguration {
     static readonly limits = Object.freeze({
         job_ms: 1_800_000,
         command_ms: 90_000,
-        observe_ms: 45_000,
+        observe_ms: 60_000,
         cleanup_ms: 30_000,
         output_bytes: 1_048_576,
         tree_files: 10_000,

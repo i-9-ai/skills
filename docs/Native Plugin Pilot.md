@@ -84,8 +84,18 @@ verdict. Do not fall back to a real profile or a model conversation.
 A prepared phase is not an observed result; failed and unattempted phases remain
 visible. Process proof binds two live PID/start-time/parent samples to the
 worker-observed child, rather than accepting a collector's asserted PID. Nested
-timeouts reserve time for shutdown and evidence without extending the 45-second
-phase. An unknown process or socket state blocks advancement; a measured zombie
+timeouts now use a 60-second common phase while preserving the 40-second native
+lifetime, 42-second selected-child minimum, one-second child rescue and one-second
+phase finish. Preparation has at most 16 seconds before selected dispatch; a
+smaller remaining budget still refuses to launch the child.
+
+This correction is implemented in source with fake deadline and dispatch tests;
+fresh native validation remains pending. Earlier 45-second failed captures retain
+their original budgets and verdicts. Their four-gate baseline candidate result
+does not establish the separately blocked native absence observation. See the
+[budget plan](https://github.com/i-9-ai/skills/blob/main/plans/2026-10-05-18-02-45-native-observation-budget.md)
+for the measured preparation times, unchanged limits and required verification.
+An unknown process or socket state blocks advancement; a measured zombie
 residual is retained as a terminated residual, never relabeled as process absence.
 
 SQLite preservation has two explicit outcomes: absent storage stays absent, or

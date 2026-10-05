@@ -318,7 +318,7 @@ test('a vanished or oversized second stat remains unobserved and preserves the f
     }
 });
 
-test('selected observer completes after 40 seconds within the unchanged absolute 45-second phase budget', async (t) => {
+test('selected observer completes after 40 seconds within the absolute 60-second outer phase budget', async (t) => {
     t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 0 });
     const f = fixture(t, {
         selection: { phase: 'observe-a', pin: 'a' },
@@ -334,8 +334,8 @@ test('selected observer completes after 40 seconds within the unchanged absolute
     const budget = JSON.parse(
         readFileSync(join(f.output, '1-selected-native-observer-budget.json')),
     );
-    assert.equal(budget.timeout_ms, 43000);
-    assert.equal(budget.phase_limit_ms, 45000);
+    assert.equal(budget.timeout_ms, 58000);
+    assert.equal(budget.phase_limit_ms, 60000);
     assert.equal(budget.dispatched, true);
 });
 
@@ -346,7 +346,7 @@ for (const stage of ['prepareContext', 'prepareEnvironment']) {
             selection: { phase: 'observe-a', pin: 'a' },
             elapsed: () => elapsed,
             [stage]: () => {
-                elapsed = 1001;
+                elapsed = 16001;
             },
         });
         const result = await f.repository.run(f.calls[0]);
@@ -358,25 +358,144 @@ for (const stage of ['prepareContext', 'prepareEnvironment']) {
         );
         assert.equal(budget.dispatched, false);
         assert.equal(budget.reason, 'insufficient-remaining-phase-budget');
-        assert.equal(budget.elapsed_ms, 1001);
+        assert.equal(budget.elapsed_ms, 16001);
     });
 }
 
 test('both selected labels share nested reserves and the limit is never renewed', () => {
     for (const label of ['selected-native-observer', 'selected-native-absence-observer']) {
         const beginning = NativePilotConfiguration.observationBudget(label, 0);
-        const lastStart = NativePilotConfiguration.observationBudget(label, 1000);
-        assert.equal(beginning.timeout_ms, 43000);
+        const lastStart = NativePilotConfiguration.observationBudget(label, 16000);
+        assert.equal(beginning.timeout_ms, 58000);
         assert.equal(lastStart.timeout_ms, 42000);
         assert.equal(lastStart.minimum_child_ms, 42000);
-        for (const elapsed of [1001, 45000, 60000, NaN, Infinity, -1])
+        for (const elapsed of [16000.001, 16001, 45000, 60000, NaN, Infinity, -1])
             assert.equal(NativePilotConfiguration.observationBudget(label, elapsed).timeout_ms, 0);
     }
-    assert.equal(NativePilotConfiguration.limits.observe_ms, 45000);
+    assert.equal(NativePilotConfiguration.limits.observe_ms, 60000);
+});
+
+const measuredPreparation = [
+    { label: 'observe repetition 1', elapsed: 2131.732744, expected: 55868 },
+    { label: 'observe repetition 2', elapsed: 2061.915712, expected: 55938 },
+    { label: 'baseline repetition 1', elapsed: 5657.71578, expected: 52342 },
+    { label: 'baseline repetition 2', elapsed: 4072.111421, expected: 53927 },
+];
+
+for (const phase of ['observe-a', 'baseline']) {
+    for (const measured of measuredPreparation) {
+        test(`${phase} dispatches with the retained ${measured.label} preparation time without changing native lifetime`, async (t) => {
+            let f;
+            f = fixture(
+                t,
+                {
+                    selection: { host: 'codex', phase, pin: phase === 'baseline' ? null : 'a' },
+                    exit: 0,
+                    elapsed: () => measured.elapsed,
+                },
+                {
+                    stat: () => stat(),
+                    executable: () => f.events.findLast((value) => value?.options).executable,
+                },
+            );
+            let result;
+            for (const call of f.calls) result = await f.repository.run(call);
+            const label = f.calls.at(-1).label;
+            const budget = JSON.parse(
+                readFileSync(join(f.output, `${f.calls.length}-${label}-budget.json`)),
+            );
+            assert.equal(budget.selected, true);
+            assert.equal(budget.dispatched, true);
+            assert.equal(budget.elapsed_ms, measured.elapsed);
+            assert.equal(budget.timeout_ms, measured.expected);
+            assert.equal(budget.minimum_child_ms, 42000);
+            assert.equal(budget.reason, null);
+            assert.deepEqual(result.process, { status: 'completed', exit_code: 0, signal: null });
+            assert.equal(result.pid, 90);
+            assert.equal(result.start_ticks, '100');
+            assert(
+                measured.elapsed +
+                    budget.timeout_ms +
+                    budget.child_rescue_ms +
+                    budget.phase_finish_ms <=
+                    60000,
+            );
+        });
+    }
+
+    for (const [elapsed, dispatched] of [
+        [15999.999, true],
+        [16000, true],
+        [16000.001, false],
+    ]) {
+        test(`${phase} has an exact nonrenewable remaining-budget boundary at elapsed ${elapsed}`, async (t) => {
+            let f;
+            f = fixture(
+                t,
+                {
+                    selection: { host: 'codex', phase, pin: phase === 'baseline' ? null : 'a' },
+                    exit: 0,
+                    elapsed: () => elapsed,
+                },
+                {
+                    stat: () => stat(),
+                    executable: () => f.events.findLast((value) => value?.options).executable,
+                },
+            );
+            let result;
+            for (const call of f.calls) result = await f.repository.run(call);
+            const label = f.calls.at(-1).label;
+            const budget = JSON.parse(
+                readFileSync(join(f.output, `${f.calls.length}-${label}-budget.json`)),
+            );
+            assert.equal(budget.dispatched, dispatched);
+            assert.equal(budget.timeout_ms, dispatched ? 42000 : 0);
+            assert.equal(budget.phase_limit_ms, 60000);
+            assert.equal(
+                f.events.filter((value) => value?.options).length,
+                f.calls.length - (dispatched ? 0 : 1),
+            );
+            assert.equal(result.process.status, dispatched ? 'completed' : 'timeout');
+            assert.equal(result.pid, dispatched ? 90 : null);
+            if (!dispatched) {
+                assert.equal(budget.reason, 'insufficient-remaining-phase-budget');
+                assert.equal(result.stdout.bytes, 0);
+                assert.equal(result.stderr.bytes, 0);
+            } else {
+                assert(
+                    elapsed + budget.timeout_ms + budget.child_rescue_ms + budget.phase_finish_ms <=
+                        60000,
+                );
+            }
+        });
+    }
+}
+
+test('the outer change preserves the native lifetime, child reserves and unrelated resource limits', () => {
+    assert.deepEqual(NativePilotConfiguration.observation, {
+        ordinary_child_ms: 12000,
+        native_lifetime_ms: 40000,
+        selected_setup_ms: 1000,
+        selected_drain_ms: 500,
+        selected_report_ms: 500,
+        child_rescue_ms: 1000,
+        phase_finish_ms: 1000,
+    });
+    assert.deepEqual(NativePilotConfiguration.limits, {
+        job_ms: 1800000,
+        command_ms: 90000,
+        observe_ms: 60000,
+        cleanup_ms: 30000,
+        output_bytes: 1048576,
+        tree_files: 10000,
+        tree_bytes: 536870912,
+        file_bytes: 33554432,
+        binary_bytes: 536870912,
+    });
 });
 
 test('a late ordinary call reserves bounded rescue/finalization and cannot use a new 12-second window', async (t) => {
-    t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 42000 });
+    t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 57000 });
     const f = fixture(t, { wait: true, noClose: true, elapsed: () => Date.now() });
     const pending = f.repository.run(f.calls[0]);
     await Promise.resolve();
@@ -385,10 +504,10 @@ test('a late ordinary call reserves bounded rescue/finalization and cannot use a
     t.mock.timers.tick(1000);
     const result = await pending;
     assert.equal(result.process.status, 'timeout');
-    assert.equal(Date.now(), 44000);
+    assert.equal(Date.now(), 59000);
 });
 
-test('selected timeout and unknown exit use their bounded rescue before the unchanged phase deadline', async (t) => {
+test('selected timeout and unknown exit use bounded rescue before the fixed 60-second phase deadline', async (t) => {
     t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 0 });
     const f = fixture(t, {
         selection: { phase: 'observe-a', pin: 'a' },
@@ -398,13 +517,13 @@ test('selected timeout and unknown exit use their bounded rescue before the unch
     });
     const pending = f.repository.run(f.calls[0]);
     await Promise.resolve();
-    t.mock.timers.tick(43000);
+    t.mock.timers.tick(58000);
     assert(f.events.includes('kill:SIGKILL'));
     t.mock.timers.tick(1000);
     const result = await pending;
     assert.equal(result.process.status, 'timeout');
-    assert.equal(Date.now(), 44000);
-    assert.equal(NativePilotConfiguration.limits.observe_ms, 45000);
+    assert.equal(Date.now(), 59000);
+    assert.equal(NativePilotConfiguration.limits.observe_ms, 60000);
 });
 
 test('spawn absence and synchronous failure retain closed blocked process classifications', async (t) => {
