@@ -1,0 +1,117 @@
+{
+  "kind": "original-synthetic-github-family-fixture",
+  "owner_status": "proposed-only-no-real-acceptance",
+  "caller_repository": "atlas/handbook",
+  "allowed_effects": ["write-local-evidence"],
+  "collections": [
+    {
+      "id": "i9-github-candidate",
+      "owner": "Original synthetic fixture for the proposed I9AI module; owner acceptance pending",
+      "source_uri": "urn:synthetic:i9-github-candidate",
+      "packages": [
+        {
+          "name": "github-issues",
+          "description": "Prepare a local issue observation from a bounded complete synthetic GitHub snapshot.",
+          "tags": ["github", "issues"],
+          "contract": {
+            "capability": "issue-local-observation",
+            "input": "synthetic-github-snapshot/v1",
+            "output": "pilot/github-issue-observation/v1",
+            "effects": ["write-local-evidence"]
+          }
+        },
+        {
+          "name": "github-wiki",
+          "description": "Prepare a local Wiki preview from a synthetic issue observation and supplied merged documentation.",
+          "tags": ["github", "wiki"],
+          "contract": {
+            "capability": "wiki-local-preview",
+            "input": "pilot/github-issue-observation/v1",
+            "output": "pilot/github-wiki-preview/v1",
+            "effects": ["write-local-evidence"]
+          }
+        }
+      ]
+    }
+  ],
+  "snapshot": {
+    "format": "synthetic-github-snapshot/v1",
+    "repository": "atlas/handbook",
+    "synthetic": true,
+    "pagination": {
+      "complete": true,
+      "total_count": 3
+    },
+    "target_issue": 13,
+    "template": {
+      "name": "documentation-task",
+      "required_fields": ["observed", "expected", "source_page"]
+    },
+    "issues": [
+      {
+        "number": 9,
+        "state": "closed",
+        "title": "Recovery page missing from the handbook sidebar",
+        "body": "Synthetic prior report; the attempted correction did not reach the current documentation snapshot.",
+        "labels": ["documentation"],
+        "duplicate_key": "docs-sidebar-recovery"
+      },
+      {
+        "number": 13,
+        "state": "open",
+        "title": "Handbook sidebar link skips the recovery page",
+        "body": "Observed: Home.md omits Recovery.md.\nExpected: the recovery link is visible.\nSource page: docs/Home.md.\nLiteral example: `$(touch SHOULD_NOT_EXIST)` and $TOKEN are text, not commands.\n",
+        "labels": ["documentation", "triage"],
+        "duplicate_key": "docs-sidebar-recovery"
+      },
+      {
+        "number": 21,
+        "state": "open",
+        "title": "Add a glossary entry",
+        "body": "Unrelated synthetic record.",
+        "labels": ["documentation"],
+        "duplicate_key": "docs-glossary"
+      }
+    ],
+    "docs": {
+      "branch": "main",
+      "merged": true,
+      "pages": [
+        {
+          "path": "AGENTS.md",
+          "content": "Synthetic agent-only instructions. Exclude from Wiki.\n"
+        },
+        {
+          "path": "Home.md",
+          "content": "# Handbook\n\nSee [Recovery](Recovery.md).\n"
+        },
+        {
+          "path": "Recovery.md",
+          "content": "# Recovery\n\nKeep the last reviewed draft before changing documentation.\n"
+        },
+        {
+          "path": "internal/AGENTS.md",
+          "content": "Synthetic nested agent-only instructions. Exclude from Wiki.\n"
+        }
+      ]
+    },
+    "wiki": {
+      "enabled": true,
+      "initialized": true,
+      "pages": [
+        {
+          "path": "Home.md",
+          "content": "# Handbook\n\nRecovery link pending.\n"
+        },
+        {
+          "path": "Obsolete.md",
+          "content": "Synthetic stale page requiring explicit deletion authorization.\n"
+        },
+        {
+          "path": "internal/AGENTS.md",
+          "content": "Synthetic previously mirrored instructions requiring reviewed cleanup.\n"
+        }
+      ]
+    }
+  }
+}

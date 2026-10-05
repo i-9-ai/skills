@@ -20,6 +20,8 @@ Test meaningful acceptance and rejection behavior, confinement, no-overwrite, an
 Run `npm test` from the repository root. Tests make no network requests and leave no fixture files in the checkout.
 
 ## Child DOX index
+
+- [GitHub family consumer](integration/collection/github-family-consumer.test.mjs): original issue/Wiki consumer evidence through existing catalog helpers; no actual GitHub, domain-package or native-host execution.
 - [Federated consumer pilot](integration/collection/federated-consumer.test.mjs): real catalog helpers and test-only bounded handoffs across fictional independent owners; no semantic routing or model evaluation claim.
 - [Packed CLI verification](packaging/cli-package.mjs): allowlist and runtime checks under a disposable node_modules tree using only already-installed production dependencies.
 - [Packed Git source receipt](packaging/git-source-receipt.mjs): real clean synthetic Git builds retain asserted source provenance after packaging removes Git metadata.

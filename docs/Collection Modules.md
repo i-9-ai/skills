@@ -110,3 +110,66 @@ Run the synthetic proof without network or user-home state:
 ```sh
 node --test tests/integration/collection/federated-consumer.test.mjs
 ```
+
+## Proposed GitHub family and reproducible consumer case
+
+For [issue #16](https://github.com/i-9-ai/skills/issues/16) and the related
+[GitHub family scope](https://github.com/i-9-ai/skills/issues/5), propose a separate
+collection starting with `github-issues` and `github-wiki`. I9AI maintainers are
+the proposed owner; this work records no named maintainer's acceptance or public
+module release. GitHub CLI/API and Wiki capability changes justify a release
+cadence independent of the meta-skill tooling. Issue evidence and Wiki content
+remain independently requestable package outputs.
+
+The roadmap uses actual caller-selected local packages as references. Complete
+local inventories and licenses were inspected; no domain procedure, template,
+script or icon is copied into this repository. These local content identities do
+not authenticate a publisher, and neither installed upstream revision is known.
+
+| Observed source | Capability and primary output | Original consumer case and reuse boundary |
+| --- | --- | --- |
+| `github-issues`, local entrypoint SHA-256 `e363aa0c445f1c5fd4773e5149d473defc08ddca5360a83b2448825c3609027b` | Explicit repository identity, complete open/closed issue evidence, literal issue text, bounded duplicate review and authorized changes with readback | Inspect a complete fake issue snapshot for issue #13 and closed candidate #9. Produce only local evidence. No installed package or GitHub operation is executed. |
+| `github-wiki`, local entrypoint SHA-256 `0be7e4b3c66b99c567d819efc9eee35c59edb9d5ed4689a94b82e42d4965dbe6` | Wiki availability and initialization, merged canonical documentation, agent-instruction exclusion and separately authorized mirror publication/deletion | Prepare a local Wiki preview from fake merged docs and the issue observation. Retain the issue draft on a missing prerequisite or changed input; proposed deletions stay unapplied. No workflow is copied. |
+| Existing catalog/index contract | Source-qualified discovery, freshness and explicit package/resource identity | Generate a schema-1 catalog for original synthetic packages, query the selected source and recheck exact package/license bytes before the fixed handoff. Discovery grants no ownership or execution authority. |
+
+Both reference packages contain complete MIT licenses. The issue package retains
+GitHub, Inc., Nous Research and i-9-ai contributor notices; the Wiki package
+retains I-9 AI's notice. Any future source admission must preserve applicable
+licenses and attribution and qualify the actual selected source. Historical
+license/documentation revisions cannot be relabeled as installed-package commits.
+
+The checked-in
+[scenario](https://github.com/i-9-ai/skills/blob/main/tests/integration/collection/github-family-consumer.fixture.json)
+and
+[test](https://github.com/i-9-ai/skills/blob/main/tests/integration/collection/github-family-consumer.test.mjs)
+are complete original fixtures, so reproduction does not depend on access to
+those local reference packages. The concrete trigger is: “In this separate
+handbook workspace, inspect the supplied issue evidence and prepare a Wiki
+preview; keep all results local and unsubmitted.” The two illustrative artifact
+formats are fixture proposals, not interfaces verified in the installed domain
+packages. Plain JSON is the standalone fallback.
+
+The existing federated suite retains the generic collision, catalog-version,
+resource, package-drift and artifact-format checks. The GitHub case adds complete
+issue pagination, selected repository identity, literal text, Wiki readiness,
+merged documentation, concurrent input changes, root/nested agent-instruction
+exclusion, traversal rejection and explicit publication/deletion boundaries.
+Run both without network, credentials, a plugin or installed domain skills:
+
+```sh
+node --test tests/integration/collection/github-family-consumer.test.mjs tests/integration/collection/federated-consumer.test.mjs
+```
+
+The consumer lives in a disposable directory outside the checkout. Passing checks
+prove deterministic integration of the existing meta-skill helpers with the
+authored fixture contracts. They do not prove semantic routing, actual package
+behavior, current GitHub support, native readiness, ownership acceptance or a
+published module.
+
+Before a real module release, the proposed owner must accept accountability and
+the initial scope; select the actual source and independent release policy;
+review provenance, complete licenses and resources; decide and document the
+standalone handoff contract; validate and evaluate the actual packages; obtain
+independent review; and receive separate authorization for publication and any
+consumer installation. This roadmap establishes a concrete next candidate,
+without adding domain packages to the meta-skill collection.
