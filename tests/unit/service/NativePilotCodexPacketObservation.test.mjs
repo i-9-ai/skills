@@ -14,6 +14,7 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
 import { fixture } from '../../helpers/NativeCodexMeasuredFixture.mjs';
 import { consumeLoadedProjection } from '../../helpers/NativePilotLoadedProjectionFixture.mjs';
 import { NativePilotCommonObservationService } from '../../../src/service/NativePilotCommonObservationService.ts';
@@ -26,71 +27,101 @@ const uuid = '8a7d0a7e-b672-478c-bb12-03a1a81d3e98';
 const selection = { run_id: uuid, host: 'codex', repetition: 1 };
 const nativeProcess = { status: 'completed', exit_code: 0, signal: null };
 
-async function packetFixture(phase = 'observe-a', pin = 'a') {
+function schema4(repository, removeHistory = false) {
+    const sql = readFileSync(
+        new URL('../../fixtures/native-pilot/quality-v4.sql', import.meta.url),
+        'utf8',
+    );
+    assert.equal(
+        pilotDigest(sql),
+        '0a32f907ceb2cd1ac5214a9d8e72723274a7575cd7c3c9a622caf9c36c3e33b3',
+    );
+    const database = new DatabaseSync(repository.databasePath);
+    try {
+        database.exec(sql);
+        database.prepare('INSERT INTO usage_migrations VALUES(?,?)').run(4, pilotDigest(sql));
+        if (removeHistory) database.exec('DELETE FROM usage_events');
+    } finally {
+        database.close();
+    }
+}
+
+async function packetFixture(phase = 'observe-a', pin = 'a', prepareState = () => {}) {
     const root = mkdtempSync(join(realpathSync(tmpdir()), 'i9-codex-packet-fixture-'));
     mkdirSync(join(root, 'input'));
     mkdirSync(join(root, 'evidence'));
-    const f = await fixture(51, (selected) => {
-        selected.phase =
-            phase === 'observe-restored-a'
-                ? 'rollback'
-                : phase === 'observe-b'
-                  ? 'update'
-                  : 'install';
-        const catalog = {
-            schema_version: 1,
-            skills: selected.skills.map((skill) => ({
-                ...skill,
-                path: '.agents/skills/' + skill.name,
-            })),
-        };
-        const hook = selected.hooks[0];
-        const hooks = {
-            hooks: {
-                SessionStart: [
-                    {
-                        matcher: hook.matcher,
-                        hooks: [
-                            {
-                                type: 'command',
-                                command: hook.command,
-                                timeout: hook.timeoutSec,
-                                additionalContextLimit: hook.additionalContextLimit,
-                            },
-                        ],
-                    },
-                ],
-            },
-        };
-        for (const key of ['source_a', 'source_b']) {
-            const source = join(root, 'input', key);
-            mkdirSync(source);
-            mkdirSync(join(source, 'hooks'));
-            writeFileSync(join(source, 'skills-catalog.json'), JSON.stringify(catalog) + '\n');
-            writeFileSync(join(source, 'hooks/codex.json'), JSON.stringify(hooks) + '\n');
-            for (const skill of selected.skills) {
-                const dir = join(source, '.agents/skills', skill.name);
-                mkdirSync(dir, { recursive: true });
-                writeFileSync(join(dir, 'SKILL.md'), 'Synthetic selected resource.\n');
+    const f = await fixture(
+        51,
+        (selected) => {
+            selected.phase =
+                phase === 'observe-restored-a'
+                    ? 'rollback'
+                    : phase === 'observe-b'
+                      ? 'update'
+                      : 'install';
+            const catalog = {
+                schema_version: 1,
+                skills: selected.skills.map((skill) => ({
+                    ...skill,
+                    path: '.agents/skills/' + skill.name,
+                })),
+            };
+            const hook = selected.hooks[0];
+            const hooks = {
+                hooks: {
+                    SessionStart: [
+                        {
+                            matcher: hook.matcher,
+                            hooks: [
+                                {
+                                    type: 'command',
+                                    command: hook.command,
+                                    timeout: hook.timeoutSec,
+                                    additionalContextLimit: hook.additionalContextLimit,
+                                },
+                            ],
+                        },
+                    ],
+                },
+            };
+            for (const key of ['source_a', 'source_b']) {
+                const source = join(root, 'input', key);
+                mkdirSync(source);
+                mkdirSync(join(source, 'hooks'));
+                writeFileSync(join(source, 'skills-catalog.json'), JSON.stringify(catalog) + '\n');
+                writeFileSync(join(source, 'hooks/codex.json'), JSON.stringify(hooks) + '\n');
+                for (const skill of selected.skills) {
+                    const dir = join(source, '.agents/skills', skill.name);
+                    mkdirSync(dir, { recursive: true });
+                    writeFileSync(join(dir, 'SKILL.md'), 'Synthetic selected resource.\n');
+                }
+                const witness = join(
+                    source,
+                    '.agents/skills',
+                    selected.skills[0].name,
+                    'references',
+                );
+                mkdirSync(witness);
+                writeFileSync(join(witness, 'witness.txt'), `Synthetic ${key} witness.\n`);
             }
-            const witness = join(source, '.agents/skills', selected.skills[0].name, 'references');
-            mkdirSync(witness);
-            writeFileSync(join(witness, 'witness.txt'), `Synthetic ${key} witness.\n`);
-        }
-        selected.artifactInventory = new NativePilotInventoryRepository().tree(
-            join(root, 'input', pin === 'b' ? 'source_b' : 'source_a'),
-        );
-        for (const skill of selected.skills) {
-            const prefix = '.agents/skills/' + skill.name + '/';
-            skill.files = selected.artifactInventory.entries
-                .filter((entry) => entry.kind === 'file' && entry.path.startsWith(prefix))
-                .map((entry) => ({
-                    path: entry.path.slice(prefix.length),
-                    sha256: entry.sha256,
-                    bytes: entry.bytes,
-                }));
-        }
-    });
+            selected.artifactInventory = new NativePilotInventoryRepository().tree(
+                join(root, 'input', pin === 'b' ? 'source_b' : 'source_a'),
+            );
+            for (const skill of selected.skills) {
+                const prefix = '.agents/skills/' + skill.name + '/';
+                skill.files = selected.artifactInventory.entries
+                    .filter((entry) => entry.kind === 'file' && entry.path.startsWith(prefix))
+                    .map((entry) => ({
+                        path: entry.path.slice(prefix.length),
+                        sha256: entry.sha256,
+                        bytes: entry.bytes,
+                    }));
+            }
+        },
+        undefined,
+        undefined,
+        prepareState,
+    );
     const s = f.selected,
         tree = s.input.artifactInventory,
         a = new NativePilotInventoryRepository().tree(join(root, 'input/source_a')),
@@ -389,10 +420,10 @@ test('full static packet path binds selected source bytes, native transcript and
     }
 });
 
-test('restored A compatibility and real producer inventories reach Driver for all three pins', async (t) => {
+test('real producer schema3-to-schema4 preservation reaches Driver/Report without claiming restored-source compatibility', async (t) => {
     const a = await packetFixture(),
-        b = await packetFixture('observe-b', 'b'),
-        restored = await packetFixture('observe-restored-a', 'restored-a');
+        b = await packetFixture('observe-b', 'b', schema4),
+        restored = await packetFixture('observe-restored-a', 'restored-a', schema4);
     try {
         const service = new NativePilotCommonObservationService({
             prepared: a.prepared,
@@ -416,7 +447,17 @@ test('restored A compatibility and real producer inventories reach Driver for al
         assert.equal((await project(a)).rollback_state, null);
         assert.equal((await project(b)).rollback_state, null);
         const result = await project(restored);
-        assert.equal(result.rollback_state.result, 'compatible');
+        assert.equal(result.rollback_state.preservation, 'observed');
+        assert.equal(result.rollback_state.compatibility, 'not-exercised');
+        for (const path of result.rollback_state.evidence) {
+            const snapshot = JSON.parse(readFileSync(join(a.root, 'evidence', path), 'utf8'));
+            assert.deepEqual(
+                snapshot.migrations.map((row) => row.version),
+                [1, 2, 3, 4],
+            );
+            assert.ok(snapshot.schema.some((row) => row.name === 'quality_receipts'));
+            assert.ok(snapshot.files.some((row) => row.name === 'skills-usage.db'));
+        }
         assert.equal(result.rollback_state.evidence.length, 2);
         assert.notEqual(result.rollback_state.evidence[0], result.rollback_state.evidence[1]);
         assert.ok(
@@ -429,6 +470,45 @@ test('restored A compatibility and real producer inventories reach Driver for al
         assert.equal(result.loaded.source_tree_sha256, a.prepared.trees.source_a.tree_sha256);
     } finally {
         a.remove();
+        b.remove();
+        restored.remove();
+    }
+});
+
+test('restored schema4 with lost prior history cannot claim preservation or complete the Driver phase', async (t) => {
+    const b = await packetFixture('observe-b', 'b', schema4),
+        restored = await packetFixture('observe-restored-a', 'restored-a', (repository) =>
+            schema4(repository, true),
+        );
+    try {
+        const evidenceRoot = join(b.root, 'evidence');
+        const service = new NativePilotCommonObservationService({
+            prepared: b.prepared,
+            evidenceRoot,
+        });
+        await service.project(b.step, selection, b.facts);
+        const facts = structuredClone(restored.facts);
+        for (const receipt of facts.evidence) {
+            const original = receipt.path;
+            receipt.path = restored.step.id + '-' + original;
+            copyFileSync(
+                join(restored.root, 'evidence', original),
+                join(evidenceRoot, receipt.path),
+            );
+        }
+        const result = await service.project(restored.step, selection, facts);
+        assert.equal(result.rollback_state, null);
+        const lane = await consumeLoadedProjection(
+            t,
+            restored,
+            result,
+            selection,
+            evidenceRoot,
+            'blocked',
+        );
+        assert.equal(lane.data_preservation, 'not-observed');
+        assert.equal(lane.data_compatibility, 'not-exercised');
+    } finally {
         b.remove();
         restored.remove();
     }

@@ -196,7 +196,8 @@ for (const host of ['codex', 'claude'])
         const { result, fake, selected } = await exercise(t, host);
         assert.equal(result.status, 'synthetic-only');
         assert.equal(result.native_acceptance, false);
-        assert.equal(result.data_compatibility, 'compatible');
+        assert.equal(result.data_preservation, 'observed');
+        assert.equal(result.data_compatibility, 'not-exercised');
         assert.equal(result.steps.length, 20);
         assert.equal(fake.aborts(), 0);
         assert.ok(existsSync(join(fake.journalParent, selected.run_id, 'result.json')));
@@ -471,7 +472,7 @@ test('an exhausted job budget stops before a new native phase', async (t) => {
     assert.equal(fake.aborts(), 1);
 });
 
-test('newer-schema refusal with unchanged bytes is observed separately and safe unregister still runs', async (t) => {
+test('an unexercised newer-schema refusal assertion cannot manufacture a native rejection even with unchanged bytes', async (t) => {
     const { result, fake } = await exercise(
         t,
         'claude',
@@ -489,11 +490,12 @@ test('newer-schema refusal with unchanged bytes is observed separately and safe 
             }
         },
     );
-    assert.equal(result.status, 'data-compatibility-blocked');
-    assert.equal(result.data_compatibility, 'blocked-newer-schema');
-    assert.ok(fake.calls.includes('uninstall'));
-    assert.ok(fake.calls.includes('retain'));
-    assert.ok(fake.calls.includes('cleanup-owned'));
+    assert.equal(result.status, 'blocked');
+    assert.equal(result.data_preservation, 'not-observed');
+    assert.equal(result.data_compatibility, 'not-exercised');
+    assert.equal(fake.calls.includes('uninstall'), false);
+    assert.equal(fake.calls.includes('retain'), false);
+    assert.equal(fake.calls.includes('cleanup-owned'), false);
     assert.equal(result.native_acceptance, false);
 });
 
@@ -518,7 +520,27 @@ test('matrix projection refuses duplicate profiles and arbitrary diagnostic leak
     assert.throws(() => report.summarize([copied]), /unsafe projection reason/);
 });
 
-test('four native-assertion lanes can be complete with an explicitly blocked compatibility outcome', async (t) => {
+test('bare compatibility and rejection labels cannot promote preservation or full compatibility', async (t) => {
+    const { result } = await exercise(t);
+    for (const value of ['compatible', 'blocked-newer-schema', 'not-observed']) {
+        const forged = structuredClone(result);
+        forged.data_compatibility = value;
+        assert.throws(() => new NativePilotReportService().summarize([forged]), /Malformed lane/);
+    }
+    for (const value of ['compatible', 'newer-schema-rejected-unchanged']) {
+        const { result: rejected } = await exercise(t, 'codex', (observation, step) => {
+            if (step.id === 'observe-restored-a') observation.rollback_state.compatibility = value;
+        });
+        assert.equal(
+            rejected.steps.find((step) => step.id === 'observe-restored-a').verdict,
+            'blocked',
+        );
+        assert.equal(rejected.data_preservation, 'not-observed');
+        assert.equal(rejected.data_compatibility, 'not-exercised');
+    }
+});
+
+test('four synthetic native-assertion lanes can complete preservation without claiming selected-source compatibility', async (t) => {
     const { result } = await exercise(t);
     // Pure projection fixtures, never actual native execution or upgraded assurance.
     const lanes = ['codex', 'claude'].flatMap((host) =>
@@ -526,8 +548,9 @@ test('four native-assertion lanes can be complete with an explicitly blocked com
             const lane = structuredClone(result);
             lane.selection = selection(host, repetition);
             lane.mode = 'native';
-            lane.status = 'data-compatibility-blocked';
-            lane.data_compatibility = 'blocked-newer-schema';
+            lane.status = 'evidence-ready-for-independent-review';
+            lane.data_preservation = 'observed';
+            lane.data_compatibility = 'not-exercised';
             lane.environment = {
                 instance_sha256: pilotDigest(`instance ${lane.selection.run_id}`),
                 profile_sha256: pilotDigest(`profile ${lane.selection.run_id}`),
@@ -539,8 +562,9 @@ test('four native-assertion lanes can be complete with an explicitly blocked com
     );
     const report = new NativePilotReportService().summarize(lanes);
     assert.equal(report.exercise_evidence_complete, true);
+    assert.equal(report.full_data_preservation, true);
     assert.equal(report.full_data_compatibility, false);
-    assert.equal(report.status, 'evidence-ready-with-observed-compatibility-limit');
+    assert.equal(report.status, 'evidence-ready-with-unexercised-data-compatibility');
     assert.equal(report.assurance, 'local-evidence-integrity-and-adapter-assertions-only');
     assert.equal(report.native_acceptance, false);
     assert.equal(JSON.stringify(report).includes('profile_sha256'), false);

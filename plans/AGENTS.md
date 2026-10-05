@@ -22,6 +22,8 @@ Verify every requirement has an implementation and a check or an explicit limit.
 
 ## Child DOX index
 
+- [Native pilot evidence qualification](2026-10-05-20-21-37-native-pilot-evidence-qualification.md): inert Claude debug-alias retention and honest rollback preservation versus selected-source compatibility; historical failures and migration guards remain unchanged.
+- [Native MCP readiness](2026-10-05-20-02-00-native-mcp-readiness.md): bounded startup observations require confirmed connection; existing deadlines, native limits and failed captures remain preserved.
 - [Loaded native inventories](2026-10-05-19-09-13-loaded-native-inventory-contract.md): closed producer envelopes bound to selected source and independent inventories; prior native failures and unsupported acceptance remain preserved.
 - [Native observation budgets](2026-10-05-18-02-45-native-observation-budget.md): measured pre-dispatch refusals and a bounded outer-phase correction; native lifetime, confinement and prior failures remain unchanged.
 - [GitHub module consumer](2026-10-05-16-07-22-github-module-consumer-pilot.md): concrete module roadmap and publicly reproducible local consumer fixture; owner acceptance, source admission and publication remain separate.

@@ -110,6 +110,22 @@ for the measured preparation times, unchanged limits and required verification.
 An unknown process or socket state blocks advancement; a measured zombie
 residual is retained as a terminated residual, never relabeled as process absence.
 
+After the loaded-inventory correction, a later Codex repetition completed all
+20 candidate phases. Its second repetition stopped at restored A because the
+selected MCP status was still `starting`. That response is startup evidence,
+not a connected server. The readiness correction permits bounded status queries
+within the existing request and time limits; only a complete inventory with the
+selected server connected permits catalog/resource calls. Historical failures
+remain unchanged.
+
+A separate private Claude diagnostic captured its init-only operation, but the
+export projector rejected the client's absolute `native-output/latest` debug
+alias. The captured process completed; its generic adapter-error verdict is not
+proof of a timeout. The correction retains only this known alias to an ordinary,
+byte-verified debug file for the selected run and repetition. It never follows
+or materializes the link. This diagnostic does not remove the public schema-2
+absence limitation or establish a complete two-host matrix.
+
 SQLite preservation has two explicit outcomes: absent storage stays absent, or
 existing storage stays unchanged during read-only operations. Seeded lanes retain
 the original file and sidecar bytes, issued schema identities and prior user-table
@@ -121,8 +137,16 @@ The seeded contract requires `existing_unchanged` for read-only MCP evidence.
 Snapshots bracket Codex's selected native MCP operations and Claude's MCP list/get
 health calls before its init hook writer. The host rechecks the main SQLite file,
 every retained sidecar, issued SQL and row/payload identities. Empty receipt lists
-cannot establish an existing store. A restored source A alone is insufficient:
-rollback compatibility also requires the preceding state and preserved history.
+cannot establish an existing store. At restored A, complete preceding-state and
+history comparisons establish `data_preservation: observed`. The current
+recipes exercise catalog/resource reads and hook context, so selected-source
+database API compatibility remains `data_compatibility: not-exercised` and
+`full_data_compatibility` stays false. Preserved history cannot prove that an
+older reader or writer accepts a newer schema. The later Codex trial retained
+schema 4 while selected source A supports schemas 1-3; the original positive
+compatibility label is historical output qualified by that limitation. No
+native reader/writer refusal is inferred from source inspection, and migration
+guards are never bypassed to obtain compatibility.
 
 The CLI returns a local report receipt and a nonzero status when execution is
 incomplete. Raw profiles, RPC/debug output, source exports and research artifacts

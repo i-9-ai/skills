@@ -11,7 +11,13 @@ import { NativeCodexObservationService } from '../../src/service/NativeCodexObse
 import { NativePilotStateSnapshotRepository } from '../../src/repository/NativePilotStateSnapshotRepository.ts';
 const sha = (bytes) => createHash('sha256').update(bytes).digest('hex');
 
-async function fixture(count = 51, changeSelected = (selected) => {}) {
+async function fixture(
+    count = 51,
+    changeSelected = (selected) => {},
+    mutate = () => {},
+    clock,
+    prepareState = () => {},
+) {
     const root = mkdtempSync(join(realpathSync(tmpdir()), 'i9-native-state-fixture-'));
     const home = join(root, 'home'),
         output = join(root, 'output');
@@ -19,6 +25,7 @@ async function fixture(count = 51, changeSelected = (selected) => {}) {
     mkdirSync(output);
     const stateRepo = new NativePilotStateSnapshotRepository({ home, outputRoot: output });
     stateRepo.seed('8a7d0a7e-b672-478c-bb12-03a1a81d3e98');
+    prepareState(stateRepo);
     const before = stateRepo.snapshot('mcp-before'),
         after = stateRepo.snapshot('mcp-after');
     const states = [
@@ -39,12 +46,12 @@ async function fixture(count = 51, changeSelected = (selected) => {}) {
     ];
     const selected = input(count);
     changeSelected(selected);
-    const f = fakeRun(selected);
+    const f = fakeRun(selected, mutate);
     const identity = { pid: 50123, start_ticks: '12345' };
     f.process.identity = identity;
     f.confinement.evidenceKind = 'confined_native';
     f.confinement.captureState = async (label) => states[label === 'mcp-before' ? 0 : 1];
-    const observation = await new NativeCodexObservationService(validator).observe(
+    const observation = await new NativeCodexObservationService(validator, clock).observe(
         selected,
         f.confinement,
     );

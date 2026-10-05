@@ -91,8 +91,20 @@ const closed = (value: any, fields: string[]) => {
 /** Measures one fixed installed native package state; makes no install/update/readiness claim. */
 export class NativeCodexObservationService {
     private readonly validator: NativeCodexProtocolValidator;
-    constructor(validator: NativeCodexProtocolValidator) {
+    private readonly readinessClock: {
+        now(): number;
+        wait(milliseconds: number): Promise<void>;
+    };
+    constructor(
+        validator: NativeCodexProtocolValidator,
+        readinessClock = {
+            now: () => performance.now(),
+            wait: (milliseconds: number) =>
+                new Promise<void>((resolve) => setTimeout(resolve, milliseconds)),
+        },
+    ) {
         this.validator = validator;
+        this.readinessClock = readinessClock;
     }
 
     async observe(input: ObserverInput, confinement: ObserverConfinement): Promise<unknown> {
@@ -115,6 +127,7 @@ export class NativeCodexObservationService {
             )
                 throw new Error('fixture_endpoint');
             const argv = NativeCodexConfiguration.argv(host.baseUrl);
+            const nativeDeadline = this.readinessClock.now() + 40_000;
             const process = await confinement.start(argv);
             session = new CodexRpcSession(process, this.validator);
             if (confinement.evidenceKind === 'confined_native' && !process.identity)
@@ -266,7 +279,7 @@ export class NativeCodexObservationService {
             if (!confinement.captureState && confinement.evidenceKind === 'confined_native')
                 throw new Error('native_mcp_state_collector_unavailable');
             const mcpBefore = await confinement.captureState?.('mcp-before');
-            const server = await this.mcp(session, threadId, input.pluginId);
+            const server = await this.mcp(session, threadId, input.pluginId, nativeDeadline);
             const catalog = await this.catalog(session, threadId, server.name, input);
             const resource = await this.tool(
                 session,
@@ -741,17 +754,68 @@ export class NativeCodexObservationService {
         }
         return selected;
     }
-    private async mcp(session: CodexRpcSession, threadId: string, pluginId: string): Promise<any> {
+    private async mcp(
+        session: CodexRpcSession,
+        threadId: string,
+        pluginId: string,
+        deadline: number,
+    ): Promise<any> {
+        const budget = { queries: 0 };
+        let name: string | undefined;
+        for (;;) {
+            const servers = await this.mcpInventory(session, threadId, deadline, budget);
+            const selected = servers.filter((server) => server.pluginId === pluginId);
+            if (selected.length !== 1) throw new Error('native_mcp_inventory');
+            const server = selected[0];
+            if (name !== undefined && server.name !== name)
+                throw new Error('native_mcp_identity_changed');
+            name = server.name;
+            if (
+                (server.toolsError !== undefined && server.toolsError !== null) ||
+                (server.httpOrigin !== undefined && server.httpOrigin !== null) ||
+                !['unknown', 'unsupported'].includes(server.authStatus)
+            )
+                throw new Error('native_mcp_status');
+            if (server.runtimeStatus === 'connected') {
+                if (!server.tools.skill_catalog_search || !server.tools.skill_resource_read)
+                    throw new Error('native_mcp_status');
+                return server;
+            }
+            if (server.runtimeStatus !== 'starting') throw new Error('native_mcp_status');
+            // Seven earlier and at most eight later requests leave sixteen of the
+            // existing sixty-four RPC slots reserved for the unchanged recipe.
+            if (budget.queries >= 48) throw new Error('native_mcp_readiness_bound');
+            const remaining = deadline - this.readinessClock.now();
+            if (remaining <= 0) throw new Error('native_mcp_readiness_deadline');
+            await this.readinessClock.wait(Math.min(100, remaining));
+        }
+    }
+    private async mcpInventory(
+        session: CodexRpcSession,
+        threadId: string,
+        deadline: number,
+        budget: { queries: number },
+    ): Promise<any[]> {
         let cursor: string | null = null;
         const seen = new Set<string>();
+        const names = new Set<string>();
         const servers: any[] = [];
         for (let page = 0; page < 8; page++) {
+            if (this.readinessClock.now() >= deadline)
+                throw new Error('native_mcp_readiness_deadline');
+            if (budget.queries++ >= 48) throw new Error('native_mcp_readiness_bound');
             const result = await session.request('mcpServerStatus/list', {
                 threadId,
                 limit: 100,
                 cursor,
                 detail: 'full',
             });
+            if (this.readinessClock.now() >= deadline)
+                throw new Error('native_mcp_readiness_deadline');
+            for (const server of result.data) {
+                if (names.has(server.name)) throw new Error('native_mcp_inventory');
+                names.add(server.name);
+            }
             servers.push(...result.data);
             if (servers.length > 256) throw new Error('native_mcp_bound');
             cursor = result.nextCursor ?? null;
@@ -759,19 +823,7 @@ export class NativeCodexObservationService {
             if (seen.has(cursor) || page === 7) throw new Error('native_mcp_paging');
             seen.add(cursor);
         }
-        const selected = servers.filter((server) => server.pluginId === pluginId);
-        if (selected.length !== 1) throw new Error('native_mcp_inventory');
-        const server = selected[0];
-        if (
-            server.runtimeStatus !== 'connected' ||
-            server.toolsError ||
-            server.httpOrigin ||
-            !['unknown', 'unsupported'].includes(server.authStatus) ||
-            !server.tools.skill_catalog_search ||
-            !server.tools.skill_resource_read
-        )
-            throw new Error('native_mcp_status');
-        return server;
+        return servers;
     }
     private async tool(
         session: CodexRpcSession,

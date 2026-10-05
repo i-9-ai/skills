@@ -21,7 +21,8 @@ export interface NativePilotObservation {
     evidence: NativePilotEvidence[];
     environment: { instance_sha256: string; profile_sha256: string } | null;
     rollback_state: {
-        result: 'compatible' | 'newer-schema-rejected-unchanged';
+        preservation: 'observed';
+        compatibility: 'not-exercised';
         before_sha256: string;
         after_sha256: string;
         evidence: string[];
@@ -175,11 +176,12 @@ export class NativePilotObservationValidator {
         if (step.id === 'observe-restored-a') {
             const state = closedObject(
                 item.rollback_state,
-                ['result', 'before_sha256', 'after_sha256', 'evidence'],
+                ['preservation', 'compatibility', 'before_sha256', 'after_sha256', 'evidence'],
                 'rollback_state',
             );
             if (
-                !['compatible', 'newer-schema-rejected-unchanged'].includes(String(state.result)) ||
+                state.preservation !== 'observed' ||
+                state.compatibility !== 'not-exercised' ||
                 [state.before_sha256, state.after_sha256].some(
                     (value) =>
                         typeof value !== 'string' ||
@@ -189,12 +191,10 @@ export class NativePilotObservationValidator {
                 !Array.isArray(state.evidence) ||
                 state.evidence.length !== 2 ||
                 state.evidence[0] === state.evidence[1] ||
-                state.evidence.some((path) => !paths.has(String(path))) ||
-                (state.result === 'newer-schema-rejected-unchanged' &&
-                    state.before_sha256 !== state.after_sha256)
+                state.evidence.some((path) => !paths.has(String(path)))
             ) {
                 throw new Error(
-                    'Rollback compatibility requires retained state evidence; newer-schema refusal must leave bytes unchanged.',
+                    'Rollback preservation requires retained state evidence; selected-source compatibility is not exercised.',
                 );
             }
             const before = item.evidence.find(

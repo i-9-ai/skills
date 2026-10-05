@@ -795,7 +795,8 @@ export class NativePilotCommonObservationService {
                         this.statePreserved(states[0].value, states[1].value)
                     ) {
                         rollback = {
-                            result: 'compatible',
+                            preservation: 'observed',
+                            compatibility: 'not-exercised',
                             before_sha256: states[0].receipt.sha256,
                             after_sha256: states[1].receipt.sha256,
                             evidence: [states[0].receipt.path, states[1].receipt.path],
@@ -1056,7 +1057,8 @@ export class NativePilotCommonObservationService {
                         this.statePreserved(states[0].value, states[1].value)
                     )
                         rollback = {
-                            result: 'compatible',
+                            preservation: 'observed',
+                            compatibility: 'not-exercised',
                             before_sha256: states[0].receipt.sha256,
                             after_sha256: states[1].receipt.sha256,
                             evidence: [states[0].receipt.path, states[1].receipt.path],

@@ -4,10 +4,18 @@ import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fixture, fakeAdapter } from './NativePilotFixture.mjs';
 import { NativePilotDriverService } from '../../src/service/NativePilotDriverService.ts';
+import { NativePilotReportService } from '../../src/service/NativePilotReportService.ts';
 import { pilotDigest } from '../../src/repository/NativePilotInventoryRepository.ts';
 
 /** Actual producer bytes enter Driver; unrelated lifecycle phases remain explicit test doubles. */
-export async function consumeLoadedProjection(t, producer, projected, selection, evidenceRoot) {
+export async function consumeLoadedProjection(
+    t,
+    producer,
+    projected,
+    selection,
+    evidenceRoot,
+    expectedVerdict = 'candidate-pass',
+) {
     const f = fixture(t);
     const prepared = f.prepare();
     for (const key of ['source_a', 'source_b']) {
@@ -73,6 +81,21 @@ export async function consumeLoadedProjection(t, producer, projected, selection,
         writeFileSync(destination, actualBytes, { flag: 'wx' });
         observation.evidence.push({ ...receipt });
         observation.loaded = structuredClone(projected.loaded);
+        if (step.id === 'observe-restored-a') {
+            observation.rollback_state = structuredClone(projected.rollback_state);
+            for (const path of projected.rollback_state?.evidence ?? []) {
+                const stateReceipt = projected.evidence.find(
+                    (row) => row.path === path && row.kind === 'state',
+                );
+                const bytes = readFileSync(join(evidenceRoot, path));
+                assert.equal(bytes.length, stateReceipt.bytes);
+                assert.equal(pilotDigest(bytes), stateReceipt.sha256);
+                const destination = join(owned.evidenceRoot, path);
+                mkdirSync(dirname(destination), { recursive: true });
+                writeFileSync(destination, bytes, { flag: 'wx' });
+                observation.evidence.push({ ...stateReceipt });
+            }
+        }
     });
     const lane = await new NativePilotDriverService().run(
         prepared,
@@ -81,10 +104,13 @@ export async function consumeLoadedProjection(t, producer, projected, selection,
         adapter.journalParent,
         adapter.evidenceRoot,
     );
-    assert.equal(lane.steps.find((step) => step.id === producer.step.id).verdict, 'candidate-pass');
+    assert.equal(lane.steps.find((step) => step.id === producer.step.id).verdict, expectedVerdict);
     assert.equal(lane.native_acceptance, false);
-    assert.equal(lane.status, 'synthetic-only');
-    assert.equal(adapter.aborts(), 0);
+    assert.equal(lane.status, expectedVerdict === 'candidate-pass' ? 'synthetic-only' : 'blocked');
+    assert.equal(adapter.aborts(), expectedVerdict === 'candidate-pass' ? 0 : 1);
+    assert.equal(lane.data_compatibility, 'not-exercised');
+    const report = new NativePilotReportService().summarize([lane]);
+    assert.equal(report.full_data_compatibility, false);
     const retained = readFileSync(join(adapter.evidenceRoot, inventoryPath));
     assert.deepEqual(retained, actualBytes);
     return lane;

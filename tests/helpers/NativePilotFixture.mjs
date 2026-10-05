@@ -211,7 +211,8 @@ export function fakeAdapter(prepared, root, selection, mutate = () => {}) {
                 rollback_state:
                     step.id === 'observe-restored-a'
                         ? {
-                              result: 'compatible',
+                              preservation: 'observed',
+                              compatibility: 'not-exercised',
                               before_sha256: '',
                               after_sha256: evidence[3].sha256,
                               evidence: [],

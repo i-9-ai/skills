@@ -33,14 +33,10 @@ export interface NativePilotLaneResult {
     selection: NativePilotSelection;
     mode: NativePilotMode;
     contract_sha256: string;
-    status:
-        | 'synthetic-only'
-        | 'evidence-ready-for-independent-review'
-        | 'data-compatibility-blocked'
-        | 'failed'
-        | 'blocked';
+    status: 'synthetic-only' | 'evidence-ready-for-independent-review' | 'failed' | 'blocked';
     native_acceptance: false;
-    data_compatibility: 'not-observed' | 'compatible' | 'blocked-newer-schema';
+    data_preservation: 'not-observed' | 'observed';
+    data_compatibility: 'not-exercised';
     environment: { instance_sha256: string; profile_sha256: string } | null;
     steps: Array<{
         id: string;
@@ -176,7 +172,8 @@ export class NativePilotDriverService {
             contract_sha256: prepared.contract_sha256,
             status: 'blocked',
             native_acceptance: false,
-            data_compatibility: 'not-observed',
+            data_preservation: 'not-observed',
+            data_compatibility: 'not-exercised',
             environment: null,
             steps: [],
             abort: 'not-needed',
@@ -258,10 +255,7 @@ export class NativePilotDriverService {
                 if (checked.observation.environment)
                     result.environment = checked.observation.environment;
                 if (checked.observation.rollback_state)
-                    result.data_compatibility =
-                        checked.observation.rollback_state.result === 'compatible'
-                            ? 'compatible'
-                            : 'blocked-newer-schema';
+                    result.data_preservation = checked.observation.rollback_state.preservation;
                 const record = {
                     id: step.id,
                     verdict: checked.verdict,
@@ -296,11 +290,9 @@ export class NativePilotDriverService {
         }
         if (!stopped)
             result.status =
-                result.data_compatibility === 'blocked-newer-schema'
-                    ? 'data-compatibility-blocked'
-                    : adapter.mode === 'synthetic'
-                      ? 'synthetic-only'
-                      : 'evidence-ready-for-independent-review';
+                adapter.mode === 'synthetic'
+                    ? 'synthetic-only'
+                    : 'evidence-ready-for-independent-review';
         this.inventory.writeJson(join(journal, 'result.json'), result);
         return result;
     }

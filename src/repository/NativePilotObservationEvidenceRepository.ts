@@ -169,6 +169,7 @@ export class NativePilotObservationEvidenceRepository {
             )
                 throw new Error('projection_export_root');
             const files = new Map<string, NativePilotExportEntry>();
+            const claudeAliases: NativePilotExportEntry[] = [];
             for (const rawEntry of root.entries) {
                 const entry = projectionObject(rawEntry, [
                     'path',
@@ -207,18 +208,39 @@ export class NativePilotObservationEvidenceRepository {
                             entry.path,
                         ) &&
                         entry.target === '/pilot/runtime-bin/codex';
+                    const claudeDebugAlias =
+                        item.selection?.host === 'claude' &&
+                        root.name === 'native-output' &&
+                        entry.path === 'latest' &&
+                        /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(
+                            item.selection.run_id,
+                        ) &&
+                        [1, 2].includes(item.selection.repetition) &&
+                        ['observe-a', 'observe-b', 'observe-restored-a'].some(
+                            (phase) =>
+                                entry.target ===
+                                `/pilot/native-output/${item.selection.run_id}-${item.selection.repetition}-${phase}.claude.debug.log`,
+                        );
                     if (
                         typeof entry.target !== 'string' ||
-                        (isAbsolute(entry.target) && !codexRuntimeAlias) ||
+                        (isAbsolute(entry.target) && !codexRuntimeAlias && !claudeDebugAlias) ||
                         /[\\\x00-\x1f\x7f]/.test(entry.target) ||
                         entry.base64 !== null ||
                         Buffer.byteLength(entry.target) !== entry.bytes ||
                         projectionDigest(entry.target) !== entry.sha256
                     )
                         throw new Error('projection_export_alias');
+                    if (claudeDebugAlias) claudeAliases.push(entry);
                 } else throw new Error('projection_export_kind');
                 if (bytes > 67_108_864) throw new Error('projection_export_bytes');
                 files.set(entry.path, entry);
+            }
+            // This is inert retained link text, never a filesystem resolution.
+            // Validate the whole map first so target ordering supplies no authority.
+            for (const alias of claudeAliases) {
+                const target = files.get(alias.target!.slice(root.path.length + 1));
+                if (target?.kind !== 'file') throw new Error('projection_export_alias');
+                this.decode(target);
             }
             roots.set(root.name, files);
         }

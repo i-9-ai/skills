@@ -27,6 +27,7 @@ export class NativePilotReportService {
                     'contract_sha256',
                     'status',
                     'native_acceptance',
+                    'data_preservation',
                     'data_compatibility',
                     'environment',
                     'steps',
@@ -44,13 +45,11 @@ export class NativePilotReportService {
                 ![
                     'synthetic-only',
                     'evidence-ready-for-independent-review',
-                    'data-compatibility-blocked',
                     'failed',
                     'blocked',
                 ].includes(lane.status) ||
-                !['not-observed', 'compatible', 'blocked-newer-schema'].includes(
-                    lane.data_compatibility,
-                ) ||
+                !['not-observed', 'observed'].includes(lane.data_preservation) ||
+                lane.data_compatibility !== 'not-exercised' ||
                 !['not-needed', 'requested-retention-unverified', 'adapter-error'].includes(
                     lane.abort,
                 ) ||
@@ -95,19 +94,14 @@ export class NativePilotReportService {
                     throw new Error('Malformed environment identity.');
             }
             if (
-                [
-                    'synthetic-only',
-                    'evidence-ready-for-independent-review',
-                    'data-compatibility-blocked',
-                ].includes(lane.status) &&
+                ['synthetic-only', 'evidence-ready-for-independent-review'].includes(lane.status) &&
                 (!lane.environment ||
                     lane.abort !== 'not-needed' ||
                     lane.steps.some((step) => step.verdict !== 'candidate-pass') ||
+                    lane.data_preservation !== 'observed' ||
                     (lane.status === 'synthetic-only' && lane.mode !== 'synthetic') ||
                     (lane.status === 'evidence-ready-for-independent-review' &&
-                        (lane.mode !== 'native' || lane.data_compatibility !== 'compatible')) ||
-                    (lane.status === 'data-compatibility-blocked' &&
-                        lane.data_compatibility !== 'blocked-newer-schema'))
+                        lane.mode !== 'native'))
             ) {
                 throw new Error('A completed lane cannot omit or promote its observations.');
             }
@@ -140,23 +134,18 @@ export class NativePilotReportService {
             lanes.every(
                 (lane) =>
                     lane.mode === 'native' &&
-                    [
-                        'evidence-ready-for-independent-review',
-                        'data-compatibility-blocked',
-                    ].includes(lane.status),
+                    lane.status === 'evidence-ready-for-independent-review',
             );
-        const compatible =
-            complete && lanes.every((lane) => lane.data_compatibility === 'compatible');
+        const preserved = complete && lanes.every((lane) => lane.data_preservation === 'observed');
         return {
             schema_version: 1,
             status: complete
-                ? compatible
-                    ? 'evidence-ready-for-independent-review'
-                    : 'evidence-ready-with-observed-compatibility-limit'
+                ? 'evidence-ready-with-unexercised-data-compatibility'
                 : 'incomplete-native-evidence',
             native_acceptance: false,
             exercise_evidence_complete: complete,
-            full_data_compatibility: compatible,
+            full_data_preservation: preserved,
+            full_data_compatibility: false,
             assurance: 'local-evidence-integrity-and-adapter-assertions-only',
             missing_lanes: missing,
             lanes: lanes.map((lane) => ({
@@ -164,6 +153,7 @@ export class NativePilotReportService {
                 repetition: lane.selection.repetition,
                 mode: lane.mode,
                 status: lane.status,
+                data_preservation: lane.data_preservation,
                 data_compatibility: lane.data_compatibility,
                 failed: lane.steps
                     .filter((step) => step.verdict === 'failed' || step.verdict === 'blocked')
