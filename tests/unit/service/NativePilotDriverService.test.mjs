@@ -499,7 +499,7 @@ test('an unexercised newer-schema refusal assertion cannot manufacture a native 
     assert.equal(result.native_acceptance, false);
 });
 
-test('newer-schema refusal cannot conceal changed database bytes', async (t) => {
+test('legacy rollback-result fields cannot grant cleanup authority', async (t) => {
     const { result, fake } = await exercise(t, 'claude', (value, step) => {
         if (step.id === 'observe-restored-a')
             value.rollback_state.result = 'newer-schema-rejected-unchanged';
