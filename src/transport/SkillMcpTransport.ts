@@ -4,6 +4,7 @@ import { Socket } from 'node:net';
 import type { Readable, Writable } from 'node:stream';
 import { SkillOperationError } from '../validator/SkillOperationError.ts';
 import { strictJson } from '../../.agents/skills/skill-authoring/scripts/lib/contracts.mjs';
+import { SkillQualityToolConfiguration } from '../config/SkillQualityToolConfiguration.ts';
 import { SkillEvidenceToolConfiguration } from '../config/SkillEvidenceToolConfiguration.ts';
 import { SkillBumpToolConfiguration } from '../config/SkillBumpToolConfiguration.ts';
 import { SkillBumpReportError } from '../validator/SkillBumpReportError.ts';
@@ -14,6 +15,8 @@ export type SkillMcpOperations = {
     search(value: unknown): unknown;
     read(value: unknown): unknown;
     overview(value: unknown): unknown;
+    recordQuality(value: unknown): unknown;
+    inspectQuality(value: unknown): unknown;
     recordLifecycle(value: unknown): unknown;
     observeCatalog(value: unknown): unknown;
     lifecycle(value: unknown): unknown;
@@ -38,6 +41,7 @@ const eventFields = ['event_id', 'collection', 'skill', 'revision', 'session', '
 const tools = [
     ...SkillBumpToolConfiguration.tools,
     ...SkillEvidenceToolConfiguration.tools,
+    ...SkillQualityToolConfiguration.tools,
     {
         name: 'skill_read_record',
         description:
@@ -186,6 +190,8 @@ export class SkillMcpTransport {
                     skill_catalog_search: (value) => store.search(value),
                     skill_resource_read: (value) => store.read(value),
                     skill_catalog_overview: (value) => store.overview(value),
+                    skill_quality_record: (value) => store.recordQuality(value),
+                    skill_quality_inspect: (value) => store.inspectQuality(value),
                     skill_lifecycle_record: (value) => store.recordLifecycle(value),
                     skill_catalog_observe: (value) => store.observeCatalog(value),
                     skill_lifecycle_metrics: (value) => store.lifecycle(value),

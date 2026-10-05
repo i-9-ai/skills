@@ -8,9 +8,11 @@ an event, persist a policy or delete history.
 
 This implements the summary and inspection portion of
 [issue #48](https://github.com/i-9-ai/skills/issues/48). The existing
-`telemetry record` and `telemetry catalog-observe` commands remain the recording
-interfaces. There is no second memory store, transcript capture or background
-collection.
+`telemetry record` and `telemetry catalog-observe` commands remain the lifecycle,
+read and catalog recording interfaces. `skills quality record` separately records
+explicit exact-revision quality metadata or verified retained benchmark evidence;
+see [Skill Quality](https://github.com/i-9-ai/skills/wiki/Skill-Quality). There is no
+second memory store, transcript capture or background collection.
 
 ## Invocation
 
@@ -65,19 +67,37 @@ The report separates evidence with different identities and meanings:
   first-seen coverage flag. Absence of reported activation is not proof of non-use.
   Without a complete observation, its status is `catalog_unobserved`.
 
-The current schema does not store approved decisions, official validation
-receipts, known-limitations receipts or approved migration receipts. These
-categories return `not_recorded`. A `validation_failed` caller reason and an
-observed catalog change do not establish those missing receipts. Reports omit
-session/correlation identifiers, raw envelopes, skill content and free text.
+- `quality_receipts` displays separately recorded exact-revision receipts, their
+  kind/result/assurance, method, bounded coverage, inert artifact locators and
+  limitation codes. Its matching and kind counts cover the full bounded selection;
+  displayed rows and `next_cursor` are explicitly limited. Use
+  `skills quality inspect` to continue receipt pages. A retained-benchmark tier
+  verifies retained bytes; executor, grading, metrics and source Git claims remain
+  assertions. A historical passing receipt applies to its recorded digest, not a
+  later revision of the same name. Reads or lifecycle completion cannot produce
+  this section's evidence.
+
+Approved decisions and approved migrations remain `not_recorded`. The
+`receipt_schemas.official_validation` marker is `recorded_separate_quality_receipts`
+when matching receipts of that kind exist, otherwise `not_recorded`; the marker
+does not say an official process was observed or passed. Known limitation codes
+are `recorded_with_quality_receipts` when matching quality receipts exist.
+A `validation_failed` caller reason or catalog change establishes neither an
+approved decision nor an official execution. Lifecycle/catalog/read projections
+omit session/correlation identifiers and raw envelopes. Quality rows contain
+normalized event/correlation UUIDs and `session: null`, without raw traces, skill
+content or free-form prose.
 
 ## Reading retention inspection
 
 Retention reports count logical occurrences within the selected window, with
 first/last event timestamps and optional before/at-or-after-cutoff partitions.
 The occurrence families are the six explicit lifecycle types, complete catalog
-observations, observed reads and explicit read attempts. Mirrored envelopes and
-catalog member/delta rows are not counted again as separate occurrences.
+observations, observed reads, explicit read attempts and `skill.quality.recorded`.
+Each quality receipt counts once even though its normalized envelope and quality
+projection are both stored. Mirrored envelopes and catalog member/delta rows are
+not counted again as separate occurrences. Retention counts all matched logical
+quality occurrences even when summary receipt rows are limited.
 
 For a selected skill, a catalog observation is relevant when it contains that
 member or a recorded change for the skill, including removal. This differs from
@@ -108,8 +128,12 @@ inspect a smaller selection, or increase `--limit` within the stated bounds.
 
 `query_limit_exceeded` requires a smaller window or applicable scope. Reducing a
 display limit does not lower scan work. `response_too_large` requires a smaller
-display or selection. `schema_upgrade_required` leaves an older database untouched;
-use an explicitly selected compatible writer/upgrade workflow before trying again.
+display or selection. `schema_upgrade_required` leaves an older database untouched.
+Schema 4 adds quality receipts while preserving issued migrations 1–3 and their
+history; these readers require an explicit compatible upgrade for schema 1–3.
+Use an owner-selected verified backup before deliberately opening a compatible
+writer to upgrade valuable history. Older consumers refuse schema 4; reverting
+code does not downgrade or authorize deletion of the store.
 `storage_unavailable` requires checking the existing file, its canonical parent
 and supported evidence schema. Inspection never repairs, replaces or migrates it.
 

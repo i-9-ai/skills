@@ -48,6 +48,9 @@ import SkillsOnboardingCommand from '../command/skill/SkillsOnboardingCommand.ts
 import SkillsMemorySummarizeCommand from '../command/skill/SkillsMemorySummarizeCommand.ts';
 import SkillsMemoryRetentionCommand from '../command/skill/SkillsMemoryRetentionCommand.ts';
 
+import SkillsQualityRecordCommand from '../command/skill/SkillsQualityRecordCommand.ts';
+import SkillsQualityInspectCommand from '../command/skill/SkillsQualityInspectCommand.ts';
+
 /** Owns public command routes independently of class names and source layout. */
 export class CommandConfiguration {
     static readonly commands = {
@@ -55,6 +58,8 @@ export class CommandConfiguration {
         'benchmark:import-run': BenchmarkImportRunCommand,
         'benchmark:compare': BenchmarkCompareCommand,
         'skills:observe': SkillsObserveCommand,
+        'skills:quality:record': SkillsQualityRecordCommand,
+        'skills:quality:inspect': SkillsQualityInspectCommand,
         'skills:report:bump': SkillsReportBumpCommand,
         'skills:onboarding': SkillsOnboardingCommand,
         'skills:memory:summarize': SkillsMemorySummarizeCommand,

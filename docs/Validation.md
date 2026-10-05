@@ -115,3 +115,26 @@ The [GitHub workflow](https://github.com/i-9-ai/skills/blob/main/.github/workflo
 The Node process adapter passes package paths as argument arrays to the environment's exact `skills-ref` executable, never through a shell. It applies a per-package execution bound, reports all results, and fails if the tool is missing, its version is wrong, or any package fails. It coordinates the actual official validator rather than reimplementing it. The stricter repository check runs first on the same stable checkout.
 
 CI uses pinned actions, a read-only token, no persisted checkout credentials, no secrets, and a job timeout. It checks whitespace across the actual base/head diff. GitHub branch protection is not changed by this PR; maintainers can separately make the workflow required.
+
+## Explicit official process observation
+
+The prepared CI job explicitly records one unchanged `skill-authoring` revision
+while continuing to validate every canonical package and the temporary scaffold.
+It selects runner-owned request, database and new artifact paths outside the
+checkout. No consumer database, home settings or installed global skills are used.
+
+`repo validate-official` enables that optional path only when
+`--quality-request FILE --quality-db ABSOLUTE --quality-output NEW_ABSOLUTE_ROOT`
+are supplied together. Ordinary invocation does not record quality. The closed
+request contains `collection`, `skill` and the exact full-package `source`.
+Read the complete request, observation, recovery and assurance contract in
+[Skill Quality](https://github.com/i-9-ai/skills/wiki/Skill-Quality#explicit-official-process-observation).
+
+CI retains compact observation JSON and, when a receipt database exists, performs
+the same read-only quality query available to CLI/MCP consumers. A failed
+conformance/other canonical/scaffold result remains a failed step after inspection;
+query failure also fails successful validation. Setup/version failure can retain
+a blocked artifact without creating an observed receipt. Successful validation
+without its promised database fails explicitly. Ordinary diagnostics remain
+separate from metadata-only observation output. Passing fake process or workflow
+tests does not establish actual official execution or native installation.

@@ -22,6 +22,8 @@ const tools = [
     'skill_lifecycle_metrics',
     'skill_lifecycle_record',
     'skill_onboarding',
+    'skill_quality_inspect',
+    'skill_quality_record',
     'skill_read_rankings',
     'skill_read_record',
     'skill_resource_read',

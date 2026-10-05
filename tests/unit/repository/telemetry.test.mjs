@@ -9,6 +9,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { SkillReadRepository } from '../../../src/repository/SkillReadRepository.ts';
 import { TelemetryInputRepository } from '../../../src/repository/TelemetryInputRepository.ts';
 import { TelemetryLogRepository } from '../../../src/repository/TelemetryLogRepository.ts';
+import { createIssuedDatabase } from '../fixture/IssuedSkillEvidenceMigration.mjs';
 
 const event = (eventType, extra = {}) => ({
     schema_version: 1,
@@ -73,19 +74,14 @@ test('typed retries, attempts and explicit session counts remain distinct', (t) 
 
 test('existing v1 observations survive additive migration without fabricated session starts', (t) => {
     const filename = path.join(fixture(t), 'usage.db');
-    let store = new SkillReadRepository(filename);
-    store.record({
-        event_id: 'legacy',
-        collection: 'demo',
-        skill: 'skill-authoring',
-        revision: 'old',
-        session: 'legacy-session',
-        occurred_at: '2026-09-18T23:59:59.999Z',
-    });
-    store.close();
-    const db = new DatabaseSync(filename);
-    db.exec(
-        'DROP TABLE catalog_changes; DROP TABLE catalog_members; DROP TABLE catalog_observations; DROP TABLE lifecycle_events; DROP TABLE usage_events; DELETE FROM usage_migrations WHERE version>=2',
+    const db = createIssuedDatabase(filename, 1);
+    db.prepare('INSERT INTO usage_reads VALUES(?,?,?,?,?,?)').run(
+        'legacy',
+        'demo',
+        'skill-authoring',
+        'old',
+        'legacy-session',
+        '2026-09-18T23:59:59.999Z',
     );
     const original = db
         .prepare('SELECT checksum FROM usage_migrations WHERE version=1')
@@ -94,7 +90,7 @@ test('existing v1 observations survive additive migration without fabricated ses
     const bytes = fs.readFileSync(filename);
     assert.throws(() => new SkillReadRepository(filename, { readOnly: true }), /schema upgrade/);
     assert.deepEqual(fs.readFileSync(filename), bytes);
-    store = new SkillReadRepository(filename);
+    const store = new SkillReadRepository(filename);
     assert.equal(store.rank().rows[0].reads, 1);
     assert.equal(store.trends().rows[0].session_starts, 0);
     store.close();

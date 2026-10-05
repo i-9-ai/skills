@@ -23,8 +23,26 @@ export class SkillBenchmarkService {
     }
 
     compare(benchmark: string) {
-        const frozen = this.repository.load(benchmark);
-        const runs = this.repository.runs(benchmark, frozen);
+        return this.inspectEvidence(benchmark).comparison;
+    }
+
+    inspectEvidence(benchmark: string) {
+        const frozen = this.repository.loadEvidence(benchmark);
+        const retained = this.repository.retainedRuns(benchmark, frozen);
+        const runs = retained.map((entry) => entry.run);
+        const after = this.repository.loadEvidence(benchmark);
+        if (
+            after.manifest_sha256 !== frozen.manifest_sha256 ||
+            JSON.stringify(after.suite) !== JSON.stringify(frozen.suite)
+        )
+            throw new Error('Invalid benchmark: Freeze changed during comparison.');
+        return { frozen, retained, comparison: this.comparison(frozen, runs) };
+    }
+
+    private comparison(
+        frozen: ReturnType<SkillBenchmarkRepository['loadEvidence']>,
+        runs: BenchmarkRun[],
+    ) {
         const cases = frozen.suite.cases.flatMap((selected) =>
             Array.from({ length: selected.limits.attempts }, (_, index) => {
                 const attempt = index + 1;

@@ -4,6 +4,7 @@ import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { SafeRoot } from '../../.agents/skills/skill-authoring/scripts/lib/filesystem.mjs';
 import { SkillBenchmarkValidator } from '../validator/SkillBenchmarkValidator.ts';
+import { SkillPackageTreeValidator } from '../validator/SkillPackageTreeValidator.ts';
 import type {
     BenchmarkFile,
     BenchmarkManifest,
@@ -11,7 +12,7 @@ import type {
     BenchmarkSuite,
 } from '../validator/SkillBenchmarkValidator.ts';
 
-type FrozenBenchmark = { suite: BenchmarkSuite; manifest: BenchmarkManifest };
+export type FrozenBenchmark = { suite: BenchmarkSuite; manifest: BenchmarkManifest };
 type FileBytes = { path: string; bytes: Buffer };
 const MAX_TREE_BYTES = 33_554_432;
 const MAX_ARTIFACT_SCAN_BYTES = 67_108_864;
@@ -197,11 +198,15 @@ export class SkillBenchmarkRepository {
     }
 
     load(directory: string): FrozenBenchmark {
+        const { suite, manifest } = this.loadEvidence(directory);
+        return { suite, manifest };
+    }
+
+    loadEvidence(directory: string) {
         const root = new SafeRoot(directory);
         try {
-            const manifest = this.validator.manifest(
-                this.validator.parse(root.readBytes('manifest.json', 524_288)),
-            );
+            const manifestBytes = root.readBytes('manifest.json', 524_288);
+            const manifest = this.validator.manifest(this.validator.parse(manifestBytes));
             const suiteBytes = root.readBytes('suite.json', 524_288);
             this.validator.require(
                 this.digest(suiteBytes) === manifest.suite_sha256,
@@ -256,15 +261,19 @@ export class SkillBenchmarkRepository {
                 [...expected].every((entry) => inventory.some((file) => file.path === entry)),
                 'Missing frozen case resource.',
             );
-            return { suite, manifest };
+            return { suite, manifest, manifest_sha256: this.digest(manifestBytes) };
         } finally {
             root.close();
         }
     }
 
     runs(directory: string, frozen = this.load(directory)): BenchmarkRun[] {
+        return this.retainedRuns(directory, frozen).map((entry) => entry.run);
+    }
+
+    retainedRuns(directory: string, frozen = this.load(directory)) {
         const root = new SafeRoot(directory);
-        const runs: BenchmarkRun[] = [];
+        const runs: Array<{ run: BenchmarkRun; run_sha256: string }> = [];
         let retainedBytes = 0;
         try {
             const selected = root.inspect('runs');
@@ -279,7 +288,8 @@ export class SkillBenchmarkRepository {
                         snapshot.info?.isDirectory(),
                         'Run entry must be a real directory.',
                     );
-                    const run = this.readRun(snapshot.absolute, frozen);
+                    const retained = this.readRunEvidence(snapshot.absolute, frozen);
+                    const run = retained.run;
                     this.validator.require(
                         run.id === entry.name,
                         'Run directory identity does not match.',
@@ -292,21 +302,21 @@ export class SkillBenchmarkRepository {
                     this.validator.require(
                         !runs.some(
                             (item) =>
-                                item.case_id === run.case_id &&
-                                item.variant === run.variant &&
-                                item.attempt === run.attempt,
+                                item.run.case_id === run.case_id &&
+                                item.run.variant === run.variant &&
+                                item.run.attempt === run.attempt,
                         ),
                         'Duplicate case/variant/attempt.',
                     );
                     root.verifySnapshot(snapshot);
-                    runs.push(run);
+                    runs.push(retained);
                 }
             } finally {
                 listing.closeSync();
             }
             root.verifySnapshot(selected);
             return runs.sort((left, right) =>
-                left.id < right.id ? -1 : Number(left.id > right.id),
+                left.run.id < right.run.id ? -1 : Number(left.run.id > right.run.id),
             );
         } finally {
             root.close();
@@ -314,6 +324,10 @@ export class SkillBenchmarkRepository {
     }
 
     private readRun(directory: string, frozen: FrozenBenchmark): BenchmarkRun {
+        return this.readRunEvidence(directory, frozen).run;
+    }
+
+    private readRunEvidence(directory: string, frozen: FrozenBenchmark) {
         const root = new SafeRoot(directory);
         try {
             const bytes = root.readBytes('run.json', 524_288);
@@ -340,7 +354,7 @@ export class SkillBenchmarkRepository {
             );
             for (const artifact of run.artifacts)
                 this.match(artifact, root.readBytes(`artifacts/${artifact.path}`, 4_194_304));
-            return run;
+            return { run, run_sha256: this.digest(bytes) };
         } finally {
             root.close();
         }
@@ -484,12 +498,7 @@ export class SkillBenchmarkRepository {
     }
 
     private treeDigest(files: BenchmarkFile[]): string {
-        const hash = createHash('sha256');
-        for (const file of [...files].sort((left, right) =>
-            this.comparePaths(left.path, right.path),
-        ))
-            hash.update(`${file.path}\0${file.sha256}\n`);
-        return hash.digest('hex');
+        return new SkillPackageTreeValidator().digest(files);
     }
 
     private comparePaths(left: string, right: string): number {

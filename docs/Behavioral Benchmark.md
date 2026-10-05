@@ -325,6 +325,41 @@ paired agent exercise remains one observation. Official structural validation,
 behavioral evaluation, native-host integration and publication are separate
 evidence boundaries.
 
+## Record an exact-revision quality receipt
+
+The three benchmark commands continue to leave the evidence database untouched.
+A separate explicit operation can associate this fully retained benchmark with one
+exact skill revision:
+
+```sh
+node bin/index.mjs skills quality record \
+  --db /data/evidence.db --file ./benchmark-request.json \
+  --benchmark /inputs/frozen-benchmark
+```
+
+[Skill Quality](https://github.com/i-9-ai/skills/wiki/Skill-Quality#record-verified-retained-benchmark-evidence)
+provides a complete inert request builder, the required closed event and matching
+inspection/MCP query. The request's skill and package digest must match a frozen
+manifest member. The recorder verifies the whole suite/package inventory, every
+run receipt and retained artifact, including unrelated cases; a detached comparison
+JSON or sanitized public summary is insufficient. Changed or missing bytes block
+recording before storage selection. No model, case or grader executes.
+
+The stored `verified_retained_benchmark` tier verifies retained byte integrity.
+It does not authenticate execution, grading, reported metrics or source Git claims.
+Coverage and result apply only to frozen cases selecting that package, with the
+suite comparison status/result recorded separately. Missing/blocked/not-run arms,
+failed criteria, fixture/manual evidence, reported overruns, comparability reasons,
+phase labels and joint-workflow limits remain visible. A passing critical treatment
+result can coexist with noncritical failures or an incomplete comparison; it is not
+causal credit for an individual skill or proof of general effectiveness.
+
+The stored hashes reference the original verified manifest and selected run JSON,
+which bind the retained artifact inventories and asserted limitations. Absolute
+selected directories and original traces/workproducts are not copied into SQLite.
+Recording uses a new event ID per observation; it never overwrites old failed or
+partial receipts. Inspection and the separate memory quality section are read-only.
+
 ## First retained agent exercise
 
 The first exercise on 2026-10-04 used the four frozen cases and nine selected
@@ -389,9 +424,10 @@ unrelated data, and comparison does not write evidence.
 
 None of these commands runs model or case scripts, installs a package, enables a
 hook, registers a host, or reads/writes a telemetry database. Case execution and
-grading require separately authorized external work. Quality receipts in memory,
-recurring native-host pilots and an independent collection/module pilot remain
-separate follow-up deliveries.
+grading require separately authorized external work. The explicit quality operation
+above can record verified retained metadata; it does not alter these three commands
+or their byte/assurance boundaries. Recurring native-host pilots and an independent
+collection/module pilot remain separate follow-up deliveries.
 
 See [Validation](https://github.com/i-9-ai/skills/wiki/Validation) for structural
 conformance, [Lifecycle policy](https://github.com/i-9-ai/skills/wiki/Lifecycle-Policy)

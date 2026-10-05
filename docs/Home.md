@@ -11,6 +11,7 @@ preparing distribution, and evolving focused agent skills.
 - [Compatibility](https://github.com/i-9-ai/skills/wiki/Compatibility): portable contract and host-specific support.
 - [Validation](https://github.com/i-9-ai/skills/wiki/Validation): local checks and the official Agent Skills validator.
 - [Behavioral benchmark](https://github.com/i-9-ai/skills/wiki/Behavioral-Benchmark): freeze synthetic cases and exact package bytes, import retained artifacts, and compare declared baseline/treatment evidence without executing a model.
+- [Skill quality](https://github.com/i-9-ai/skills/wiki/Skill-Quality): explicitly record exact-revision caller assertions or verified retained benchmark metadata through CLI/MCP, then inspect bounded receipts without inferring execution or general effectiveness.
 - [Collection maintenance](https://github.com/i-9-ai/skills/wiki/Collection-Maintenance): audit, reviewable plans and explicit catalog synchronization with verified recovery.
 - [Skill change reports](https://github.com/i-9-ai/skills/wiki/Skill-Change-Reports): pinned observations, evidence-based bump reports and a runnable installed onboarding guide.
 - [Release management](https://github.com/i-9-ai/skills/wiki/Release-Management): version preparation and Changesets.
@@ -30,13 +31,13 @@ preparing distribution, and evolving focused agent skills.
 - [Host hooks](https://github.com/i-9-ai/skills/wiki/Host-Hooks): host-specific session configuration and context output, with explicit untested runtime boundaries.
 
 - [Positioning](https://github.com/i-9-ai/skills/wiki/Positioning): public communication and demonstrations.
-- [Skill MCP](https://github.com/i-9-ai/skills/wiki/Skill-MCP): bundled skill search, Markdown retrieval and overview plus explicit observed-read evidence and rankings.
+- [Skill MCP](https://github.com/i-9-ai/skills/wiki/Skill-MCP): bundled skill search, Markdown retrieval and overview plus explicit read/lifecycle/catalog/quality evidence and read-only queries.
 - [MCP Inspector](https://github.com/i-9-ai/skills/wiki/MCP-Inspector): a pinned checkout walkthrough for tool discovery, catalog search and selected Markdown reads, with expected output and cleanup.
 - [Local skill telemetry](https://github.com/i-9-ai/skills/wiki/Skill-Telemetry): typed session, attempt and read observations, period trends and bounded diagnostic logs.
 - [Optional skill telemetry](https://github.com/i-9-ai/skills/wiki/Optional-Skill-Telemetry): explicit selected-host enable, status and receipt-backed disable with shared local evidence.
 - [Credential detection](https://github.com/i-9-ai/skills/wiki/Credential-Detection): native push protection and bounded CI secret detection without printing matched values.
 - [Lifecycle evidence](https://github.com/i-9-ai/skills/wiki/Lifecycle-Evidence): explicit route, activation and outcome events, catalog history, cohort denominators and coverage-aware inactivity through CLI/MCP.
-- [Skill memory inspection](https://github.com/i-9-ai/skills/wiki/Skill-Memory): compact evidence summaries and optional cutoff counts from the same read-only store, with explicit identity and retention limits.
+- [Skill memory inspection](https://github.com/i-9-ai/skills/wiki/Skill-Memory): compact lifecycle/catalog/read summaries, a separate exact-revision quality section and optional logical cutoff counts from the same read-only store, with explicit identity and retention limits.
 - [Planning protocol](https://github.com/i-9-ai/skills/wiki/Planning-Protocol): durable planning for material work.
 - [Pilot runbook](https://github.com/i-9-ai/skills/wiki/Pilot-Runbook): a bounded, evidence-first procedure for the first external collection pilot.
 - [Pilot evaluation](https://github.com/i-9-ai/skills/wiki/Pilot-Evaluation): historical six-stage pilot evidence and limitations.

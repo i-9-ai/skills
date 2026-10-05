@@ -5,9 +5,17 @@ const version = /^[0-9]+(?:\.[0-9]+)*(?:\.post[0-9]+)?$/;
 const fullMatch = (pattern: RegExp, value: unknown): value is string =>
     typeof value === 'string' && pattern.exec(value)?.[0] === value;
 
+export interface OfficialMethod {
+    readonly name: 'skills-ref';
+    readonly version: string;
+    readonly revision: string;
+    readonly source_sha256: string;
+}
+
 export interface OfficialRequirements {
-    version: string;
-    phases: Array<{ content: string; flags: string[] }>;
+    readonly version: string;
+    readonly method: OfficialMethod;
+    readonly phases: ReadonlyArray<{ readonly content: string; readonly flags: readonly string[] }>;
 }
 
 /** Derives installation requirements only from reviewed source and dependency pins. */
@@ -54,6 +62,12 @@ export class OfficialValidator {
         });
         return {
             version: config.version,
+            method: {
+                name: 'skills-ref',
+                version: config.version,
+                revision: config.source.slice(config.source.lastIndexOf('/') + 1),
+                source_sha256: config.sha256,
+            },
             phases: [
                 { content: `${wheels.join('\n')}\n`, flags: ['--only-binary=:all:'] },
                 {

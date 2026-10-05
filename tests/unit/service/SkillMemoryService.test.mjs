@@ -242,7 +242,7 @@ test('empty, missing, old and altered schemas never get created or upgraded by i
     });
     const old = new DatabaseSync(target.database);
     old.exec(
-        'DROP TABLE catalog_changes; DROP TABLE catalog_members; DROP TABLE catalog_observations; DROP TABLE lifecycle_events; DELETE FROM usage_migrations WHERE version=3;',
+        'DROP TABLE quality_receipts; DROP TABLE catalog_changes; DROP TABLE catalog_members; DROP TABLE catalog_observations; DROP TABLE lifecycle_events; DELETE FROM usage_migrations WHERE version>=3;',
     );
     old.close();
     unchanged(target, () => {

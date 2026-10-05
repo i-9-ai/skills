@@ -23,6 +23,7 @@ documentation authoring convention.
 Run repository link and public-hygiene checks. Verify upstream revisions and scoped licenses before changing reuse decisions.
 
 ## Child DOX index
+- [Skill Quality.md](../../docs/Skill%20Quality.md): explicit exact-revision quality receipts, preserved coverage and bounded shared CLI/MCP inspection; no universal quality score or inferred readiness.
 - [Collection Modules.md](../../docs/Collection%20Modules.md): reviewed module admission, independent ownership, collision and update boundaries; no automatic module installer or publisher authentication.
 - [Architecture.md](../../docs/Architecture.md): responsibilities, handoffs, failure, and scope.
 - [Authoring Standards.md](../../docs/Authoring%20Standards.md): contributor requirements and single responsibility.

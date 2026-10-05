@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import type { SQLInputValue } from 'node:sqlite';
 import { SkillEvidenceDatabaseRepository } from './SkillEvidenceDatabaseRepository.ts';
+import { SkillQualityRepository } from './SkillQualityRepository.ts';
 import { SkillLifecycleRepository } from './SkillLifecycleRepository.ts';
 import { CatalogObservationRepository } from './CatalogObservationRepository.ts';
 import { lifecycleTypes } from '../validator/SkillEvidenceValidator.ts';
@@ -44,6 +45,9 @@ export class SkillMemoryRepository {
             const history = catalog.projectHistory(query);
             const inactivity = this.inactivity(catalog, query);
             const reads = this.readSummary(query);
+            const quality = new SkillQualityRepository(this.connection).project(
+                this.qualityQuery(query),
+            );
             const collisions = this.sourceCollisions(this.lifecycleRows(query), query.limit);
             return this.validator.response({
                 ...this.context(query),
@@ -54,7 +58,8 @@ export class SkillMemoryRepository {
                     history.truncated ||
                     inactivity.truncated ||
                     reads.truncated ||
-                    collisions.truncated,
+                    collisions.truncated ||
+                    quality.truncated,
                 lifecycle: {
                     ...lifecycle,
                     identity_tier: 'source_qualified_caller_assertion',
@@ -65,6 +70,7 @@ export class SkillMemoryRepository {
                 },
                 lifecycle_source_collisions: collisions,
                 read_observations: reads,
+                quality_receipts: quality,
                 catalog_history: {
                     ...history,
                     delta_counts_scope: 'complete_collection_observation',
@@ -86,8 +92,12 @@ export class SkillMemoryRepository {
                 catalog_inactivity: inactivity,
                 receipt_schemas: {
                     approved_decisions: 'not_recorded',
-                    official_validation: 'not_recorded',
-                    known_limitations: 'not_recorded',
+                    official_validation: quality.kinds.official_validation
+                        ? 'recorded_separate_quality_receipts'
+                        : 'not_recorded',
+                    known_limitations: quality.matching_receipts
+                        ? 'recorded_with_quality_receipts'
+                        : 'not_recorded',
                     approved_migrations: 'not_recorded',
                 },
                 limits_of_inference: {
@@ -119,12 +129,16 @@ export class SkillMemoryRepository {
                     occurred_at: row.occurred_at,
                 })),
                 ...this.readAttempts(query),
+                ...new SkillQualityRepository(this.connection).projectOccurrences(
+                    this.qualityQuery(query),
+                ),
             ];
             const families = [
                 ...lifecycleTypes,
                 'catalog.observed',
                 'read_observations',
                 'skill.read.attempted',
+                'skill.quality.recorded',
             ].sort();
             return this.validator.response({
                 ...this.context(query),
@@ -162,6 +176,16 @@ export class SkillMemoryRepository {
                 },
             });
         });
+    }
+
+    private qualityQuery(query: SkillMemoryQuery) {
+        return {
+            collection: query.collection,
+            from: query.from,
+            until: query.until,
+            limit: query.limit,
+            ...(query.skill ? { skill: query.skill } : {}),
+        };
     }
 
     private context(query: SkillMemoryQuery) {
