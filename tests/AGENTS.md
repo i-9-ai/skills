@@ -24,6 +24,7 @@ Run `npm test` from the repository root. Tests make no network requests and leav
 - [GitHub family consumer](integration/collection/github-family-consumer.test.mjs): original issue/Wiki consumer evidence through existing catalog helpers; no actual GitHub, domain-package or native-host execution.
 - [Native pilot preparation](unit/service/NativePilotPreparationService.test.mjs): inert source/runtime identity and restore rejection with synthetic disposable inputs; no native execution.
 - [Native pilot orchestration](unit/service/NativePilotDriverService.test.mjs): fake phase journals, blocked observations and preservation/cleanup boundaries; no Docker or provider calls.
+- [Loaded inventory contracts](unit/validator/NativePilotLoadedInventoryValidator.test.mjs): complete inventories, provenance, manifest bytes and alias rejection; synthetic tests do not prove native execution.
 - [Process audit](unit/repository/NativePilotProcessAuditRepository.test.mjs): injected process/socket samples verify unknown-state rejection and explicit terminated residuals; tests do not inspect the machine's process table.
 - [Federated consumer pilot](integration/collection/federated-consumer.test.mjs): real catalog helpers and test-only bounded handoffs across fictional independent owners; no semantic routing or model evaluation claim.
 - [Packed CLI verification](packaging/cli-package.mjs): allowlist and runtime checks under a disposable node_modules tree using only already-installed production dependencies.

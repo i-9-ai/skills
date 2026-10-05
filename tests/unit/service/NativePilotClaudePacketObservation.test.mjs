@@ -1,16 +1,28 @@
 // SPDX-License-Identifier: Apache-2.0
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import {
+    copyFileSync,
+    mkdirSync,
+    mkdtempSync,
+    readFileSync,
+    realpathSync,
+    rmSync,
+    writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, posix } from 'node:path';
-import { fixture } from '../../helpers/NativeClaudeObservationFixture.mjs';
+import { dirname, join, posix } from 'node:path';
+import { fixture, sourceFiles } from '../../helpers/NativeClaudeObservationFixture.mjs';
+import { consumeLoadedProjection } from '../../helpers/NativePilotLoadedProjectionFixture.mjs';
 import { NativePilotCommonObservationService } from '../../../src/service/NativePilotCommonObservationService.ts';
 import { NativePilotCommonPhaseService } from '../../../src/service/NativePilotCommonPhaseService.ts';
 import { NativeClaudeObservationValidator } from '../../../src/validator/NativeClaudeObservationValidator.ts';
 import { NativePilotNpmEnvironmentRepository } from '../../../src/repository/NativePilotNpmEnvironmentRepository.ts';
 import { NativePilotStateSnapshotRepository } from '../../../src/repository/NativePilotStateSnapshotRepository.ts';
-import { pilotDigest } from '../../../src/repository/NativePilotInventoryRepository.ts';
+import {
+    NativePilotInventoryRepository,
+    pilotDigest,
+} from '../../../src/repository/NativePilotInventoryRepository.ts';
 
 function packetFixture(phase = 'observe-a') {
     const root = mkdtempSync(join(realpathSync(tmpdir()), 'i9-native-state-fixture-'));
@@ -21,8 +33,23 @@ function packetFixture(phase = 'observe-a') {
     mkdirSync(join(root, 'evidence'));
     const f = fixture(phase),
         selection = { run_id: f.selection.run_id, host: 'claude', repetition: 1 };
-    const a = fixture().before.selected_inventory,
-        b = fixture('observe-b').before.selected_inventory;
+    // These complete ordinary fixtures have real directory entries, just like prepared inputs.
+    const inventory = new NativePilotInventoryRepository();
+    const trees = {};
+    for (const pin of ['a', 'b']) {
+        const sourceRoot = join(root, 'input', 'source_' + pin);
+        for (const [path, bytes] of Object.entries(sourceFiles(pin))) {
+            mkdirSync(dirname(join(sourceRoot, path)), { recursive: true });
+            writeFileSync(join(sourceRoot, path), bytes, { flag: 'wx', mode: 0o600 });
+        }
+        trees[pin] = inventory.tree(sourceRoot);
+    }
+    const a = trees.a,
+        b = trees.b;
+    for (const snapshot of [f.before, f.after]) {
+        snapshot.selected_inventory = snapshot.pin === 'b' ? b : a;
+        snapshot.actual_inventory = snapshot.selected_inventory;
+    }
     const source = f.before.selected_inventory;
     const contract = {
         ...f.contract,
@@ -84,7 +111,7 @@ function packetFixture(phase = 'observe-a') {
         codex: contract.binaries.codex.sha256,
         claude: contract.binaries.claude.sha256,
         source: source.tree_sha256,
-        consumer: source.tree_sha256,
+        consumer: a.tree_sha256,
     };
     raw('context.json', {
         schema_version: 1,
@@ -222,7 +249,7 @@ function packetFixture(phase = 'observe-a') {
                 ...add(common + '/' + label + '-state.json', index ? after : before),
             },
             { role: 'source-inventory', ...add(common + '/' + label + '-source.json', source) },
-            { role: 'consumer-inventory', ...add(common + '/' + label + '-consumer.json', source) },
+            { role: 'consumer-inventory', ...add(common + '/' + label + '-consumer.json', a) },
         );
         for (const receipt of state
             .artifacts(index ? 'mcp-after' : 'mcp-before')
@@ -517,6 +544,43 @@ test('complete common Claude packet derives supported runtime and exact seeded M
         assert.equal(result.rollback_state, null);
     } finally {
         f.remove();
+    }
+});
+
+test('actual Claude producer inventories reach Driver for A, B and restored A without changing cache scope', async (t) => {
+    const a = packetFixture(),
+        b = packetFixture('observe-b'),
+        restored = packetFixture('observe-restored-a');
+    try {
+        const evidenceRoot = join(a.root, 'evidence');
+        const service = new NativePilotCommonObservationService({
+            prepared: a.prepared,
+            evidenceRoot,
+        });
+        service.prior.set('probe', { environment: a.environment });
+        for (const f of [a, b, restored]) {
+            const facts = structuredClone(f.facts);
+            if (f !== a)
+                for (const receipt of facts.evidence) {
+                    const original = receipt.path;
+                    receipt.path = f.step.id + '-' + original;
+                    copyFileSync(
+                        join(f.root, 'evidence', original),
+                        join(evidenceRoot, receipt.path),
+                    );
+                }
+            const projected = await service.project(f.step, f.selection, facts);
+            assert.ok(projected.checks.every((row) => row.satisfied));
+            const retained = JSON.parse(
+                readFileSync(join(evidenceRoot, projected.loaded.inventory_evidence)),
+            );
+            assert.equal(retained.native_cache_scope, 'selected-manifest-and-registration-only');
+            await consumeLoadedProjection(t, f, projected, f.selection, evidenceRoot);
+        }
+    } finally {
+        a.remove();
+        b.remove();
+        restored.remove();
     }
 });
 

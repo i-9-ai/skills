@@ -14,6 +14,7 @@ import {
 } from '../repository/NativePilotInventoryRepository.ts';
 import { NativePilotContractValidator } from '../validator/NativePilotContractValidator.ts';
 import { NativePilotObservationValidator } from '../validator/NativePilotObservationValidator.ts';
+import { NativePilotLoadedInventoryValidator } from '../validator/NativePilotLoadedInventoryValidator.ts';
 import { NativePilotPlanService } from './NativePilotPlanService.ts';
 
 export interface NativePilotBoundaryAdapter {
@@ -79,6 +80,7 @@ export class NativePilotDriverService {
     readonly evidence = new NativePilotEvidenceRepository();
     readonly inventory = new NativePilotInventoryRepository();
     readonly validator = new NativePilotObservationValidator();
+    readonly loadedInventory = new NativePilotLoadedInventoryValidator();
 
     async run(
         preparation: NativePilotPreparation,
@@ -244,22 +246,13 @@ export class NativePilotDriverService {
                     );
                     const expected =
                         step.pin === 'b' ? prepared.trees.source_b : prepared.trees.source_a;
-                    const omitted = new Set(
-                        checked.observation.loaded.transformations.map((entry) => entry.path),
+                    this.loadedInventory.validate(
+                        captured,
+                        selection.host,
+                        step.pin === 'b' ? 'b' : 'a',
+                        expected,
+                        checked.observation.loaded,
                     );
-                    const entries = expected.entries.filter((entry) => !omitted.has(entry.path));
-                    const installed = {
-                        tree_sha256: pilotDigest(JSON.stringify(entries)),
-                        bytes: expected.bytes,
-                        entries,
-                    };
-                    if (
-                        checked.observation.loaded.source_tree_sha256 !== expected.tree_sha256 ||
-                        checked.observation.loaded.installed_tree_sha256 !==
-                            installed.tree_sha256 ||
-                        JSON.stringify(captured) !== JSON.stringify(installed)
-                    )
-                        throw new Error('Complete loaded inventory differs from selected bytes.');
                     instances.add(checked.observation.loaded.process_instance);
                 }
                 if (checked.observation.environment)

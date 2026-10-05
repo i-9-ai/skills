@@ -15,6 +15,7 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fixture } from '../../helpers/NativeCodexMeasuredFixture.mjs';
+import { consumeLoadedProjection } from '../../helpers/NativePilotLoadedProjectionFixture.mjs';
 import { NativePilotCommonObservationService } from '../../../src/service/NativePilotCommonObservationService.ts';
 import { NativePilotCommonPhaseService } from '../../../src/service/NativePilotCommonPhaseService.ts';
 import {
@@ -72,26 +73,41 @@ async function packetFixture(phase = 'observe-a', pin = 'a') {
                 mkdirSync(dir, { recursive: true });
                 writeFileSync(join(dir, 'SKILL.md'), 'Synthetic selected resource.\n');
             }
+            const witness = join(source, '.agents/skills', selected.skills[0].name, 'references');
+            mkdirSync(witness);
+            writeFileSync(join(witness, 'witness.txt'), `Synthetic ${key} witness.\n`);
         }
         selected.artifactInventory = new NativePilotInventoryRepository().tree(
-            join(root, 'input/source_a'),
+            join(root, 'input', pin === 'b' ? 'source_b' : 'source_a'),
         );
+        for (const skill of selected.skills) {
+            const prefix = '.agents/skills/' + skill.name + '/';
+            skill.files = selected.artifactInventory.entries
+                .filter((entry) => entry.kind === 'file' && entry.path.startsWith(prefix))
+                .map((entry) => ({
+                    path: entry.path.slice(prefix.length),
+                    sha256: entry.sha256,
+                    bytes: entry.bytes,
+                }));
+        }
     });
     const s = f.selected,
-        tree = s.input.artifactInventory;
+        tree = s.input.artifactInventory,
+        a = new NativePilotInventoryRepository().tree(join(root, 'input/source_a')),
+        b = new NativePilotInventoryRepository().tree(join(root, 'input/source_b'));
     const contract = {
         schema_version: 2,
         purpose: 'local-source-a-b-a',
         authority: { platform: 'linux/arm64' },
-        source_a: tree,
-        source_b: tree,
+        source_a: a,
+        source_b: b,
         binaries: { codex: { version: '0.160.0' } },
         observer: { entrypoint: 'src/transport/NativeCodexObserverRunner.ts' },
     };
     const prepared = {
         root,
         contract,
-        trees: { source_a: tree, source_b: tree, driver: tree, observer: tree },
+        trees: { source_a: a, source_b: b, driver: a, observer: a },
     };
     const prefix = uuid + '-codex-r1-' + phase,
         common = 'common-' + uuid + '-codex-1-' + phase;
@@ -219,7 +235,7 @@ async function packetFixture(phase = 'observe-a', pin = 'a') {
             role: 'source-inventory',
         });
         snapshots.push({
-            ...add(common + '/' + label + '-consumer.json', tree),
+            ...add(common + '/' + label + '-consumer.json', a),
             role: 'consumer-inventory',
         });
     }
@@ -373,7 +389,7 @@ test('full static packet path binds selected source bytes, native transcript and
     }
 });
 
-test('restored A compatibility is projected only after verified prior runtime state and preserved rows', async () => {
+test('restored A compatibility and real producer inventories reach Driver for all three pins', async (t) => {
     const a = await packetFixture(),
         b = await packetFixture('observe-b', 'b'),
         restored = await packetFixture('observe-restored-a', 'restored-a');
@@ -393,7 +409,9 @@ test('restored A compatibility is projected only after verified prior runtime st
                         join(a.root, 'evidence', receipt.path),
                     );
                 }
-            return service.project(f.step, selection, facts);
+            const result = await service.project(f.step, selection, facts);
+            await consumeLoadedProjection(t, f, result, selection, join(a.root, 'evidence'));
+            return result;
         };
         assert.equal((await project(a)).rollback_state, null);
         assert.equal((await project(b)).rollback_state, null);

@@ -89,8 +89,20 @@ lifetime, 42-second selected-child minimum, one-second child rescue and one-seco
 phase finish. Preparation has at most 16 seconds before selected dispatch; a
 smaller remaining budget still refuses to launch the child.
 
-This correction is implemented in source with fake deadline and dispatch tests;
-fresh native validation remains pending. Earlier 45-second failed captures retain
+This correction is implemented in source with fake deadline and dispatch tests.
+Two fresh 60-second Codex repetitions dispatched the selected observer and
+installed matching source A bytes, but both stopped at `observe-a` with
+`evidence-integrity-mismatch`: the observer's provenance envelope was compared
+with a bare inventory by its consumer. Closed producer/consumer validation is
+now implemented with matching and rejection tests under the
+[loaded-inventory plan](https://github.com/i-9-ai/skills/blob/main/plans/2026-10-05-19-09-13-loaded-native-inventory-contract.md).
+Neither repetition reached B, rollback or removal. Complete native acceptance
+remains pending; these failures must not be regraded after a source correction.
+The new validator checks the complete envelope against the selected source and
+its exact declared alias omissions. Claude's before/after snapshots, manifest
+bytes and two worker inventories must agree. Unknown fields and overstated
+provenance are rejected; the native-cache and executable-bit limits remain.
+Earlier 45-second failed captures retain
 their original budgets and verdicts. Their four-gate baseline candidate result
 does not establish the separately blocked native absence observation. See the
 [budget plan](https://github.com/i-9-ai/skills/blob/main/plans/2026-10-05-18-02-45-native-observation-budget.md)

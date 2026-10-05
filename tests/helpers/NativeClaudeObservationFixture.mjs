@@ -63,8 +63,8 @@ const envelope = (value) => ({
     base64: value.toString('base64'),
 });
 
-function inventory(pin) {
-    const files = {
+function sourceFiles(pin) {
+    return {
         '.claude-plugin/plugin.json': bytes(manifest),
         'mcp/claude.json': bytes(mcpManifest),
         'hooks/claude.json': bytes(hookManifest),
@@ -75,6 +75,10 @@ function inventory(pin) {
         ),
         '.agents/skills/skill-fixture/assets/icon.svg': Buffer.from('<svg/>'),
     };
+}
+
+function inventory(pin) {
+    const files = sourceFiles(pin);
     const entries = Object.entries(files)
         .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
         .map(([path, b]) => ({
@@ -237,4 +241,4 @@ function fixture(phase = 'observe-a') {
     };
 }
 
-export { fixture };
+export { fixture, sourceFiles };

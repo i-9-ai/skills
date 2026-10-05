@@ -29,6 +29,7 @@ Run `npm run check` and inspect the required official workflow result for the ex
 
 - [Native pilot preparation](service/NativePilotPreparationService.ts): verifies selected source/runtime inventories and an inert restore drill before creating a fresh private workspace; preparation never executes candidate code.
 - [Native pilot phases](service/NativePilotDriverService.ts): records bounded sequential source-refresh observations, preserving blocked and unrun phases; supplied receipts do not authenticate an executor.
+- [Loaded native inventories](validator/NativePilotLoadedInventoryValidator.ts): reconciles closed Codex/Claude provenance envelopes and explicit bare inventories against selected source bytes; executable and cache-scope qualifiers do not establish broader native assurance.
 - [Disposable pilot containers](service/NativePilotContainerService.ts): coordinates fixed owned container operations and retention before named cleanup; no user profile, provider or shared-resource pruning.
 - [Process audit](repository/NativePilotProcessAuditRepository.ts): retains bounded complete process/socket samples, explicit zombies and closed TIME_WAIT; unknown state cannot become observed absence.
 - [Pilot worker](transport/NativePilotContainerWorkerRunner.ts): fixed internal probe, audit, execution and export ingress inside the measured container; not a second public CLI.
