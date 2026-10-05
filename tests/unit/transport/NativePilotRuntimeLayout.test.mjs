@@ -19,16 +19,12 @@ test('clean compiled consumer uses only dist JavaScript for fixed worker and com
     const source = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
     const consumer = realpathSync(mkdtempSync(join(tmpdir(), 'i9-native-compiled-fixture-')));
     t.after(() => rmSync(consumer, { recursive: true, force: true }));
-    const compiler =
-        process.env.I9_NATIVE_PILOT_TSC ??
-        createRequire(import.meta.url).resolve('typescript/bin/tsc');
+    const compiler = createRequire(import.meta.url).resolve('typescript/bin/tsc');
     mkdirSync(join(consumer, 'dist'));
     writeFileSync(join(consumer, 'package.json'), '{"type":"module","private":true}\n');
     execFileSync(
-        'rtk',
+        process.execPath,
         [
-            'proxy',
-            process.execPath,
             compiler,
             '--project',
             join(source, 'tsconfig.build.json'),
@@ -37,7 +33,13 @@ test('clean compiled consumer uses only dist JavaScript for fixed worker and com
             '--typeRoots',
             join(dirname(dirname(dirname(compiler))), '@types'),
         ],
-        { cwd: source, timeout: 30_000, maxBuffer: 1_048_576, shell: false },
+        {
+            cwd: source,
+            timeout: 30_000,
+            maxBuffer: 1_048_576,
+            shell: false,
+            env: { ...process.env, PATH: consumer },
+        },
     );
     assert.equal(existsSync(join(consumer, 'src')), false);
     const { NativePilotConfiguration } = await import(
