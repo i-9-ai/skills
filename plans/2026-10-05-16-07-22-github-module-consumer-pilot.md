@@ -44,8 +44,10 @@ link to the new test and plan in those existing indexes. Create no child scope.
 3. Exercise the fixed source-qualified issue-observation → Wiki-preview sequence
    in a disposable consumer. Proposed artifact versions belong to this fixture;
    they are not interfaces verified in the local domain packages.
-4. Add only domain-relevant cases: complete open/closed issue evidence and
-   repository identity; literal body text; Wiki availability and initialization;
+4. Add only domain-relevant cases: explicitly queried complete open/closed issue
+   evidence, bounded nonempty duplicate keys and repository identity; literal
+   body text; complete rederived handoff facts even after digest replacement;
+   Wiki availability and initialization;
    merged documentation, concurrent input drift, agent-instruction exclusions,
    traversal rejection and separately unauthorized publication/deletion.
 5. Reuse the existing federated consumer suite for its catalog-version,

@@ -5,7 +5,8 @@
 Document the proposed independent GitHub skill collection and add a reproducible
 standalone consumer fixture using the existing catalog and aggregate-index
 helpers. The Node.js test prepares local issue evidence and a Wiki preview from
-original fake records, checks complete input and repository identity, excludes
+original fake records, checks explicitly queried open/closed scope, bounded
+duplicate keys, complete handoff facts and repository identity, excludes
 agent instructions, and preserves drafts when Wiki prerequisites or authority
 are missing.
 

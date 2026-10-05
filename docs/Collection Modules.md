@@ -151,7 +151,9 @@ packages. Plain JSON is the standalone fallback.
 
 The existing federated suite retains the generic collision, catalog-version,
 resource, package-drift and artifact-format checks. The GitHub case adds complete
-issue pagination, selected repository identity, literal text, Wiki readiness,
+issue pagination with explicit queried states, bounded nonempty duplicate keys,
+complete handoff validation despite digest replacement, selected repository
+identity, literal text, Wiki readiness,
 merged documentation, concurrent input changes, root/nested agent-instruction
 exclusion, traversal rejection and explicit publication/deletion boundaries.
 Run both without network, credentials, a plugin or installed domain skills:

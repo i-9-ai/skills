@@ -214,6 +214,11 @@ function readSnapshot(target) {
     assert.ok(Array.isArray(value.issues) && value.issues.length <= 8, 'issue count bound');
     assert.equal(value.pagination.complete, true, 'incomplete issue evidence');
     assert.equal(value.pagination.total_count, value.issues.length, 'incomplete issue count');
+    assert.deepEqual(
+        value.pagination.queried_states,
+        ['open', 'closed'],
+        'queried issue states must explicitly cover open and closed',
+    );
     const numbers = new Set();
     for (const issue of value.issues) {
         assert.ok(
@@ -230,7 +235,13 @@ function readSnapshot(target) {
             Array.isArray(issue.labels) && issue.labels.every((item) => typeof item === 'string'),
             'invalid labels',
         );
-        assert.equal(typeof issue.duplicate_key, 'string', 'missing synthetic duplicate key');
+        assert.ok(
+            typeof issue.duplicate_key === 'string' &&
+                issue.duplicate_key.length > 0 &&
+                issue.duplicate_key.length <= 128 &&
+                issue.duplicate_key === issue.duplicate_key.trim(),
+            'invalid duplicate key',
+        );
     }
     assert.equal(value.template.name, 'documentation-task', 'unknown repository template');
     assert.deepEqual(
@@ -247,12 +258,12 @@ function artifact(target, filename, value) {
     return { filename: write(target.evidence, filename, bytes), sha256: digest(bytes) };
 }
 
-async function observeIssue(target, sourceId = selectedSource, effects) {
-    await qualify(target, 'github-issues', sourceId, effects);
-    const { value: snapshot, sha256 } = readSnapshot(target);
+// The consumer rederives this closed fixture contract from the validated input.
+// A replacement digest alone cannot qualify a partial or changed handoff.
+function issueObservation(snapshot, sha256) {
     const issue = snapshot.issues.find((value) => value.number === snapshot.target_issue);
     assert.ok(issue, 'target issue is unavailable');
-    const observation = {
+    return {
         format: formats['github-issues'].output,
         synthetic: true,
         repository: snapshot.repository,
@@ -277,14 +288,19 @@ async function observeIssue(target, sourceId = selectedSource, effects) {
         coverage: {
             issue_records: snapshot.issues.length,
             complete: true,
-            states: ['open', 'closed'],
+            states: [...snapshot.pagination.queried_states],
         },
         proposed_next_action:
             'review existing issue and candidate before drafting any remote change',
         effects: ['write-local-evidence'],
         remote_mutation: false,
     };
-    return artifact(target, 'issue-observation.json', observation);
+}
+
+async function observeIssue(target, sourceId = selectedSource, effects) {
+    await qualify(target, 'github-issues', sourceId, effects);
+    const { value: snapshot, sha256 } = readSnapshot(target);
+    return artifact(target, 'issue-observation.json', issueObservation(snapshot, sha256));
 }
 
 function pages(records) {
@@ -317,6 +333,11 @@ async function previewWiki(target, producer, sourceId = selectedSource, effects)
     assert.equal(issue.repository, scenario.caller_repository, 'handoff repository differs');
     const { value: snapshot, sha256 } = readSnapshot(target);
     assert.equal(issue.input_sha256, sha256, 'input changed between observation and preview');
+    assert.deepEqual(
+        issue,
+        issueObservation(snapshot, sha256),
+        'incomplete or changed issue observation',
+    );
     assert.equal(snapshot.docs.branch, 'main', 'unselected documentation branch');
     assert.equal(snapshot.docs.merged, true, 'unmerged documentation is not a mirror source');
     assert.equal(snapshot.wiki.enabled, true, 'Wiki unavailable; retain draft for owner decision');
@@ -403,6 +424,7 @@ test('GitHub family fixture prepares local issue evidence and a standalone Wiki 
     );
     assert.equal(issue.issue.number, 13);
     assert.equal(issue.issue.body, scenario.snapshot.issues[1].body);
+    assert.deepEqual(issue.coverage.states, scenario.snapshot.pagination.queried_states);
     assert.deepEqual(preview.changes, [
         { path: 'Home.md', action: 'update', content: scenario.snapshot.docs.pages[1].content },
         { path: 'Recovery.md', action: 'create', content: scenario.snapshot.docs.pages[2].content },
@@ -445,6 +467,35 @@ for (const condition of ['partial', 'wrong-total']) {
     });
 }
 
+for (const condition of ['missing', 'open-only']) {
+    test(`GitHub issue evidence rejects ${condition} queried-state coverage`, async (t) => {
+        const target = await fixture(t);
+        const value = strictJson(fs.readFileSync(target.input));
+        value.issues = value.issues.filter((issue) => issue.state === 'open');
+        value.pagination.total_count = value.issues.length;
+        if (condition === 'missing') delete value.pagination.queried_states;
+        if (condition === 'open-only') value.pagination.queried_states = ['open'];
+        fs.writeFileSync(target.input, json(value));
+        const before = protectedBytes(target);
+        await assert.rejects(() => observeIssue(target), /queried issue states/);
+        assert.deepEqual(protectedBytes(target), before);
+        assert.deepEqual(fs.readdirSync(target.evidence), []);
+    });
+}
+
+for (const [label, key] of Object.entries({ empty: '', blank: ' ', 'too-long': 'x'.repeat(129) })) {
+    test(`GitHub issue evidence rejects ${label} duplicate keys before grouping records`, async (t) => {
+        const target = await fixture(t);
+        const value = strictJson(fs.readFileSync(target.input));
+        for (const issue of value.issues) issue.duplicate_key = key;
+        fs.writeFileSync(target.input, json(value));
+        const before = protectedBytes(target);
+        await assert.rejects(() => observeIssue(target), /invalid duplicate key/);
+        assert.deepEqual(protectedBytes(target), before);
+        assert.deepEqual(fs.readdirSync(target.evidence), []);
+    });
+}
+
 test('GitHub issue evidence requires the explicitly selected consumer repository', async (t) => {
     const target = await fixture(t);
     const value = strictJson(fs.readFileSync(target.input));
@@ -455,6 +506,47 @@ test('GitHub issue evidence requires the explicitly selected consumer repository
     assert.deepEqual(protectedBytes(target), before);
     assert.deepEqual(fs.readdirSync(target.evidence), []);
 });
+
+const changedObservations = {
+    'header-only': (value) => ({
+        format: value.format,
+        synthetic: value.synthetic,
+        repository: value.repository,
+        input_sha256: value.input_sha256,
+    }),
+    'wrong-issue': (value) => {
+        value.issue.number = 21;
+        return value;
+    },
+    'wrong-coverage': (value) => {
+        value.coverage.states = ['open'];
+        return value;
+    },
+    'remote-mutation': (value) => {
+        value.remote_mutation = true;
+        return value;
+    },
+    'unknown-field': (value) => {
+        value.publication = 'approved';
+        return value;
+    },
+};
+
+for (const [label, change] of Object.entries(changedObservations)) {
+    test(`Wiki handoff rejects ${label} observation even with its digest recomputed`, async (t) => {
+        const target = await fixture(t);
+        const producer = await observeIssue(target);
+        const bytes = json(change(strictJson(fs.readFileSync(producer.filename))));
+        fs.writeFileSync(producer.filename, bytes);
+        producer.sha256 = digest(bytes);
+        await preservedRejection(
+            target,
+            producer,
+            () => previewWiki(target, producer),
+            /incomplete or changed issue observation/,
+        );
+    });
+}
 
 for (const effect of ['publish-wiki', 'delete-wiki-page']) {
     test(`Wiki preview cannot expand the local fixture into ${effect}`, async (t) => {

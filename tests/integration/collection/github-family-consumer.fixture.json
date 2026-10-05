@@ -40,7 +40,8 @@
     "synthetic": true,
     "pagination": {
       "complete": true,
-      "total_count": 3
+      "total_count": 3,
+      "queried_states": ["open", "closed"]
     },
     "target_issue": 13,
     "template": {
