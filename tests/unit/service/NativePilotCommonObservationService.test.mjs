@@ -1,3 +1,7 @@
+import { realpathSync as syntheticCanonicalPath } from 'node:fs';
+import { tmpdir as syntheticTemporaryDirectory } from 'node:os';
+import { posix as syntheticPath } from 'node:path';
+const syntheticContainerHome = syntheticPath.join('/', 'home', 'node');
 // SPDX-License-Identifier: Apache-2.0
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
@@ -11,7 +15,7 @@ import {
     symlinkSync,
     writeFileSync,
 } from 'node:fs';
-import { join, posix } from 'node:path';
+import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import {
     NativePilotObservationEvidenceRepository,
@@ -20,7 +24,6 @@ import {
 import { NativePilotCommonObservationService } from '../../../src/service/NativePilotCommonObservationService.ts';
 import { NativePilotCommonPhaseService } from '../../../src/service/NativePilotCommonPhaseService.ts';
 import { NativePilotStateSnapshotRepository } from '../../../src/repository/NativePilotStateSnapshotRepository.ts';
-const imageHome = posix.join('/', 'home', 'node');
 const UUID = '8a7d0a7e-b672-478c-bb12-03a1a81d3e98';
 const selection = { run_id: UUID, host: 'codex', repetition: 1 };
 const nonce = 'a'.repeat(32);
@@ -38,18 +41,50 @@ const absent = {
 };
 const tree = { tree_sha256: projectionDigest('synthetic-source'), bytes: 0, entries: [] };
 const contract = {
+    observer: { entrypoint: 'dist/transport/NativePilotNativeObserverRunner.js' },
     binaries: {
         node: { version: '24.21.0', sha256: projectionDigest('node') },
         codex: { version: '0.160.0', sha256: projectionDigest('codex') },
         claude: { version: '2.1.285', sha256: projectionDigest('claude') },
     },
 };
+function identity(pid, parent, executable, start_ticks = String(8000 + pid)) {
+    const stat = Buffer.from(
+        `${pid} (synthetic owned child) S ${[String(parent), ...Array(17).fill('0'), start_ticks, '0'].join(' ')}\n`,
+    );
+    const raw = {
+        bytes: stat.length,
+        sha256: projectionDigest(stat),
+        base64: stat.toString('base64'),
+    };
+    return {
+        schema_version: 2,
+        status: 'observed',
+        pid,
+        observer_pid: parent,
+        start_ticks,
+        executable,
+        stat_before: raw,
+        stat_after: raw,
+    };
+}
+const workerIdentity = {
+    schema_version: 1,
+    worker_pid: 80,
+    child_pid: 90,
+    executable: '/pilot/runtime-bin/node',
+};
 const prepared = {
     contract,
     trees: { source_a: tree, source_b: tree, driver: tree, observer: tree },
 };
 function fixture() {
-    const root = mkdtempSync(join(realpathSync(tmpdir()), 'i9-common-projection-test-'));
+    const root = mkdtempSync(
+        syntheticPath.join(
+            syntheticCanonicalPath(syntheticTemporaryDirectory()),
+            'i9-common-projection-test-',
+        ),
+    );
     let index = 0;
     const receipt = (value, kind = 'process') => {
         const bytes = Buffer.from(JSON.stringify(value) + '\n');
@@ -85,7 +120,7 @@ function bundle(entries = [], selected = selection, selectedNonce = nonce) {
         },
         roots: ['home', 'state', 'work', 'native-output'].map((name) => ({
             name,
-            path: name === 'home' ? imageHome : `/pilot/${name}`,
+            path: name === 'home' ? syntheticContainerHome : `/pilot/${name}`,
             entries: name === 'native-output' ? entries : [],
         })),
     };
@@ -121,10 +156,10 @@ function preflight(f, selectedNonce = nonce, options = {}) {
         uid: 1000,
         gid: 1000,
         passwd_name: 'node',
-        passwd_home: imageHome,
-        home: imageHome,
+        passwd_home: syntheticContainerHome,
+        home: syntheticContainerHome,
         environment: [
-            `HOME=${imageHome}`,
+            `HOME=${syntheticContainerHome}`,
             'PATH=/pilot/runtime-bin:/usr/bin:/bin',
             'LANG=C.UTF-8',
             'HOSTNAME=synthetic',
@@ -154,9 +189,13 @@ function preflight(f, selectedNonce = nonce, options = {}) {
             '/pilot/control',
             '/var/tmp',
         ].map((path) => ({ path, error: 'EROFS' })),
-        writable: [imageHome, '/pilot/state', '/pilot/work', '/pilot/native-output', '/tmp'].map(
-            (path) => ({ path, created: true, removed: true }),
-        ),
+        writable: [
+            syntheticContainerHome,
+            '/pilot/state',
+            '/pilot/work',
+            '/pilot/native-output',
+            '/tmp',
+        ].map((path) => ({ path, created: true, removed: true })),
         sockets: [
             '/var/run/docker.sock',
             '/run/docker.sock',
@@ -213,7 +252,13 @@ function preflight(f, selectedNonce = nonce, options = {}) {
         phase: 'preflight',
         pin: null,
         native_acceptance: false,
-        context: {},
+        context: {
+            common_process: {
+                pid: 90,
+                worker_pid: 80,
+                identity: add('common-self.json', identity(90, 80, '/pilot/runtime-bin/node')),
+            },
+        },
         processes,
         snapshots,
         result: 'observed',
@@ -257,7 +302,13 @@ function preflight(f, selectedNonce = nonce, options = {}) {
             f.receipt({
                 planned_command: step.commands[0],
                 actual_command: {},
-                observation: { operation: 'execute', phase: 'preflight', index: 0, ...command },
+                observation: {
+                    operation: 'execute',
+                    phase: 'preflight',
+                    index: 0,
+                    process_identity: workerIdentity,
+                    ...command,
+                },
             }),
             f.receipt(bundle(entries, selection, selectedNonce), 'retention'),
         ],
@@ -291,7 +342,7 @@ function registration(f, phase = 'baseline', mutate = () => {}) {
         { ...selection, phase, pin: null },
         contract,
     );
-    const processes = calls.map((call, i) => {
+    const processes = calls.slice(0, 3).map((call, i) => {
         const pid = 100 + i;
         const start_ticks = String(8000 + i);
         const stat = Buffer.from(
@@ -307,18 +358,10 @@ function registration(f, phase = 'baseline', mutate = () => {}) {
                 i === 0 ? '' : i === 1 ? '{"installed":[],"available":[]}' : '{"marketplaces":[]}',
             ),
             stderr: add(`registry-${i}.stderr`, i === 0 ? 'Not logged in\n' : ''),
-            identity: add(`registry-${i}-identity.json`, {
-                schema_version: 1,
-                status: 'observed',
-                pid,
-                start_ticks,
-                executable: call.executable,
-                stat: {
-                    bytes: stat.length,
-                    sha256: projectionDigest(stat),
-                    base64: stat.toString('base64'),
-                },
-            }),
+            identity: add(
+                `registry-${i}-identity.json`,
+                identity(pid, 90, call.executable, start_ticks),
+            ),
         };
     });
     mutate(processes, entries, add);
@@ -329,7 +372,13 @@ function registration(f, phase = 'baseline', mutate = () => {}) {
         phase,
         pin: null,
         native_acceptance: false,
-        context: {},
+        context: {
+            common_process: {
+                pid: 90,
+                worker_pid: 80,
+                identity: add('common-self.json', identity(90, 80, '/pilot/runtime-bin/node')),
+            },
+        },
         processes,
         snapshots: [],
         result: 'observed',
@@ -356,7 +405,13 @@ function registration(f, phase = 'baseline', mutate = () => {}) {
             f.receipt({
                 planned_command: step.commands[0],
                 actual_command: {},
-                observation: { operation: 'execute', phase, index: 0, ...command },
+                observation: {
+                    operation: 'execute',
+                    phase,
+                    index: 0,
+                    process_identity: workerIdentity,
+                    ...command,
+                },
             }),
             f.receipt(bundle(entries), 'retention'),
         ],

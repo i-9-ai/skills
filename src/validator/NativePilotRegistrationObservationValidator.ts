@@ -15,6 +15,23 @@ export interface NativePilotRegistrationRecord {
     stderr: Buffer;
 }
 
+export interface NativePilotChildStatReceipt {
+    bytes: number;
+    sha256: string;
+    base64: string;
+}
+
+export interface NativePilotChildIdentity {
+    schema_version: 2;
+    status: 'observed' | 'unavailable' | 'invalid';
+    pid: number | null;
+    observer_pid: number;
+    start_ticks: string | null;
+    executable: string | null;
+    stat_before: NativePilotChildStatReceipt | null;
+    stat_after: NativePilotChildStatReceipt | null;
+}
+
 const object = (value: unknown): Record<string, unknown> => {
     if (!value || typeof value !== 'object' || Array.isArray(value))
         throw new Error('registration_object');
@@ -32,7 +49,11 @@ const utf8 = (bytes: Buffer) => {
 /** Pure codecs for the declared fresh-profile CLI recipes; unknown output never means absence. */
 export class NativePilotRegistrationObservationValidator {
     /** Linux stat is retained as bytes; this parser is shared by collector and trusted projector. */
-    childStat(bytes: Buffer, pid: number): { pid: number; start_ticks: string } | null {
+    childStat(
+        bytes: Buffer,
+        pid: number,
+        expectedParentPid?: number,
+    ): { pid: number; start_ticks: string } | null {
         try {
             if (!Number.isSafeInteger(pid) || pid < 2 || bytes.length > 4096) return null;
             const text = utf8(bytes);
@@ -52,6 +73,11 @@ export class NativePilotRegistrationObservationValidator {
                 fields.length > 100 ||
                 !/^[RSDTtKWPIN]$/.test(fields[0]) ||
                 fields.slice(1).some((field) => !/^-?\d{1,20}$/.test(field)) ||
+                (expectedParentPid !== undefined &&
+                    (!Number.isSafeInteger(expectedParentPid) ||
+                        expectedParentPid < 2 ||
+                        expectedParentPid === pid ||
+                        fields[1] !== String(expectedParentPid))) ||
                 !/^[1-9]\d{0,19}$/.test(fields[19])
             )
                 return null;
@@ -61,8 +87,41 @@ export class NativePilotRegistrationObservationValidator {
         }
     }
 
-    /** Call only after the projector verifies the exact retained identity file bytes. */
-    childIdentity(value: unknown, executable: string): { pid: number; start_ticks: string } | null {
+    childStatReceipt(bytes: Buffer): NativePilotChildStatReceipt {
+        if (!Buffer.isBuffer(bytes) || bytes.length < 1 || bytes.length > 4096)
+            throw new Error('registration_child_stat_bound');
+        return { bytes: bytes.length, sha256: digest(bytes), base64: bytes.toString('base64') };
+    }
+
+    private childStatBytes(value: unknown) {
+        const stat = object(value);
+        if (
+            !exact(stat, ['bytes', 'sha256', 'base64']) ||
+            !Number.isSafeInteger(stat.bytes) ||
+            Number(stat.bytes) < 1 ||
+            Number(stat.bytes) > 4096 ||
+            typeof stat.sha256 !== 'string' ||
+            !/^[a-f0-9]{64}$/.test(stat.sha256) ||
+            typeof stat.base64 !== 'string' ||
+            stat.base64.length > 5464
+        )
+            throw new Error('registration_child_stat_receipt');
+        const bytes = Buffer.from(stat.base64, 'base64');
+        if (
+            bytes.toString('base64') !== stat.base64 ||
+            bytes.length !== stat.bytes ||
+            digest(bytes) !== stat.sha256
+        )
+            throw new Error('registration_child_stat_integrity');
+        return bytes;
+    }
+
+    /** Expected parent must come from verified worker/common evidence, never this receipt alone. */
+    childIdentity(
+        value: unknown,
+        executable: string,
+        expectedParentPid?: number,
+    ): { pid: number; start_ticks: string } | null {
         try {
             const identity = object(value);
             if (
@@ -70,30 +129,38 @@ export class NativePilotRegistrationObservationValidator {
                     'schema_version',
                     'status',
                     'pid',
+                    'observer_pid',
                     'start_ticks',
                     'executable',
-                    'stat',
+                    'stat_before',
+                    'stat_after',
                 ]) ||
-                identity.schema_version !== 1 ||
+                identity.schema_version !== 2 ||
                 identity.status !== 'observed' ||
+                !Number.isSafeInteger(expectedParentPid) ||
+                expectedParentPid! < 2 ||
+                identity.observer_pid !== expectedParentPid ||
                 identity.executable !== executable ||
                 !['node', 'codex', 'claude'].some(
                     (name) => executable === `/pilot/runtime-bin/${name}`,
                 )
             )
                 return null;
-            const stat = object(identity.stat);
-            if (!exact(stat, ['bytes', 'sha256', 'base64']) || typeof stat.base64 !== 'string')
-                return null;
-            const bytes = Buffer.from(stat.base64, 'base64');
-            if (
-                bytes.toString('base64') !== stat.base64 ||
-                bytes.length !== stat.bytes ||
-                digest(bytes) !== stat.sha256
-            )
-                return null;
-            const actual = this.childStat(bytes, identity.pid as number);
-            return actual?.start_ticks === identity.start_ticks ? actual : null;
+            const before = this.childStat(
+                this.childStatBytes(identity.stat_before),
+                identity.pid as number,
+                expectedParentPid,
+            );
+            const after = this.childStat(
+                this.childStatBytes(identity.stat_after),
+                identity.pid as number,
+                expectedParentPid,
+            );
+            return before &&
+                after?.start_ticks === before.start_ticks &&
+                before.start_ticks === identity.start_ticks
+                ? before
+                : null;
         } catch {
             return null;
         }

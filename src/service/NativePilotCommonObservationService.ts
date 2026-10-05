@@ -1,9 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
-import type { NativePilotSelection, NativePilotStep } from '../config/NativePilotConfiguration.ts';
 import { NativePilotConfiguration } from '../config/NativePilotConfiguration.ts';
+import type { NativePilotSelection, NativePilotStep } from '../config/NativePilotConfiguration.ts';
 import type { NativePilotPreparation } from '../repository/NativePilotPreparationRepository.ts';
 import type { NativePilotControllerFacts } from './NativePilotContainerService.ts';
 import { relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { NativeCodexObserverDispatcher } from './NativeCodexObserverDispatcher.ts';
+import { NativePilotCodexObservationService } from './NativePilotCodexObservationService.ts';
+import { NativeCodexProtocolValidator } from '../validator/NativeCodexProtocolValidator.ts';
+import { NativeCodexSchemaRepository } from '../repository/NativeCodexSchemaRepository.ts';
 import { NativePilotCommonPhaseService } from './NativePilotCommonPhaseService.ts';
 import {
     NativePilotObservationEvidenceRepository,
@@ -15,6 +20,9 @@ import type { NativePilotProjectionReceipt } from '../repository/NativePilotObse
 import { NativePilotStateSchemaValidator } from '../validator/NativePilotStateSchemaValidator.ts';
 import { NativePilotRegistrationObservationValidator } from '../validator/NativePilotRegistrationObservationValidator.ts';
 import type { NativePilotRegistrationRecord } from '../validator/NativePilotRegistrationObservationValidator.ts';
+import { NativePilotClaudeObservationService } from './NativePilotClaudeObservationService.ts';
+import { NativeClaudeRawConfiguration } from '../config/NativeClaudeRawConfiguration.ts';
+import type { NativeClaudeObservationRecord } from '../validator/NativeClaudeObservationValidator.ts';
 
 /** Trusted bundled host projection. Selected observer code is never loaded in this process. */
 export class NativePilotCommonObservationService {
@@ -134,6 +142,7 @@ export class NativePilotCommonObservationService {
         let packet: any = null;
         const registrationRecords: NativePilotRegistrationRecord[] = [];
         const registrationValidator = new NativePilotRegistrationObservationValidator();
+        const identities = new Map<string, { pid: number; start_ticks: string }>();
         const snapshots: Array<{
             role: string;
             value: any;
@@ -188,6 +197,34 @@ export class NativePilotCommonObservationService {
                 packet.processes.length > 8
             )
                 throw new Error('projection_phase_report');
+            const context = projectionObject(packet.context);
+            const common = projectionObject(context.common_process, [
+                'pid',
+                'worker_pid',
+                'identity',
+            ]);
+            const worker = projectionObject(
+                commandRecords[0]?.value?.observation?.process_identity,
+                ['schema_version', 'worker_pid', 'child_pid', 'executable'],
+            );
+            if (
+                worker.schema_version !== 1 ||
+                !Number.isSafeInteger(worker.worker_pid) ||
+                worker.worker_pid < 2 ||
+                !Number.isSafeInteger(worker.child_pid) ||
+                worker.child_pid < 2 ||
+                worker.executable !== '/pilot/runtime-bin/node' ||
+                common.pid !== worker.child_pid ||
+                common.worker_pid !== worker.worker_pid
+            )
+                throw new Error('projection_common_worker_identity');
+            const commonIdentity = registrationValidator.childIdentity(
+                nativeJson(common.identity, 'process').value,
+                '/pilot/runtime-bin/node',
+                worker.worker_pid,
+            );
+            if (!commonIdentity || commonIdentity.pid !== worker.child_pid)
+                throw new Error('projection_common_identity');
             for (const value of packet.snapshots) {
                 projectionObject(value, ['role', 'path', 'bytes', 'sha256']);
                 if (value.role === 'state-bytes') {
@@ -217,12 +254,14 @@ export class NativePilotCommonObservationService {
                 const identity = registrationValidator.childIdentity(
                     nativeJson(call.identity, 'process').value,
                     call.executable,
+                    commonIdentity.pid,
                 );
                 if (
                     identity &&
                     (identity.pid !== call.pid || identity.start_ticks !== call.start_ticks)
                 )
                     throw new Error('projection_native_child_identity');
+                if (identity) identities.set(call.label, identity);
                 registrationRecords.push({
                     label: call.label,
                     executable: call.executable,
@@ -253,7 +292,7 @@ export class NativePilotCommonObservationService {
             const registration = registrationValidator.validate(
                 selection.host,
                 step.id,
-                registrationRecords,
+                registrationRecords.slice(0, 3),
             );
             satisfied.set('unauthenticated', registration.unauthenticated);
             satisfied.set(
@@ -282,6 +321,7 @@ export class NativePilotCommonObservationService {
             this.profile = projectionDigest(
                 JSON.stringify({ volume: home.Name, nonce: probe.nonce, home: probe.passwd_home }),
             );
+            this.prior.set('probe', probe);
             environment = {
                 instance_sha256: projectionDigest(facts.container_id),
                 profile_sha256: this.profile,
@@ -391,8 +431,8 @@ export class NativePilotCommonObservationService {
             );
         }
         const role = (name: string) => snapshots.filter((value) => value.role === name);
-        const states = snapshots.filter(
-            (value) => value.role.startsWith('state-') && value.role !== 'state-bytes',
+        const states = snapshots.filter((value) =>
+            ['state-baseline', 'state-observation', 'state-stop'].includes(value.role),
         );
         for (const entry of states) this.state(entry.value, entry.path, nativeFiles);
         const settings = role('unrelated-settings');
@@ -483,10 +523,549 @@ export class NativePilotCommonObservationService {
                         nativeFiles?.get(file.path)?.bytes === file.bytes,
                 ),
         );
-        // Native auth/marketplace absence, hook/MCP semantics, loaded process and Claude
-        // plugin data require the selected raw codec. They remain false until bound.
         let loaded: unknown = null;
         let rollback: unknown = null;
+        if (
+            selection.host === 'codex' &&
+            ['baseline', 'verify-absent', 'observe-a', 'observe-b', 'observe-restored-a'].includes(
+                step.id,
+            )
+        ) {
+            const absence = step.id === 'baseline' || step.id === 'verify-absent';
+            const call = packet?.processes.find(
+                (row: any) =>
+                    row.label ===
+                    (absence ? 'selected-native-absence-observer' : 'selected-native-observer'),
+            );
+            if (call && goodProcess(call.process) && identities.has(call.label)) {
+                const compact = projectionObject(
+                    JSON.parse(
+                        new TextDecoder('utf-8', { fatal: true }).decode(
+                            readNative(call.stdout, 'native-log').data,
+                        ),
+                    ),
+                    [
+                        'schema_version',
+                        'runId',
+                        'host',
+                        'repetition',
+                        'phase',
+                        'pin',
+                        'status',
+                        'native_acceptance',
+                        'evidence_root',
+                        'evidence',
+                    ],
+                );
+                const root =
+                    '/pilot/native-output/' +
+                    selection.run_id +
+                    '-codex-r' +
+                    selection.repetition +
+                    '-' +
+                    step.id;
+                if (
+                    compact.schema_version !== 1 ||
+                    compact.runId !== selection.run_id ||
+                    compact.host !== selection.host ||
+                    compact.repetition !== selection.repetition ||
+                    compact.phase !== step.id ||
+                    compact.pin !== step.pin ||
+                    compact.native_acceptance !== false ||
+                    compact.evidence_root !== root ||
+                    !Array.isArray(compact.evidence) ||
+                    compact.evidence.length > 32
+                )
+                    throw new Error('projection_codex_compact');
+                const prefix = root.slice('/pilot/native-output/'.length);
+                const originals = new Map<
+                    string,
+                    { data: Buffer; receipt: NativePilotProjectionReceipt; value?: any }
+                >();
+                for (const file of compact.evidence) {
+                    projectionObject(
+                        file,
+                        file.role === undefined
+                            ? ['path', 'bytes', 'sha256']
+                            : ['role', 'path', 'bytes', 'sha256'],
+                    );
+                    if (!projectionPath(file.path)) throw new Error('projection_codex_locator');
+                    const path = file.path.startsWith(prefix + '/')
+                        ? file.path
+                        : prefix + '/' + file.path;
+                    if (originals.has(path)) throw new Error('projection_codex_duplicate');
+                    originals.set(
+                        path,
+                        readNative(
+                            { ...file, path },
+                            file.role?.startsWith('state-') ? 'state' : 'native-log',
+                        ),
+                    );
+                }
+                if (!originals.has(prefix + '/input.json')) {
+                    const entry = nativeFiles?.get(prefix + '/input.json');
+                    if (!entry) throw new Error('projection_codex_missing');
+                    originals.set(
+                        prefix + '/input.json',
+                        readNative(
+                            { path: entry.path, bytes: entry.bytes, sha256: entry.sha256 },
+                            'inventory',
+                        ),
+                    );
+                }
+                const bytes = (name: string) => {
+                    const value = originals.get(prefix + '/' + name);
+                    if (!value) throw new Error('projection_codex_missing');
+                    return value.data;
+                };
+                const json = (name: string) =>
+                    JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes(name)));
+                const key = step.pin === 'b' ? 'source_b' : 'source_a';
+                const observerSelection = {
+                    runId: selection.run_id,
+                    host: selection.host,
+                    repetition: selection.repetition,
+                    phase: step.id,
+                    pin: step.pin,
+                };
+                const expected = absence
+                    ? new NativeCodexObserverDispatcher().absence(
+                          observerSelection,
+                          this.prepared.contract,
+                          source,
+                      )
+                    : new NativeCodexObserverDispatcher().project(
+                          {
+                              runId: selection.run_id,
+                              host: selection.host,
+                              repetition: selection.repetition,
+                              phase: step.id,
+                              pin: step.pin,
+                          },
+                          this.prepared.contract,
+                          source,
+                          this.files.selectedJson(
+                              this.prepared.root,
+                              key,
+                              'skills-catalog.json',
+                              source,
+                          ),
+                          this.files.selectedJson(
+                              this.prepared.root,
+                              key,
+                              'hooks/codex.json',
+                              source,
+                          ),
+                      );
+                if (JSON.stringify(json('input.json')) !== JSON.stringify(expected))
+                    throw new Error('projection_codex_selected_input');
+                const report = json('observation.json');
+                const service = new NativePilotCodexObservationService(
+                    new NativeCodexProtocolValidator(
+                        new NativeCodexSchemaRepository(
+                            fileURLToPath(
+                                new URL(
+                                    '../../assets/native-pilot/codex/schemas/',
+                                    import.meta.url,
+                                ),
+                            ),
+                        ),
+                    ),
+                );
+                if (absence) {
+                    service.validateAbsence({
+                        input: expected as any,
+                        report,
+                        identity: json('process-identity.json'),
+                        events: json('process-events.json'),
+                        outer_pid: identities.get(call.label)!.pid,
+                        request: bytes('request.jsonl'),
+                        stdout: bytes('stdout.jsonl'),
+                        stderr: bytes('stderr.log'),
+                        fixture_request: bytes('fixture-request.json'),
+                        fixture_response: bytes('fixture-response.sse'),
+                        fixture_metadata: json('fixture-exchanges.json'),
+                    });
+                    satisfied.set('owned-hooks-and-mcp-absent', true);
+                    satisfied.set('unauthenticated', satisfied.get('unauthenticated') === true);
+                    satisfied.set(
+                        'fresh-native-process',
+                        satisfied.get('fresh-native-process') === true,
+                    );
+                } else {
+                    const innerStates = [];
+                    for (const wanted of ['state-before-mcp', 'state-after-mcp']) {
+                        const receipts = report.observation?.read_only_mcp?.snapshots;
+                        if (!Array.isArray(receipts))
+                            throw new Error('projection_mcp_state_missing');
+                        const selectedState = receipts.filter((file: any) => file.role === wanted);
+                        if (selectedState.length !== 1)
+                            throw new Error('projection_mcp_state_missing');
+                        const file = selectedState[0];
+                        const raw = originals.get(file.path);
+                        if (
+                            !raw ||
+                            raw.data.length !== file.bytes ||
+                            projectionDigest(raw.data) !== file.sha256
+                        )
+                            throw new Error('projection_mcp_state_receipt');
+                        const snapshot = JSON.parse(
+                            new TextDecoder('utf-8', { fatal: true }).decode(raw.data),
+                        );
+                        this.state(snapshot, file.path, nativeFiles, receipts);
+                        const stem = file.path.replace(/-state\.json$/, '');
+                        innerStates.push({
+                            snapshot,
+                            artifacts: receipts.filter(
+                                (row: any) =>
+                                    row.path === file.path ||
+                                    row.path.startsWith(stem + '-sqlite-copy/'),
+                            ),
+                        });
+                    }
+                    const derived = await service.validate({
+                        input: expected as any,
+                        report,
+                        identity: json('process-identity.json'),
+                        events: json('process-events.json'),
+                        outer_pid: identities.get(call.label)!.pid,
+                        request: bytes('request.jsonl'),
+                        stdout: bytes('stdout.jsonl'),
+                        stderr: bytes('stderr.log'),
+                        fixture_request: bytes('fixture-request.json'),
+                        fixture_response: bytes('fixture-response.sse'),
+                        fixture_metadata: json('fixture-exchanges.json'),
+                        home: bundle!.roots.get('home')!,
+                        states: innerStates,
+                    });
+                    const inventory = append(
+                        Buffer.from(
+                            JSON.stringify({
+                                schema_version: 1,
+                                source_tree_sha256: source.tree_sha256,
+                                installed: derived.installed_artifact_inventory,
+                                transformations: derived.transformations,
+                                independent_worker_fields: [
+                                    'path',
+                                    'kind',
+                                    'bytes',
+                                    'sha256',
+                                    'target',
+                                ],
+                                executable_bits: 'native-adapter-inventory-only',
+                            }) + '\n',
+                        ),
+                        'inventory',
+                    );
+                    loaded = {
+                        process_instance: projectionDigest(
+                            JSON.stringify({
+                                container: facts.container_id,
+                                ...derived.process_identity,
+                            }),
+                        ),
+                        source_tree_sha256: source.tree_sha256,
+                        installed_tree_sha256: derived.installed_artifact_tree_sha256,
+                        inventory_evidence: inventory.path,
+                        transformations: derived.transformations,
+                    };
+                    for (const id of [
+                        'fresh-native-process',
+                        'enabled-native-registration',
+                        'complete-loaded-skill-inventory',
+                        'loaded-source-matches-pin',
+                        'native-session-hook-completed',
+                        'native-hook-output-observed',
+                        'native-mcp-initialized',
+                        'exact-hook-trust',
+                        'native-mcp-catalog-and-resource',
+                        'one-local-response-no-auth-no-tools-no-provider',
+                    ])
+                        satisfied.set(id, true);
+                    satisfied.set(
+                        'read-only-mcp-preserved-state',
+                        derived.read_only_mcp.branch === 'existing_unchanged' &&
+                            this.stateEqual(innerStates[0].snapshot, innerStates[1].snapshot),
+                    );
+                    if (
+                        step.id === 'observe-restored-a' &&
+                        states.length === 2 &&
+                        this.prior.has('latest-state') &&
+                        this.statePreserved(this.prior.get('latest-state'), states[0].value) &&
+                        this.statePreserved(states[0].value, states[1].value)
+                    ) {
+                        rollback = {
+                            result: 'compatible',
+                            before_sha256: states[0].receipt.sha256,
+                            after_sha256: states[1].receipt.sha256,
+                            evidence: [states[0].receipt.path, states[1].receipt.path],
+                        };
+                    }
+                    if (states.length === 2 && states[1].value.status === 'captured')
+                        this.prior.set('latest-state', states[1].value);
+                }
+            }
+        }
+        if (
+            selection.host === 'claude' &&
+            ['baseline', 'verify-absent', 'observe-a', 'observe-b', 'observe-restored-a'].includes(
+                step.id,
+            )
+        ) {
+            const absence = step.id === 'baseline' || step.id === 'verify-absent';
+            const label = absence ? 'selected-native-absence-observer' : 'selected-native-observer';
+            const call = packet?.processes.find((row: any) => row.label === label);
+            const observerIdentity = identities.get(label);
+            if (call && goodProcess(call.process) && observerIdentity) {
+                const compact = projectionObject(
+                    JSON.parse(
+                        new TextDecoder('utf-8', { fatal: true }).decode(
+                            readNative(call.stdout, 'native-log').data,
+                        ),
+                    ),
+                    [
+                        'schema_version',
+                        'run_id',
+                        'host',
+                        'repetition',
+                        'phase',
+                        'pin',
+                        'status',
+                        'reason',
+                        'native_acceptance',
+                        'semantic_status',
+                        'evidence_root',
+                        'evidence',
+                    ],
+                );
+                const pin = step.pin === 'b' ? 'b' : 'a';
+                const selected = {
+                    ...selection,
+                    host: 'claude' as const,
+                    phase: step.id as any,
+                    pin: pin as 'a' | 'b',
+                };
+                const prefix = `${selection.run_id}-claude-r${selection.repetition}-${step.id}-raw`;
+                if (
+                    compact.schema_version !== 2 ||
+                    compact.run_id !== selected.run_id ||
+                    compact.host !== 'claude' ||
+                    compact.repetition !== selected.repetition ||
+                    compact.phase !== selected.phase ||
+                    compact.pin !== pin ||
+                    compact.status !== 'captured' ||
+                    compact.native_acceptance !== false ||
+                    compact.evidence_root !== '/pilot/native-output/' + prefix ||
+                    !Array.isArray(compact.evidence) ||
+                    compact.evidence.length > 96
+                )
+                    throw new Error('projection_claude_compact');
+                const originals = new Map<string, Buffer>();
+                for (const file of compact.evidence) {
+                    projectionObject(file, ['path', 'bytes', 'sha256']);
+                    if (!projectionPath(file.path) || originals.has(file.path))
+                        throw new Error('projection_claude_locator');
+                    originals.set(
+                        file.path,
+                        readNative({ ...file, path: prefix + '/' + file.path }, 'native-log').data,
+                    );
+                }
+                const bytes = (name: string) => {
+                    const value = originals.get(name);
+                    if (!value) throw new Error('projection_claude_missing');
+                    return value;
+                };
+                const json = (name: string) =>
+                    JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes(name)));
+                const configuration = new NativeClaudeRawConfiguration();
+                const recipe = configuration.commands(
+                    this.prepared.contract.mcp.claude[pin],
+                    configuration.diagnostic(selected),
+                    selected.phase,
+                );
+                const records: NativeClaudeObservationRecord[] = recipe.map((expected, index) => {
+                    const stem = `${String(index + 1).padStart(2, '0')}-${expected.label}`;
+                    const command = json(stem + '-request.json');
+                    const process = projectionObject(json(stem + '-process.json'), [
+                        'label',
+                        'status',
+                        'exit_code',
+                        'signal',
+                        'pid',
+                        'start_ticks',
+                        'identity',
+                        'cleanup',
+                    ]);
+                    if (process.label !== expected.label)
+                        throw new Error('projection_claude_call_label');
+                    const { label: _label, ...actual } = process;
+                    return {
+                        command,
+                        process: {
+                            ...actual,
+                            stdout: bytes(stem + '.stdout'),
+                            stderr: bytes(stem + '.stderr'),
+                        } as any,
+                    };
+                });
+                const context = json('context.json');
+                const report = json('observation.json');
+                const hashes: Record<string, string> = {
+                    source_a: this.prepared.trees.source_a.tree_sha256,
+                    source_b: this.prepared.trees.source_b.tree_sha256,
+                    driver: this.prepared.trees.driver.tree_sha256,
+                    observer: this.prepared.trees.observer.tree_sha256,
+                    node: this.prepared.contract.binaries.node.sha256,
+                    codex: this.prepared.contract.binaries.codex.sha256,
+                    claude: this.prepared.contract.binaries.claude.sha256,
+                    source: source.tree_sha256,
+                    consumer: consumers[0]?.value.tree_sha256,
+                };
+                const derived = new NativePilotClaudeObservationService().validate({
+                    selection: selected,
+                    contract: this.prepared.contract,
+                    source,
+                    context,
+                    report,
+                    records,
+                    diagnostic: absence ? null : bytes('claude-diagnostic.log'),
+                    before: absence ? null : json('source-before.json'),
+                    after: absence ? null : json('source-after.json'),
+                    inputs_unchanged: satisfied.get('source-and-consumer-unchanged') === true,
+                    observer_pid: observerIdentity.pid,
+                    observer_start_ticks: observerIdentity.start_ticks,
+                    expected_nonce: this.nonce!,
+                    expected_inputs: hashes,
+                    expected_environment: this.prior.get('probe')?.environment,
+                });
+                satisfied.set('fresh-native-process', derived.checks.fresh_native_processes);
+                if (absence) {
+                    satisfied.set('owned-hooks-and-mcp-absent', false);
+                } else {
+                    if (!derived.loaded) throw new Error('projection_claude_loaded');
+                    const inventory = append(
+                        Buffer.from(
+                            JSON.stringify({
+                                schema_version: 1,
+                                source_root: '/pilot/source',
+                                source_tree_sha256: source.tree_sha256,
+                                source_before: json('source-before.json'),
+                                source_after: json('source-after.json'),
+                                independent_worker_source: sourceSnapshots.map((row) => row.value),
+                                native_cache_scope: 'selected-manifest-and-registration-only',
+                            }) + '\n',
+                        ),
+                        'inventory',
+                    );
+                    loaded = {
+                        process_instance: projectionDigest(
+                            JSON.stringify({ container: facts.container_id, ...observerIdentity }),
+                        ),
+                        source_tree_sha256: source.tree_sha256,
+                        installed_tree_sha256: source.tree_sha256,
+                        inventory_evidence: inventory.path,
+                        transformations: [],
+                    };
+                    satisfied.set(
+                        'enabled-native-registration',
+                        derived.checks.selected_plugin_enabled,
+                    );
+                    satisfied.set(
+                        'complete-loaded-skill-inventory',
+                        derived.checks.loaded_full_package_bytes,
+                    );
+                    satisfied.set(
+                        'loaded-source-matches-pin',
+                        derived.loaded.source_tree_sha256 === source.tree_sha256,
+                    );
+                    satisfied.set(
+                        'native-session-hook-completed',
+                        derived.checks.session_start_output,
+                    );
+                    satisfied.set(
+                        'native-hook-output-observed',
+                        derived.checks.session_start_output,
+                    );
+                    satisfied.set(
+                        'native-mcp-initialized',
+                        derived.checks.mcp_initial_health && derived.checks.mcp_clean_stop,
+                    );
+                    const mcp = projectionObject(json('mcp-state.json'), [
+                        'schema_version',
+                        'scope',
+                        'status',
+                        'reason',
+                        'preservation',
+                        'snapshots',
+                    ]);
+                    if (
+                        JSON.stringify(mcp) !== JSON.stringify(report.mcp_state) ||
+                        mcp.schema_version !== 1 ||
+                        mcp.scope !== 'native-mcp-health-reads-before-init' ||
+                        mcp.status !== 'captured' ||
+                        !Array.isArray(mcp.snapshots)
+                    )
+                        throw new Error('projection_claude_mcp_state');
+                    const inner = ['state-before-mcp', 'state-after-mcp'].map((role) => {
+                        const selectedFiles = mcp.snapshots.filter(
+                            (file: any) => file.role === role,
+                        );
+                        if (selectedFiles.length !== 1)
+                            throw new Error('projection_claude_mcp_state_missing');
+                        const file = projectionObject(selectedFiles[0], [
+                            'role',
+                            'path',
+                            'bytes',
+                            'sha256',
+                        ]);
+                        if (
+                            file.path !==
+                            `${prefix}/${role === 'state-before-mcp' ? 'mcp-before' : 'mcp-after'}-state.json`
+                        )
+                            throw new Error('projection_claude_mcp_state_locator');
+                        const actual = nativeJson(
+                            { path: file.path, bytes: file.bytes, sha256: file.sha256 },
+                            'state',
+                        );
+                        this.state(actual.value, file.path, nativeFiles, mcp.snapshots);
+                        return actual.value;
+                    });
+                    for (const file of mcp.snapshots) {
+                        projectionObject(file, ['role', 'path', 'bytes', 'sha256']);
+                        if (
+                            !['state-before-mcp', 'state-after-mcp', 'state-bytes'].includes(
+                                file.role,
+                            ) ||
+                            !file.path.startsWith(prefix + '/')
+                        )
+                            throw new Error('projection_claude_mcp_state_role');
+                        readNative(
+                            { path: file.path, bytes: file.bytes, sha256: file.sha256 },
+                            'state',
+                        );
+                    }
+                    satisfied.set(
+                        'read-only-mcp-preserved-state',
+                        inner.every((value) => value.exists) && this.stateEqual(inner[0], inner[1]),
+                    );
+                    if (
+                        step.id === 'observe-restored-a' &&
+                        states.length === 2 &&
+                        this.prior.has('latest-state') &&
+                        this.statePreserved(this.prior.get('latest-state'), states[0].value) &&
+                        this.statePreserved(states[0].value, states[1].value)
+                    )
+                        rollback = {
+                            result: 'compatible',
+                            before_sha256: states[0].receipt.sha256,
+                            after_sha256: states[1].receipt.sha256,
+                            evidence: [states[0].receipt.path, states[1].receipt.path],
+                        };
+                    if (states.length === 2 && states[1].value.status === 'captured')
+                        this.prior.set('latest-state', states[1].value);
+                }
+            }
+        }
         if (step.id === 'retain' && bundle) {
             satisfied.set('private-evidence-and-state-retained', true);
             satisfied.set('retention-digest-verified', true);
@@ -577,7 +1156,7 @@ export class NativePilotCommonObservationService {
             value.sha256 === projectionDigest(`i9-native-pilot unrelated data\nrun_id=${run}\n`)
         );
     }
-    private state(value: any, path: string, files: any) {
+    private state(value: any, path: string, files: any, receipts?: any[]) {
         projectionObject(value, [
             'schema_version',
             'exists',
@@ -600,9 +1179,13 @@ export class NativePilotCommonObservationService {
             !['captured', 'blocked'].includes(value.status)
         )
             throw new Error('projection_state_shape');
+        const prefix = path.replace(/-state\.json$/, '-sqlite-copy/');
+        if (prefix === path || !(files instanceof Map)) throw new Error('projection_state_locator');
+        const exported = [...files.values()].filter((entry: any) => entry.path.startsWith(prefix));
         if (!value.exists) {
             if (
                 value.files.length ||
+                exported.length ||
                 value.tables.length ||
                 value.schema.length ||
                 value.migrations.length ||
@@ -613,27 +1196,63 @@ export class NativePilotCommonObservationService {
         }
         if (value.state_sha256 !== projectionDigest(JSON.stringify(value.files)))
             throw new Error('projection_state_identity');
-        const prefix = path.replace(/-state\.json$/, '-sqlite-copy/');
-        if (prefix === path) throw new Error('projection_state_locator');
+        const names = new Set<string>();
+        if (
+            value.files.length < 1 ||
+            value.files.length > 3 ||
+            !value.files.some((file: any) => file.name === 'skills-usage.db')
+        )
+            throw new Error('projection_state_incomplete_files');
         for (const file of value.files) {
             projectionObject(file, ['name', 'bytes', 'sha256']);
-            if (!/^skills-usage\.db(?:-wal|-shm)?$/.test(file.name))
+            if (
+                !/^skills-usage\.db(?:-wal|-shm)?$/.test(file.name) ||
+                names.has(file.name) ||
+                !Number.isSafeInteger(file.bytes) ||
+                file.bytes < 0 ||
+                file.bytes > 33_554_432 ||
+                !/^[a-f0-9]{64}$/.test(file.sha256)
+            )
                 throw new Error('projection_state_file');
-            const raw = files?.get(prefix + file.name);
+            names.add(file.name);
+            const raw = files.get(prefix + file.name);
             if (!raw || raw.bytes !== file.bytes || raw.sha256 !== file.sha256)
                 throw new Error('projection_state_byte_receipt');
             this.files.decode(raw);
         }
+        if (
+            exported.length !== names.size ||
+            exported.some(
+                (entry: any) =>
+                    entry.kind !== 'file' || !names.has(entry.path.slice(prefix.length)),
+            )
+        )
+            throw new Error('projection_state_incomplete_subtree');
+        if (receipts !== undefined) {
+            const retained = receipts.filter((file: any) => file.path.startsWith(prefix));
+            if (
+                retained.length !== names.size ||
+                new Set(retained.map((file: any) => file.path)).size !== names.size ||
+                retained.some(
+                    (file: any) =>
+                        file.role !== 'state-bytes' ||
+                        !names.has(file.path.slice(prefix.length)) ||
+                        file.bytes !== files.get(file.path)?.bytes ||
+                        file.sha256 !== files.get(file.path)?.sha256,
+                )
+            )
+                throw new Error('projection_state_incomplete_receipts');
+        }
         if (value.status === 'captured')
             new NativePilotStateSchemaValidator().validate(value.migrations, value.schema);
-        const names = new Set(value.tables.map((table: any) => table.name));
+        const tableNames = new Set(value.tables.map((table: any) => table.name));
         if (
-            names.size !== value.tables.length ||
+            tableNames.size !== value.tables.length ||
             (value.status === 'captured' &&
                 (value.schema.filter((entry: any) => entry.type === 'table').length !==
-                    names.size ||
+                    tableNames.size ||
                     value.schema.some(
-                        (entry: any) => entry.type === 'table' && !names.has(entry.name),
+                        (entry: any) => entry.type === 'table' && !tableNames.has(entry.name),
                     )))
         )
             throw new Error('projection_incomplete_state_tables');

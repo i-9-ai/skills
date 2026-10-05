@@ -107,7 +107,7 @@ test('baseline seeds once and retains real expected nonzero auth candidate befor
     const result = await service.run(args('baseline'), f.transport);
     assert.deepEqual(f.events.slice(0, 3), ['context', 'seed', 'snapshot:before']);
     assert.deepEqual(
-        result.processes.map(({ argv }) => argv),
+        result.processes.slice(0, 3).map(({ argv }) => argv),
         [
             ['login', 'status'],
             ['plugin', 'list', '--marketplace', 'i9-skills', '--json'],
@@ -115,6 +115,8 @@ test('baseline seeds once and retains real expected nonzero auth candidate befor
         ],
     );
     assert.equal(result.processes[0].process.exit_code, 1);
+    assert.equal(result.processes[3].label, 'selected-native-absence-observer');
+    assert.deepEqual(result.processes[3].argv.slice(-2), ['--phase', 'baseline']);
     assert(
         result.unclaimed.includes('native-authentication-or-registration-from-filesystem-snapshot'),
     );

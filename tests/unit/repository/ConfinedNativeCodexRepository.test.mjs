@@ -6,7 +6,7 @@ import { ConfinedNativeCodexRepository } from '../../../src/repository/ConfinedN
 import { CodexRpcSession } from '../../../src/transport/CodexRpcSession.ts';
 import { NativeCodexConfiguration } from '../../../src/config/NativeCodexConfiguration.ts';
 
-function fixture(closeOnEof = true) {
+function fixture(closeOnEof = true, options = {}) {
     const child = new EventEmitter();
     child.pid = 50123;
     let nativeExited = false;
@@ -28,19 +28,37 @@ function fixture(closeOnEof = true) {
         },
     };
     const signals = [];
+    const childReads = [];
+    const stat =
+        options.stat ??
+        Buffer.from(
+            `50123 (synthetic codex) S ${[String(options.parent ?? process.pid), ...Array(17).fill('0'), '12345', '0'].join(' ')}\n`,
+        );
     let command;
+    let sample = 0;
     class OwnedFake extends ConfinedNativeCodexRepository {
         boundary() {}
     }
     const repository = new OwnedFake({
         execute(executable, argv, options) {
             command = { executable, argv, options };
+            queueMicrotask(() => child.emit('spawn'));
             return child;
         },
         signal(pid, signal) {
             signals.push({ pid, signal });
             if (signal === 'SIGKILL') queueMicrotask(() => finish(null, signal));
             return true;
+        },
+        child: {
+            stat(pid) {
+                childReads.push(['stat', pid]);
+                return ++sample > 1 && options.after ? options.after : stat;
+            },
+            executable(pid) {
+                childReads.push(['executable', pid]);
+                return options.executable ?? '/pilot/runtime-bin/codex';
+            },
         },
     });
     repository.fixtureBaseUrl = 'http://127.0.0.1:1234/v1';
@@ -49,6 +67,8 @@ function fixture(closeOnEof = true) {
         child,
         signals,
         finish,
+        stat,
+        childReads,
         argv: NativeCodexConfiguration.argv(repository.fixtureBaseUrl),
         command: () => command,
     };
@@ -70,6 +90,50 @@ test('fixed process closes stdio first and retains its observed clean exit witho
     assert.equal(f.repository.processEvents.at(-1).exit_code, 0);
     assert.equal(f.repository.processEvents.at(-1).signal, null);
     assert.equal(f.repository.processEvents.at(-1).timed_out, false);
+});
+
+test('spawn identity is sampled around executable read from the owned child and retains exact stat bytes', async () => {
+    const f = fixture();
+    const stream = await f.repository.start(f.argv);
+    assert.deepEqual(stream.identity, { pid: 50123, start_ticks: '12345' });
+    assert.deepEqual(f.childReads, [
+        ['stat', 50123],
+        ['executable', 50123],
+        ['stat', 50123],
+    ]);
+    const identity = f.repository.processObservations[0].identity;
+    assert.equal(identity.status, 'observed');
+    assert.equal(identity.stat_before.bytes, f.stat.length);
+    assert.deepEqual(Buffer.from(identity.stat_before.base64, 'base64'), f.stat);
+    const session = new CodexRpcSession(stream, {});
+    await session.close();
+});
+
+test('foreign executable, zombie and overbound raw stat do not produce a native identity', async () => {
+    for (const options of [
+        { executable: '/unselected/executable' },
+        {
+            stat: Buffer.from(
+                `50123 (synthetic codex) Z ${[String(process.pid), ...Array(17).fill('0'), '12345', '0'].join(' ')}\n`,
+            ),
+        },
+        { stat: Buffer.alloc(4097, 65) },
+    ]) {
+        const f = fixture(true, options);
+        const stream = await f.repository.start(f.argv);
+        assert.equal(stream.identity, undefined);
+        const identity = f.repository.processObservations[0].identity;
+        assert.equal(identity.status, 'invalid');
+        assert.deepEqual(Buffer.from(identity.stat_before.base64, 'base64'), f.stat);
+        await new CodexRpcSession(stream, {}).close();
+    }
+});
+
+test('unknown snapshot labels fail before filesystem or storage selection', async () => {
+    const f = fixture();
+    await assert.rejects(f.repository.captureState('other'), /native_mcp_state_label/);
+    assert.equal(f.repository.stateArtifacts.length, 0);
+    assert.equal(f.repository.processEvents.length, 0);
 });
 
 test('unresponsive stdio escalates only within the fixed bound and SIGKILL remains a failure', async (t) => {
@@ -152,6 +216,55 @@ test('the existing execution deadline retains timeout facts and cannot become re
     assert.equal(exit.signal, 'SIGKILL');
     assert.equal(exit.timed_out, true);
     assert.equal(exit.output_truncated, false);
+});
+
+const childStat = (parent, state = 'S', ticks = '12345', cpu = '0') =>
+    Buffer.from(
+        '50123 (synthetic codex) ' +
+            [
+                state,
+                String(parent),
+                ...Array(12).fill('0'),
+                cpu,
+                ...Array(4).fill('0'),
+                ticks,
+                '0',
+            ].join(' ') +
+            '\n',
+    );
+
+test('foreign observer parent and ownership/state/start-tick change around executable read are retained and rejected', async () => {
+    for (const options of [
+        { parent: process.pid + 1 },
+        { after: childStat(process.pid + 1) },
+        { after: childStat(process.pid, 'Z') },
+        { after: childStat(process.pid, 'S', '12346') },
+    ]) {
+        const f = fixture(true, options);
+        const stream = await f.repository.start(f.argv);
+        assert.equal(stream.identity, undefined);
+        const receipt = f.repository.processObservations[0].identity;
+        assert.equal(receipt.schema_version, 2);
+        assert.equal(receipt.expected_ppid, process.pid);
+        assert.equal(receipt.status, 'invalid');
+        assert.deepEqual(Buffer.from(receipt.stat_before.base64, 'base64'), f.stat);
+        assert.deepEqual(Buffer.from(receipt.stat_after.base64, 'base64'), options.after ?? f.stat);
+        await new CodexRpcSession(stream, {}).close();
+        assert.equal(
+            f.repository.raw.some(({ direction }) => direction === 'request'),
+            false,
+        );
+    }
+});
+
+test('recognized live state and CPU counters may change without changing owned child identity', async () => {
+    const f = fixture(true, { after: childStat(process.pid, 'R', '12345', '9') });
+    const stream = await f.repository.start(f.argv);
+    assert.deepEqual(stream.identity, { pid: 50123, start_ticks: '12345' });
+    const receipt = f.repository.processObservations[0].identity;
+    assert.notEqual(receipt.stat_before.sha256, receipt.stat_after.sha256);
+    assert.equal(receipt.status, 'observed');
+    await new CodexRpcSession(stream, {}).close();
 });
 
 test('EOF may drain for the documented RPC cleanup interval inside the same native deadline', async (t) => {

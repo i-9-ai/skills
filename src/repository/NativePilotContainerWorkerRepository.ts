@@ -177,6 +177,7 @@ export class NativePilotContainerWorkerRepository {
         this.context();
         const command = this.command(phase, index);
         const npm = this.nativeEnvironment();
+        let childPid: number | null = null;
         const result = new NativePilotProcessRepository().run(
             command,
             containerPath.consumer,
@@ -185,6 +186,7 @@ export class NativePilotContainerWorkerRepository {
                     ...options,
                     ...(npm.environment ? { env: npm.environment } : {}),
                 });
+                childPid = Number.isSafeInteger(raw.pid) && raw.pid >= 2 ? raw.pid : null;
                 return {
                     ...raw,
                     error: raw.error
@@ -205,6 +207,12 @@ export class NativePilotContainerWorkerRepository {
             phase,
             index,
             command,
+            process_identity: {
+                schema_version: 1,
+                worker_pid: process.pid,
+                child_pid: childPid,
+                executable: command.executable,
+            },
             npm_environment: npm.evidence,
             ...result,
         };

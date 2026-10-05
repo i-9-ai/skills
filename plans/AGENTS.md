@@ -22,6 +22,7 @@ Verify every requirement has an implementation and a check or an explicit limit.
 
 ## Child DOX index
 
+- [Native observation budgets](2026-10-05-18-02-45-native-observation-budget.md): measured pre-dispatch refusals and a bounded outer-phase correction; native lifetime, confinement and prior failures remain unchanged.
 - [GitHub module consumer](2026-10-05-16-07-22-github-module-consumer-pilot.md): concrete module roadmap and publicly reproducible local consumer fixture; owner acceptance, source admission and publication remain separate.
 - [Repeatable native host pilots](2026-10-05-00-43-00-repeatable-native-host-pilots.md): disposable Codex/Claude installation, source-pin refresh and preserved-state observations; no real profile, provider, marketplace update or release effects.
 

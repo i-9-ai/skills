@@ -96,8 +96,8 @@ export class NativePilotCommonPhaseService {
                 },
                 { label: 'native-version', executable: native, argv: ['--version'] },
             ];
-        if (['baseline', 'verify-absent'].includes(selection.phase))
-            return [
+        if (['baseline', 'verify-absent'].includes(selection.phase)) {
+            const calls: NativePilotCommonCall[] = [
                 {
                     label: 'native-auth-status',
                     executable: native,
@@ -117,6 +117,27 @@ export class NativePilotCommonPhaseService {
                     argv: ['plugin', 'marketplace', 'list', '--json'],
                 },
             ];
+            calls.push({
+                label: 'selected-native-absence-observer',
+                executable: '/pilot/runtime-bin/node',
+                argv: [
+                    `/pilot/input/observer/${contract.observer.entrypoint}`,
+                    '--contract',
+                    '/pilot/contract.json',
+                    '--root',
+                    '/pilot',
+                    '--run-id',
+                    selection.run_id,
+                    '--host',
+                    selection.host,
+                    '--repetition',
+                    String(selection.repetition),
+                    '--phase',
+                    selection.phase,
+                ],
+            });
+            return calls;
+        }
         if (['observe-a', 'observe-b', 'observe-restored-a'].includes(selection.phase))
             return [
                 {

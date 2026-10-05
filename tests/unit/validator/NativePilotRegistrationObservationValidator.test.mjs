@@ -179,25 +179,27 @@ test('malformed UTF8, oversized output and embedded NUL are retained inputs, nev
     }
 });
 
-const identity = (state = 'S') => {
+const identity = (state = 'S', parent = 71, ticks = '12345') => {
     const raw = Buffer.from(
-        `90 (synthetic ) process) ${state} ${Array.from({ length: 49 }, (_, i) => (i === 18 ? '12345' : '0')).join(' ')}\n`,
+        `90 (synthetic ) process) ${state} ${Array.from({ length: 49 }, (_, i) => (i === 0 ? String(parent) : i === 18 ? ticks : '0')).join(' ')}\n`,
     );
     return {
-        schema_version: 1,
+        schema_version: 2,
         status: 'observed',
         pid: 90,
+        observer_pid: 71,
         start_ticks: '12345',
         executable: '/pilot/runtime-bin/codex',
-        stat: {
+        stat_before: {
             bytes: raw.length,
             sha256: createHash('sha256').update(raw).digest('hex'),
             base64: raw.toString('base64'),
         },
+        stat_after: validator.childStatReceipt(raw),
     };
 };
 test('child identity codec binds exact raw stat bytes and handles parentheses in the command name', () => {
-    assert.deepEqual(validator.childIdentity(identity(), '/pilot/runtime-bin/codex'), {
+    assert.deepEqual(validator.childIdentity(identity(), '/pilot/runtime-bin/codex', 71), {
         pid: 90,
         start_ticks: '12345',
     });
@@ -205,13 +207,13 @@ test('child identity codec binds exact raw stat bytes and handles parentheses in
 test('changed identity hashes, process time, executable, unknown state and zombie never become observed fresh process', () => {
     for (const mutate of [
         (v) => {
-            v.stat.sha256 = 'a'.repeat(64);
+            v.stat_before.sha256 = 'a'.repeat(64);
         },
         (v) => {
-            v.stat.bytes++;
+            v.stat_before.bytes++;
         },
         (v) => {
-            v.stat.base64 += '\n';
+            v.stat_before.base64 += '\n';
         },
         (v) => {
             v.pid = 91;
@@ -231,8 +233,103 @@ test('changed identity hashes, process time, executable, unknown state and zombi
     ]) {
         const v = identity();
         mutate(v);
-        assert.equal(validator.childIdentity(v, '/pilot/runtime-bin/codex'), null);
+        assert.equal(validator.childIdentity(v, '/pilot/runtime-bin/codex', 71), null);
     }
     for (const state of ['Z', 'X', '?'])
-        assert.equal(validator.childIdentity(identity(state), '/pilot/runtime-bin/codex'), null);
+        assert.equal(
+            validator.childIdentity(identity(state), '/pilot/runtime-bin/codex', 71),
+            null,
+        );
+});
+
+test('v2 ownership requires a separately measured parent and two bound live samples', () => {
+    for (const parent of [undefined, null, 1, 72, 71.5, NaN, Infinity])
+        assert.equal(validator.childIdentity(identity(), '/pilot/runtime-bin/codex', parent), null);
+    for (const [name, mutate] of [
+        [
+            'legacy single sample',
+            (v) => {
+                v.schema_version = 1;
+                v.stat = v.stat_before;
+                delete v.stat_before;
+                delete v.stat_after;
+                delete v.observer_pid;
+            },
+        ],
+        [
+            'self asserted foreign parent',
+            (v) => {
+                v.observer_pid = 1;
+                v.stat_before = identity('S', 1).stat_before;
+                v.stat_after = identity('S', 1).stat_after;
+            },
+        ],
+        [
+            'foreign second parent',
+            (v) => {
+                v.stat_after = identity('S', 72).stat_after;
+            },
+        ],
+        [
+            'second start race',
+            (v) => {
+                v.stat_after = identity('S', 71, '12346').stat_after;
+            },
+        ],
+        [
+            'zombie second sample',
+            (v) => {
+                v.stat_after = identity('Z').stat_after;
+            },
+        ],
+        [
+            'unknown second sample with correct hash',
+            (v) => {
+                v.stat_after = validator.childStatReceipt(Buffer.from('unknown'));
+            },
+        ],
+        [
+            'absent second sample',
+            (v) => {
+                v.stat_after = null;
+            },
+        ],
+        [
+            'corrupt second digest',
+            (v) => {
+                v.stat_after.sha256 = 'f'.repeat(64);
+            },
+        ],
+        [
+            'second bound overflow',
+            (v) => {
+                v.stat_after.bytes = 4097;
+            },
+        ],
+        [
+            'second base64 overflow',
+            (v) => {
+                v.stat_after.base64 = 'a'.repeat(5465);
+            },
+        ],
+        [
+            'same child and parent',
+            (v) => {
+                v.pid = 71;
+            },
+        ],
+    ]) {
+        const value = identity();
+        mutate(value);
+        assert.equal(validator.childIdentity(value, '/pilot/runtime-bin/codex', 71), null, name);
+    }
+});
+
+test('retention bound rejects oversized bytes and the existing two-argument stat parser stays compatible', () => {
+    for (const bytes of [Buffer.alloc(0), Buffer.alloc(4097)])
+        assert.throws(() => validator.childStatReceipt(bytes), /stat_bound/);
+    const raw = Buffer.from(identity().stat_before.base64, 'base64');
+    assert.deepEqual(validator.childStat(raw, 90), { pid: 90, start_ticks: '12345' });
+    assert.deepEqual(validator.childStat(raw, 90, 71), { pid: 90, start_ticks: '12345' });
+    assert.equal(validator.childStat(raw, 90, 72), null);
 });

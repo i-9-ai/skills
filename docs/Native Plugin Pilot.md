@@ -10,7 +10,7 @@ catalog/read-evidence calls; the historical A/B/A results below remain unchanged
 
 ## Repeatable operator
 
-`plugin pilot` prepares and executes explicitly selected phases of a Codex/Claude
+`plugin pilot` prepares and executes explicitly selected lanes of a Codex/Claude
 lifecycle matrix in fresh, owned containers. It is an installation and lifecycle
 check. It does not score
 the usefulness of a skill or establish model task quality. Use concrete tasks
@@ -57,13 +57,36 @@ real profile or substitutes a real model provider to complete a failing lane.
 
 The prepared phase journal covers native versions, baseline state, installation,
 hook/MCP observations, local A → B → A replacement, removal and owned-resource
-cleanup. At this implementation checkpoint, semantic bindings for loaded package
-inventories, read-only MCP preservation and restored-A rollback evidence remain
-incomplete. Those required gates stay false or unknown, so the bundled operator
-cannot yet approve a complete native lifecycle matrix. A prepared phase is not
-an observed result; failed and unattempted phases remain visible. An unknown process or
-socket state blocks advancement; a measured zombie residual is retained as a
-terminated residual, never relabeled as process absence.
+cleanup. Use contract schema 2 and select the bundled internal observer
+`dist/transport/NativePilotNativeObserverRunner.js` for a compiled export, or its
+`src/transport/NativePilotNativeObserverRunner.ts` development counterpart. This
+fixed container dispatcher serves both hosts; it is not a second public CLI.
+
+The bundled parser rechecks retained native records, full loaded package/resource
+inventories and state evidence. Codex uses its pinned RPC schemas, native hook
+trust and completion, actual MCP catalog/resource responses and one bounded local
+response exchange. The total request count includes rejected requests, so an extra
+request cannot disappear from the proof. Its baseline/removal recipe uses no
+thread or turn and requires the fresh lane's native inventories to be empty.
+Claude uses seven fixed version, auth, plugin, MCP health and init-only calls at
+A, B and restored A. It verifies the loaded source bytes and actual SessionStart
+output; MCP health does not prove catalog or resource tool calls.
+
+Claude's native hook/MCP absence inventory is still unsupported. That required
+gate stays false, and the schema-2 lane stops at baseline instead of proceeding
+under a diagnostic exception. The operator therefore cannot yet approve a complete
+two-host lifecycle matrix. For an unsupported gate, retain its raw records and
+use the pinned host's documented manual inspection inside the same disposable
+boundary. Record the exact unresolved gate and the commands, output and state
+comparisons needed to inspect it; manual evidence does not change the automated
+verdict. Do not fall back to a real profile or a model conversation.
+
+A prepared phase is not an observed result; failed and unattempted phases remain
+visible. Process proof binds two live PID/start-time/parent samples to the
+worker-observed child, rather than accepting a collector's asserted PID. Nested
+timeouts reserve time for shutdown and evidence without extending the 45-second
+phase. An unknown process or socket state blocks advancement; a measured zombie
+residual is retained as a terminated residual, never relabeled as process absence.
 
 SQLite preservation has two explicit outcomes: absent storage stays absent, or
 existing storage stays unchanged during read-only operations. Seeded lanes retain
@@ -71,6 +94,13 @@ the original file and sidecar bytes, issued schema identities and prior user-tab
 payloads. A valid migration ledger cannot hide modified SQL or a removed index.
 Unsupported state is retained as blocked; it is never reset or downgraded merely
 to obtain a passing result.
+
+The seeded contract requires `existing_unchanged` for read-only MCP evidence.
+Snapshots bracket Codex's selected native MCP operations and Claude's MCP list/get
+health calls before its init hook writer. The host rechecks the main SQLite file,
+every retained sidecar, issued SQL and row/payload identities. Empty receipt lists
+cannot establish an existing store. A restored source A alone is insufficient:
+rollback compatibility also requires the preceding state and preserved history.
 
 The CLI returns a local report receipt and a nonzero status when execution is
 incomplete. Raw profiles, RPC/debug output, source exports and research artifacts

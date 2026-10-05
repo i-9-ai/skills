@@ -33,6 +33,8 @@ Run `npm run check` and inspect the required official workflow result for the ex
 - [Process audit](repository/NativePilotProcessAuditRepository.ts): retains bounded complete process/socket samples, explicit zombies and closed TIME_WAIT; unknown state cannot become observed absence.
 - [Pilot worker](transport/NativePilotContainerWorkerRunner.ts): fixed internal probe, audit, execution and export ingress inside the measured container; not a second public CLI.
 - [Native Codex observation](service/NativeCodexObservationService.ts): digest-pinned native RPC, loaded package bytes, hook trust, MCP reads and one bounded local response fixture; no provider inference.
+- [Native host observer](transport/NativePilotNativeObserverRunner.ts): fixed Codex/Claude phase dispatch inside the measured disposable container; unknown host contracts remain blocked and caller collectors never execute on the host.
+- [Native observation projection](service/NativePilotCommonObservationService.ts): bundled validation of retained phase, process, registration and preservation records; snapshots and adapter assertions do not establish independent native acceptance.
 - [Codex schema configuration](config/NativeCodexSchemaConfiguration.ts): immutable official declarative schema identities with bundled license and notices; unsupported protocol messages remain blocked.
 
 - [Skill quality](../docs/Skill%20Quality.md): source-qualified exact-revision receipts with explicit assurance and coverage; structural conformance, behavioral evidence and readiness remain separate.

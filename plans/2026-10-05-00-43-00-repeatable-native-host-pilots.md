@@ -2,8 +2,9 @@
 
 Issue: [#90](https://github.com/i-9-ai/skills/issues/90).
 Status: implementation in progress; canonical operator checkpoint committed and
-structurally checked, initial native captures retained, full semantic bindings
-and repeated lifecycle acceptance pending.
+structurally checked, initial native captures retained; static runtime/state and
+Codex absence bindings implemented, Claude absence and repeated lifecycle
+acceptance pending.
 
 ## Objective
 
@@ -122,6 +123,38 @@ authority to import that collector into the host process. Execute selected
 collector code only inside the measured container. The installed operator must
 support its compiled distribution and bundled schema assets as well as the
 explicit development route; verify both against their actual file inventories.
+
+### Public observation composition
+
+Keep `plugin:pilot` as the sole oclif route. The selected in-container
+`NativePilotNativeObserverRunner` dispatches the fixed Codex or Claude recipe;
+the host always uses bundled static parsers. Reuse
+`NativeCodexObservationService`, `NativeCodexSchemaConfiguration.identity` and
+the existing account/asset configuration rather than restoring prototype names,
+private launchers or duplicate schema inventories. Bundle no private capture or
+native binary; the existing 39 declarative assets and notices remain unchanged.
+
+Bind the worker's actual child PID to two live common-observer samples and then
+to the selected observer's two live samples. Retain bounded original stat bytes,
+parent IDs, executable identity and native exit order. Both selected observation
+labels use remaining monotonic phase time with explicit nested shutdown/report
+reserves; insufficient time blocks before dispatch instead of extending authority.
+
+Static Codex replay revalidates raw JSONL envelopes, including timestamp types,
+native hook/MCP responses, all loaded bytes, total fixture request count and
+clean exit. The no-thread/no-turn absence recipe must receive no fixture requests.
+Claude projection binds its seven fixed commands, raw diagnostics and loaded bytes;
+SQLite health snapshots surround list/get before init. Existing state requires a
+unique complete file inventory, including the main database and actual sidecars,
+with raw bytes and known SQL/row identities. Prior state remains necessary for
+rollback compatibility. Claude native hook/MCP absence stays unsupported in the
+unchanged schema-2 acceptance contract; no diagnostic continuation is adopted.
+
+Port regression cases into the existing canonical unit suites and shared fixture
+locations. Preserve existing shutdown cases, compiled runtime layout and packed
+consumer checks. Run source and compiled fake suites, strict types, immutable
+asset checks, public hygiene and independent exact-commit review. None substitutes
+for the still-required fresh native matrix or independent artifact inspection.
 
 ## Rollback and removal
 

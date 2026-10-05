@@ -25,6 +25,32 @@ import type {
 import type { ProcessEvent, StreamingProcess } from '../transport/CodexRpcSession.ts';
 import type { FixtureHost } from '../transport/LoopbackResponsesFixture.ts';
 import { NativeCodexConfiguration } from '../config/NativeCodexConfiguration.ts';
+import { NativePilotRegistrationObservationValidator } from '../validator/NativePilotRegistrationObservationValidator.ts';
+import { NativePilotStateSnapshotRepository } from './NativePilotStateSnapshotRepository.ts';
+import type { NativePilotStateSnapshot } from './NativePilotStateSnapshotRepository.ts';
+
+interface NativeCodexChildReader {
+    stat(pid: number): Buffer;
+    executable(pid: number): string;
+}
+const childReader: NativeCodexChildReader = {
+    stat(pid) {
+        const fd = openSync(`/proc/${pid}/stat`, constants.O_RDONLY);
+        try {
+            const bytes = Buffer.alloc(4097);
+            let used = 0;
+            while (used < bytes.length) {
+                const count = readSync(fd, bytes, used, bytes.length - used, null);
+                if (!count) break;
+                used += count;
+            }
+            return bytes.subarray(0, used);
+        } finally {
+            closeSync(fd);
+        }
+    },
+    executable: (pid) => readlinkSync(`/proc/${pid}/exe`),
+};
 
 export interface NativeCodexProcessEvent {
     event:
@@ -54,13 +80,32 @@ export class ConfinedNativeCodexRepository implements ObserverConfinement {
     }[] = [];
     readonly processEvents: NativeCodexProcessEvent[] = [];
     private readonly execute: typeof spawn;
+    private readonly fixtureServer: typeof createServer;
+    readonly fixtureExchanges: Array<Record<string, unknown>> = [];
+    fixtureRequestCount = 0;
     private readonly sendSignal: typeof process.kill;
+    private readonly child: NativeCodexChildReader;
+    private readonly stateOutput: string | null;
+    readonly processObservations: Array<Record<string, unknown>> = [];
+    readonly stateArtifacts: Array<{ role: string; path: string; bytes: number; sha256: string }> =
+        [];
     private rawBytes = 0;
     private fixtureBaseUrl: string | undefined;
     private captureFailure: Error | undefined;
-    constructor(options: { execute?: typeof spawn; signal?: typeof process.kill } = {}) {
+    constructor(
+        options: {
+            execute?: typeof spawn;
+            signal?: typeof process.kill;
+            child?: NativeCodexChildReader;
+            outputRoot?: string;
+            server?: typeof createServer;
+        } = {},
+    ) {
         this.execute = options.execute ?? spawn;
+        this.fixtureServer = options.server ?? createServer;
         this.sendSignal = options.signal ?? process.kill;
+        this.child = options.child ?? childReader;
+        this.stateOutput = options.outputRoot ?? null;
         this.fixture = {
             start: async (handler, limits) => {
                 this.boundary();
@@ -76,7 +121,8 @@ export class ConfinedNativeCodexRepository implements ObserverConfinement {
                     throw new Error('fixture_limits');
                 const sockets = new Set<import('node:net').Socket>();
                 let count = 0;
-                const server = createServer((request, response) => {
+                const server = this.fixtureServer((request, response) => {
+                    this.fixtureRequestCount++;
                     request.setTimeout(limits.timeoutMs, () => request.destroy());
                     if (++count > limits.requests) {
                         response.writeHead(400);
@@ -112,6 +158,25 @@ export class ConfinedNativeCodexRepository implements ObserverConfinement {
                                 path: request.url ?? '',
                                 headers: request.headers,
                                 body,
+                            });
+                            if (
+                                request.rawHeaders.length > 128 ||
+                                request.rawHeaders.some((part) => Buffer.byteLength(part) > 4096) ||
+                                Buffer.byteLength(JSON.stringify(request.rawHeaders)) > 16_384
+                            )
+                                throw new Error('fixture_header_bound');
+                            this.fixtureExchanges.push({
+                                method: request.method ?? '',
+                                path: request.url ?? '',
+                                raw_headers: [...request.rawHeaders],
+                                request_sha256: createHash('sha256').update(body).digest('hex'),
+                                request_bytes: body.length,
+                                status: result.status,
+                                response_headers: { ...result.headers },
+                                response_sha256: createHash('sha256')
+                                    .update(result.body)
+                                    .digest('hex'),
+                                response_bytes: result.body.length,
                             });
                             this.capture('fixture-response', result.body);
                             response.writeHead(result.status, result.headers);
@@ -180,6 +245,90 @@ export class ConfinedNativeCodexRepository implements ObserverConfinement {
             stdio: ['pipe', 'pipe', 'pipe'],
             detached: true,
             shell: false,
+        });
+        let identity: { pid: number; start_ticks: string } | undefined;
+        const observation: Record<string, unknown> = {
+            executable: '/pilot/runtime-bin/codex',
+            argv: [...argv],
+            cwd: '/pilot/consumer',
+            identity: {
+                schema_version: 2,
+                expected_ppid: process.pid,
+                status: 'unavailable',
+                pid: child.pid ?? null,
+                start_ticks: null,
+                executable: null,
+                stat_before: null,
+                stat_after: null,
+            },
+        };
+        this.processObservations.push(observation);
+        const ready = new Promise<void>((resolve) => {
+            child.once('spawn', () => {
+                const expectedParent = process.pid;
+                let before: Buffer | null = null;
+                let after: Buffer | null = null;
+                let executable: string | null = null;
+                const owned = (bytes: Buffer | null, pid: number) => {
+                    if (!bytes) return null;
+                    const actual = new NativePilotRegistrationObservationValidator().childStat(
+                        bytes,
+                        pid,
+                    );
+                    if (!actual) return null;
+                    const fields = bytes
+                        .toString('utf8')
+                        .slice(bytes.toString('utf8').lastIndexOf(')') + 2)
+                        .trim()
+                        .split(/\s+/);
+                    return fields[1] === String(expectedParent) ? actual : null;
+                };
+                try {
+                    if (child.pid) {
+                        before = this.child.stat(child.pid);
+                        executable = this.child.executable(child.pid);
+                        after = this.child.stat(child.pid);
+                        const first = owned(before, child.pid);
+                        const second = owned(after, child.pid);
+                        if (
+                            first &&
+                            second &&
+                            first.start_ticks === second.start_ticks &&
+                            executable === '/pilot/runtime-bin/codex'
+                        )
+                            identity = second;
+                    }
+                } catch {
+                    /* Every unavailable or unstable sample remains blocked before RPC. */
+                }
+                const retained = (bytes: Buffer | null) =>
+                    bytes && bytes.length <= 4097
+                        ? {
+                              bytes: bytes.length,
+                              sha256: createHash('sha256').update(bytes).digest('hex'),
+                              base64: bytes.toString('base64'),
+                          }
+                        : null;
+                const statBefore = retained(before);
+                const statAfter = retained(after);
+                observation.identity = {
+                    schema_version: 2,
+                    expected_ppid: expectedParent,
+                    status: identity
+                        ? 'observed'
+                        : statBefore || statAfter
+                          ? 'invalid'
+                          : 'unavailable',
+                    pid: identity?.pid ?? child.pid ?? null,
+                    start_ticks: identity?.start_ticks ?? null,
+                    executable,
+                    stat_before: statBefore,
+                    stat_after: statAfter,
+                };
+                resolve();
+            });
+            child.once('error', resolve);
+            child.once('close', resolve);
         });
         const queue: ProcessEvent[] = [];
         let wake: (() => void) | undefined;
@@ -295,7 +444,9 @@ export class ConfinedNativeCodexRepository implements ObserverConfinement {
             });
         });
         let stopping: Promise<{ exited: true }> | undefined;
+        await ready;
         return {
+            identity,
             write: async (bytes) => {
                 this.capture('request', bytes);
                 await new Promise<void>((resolve, reject) =>
@@ -354,6 +505,31 @@ export class ConfinedNativeCodexRepository implements ObserverConfinement {
         return inventory.entries
             .filter((entry) => entry.kind === 'file')
             .map((entry) => ({ path: entry.path, sha256: entry.sha256!, bytes: entry.bytes }));
+    }
+
+    async captureState(label: 'mcp-before' | 'mcp-after'): Promise<{
+        snapshot: NativePilotStateSnapshot;
+        artifacts: Array<{ role: string; path: string; bytes: number; sha256: string }>;
+    }> {
+        if (!['mcp-before', 'mcp-after'].includes(label)) throw new Error('native_mcp_state_label');
+        this.boundary();
+        if (!this.stateOutput) throw new Error('native_mcp_state_output');
+        const prefix = relative('/pilot/native-output', this.stateOutput);
+        if (!prefix || prefix.startsWith('../') || prefix.includes('\\') || prefix.startsWith('/'))
+            throw new Error('native_mcp_state_locator');
+        const repository = new NativePilotStateSnapshotRepository({
+            home: homedir(),
+            outputRoot: this.stateOutput,
+        });
+        const snapshot = repository.snapshot(label);
+        const role = label === 'mcp-before' ? 'state-before-mcp' : 'state-after-mcp';
+        const artifacts = repository.artifacts(label).map((file) => ({
+            ...file,
+            path: `${prefix}/${file.path}`,
+            role: file.path.endsWith('-state.json') ? role : 'state-bytes',
+        }));
+        this.stateArtifacts.push(...artifacts);
+        return { snapshot, artifacts };
     }
 
     async artifact(selected: string): Promise<ArtifactInventory> {

@@ -13,6 +13,7 @@ import {
 import type { FixtureHost } from '../transport/LoopbackResponsesFixture.ts';
 import { CodexJsonlCodec } from '../transport/CodexJsonlCodec.ts';
 import { NativeCodexConfiguration } from '../config/NativeCodexConfiguration.ts';
+import type { NativePilotStateSnapshot } from '../repository/NativePilotStateSnapshotRepository.ts';
 
 export type FileIdentity = { path: string; sha256: string; bytes: number };
 export type SkillIdentity = {
@@ -58,6 +59,10 @@ export type ObserverConfinement = {
     fingerprint(path: string): Promise<FileIdentity[]>;
     artifact(path: string): Promise<ArtifactInventory>;
     evidenceKind: 'synthetic_fake' | 'confined_native';
+    captureState?(label: 'mcp-before' | 'mcp-after'): Promise<{
+        snapshot: NativePilotStateSnapshot;
+        artifacts: Array<{ role: string; path: string; bytes: number; sha256: string }>;
+    }>;
 };
 const digest = (value: string | Uint8Array) => createHash('sha256').update(value).digest('hex');
 const path = (value: any): string => {
@@ -110,7 +115,10 @@ export class NativeCodexObservationService {
             )
                 throw new Error('fixture_endpoint');
             const argv = NativeCodexConfiguration.argv(host.baseUrl);
-            session = new CodexRpcSession(await confinement.start(argv), this.validator);
+            const process = await confinement.start(argv);
+            session = new CodexRpcSession(process, this.validator);
+            if (confinement.evidenceKind === 'confined_native' && !process.identity)
+                throw new Error('native_process_identity_unavailable');
             const initialized = await session.request('initialize', {
                 clientInfo: {
                     name: 'i9_native_pilot',
@@ -255,6 +263,9 @@ export class NativeCodexObservationService {
             )
                 throw new Error('native_thread_controls');
             const threadId = started.thread.id;
+            if (!confinement.captureState && confinement.evidenceKind === 'confined_native')
+                throw new Error('native_mcp_state_collector_unavailable');
+            const mcpBefore = await confinement.captureState?.('mcp-before');
             const server = await this.mcp(session, threadId, input.pluginId);
             const catalog = await this.catalog(session, threadId, server.name, input);
             const resource = await this.tool(
@@ -275,6 +286,24 @@ export class NativeCodexObservationService {
                 digest(resource.content) !== input.resource.sha256
             )
                 throw new Error('native_mcp_resource_bytes');
+            const mcpAfter = await confinement.captureState?.('mcp-after');
+            const mcpState =
+                mcpBefore &&
+                mcpAfter &&
+                mcpBefore.snapshot.status === 'captured' &&
+                mcpAfter.snapshot.status === 'captured' &&
+                mcpBefore.snapshot.exists === mcpAfter.snapshot.exists &&
+                (['files', 'migrations', 'schema', 'tables', 'state_sha256'] as const).every(
+                    (key) =>
+                        JSON.stringify(mcpBefore.snapshot[key]) ===
+                        JSON.stringify(mcpAfter.snapshot[key]),
+                )
+                    ? mcpBefore.snapshot.exists
+                        ? 'existing_unchanged'
+                        : 'absence_preserved'
+                    : 'blocked';
+            if (confinement.evidenceKind === 'confined_native' && mcpState !== 'existing_unchanged')
+                throw new Error('native_mcp_state_changed_or_unsupported');
             const turn = await session.request('turn/start', {
                 threadId,
                 input: [
@@ -379,6 +408,11 @@ export class NativeCodexObservationService {
                 installed_artifact_tree_sha256: installedArtifact.tree_sha256,
                 installed_artifact_inventory: installedArtifact,
                 transformations,
+                process_identity: process.identity ?? null,
+                read_only_mcp: {
+                    branch: mcpState,
+                    snapshots: [...(mcpBefore?.artifacts ?? []), ...(mcpAfter?.artifacts ?? [])],
+                },
                 retained_startup_notices: session.diagnostics(),
                 loaded_skills: loaded,
                 hook_trust: {

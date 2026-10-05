@@ -16,6 +16,7 @@ export type ProcessEvent =
           terminationRequested?: boolean;
       };
 export type StreamingProcess = {
+    identity?: { pid: number; start_ticks: string };
     write(bytes: Uint8Array): Promise<void>;
     events(): AsyncIterable<ProcessEvent>;
     /** Resolves only after the actual owned process exit has been observed. */

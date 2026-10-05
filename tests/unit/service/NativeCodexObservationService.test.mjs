@@ -1,3 +1,7 @@
+import { realpathSync as syntheticCanonicalPath } from 'node:fs';
+import { tmpdir as syntheticTemporaryDirectory } from 'node:os';
+import { posix as syntheticPath } from 'node:path';
+const syntheticContainerHome = syntheticPath.join('/', 'home', 'node');
 // SPDX-License-Identifier: Apache-2.0
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
@@ -8,14 +12,12 @@ import {
     linkSync,
     mkdtempSync,
     readFileSync,
-    realpathSync,
     rmSync,
     symlinkSync,
     writeFileSync,
 } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { join, posix } from 'node:path';
-import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { CodexJsonlCodec } from '../../../src/transport/CodexJsonlCodec.ts';
 import { NativeCodexSchemaRepository } from '../../../src/repository/NativeCodexSchemaRepository.ts';
 import { NativeCodexProtocolValidator } from '../../../src/validator/NativeCodexProtocolValidator.ts';
@@ -29,13 +31,12 @@ import { NativeCodexObservationService } from '../../../src/service/NativeCodexO
 import { NativeCodexObservationError } from '../../../src/validator/NativeCodexObservationError.ts';
 import { NativeCodexObserverDispatcher } from '../../../src/service/NativeCodexObserverDispatcher.ts';
 import { NativeCodexObservationRepository } from '../../../src/repository/NativeCodexObservationRepository.ts';
+import { NativePilotRegistrationObservationValidator } from '../../../src/validator/NativePilotRegistrationObservationValidator.ts';
 
-const root = fileURLToPath(new URL('../../../assets/native-pilot/codex/', import.meta.url));
-// Ordinary account of the disposable Linux image, never the test runner's home.
-const imageHome = posix.join('/', 'home', 'node');
+const root = fileURLToPath(new URL('../../../', import.meta.url));
 const sha = (bytes) => createHash('sha256').update(bytes).digest('hex');
 const validator = new NativeCodexProtocolValidator(
-    new NativeCodexSchemaRepository(join(root, 'schemas')),
+    new NativeCodexSchemaRepository(join(root, 'assets/native-pilot/codex/schemas')),
 );
 const THREAD = '019c6e27-e55b-73d1-87d8-4e01f1f75043';
 const TURN = '019c7714-3b77-74d1-9866-e1f484aae2ab';
@@ -82,7 +83,7 @@ function input(count = 1) {
     return {
         schema: 1,
         phase: 'install',
-        imageHome,
+        imageHome: syntheticContainerHome,
         pluginId: 'i9-skills@i9-skills',
         skills,
         hooks: [
@@ -208,7 +209,7 @@ function fakeRun(selected = input(), mutate = () => {}) {
             switch (request.method) {
                 case 'initialize':
                     reply(request, {
-                        codexHome: `${imageHome}/.codex`,
+                        codexHome: `${syntheticContainerHome}/.codex`,
                         platformFamily: 'unix',
                         platformOs: 'linux',
                         userAgent: 'codex/0.160.0',
@@ -250,7 +251,7 @@ function fakeRun(selected = input(), mutate = () => {}) {
                 case 'config/batchWrite':
                     state.trust = request.params;
                     reply(request, {
-                        filePath: `${imageHome}/.codex/config.toml`,
+                        filePath: `${syntheticContainerHome}/.codex/config.toml`,
                         status: 'ok',
                         version: 'synthetic-version',
                     });
@@ -466,9 +467,14 @@ test('codec preserves split UTF-8 and rejects duplicate keys, invalid Unicode an
 });
 test('pinned schema data rejects digest drift and unknown schema names', () => {
     assert.throws(() => validator.schema('v2/Unknown.json', {}), /unknown_schema/);
-    const temporary = mkdtempSync(join(realpathSync(tmpdir()), 'i9-codex-schema-test-'));
+    const temporary = mkdtempSync(
+        syntheticPath.join(
+            syntheticCanonicalPath(syntheticTemporaryDirectory()),
+            'i9-codex-schema-test-',
+        ),
+    );
     try {
-        cpSync(join(root, 'schemas'), join(temporary, 'schemas'), {
+        cpSync(join(root, 'assets/native-pilot/codex/schemas'), join(temporary, 'schemas'), {
             recursive: true,
         });
         chmodSync(join(temporary, 'schemas/v1/InitializeResponse.json'), 0o600);
@@ -495,7 +501,7 @@ test('closed variant validation rejects another hook variant fields and unknown 
     assert.throws(
         () =>
             validator.response('initialize', {
-                codexHome: `${imageHome}/.codex`,
+                codexHome: `${syntheticContainerHome}/.codex`,
                 platformFamily: 'unix',
                 platformOs: 'linux',
                 userAgent: '0.160.0',
@@ -534,7 +540,7 @@ test('complete fake flow pages all 51 packages, checks bytes twice and writes ex
         fake.state.trust.edits[0].value['synthetic-exact-hook'].trusted_hash,
         hook().currentHash,
     );
-    assert.equal(fake.state.trust.filePath, `${imageHome}/.codex/config.toml`);
+    assert.equal(fake.state.trust.filePath, `${syntheticContainerHome}/.codex/config.toml`);
     assert.equal(fake.state.trust.reloadUserConfig, true);
     assert.equal(fake.state.response.status, 200);
     assert.equal(report.session_start.fixture.context_present, true);
@@ -594,7 +600,7 @@ for (const [name, mutate, reason] of [
         'wrong config target',
         (request, result) => {
             if (request.method === 'config/batchWrite')
-                result.filePath = `${imageHome}/.codex/other.toml`;
+                result.filePath = `${syntheticContainerHome}/.codex/other.toml`;
         },
         'native_hook_trust_write',
     ],
@@ -774,7 +780,7 @@ test('fixed dispatcher rejects arbitrary roots, duplicate flags and unrelated ph
     assert.throws(
         () =>
             dispatcher.selection(
-                argv.map((value) => (value === '/pilot' ? '/private/tmp/elsewhere' : value)),
+                argv.map((value) => (value === '/pilot' ? '/disallowed/elsewhere' : value)),
             ),
         /dispatcher_selection/,
     );
@@ -797,7 +803,12 @@ test('fixed dispatcher rejects arbitrary roots, duplicate flags and unrelated ph
 });
 
 test('owned observation files reject aliases and retain exact bytes without overwrite', () => {
-    const temporary = mkdtempSync(join(realpathSync(tmpdir()), 'i9-codex-retain-test-'));
+    const temporary = mkdtempSync(
+        syntheticPath.join(
+            syntheticCanonicalPath(syntheticTemporaryDirectory()),
+            'i9-codex-retain-test-',
+        ),
+    );
     try {
         const repository = new NativeCodexObservationRepository();
         const input = join(temporary, 'input.json');
@@ -881,4 +892,101 @@ test('cleanup failure still prevents an otherwise observed result', async () => 
         new NativeCodexObservationService(validator).observe(selected, fake.confinement),
         /cleanup_synthetic/,
     );
+});
+
+test('owned child stat parser handles a command containing spaces/parentheses and rejects unverifiable identities', () => {
+    const parser = new NativePilotRegistrationObservationValidator();
+    const tail = ['S', ...Array(18).fill('0'), '12345', '0'];
+    const bytes = Buffer.from(`117 (codex (worker) name) ${tail.join(' ')}\n`);
+    assert.deepEqual(parser.childStat(bytes, 117), { pid: 117, start_ticks: '12345' });
+    assert.equal(parser.childStat(bytes, 118), null);
+    assert.equal(parser.childStat(Buffer.from('117 (codex) S 1'), 117), null);
+    for (const ticks of ['0', '-1', 'unknown']) {
+        const invalid = [...tail];
+        invalid[19] = ticks;
+        assert.equal(parser.childStat(Buffer.from(`117 (codex) ${invalid.join(' ')}`), 117), null);
+    }
+});
+const snapshot = () => ({
+    schema_version: 2,
+    exists: true,
+    files: [
+        { name: 'skills-usage.db', bytes: 8192, sha256: sha('synthetic original database bytes') },
+    ],
+    migrations: [],
+    schema: [],
+    tables: [],
+    state_sha256: sha('synthetic original database bytes'),
+    status: 'captured',
+    reason: 'synthetic fixture only',
+});
+test('inner MCP snapshots bracket only actual selected MCP calls and retain an unchanged existing branch', async () => {
+    const selected = input(),
+        fake = fakeRun(selected),
+        seen = [];
+    fake.process.identity = { pid: 117, start_ticks: '12345' };
+    fake.confinement.captureState = async (label) => {
+        seen.push({ label, last: fake.state.calls.at(-1).method });
+        return {
+            snapshot: snapshot(),
+            artifacts: [
+                {
+                    role: label === 'mcp-before' ? 'state-before-mcp' : 'state-after-mcp',
+                    path: label + '-state.json',
+                    bytes: 1,
+                    sha256: sha(label),
+                },
+            ],
+        };
+    };
+    const result = await new NativeCodexObservationService(validator).observe(
+        selected,
+        fake.confinement,
+    );
+    assert.equal(result.read_only_mcp.branch, 'existing_unchanged');
+    assert.deepEqual(seen, [
+        { label: 'mcp-before', last: 'thread/start' },
+        { label: 'mcp-after', last: 'mcpServer/tool/call' },
+    ]);
+    assert.deepEqual(result.process_identity, { pid: 117, start_ticks: '12345' });
+    assert.equal(result.read_only_mcp.snapshots.length, 2);
+});
+test('a simulated confined lane rejects changed or unsupported MCP state before the fixture turn', async () => {
+    for (const change of [
+        (value) => {
+            value.files[0].sha256 = sha('changed');
+        },
+        (value) => {
+            value.status = 'blocked';
+        },
+    ]) {
+        const selected = input(),
+            fake = fakeRun(selected);
+        fake.process.identity = { pid: 117, start_ticks: '12345' };
+        fake.confinement.evidenceKind = 'confined_native'; // Explicit fake exercise of the native guard.
+        fake.confinement.captureState = async (label) => {
+            const value = snapshot();
+            if (label === 'mcp-after') change(value);
+            return { snapshot: value, artifacts: [] };
+        };
+        await assert.rejects(
+            new NativeCodexObservationService(validator).observe(selected, fake.confinement),
+            /native_mcp_state_changed_or_unsupported/,
+        );
+        assert.equal(
+            fake.state.calls.some((call) => call.method === 'turn/start'),
+            false,
+        );
+        assert.equal(fake.state.closed, 1);
+    }
+});
+test('unavailable native child identity blocks and still closes the owned child', async () => {
+    const selected = input(),
+        fake = fakeRun(selected);
+    fake.confinement.evidenceKind = 'confined_native';
+    await assert.rejects(
+        new NativeCodexObservationService(validator).observe(selected, fake.confinement),
+        /native_process_identity_unavailable/,
+    );
+    assert.equal(fake.state.closed, 1);
 });

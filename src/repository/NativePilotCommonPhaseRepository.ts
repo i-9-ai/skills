@@ -23,6 +23,8 @@ import { NativePilotProcessRepository } from './NativePilotProcessRepository.ts'
 import { NativePilotStateSnapshotRepository } from './NativePilotStateSnapshotRepository.ts';
 import { requireContainer } from '../validator/NativePilotContainerValidator.ts';
 import { NativePilotRegistrationObservationValidator } from '../validator/NativePilotRegistrationObservationValidator.ts';
+import type { NativePilotChildIdentity } from '../validator/NativePilotRegistrationObservationValidator.ts';
+import { NativePilotConfiguration } from '../config/NativePilotConfiguration.ts';
 
 interface ChildReader {
     stat(pid: number): Buffer;
@@ -53,6 +55,7 @@ export class NativePilotCommonPhaseRepository implements NativePilotCommonTransp
     readonly worker: NativePilotContainerWorkerRepository;
     readonly execute: typeof spawn;
     readonly child: ChildReader;
+    readonly elapsed: () => number;
     private selection!: NativePilotCommonSelection;
     private output!: string;
     private prefix!: string;
@@ -63,10 +66,14 @@ export class NativePilotCommonPhaseRepository implements NativePilotCommonTransp
         worker: NativePilotContainerWorkerRepository,
         execute: typeof spawn = spawn,
         child: ChildReader = childReader,
+        elapsed: () => number = () => performance.now(),
     ) {
         this.worker = worker;
         this.execute = execute;
         this.child = child;
+        // Node's monotonic process age includes entrypoint imports and setup. A phase is one
+        // fresh common process; constructing a repository never grants a new 45-second window.
+        this.elapsed = elapsed;
     }
 
     context(selection: NativePilotCommonSelection) {
@@ -92,8 +99,53 @@ export class NativePilotCommonPhaseRepository implements NativePilotCommonTransp
         });
         return {
             contract: this.worker.request.contract,
-            evidence: { ...actual, native_acceptance: false },
+            evidence: {
+                ...actual,
+                common_process: this.commonProcess(),
+                native_acceptance: false,
+            },
         };
+    }
+
+    private commonProcess() {
+        const self = this.measureIdentity(process.pid, process.ppid, '/pilot/runtime-bin/node');
+        const identity = this.json('common-process-identity', self);
+        requireContainer(self.status === 'observed', 'Common process identity is unavailable.');
+        return { pid: process.pid, worker_pid: process.ppid, identity };
+    }
+
+    private measureIdentity(pid: number | null, parentPid: number, executable: string) {
+        const codec = new NativePilotRegistrationObservationValidator();
+        const identity: NativePilotChildIdentity = {
+            schema_version: 2,
+            status: 'unavailable',
+            pid,
+            observer_pid: parentPid,
+            start_ticks: null,
+            executable: null,
+            stat_before: null,
+            stat_after: null,
+        };
+        if (!Number.isSafeInteger(pid) || pid! < 2) return identity;
+        try {
+            const before = this.child.stat(pid!);
+            identity.stat_before = codec.childStatReceipt(before);
+            const actualExecutable = this.child.executable(pid!);
+            identity.executable = actualExecutable.length <= 1024 ? actualExecutable : null;
+            identity.stat_after = codec.childStatReceipt(this.child.stat(pid!));
+            const first = codec.childStat(before, pid!, parentPid);
+            const candidate = {
+                ...identity,
+                status: 'observed' as const,
+                start_ticks: first?.start_ticks ?? null,
+            };
+            if (codec.childIdentity(candidate, executable, parentPid)) return candidate;
+            identity.status = 'invalid';
+        } catch {
+            // Disappearance or unreadable/over-bound samples remain unobserved. Any complete
+            // sample already read is retained without inventing a successful second sample.
+        }
+        return identity;
     }
 
     private present(path: string) {
@@ -236,22 +288,20 @@ export class NativePilotCommonPhaseRepository implements NativePilotCommonTransp
         );
         this.calls++;
         const npm = this.worker.nativeEnvironment();
-        const codec = new NativePilotRegistrationObservationValidator();
-        const identity: {
-            schema_version: 1;
-            status: 'observed' | 'unavailable' | 'invalid';
-            pid: number | null;
-            start_ticks: string | null;
-            executable: string | null;
-            stat: { bytes: number; sha256: string; base64: string } | null;
-        } = {
-            schema_version: 1,
+        let identity: NativePilotChildIdentity = {
+            schema_version: 2,
             status: 'unavailable',
             pid: null,
+            observer_pid: process.pid,
             start_ticks: null,
             executable: null,
-            stat: null,
+            stat_before: null,
+            stat_after: null,
         };
+        // Recompute after context hashing and offline environment preparation, immediately
+        // before dispatch. The externally enforced phase limit is never extended.
+        const budget = NativePilotConfiguration.observationBudget(call.label, this.elapsed());
+        let dispatched = false;
         const raw = await new Promise<{
             status: number | null;
             signal: string | null;
@@ -287,7 +337,10 @@ export class NativePilotCommonPhaseRepository implements NativePilotCommonTransp
                 } catch {
                     /* Unknown exit stays a blocked process. */
                 }
-                rescue ??= setTimeout(() => finish(null, null), 1000);
+                rescue ??= setTimeout(
+                    () => finish(null, null),
+                    NativePilotConfiguration.observation.child_rescue_ms,
+                );
             };
             const capture = (stream: 'stdout' | 'stderr', value: Buffer) => {
                 if (done) return;
@@ -300,7 +353,13 @@ export class NativePilotCommonPhaseRepository implements NativePilotCommonTransp
                     stop();
                 }
             };
+            if (budget.timeout_ms === 0) {
+                failure = 'ETIMEDOUT';
+                finish(null, null);
+                return;
+            }
             try {
+                dispatched = true;
                 child = this.execute(call.executable, call.argv, {
                     cwd: '/pilot/consumer',
                     shell: false,
@@ -313,29 +372,7 @@ export class NativePilotCommonPhaseRepository implements NativePilotCommonTransp
                     if (done) return;
                     const pid = child.pid;
                     if (!Number.isSafeInteger(pid) || pid! < 2) return;
-                    identity.pid = pid!;
-                    try {
-                        const bytes = this.child.stat(pid!);
-                        identity.stat = {
-                            bytes: bytes.length,
-                            sha256: pilotDigest(bytes),
-                            base64: bytes.toString('base64'),
-                        };
-                        const first = codec.childStat(bytes, pid!);
-                        const executable = this.child.executable(pid!);
-                        identity.executable = executable.length <= 1024 ? executable : null;
-                        const after = codec.childStat(this.child.stat(pid!), pid!);
-                        if (
-                            first &&
-                            after?.start_ticks === first.start_ticks &&
-                            executable === call.executable
-                        ) {
-                            identity.status = 'observed';
-                            identity.start_ticks = first.start_ticks;
-                        } else identity.status = 'invalid';
-                    } catch {
-                        /* A fast exit or unreadable proc entry is retained as unavailable. */
-                    }
+                    identity = this.measureIdentity(pid!, process.pid, call.executable);
                 });
                 child.once('error', (error: NodeJS.ErrnoException) => {
                     failure = ['ENOENT', 'EACCES'].includes(error.code ?? '')
@@ -350,7 +387,10 @@ export class NativePilotCommonPhaseRepository implements NativePilotCommonTransp
                         if (!failure) failure = 'ETIMEDOUT';
                         stop();
                     },
-                    call.label === 'selected-native-observer' ? 40_000 : 12_000,
+                    Math.max(
+                        0,
+                        budget.timeout_ms - Math.max(0, this.elapsed() - budget.elapsed_ms!),
+                    ),
                 );
             } catch {
                 failure = 'ECHILD';
@@ -359,6 +399,12 @@ export class NativePilotCommonPhaseRepository implements NativePilotCommonTransp
         });
         const stdout = raw.stdout;
         const stderr = raw.stderr;
+        this.json(`${this.calls}-${call.label}-budget`, {
+            schema_version: 1,
+            ...budget,
+            dispatched,
+            reason: budget.timeout_ms === 0 ? 'insufficient-remaining-phase-budget' : null,
+        });
         const over = raw.error?.code === 'ENOBUFS';
         const result = new NativePilotProcessRepository().run(
             { executable: call.executable, args: call.argv, timeout_ms: 1 },

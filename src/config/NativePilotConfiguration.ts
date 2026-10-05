@@ -122,6 +122,53 @@ export class NativePilotConfiguration {
         binary_bytes: 536_870_912,
     });
 
+    /** Nested observation reserves fit within observe_ms; none extend the container deadline. */
+    static readonly observation = Object.freeze({
+        ordinary_child_ms: 12_000,
+        native_lifetime_ms: 40_000,
+        selected_setup_ms: 1_000,
+        selected_drain_ms: 500,
+        selected_report_ms: 500,
+        child_rescue_ms: 1_000,
+        phase_finish_ms: 1_000,
+    });
+
+    static observationBudget(label: string, elapsedMs: number) {
+        const selected = ['selected-native-observer', 'selected-native-absence-observer'].includes(
+            label,
+        );
+        const reserves = this.observation;
+        const minimum = selected
+            ? reserves.native_lifetime_ms +
+              reserves.selected_setup_ms +
+              reserves.selected_drain_ms +
+              reserves.selected_report_ms
+            : 1;
+        const available =
+            Number.isFinite(elapsedMs) && elapsedMs >= 0
+                ? Math.max(
+                      0,
+                      Math.floor(this.limits.observe_ms - elapsedMs) -
+                          reserves.child_rescue_ms -
+                          reserves.phase_finish_ms,
+                  )
+                : 0;
+        return {
+            phase_limit_ms: this.limits.observe_ms,
+            elapsed_ms: Number.isFinite(elapsedMs) && elapsedMs >= 0 ? elapsedMs : null,
+            selected,
+            minimum_child_ms: minimum,
+            timeout_ms:
+                available < minimum
+                    ? 0
+                    : selected
+                      ? available
+                      : Math.min(available, reserves.ordinary_child_ms),
+            child_rescue_ms: reserves.child_rescue_ms,
+            phase_finish_ms: reserves.phase_finish_ms,
+        };
+    }
+
     static readonly unclaimed = Object.freeze([
         'real-model-or-provider',
         'native-read-tool-telemetry',

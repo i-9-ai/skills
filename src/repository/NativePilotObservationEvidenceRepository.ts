@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
+import { NativePilotConfiguration } from '../config/NativePilotConfiguration.ts';
 import { createHash } from 'node:crypto';
 import {
     constants,
@@ -12,7 +13,6 @@ import {
 } from 'node:fs';
 import type { Stats } from 'node:fs';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
-import { NativePilotConfiguration } from '../config/NativePilotConfiguration.ts';
 
 export interface NativePilotProjectionReceipt {
     path: string;
@@ -111,6 +111,22 @@ export class NativePilotObservationEvidenceRepository {
         }
     }
 
+    selectedJson(
+        preparedRoot: string,
+        key: 'source_a' | 'source_b',
+        path: 'skills-catalog.json' | 'hooks/codex.json',
+        inventory: {
+            entries: Array<{ path: string; kind: string; bytes: number; sha256: string | null }>;
+        },
+    ) {
+        const entry = inventory.entries.find((row) => row.path === path && row.kind === 'file');
+        if (!entry || !entry.sha256) throw new Error('projection_selected_source_file');
+        const selected = new NativePilotObservationEvidenceRepository(
+            join(preparedRoot, 'input', key),
+        );
+        return selected.json({ path, bytes: entry.bytes, sha256: entry.sha256 }, 1_048_576);
+    }
+
     json(receipt: Pick<NativePilotProjectionReceipt, 'path' | 'bytes' | 'sha256'>, limit?: number) {
         return JSON.parse(
             new TextDecoder('utf-8', { fatal: true }).decode(this.read(receipt, limit)),
@@ -182,9 +198,18 @@ export class NativePilotObservationEvidenceRepository {
                     )
                         throw new Error('projection_export_directory');
                 } else if (entry.kind === 'symlink') {
+                    // Inert data from the selected Codex Linux version-call captures.
+                    // This narrow exception never resolves or materializes the target.
+                    const codexRuntimeAlias =
+                        item.selection?.host === 'codex' &&
+                        root.name === 'home' &&
+                        /^\.codex\/tmp\/arg0\/codex-arg0[A-Za-z0-9]{6}\/(?:apply_patch|applypatch|codex-execve-wrapper|codex-linux-sandbox)$/.test(
+                            entry.path,
+                        ) &&
+                        entry.target === '/pilot/runtime-bin/codex';
                     if (
                         typeof entry.target !== 'string' ||
-                        isAbsolute(entry.target) ||
+                        (isAbsolute(entry.target) && !codexRuntimeAlias) ||
                         /[\\\x00-\x1f\x7f]/.test(entry.target) ||
                         entry.base64 !== null ||
                         Buffer.byteLength(entry.target) !== entry.bytes ||

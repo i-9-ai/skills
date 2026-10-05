@@ -1,15 +1,18 @@
 // SPDX-License-Identifier: Apache-2.0
 import { NativeCodexConfiguration } from '../config/NativeCodexConfiguration.ts';
-import { NativeCodexObservationError } from '../validator/NativeCodexObservationError.ts';
 import { createHash } from 'node:crypto';
 import { NativeCodexSchemaConfiguration } from '../config/NativeCodexSchemaConfiguration.ts';
 import { NativeCodexSchemaRepository } from '../repository/NativeCodexSchemaRepository.ts';
 import { NativeCodexProtocolValidator } from '../validator/NativeCodexProtocolValidator.ts';
 import { ConfinedNativeCodexRepository } from '../repository/ConfinedNativeCodexRepository.ts';
 import { NativeCodexObservationService } from './NativeCodexObservationService.ts';
+import { NativeCodexObservationError } from '../validator/NativeCodexObservationError.ts';
 import type { ArtifactInventory, ObserverInput } from './NativeCodexObservationService.ts';
 import { NativeCodexObservationRepository } from '../repository/NativeCodexObservationRepository.ts';
 import { NativeCodexModelCatalogValidator } from '../validator/NativeCodexModelCatalogValidator.ts';
+import { posix } from 'node:path';
+import { NativeCodexAbsenceObservationService } from './NativeCodexAbsenceObservationService.ts';
+import type { NativeCodexAbsenceInput } from './NativeCodexAbsenceObservationService.ts';
 
 const sha = (value: string | Uint8Array) => createHash('sha256').update(value).digest('hex');
 export type ObserverSelection = {
@@ -91,7 +94,7 @@ export class NativeCodexObserverDispatcher {
             throw new Error('dispatcher_unsupported_phase');
         const key = selection.pin === 'b' ? 'source_b' : 'source_a';
         if (
-            contract.schema_version !== 1 ||
+            contract.schema_version !== 2 ||
             contract.purpose !== 'local-source-a-b-a' ||
             contract.binaries?.codex?.version !== '0.160.0' ||
             contract.authority?.platform !== 'linux/arm64' ||
@@ -175,15 +178,47 @@ export class NativeCodexObserverDispatcher {
         };
     }
 
+    absence(
+        selection: ObserverSelection,
+        contract: any,
+        inventory: ArtifactInventory,
+    ): NativeCodexAbsenceInput {
+        if (
+            selection.host !== 'codex' ||
+            !['baseline', 'verify-absent'].includes(selection.phase) ||
+            selection.pin !== null ||
+            contract.schema_version !== 2 ||
+            contract.purpose !== 'local-source-a-b-a' ||
+            contract.binaries?.codex?.version !== '0.160.0' ||
+            contract.authority?.platform !== 'linux/arm64' ||
+            inventory.tree_sha256 !== contract.source_a?.tree_sha256 ||
+            sha(JSON.stringify(inventory.entries)) !== inventory.tree_sha256
+        )
+            throw new Error('dispatcher_absence_contract');
+        return {
+            schema_version: 1,
+            phase: selection.phase as NativeCodexAbsenceInput['phase'],
+            source_tree_sha256: inventory.tree_sha256,
+            image_home: posix.join('/', 'home', 'node'),
+            plugin_id: 'i9-skills@i9-skills',
+        };
+    }
+
     async run(argv: string[]): Promise<unknown> {
         const selection = this.selection(argv);
         const name = `${selection.runId}-${selection.host}-r${selection.repetition}-${selection.phase}`;
         const root = this.files.createOutput('/pilot/native-output', name);
-        const backend = new ConfinedNativeCodexRepository();
+        const backend = new ConfinedNativeCodexRepository({ outputRoot: root });
         let report: unknown;
         try {
             if (
-                !['observe-a', 'observe-b', 'observe-restored-a'].includes(selection.phase) ||
+                ![
+                    'observe-a',
+                    'observe-b',
+                    'observe-restored-a',
+                    'baseline',
+                    'verify-absent',
+                ].includes(selection.phase) ||
                 selection.host !== 'codex'
             )
                 throw new Error('dispatcher_unsupported_phase');
@@ -197,45 +232,77 @@ export class NativeCodexObserverDispatcher {
             const active = await backend.artifact('/pilot/source');
             if (JSON.stringify(active) !== JSON.stringify(inventory))
                 throw new Error('dispatcher_active_source');
-            const catalog = this.files.json('/pilot/source/skills-catalog.json');
-            const hooks = this.files.json('/pilot/source/hooks/codex.json');
-            for (const [relative, bytes] of [
-                ['skills-catalog.json', Buffer.from(JSON.stringify(catalog))],
-                ['hooks/codex.json', Buffer.from(JSON.stringify(hooks))],
-            ] as const) {
-                // The complete physical inventory above binds original bytes, not JSON normalization.
+            const absence = ['baseline', 'verify-absent'].includes(selection.phase);
+            if (absence) {
+                const input = this.absence(selection, contract, inventory);
+                this.files.retain(root, 'input.json', Buffer.from(JSON.stringify(input) + '\n'));
+                const validator = new NativeCodexProtocolValidator(
+                    new NativeCodexSchemaRepository(NativeCodexConfiguration.schemaRoot),
+                );
+                const observation = await new NativeCodexAbsenceObservationService(
+                    validator,
+                ).observe(input, backend);
                 if (
-                    !inventory.entries.some(
-                        (entry) => entry.kind === 'file' && entry.path === relative,
-                    ) ||
-                    bytes.length === 0
+                    backend.fixtureRequestCount !== 0 ||
+                    backend.raw.some((row) => row.direction.startsWith('fixture-'))
                 )
-                    throw new Error('dispatcher_source_file');
+                    throw new Error('native_absence_http_request');
+                const after = await backend.artifact('/pilot/source');
+                if (JSON.stringify(after) !== JSON.stringify(inventory))
+                    throw new Error('dispatcher_active_source_changed');
+                report = {
+                    schema_version: 1,
+                    ...selection,
+                    status: 'observed',
+                    native_acceptance: false,
+                    observation,
+                    unmeasured: [
+                        'official-conformance',
+                        'independent-acceptance',
+                        'model-or-provider',
+                    ],
+                };
+            } else {
+                const catalog = this.files.json('/pilot/source/skills-catalog.json');
+                const hooks = this.files.json('/pilot/source/hooks/codex.json');
+                for (const [relative, bytes] of [
+                    ['skills-catalog.json', Buffer.from(JSON.stringify(catalog))],
+                    ['hooks/codex.json', Buffer.from(JSON.stringify(hooks))],
+                ] as const) {
+                    // The complete physical inventory above binds original bytes, not JSON normalization.
+                    if (
+                        !inventory.entries.some(
+                            (entry) => entry.kind === 'file' && entry.path === relative,
+                        ) ||
+                        bytes.length === 0
+                    )
+                        throw new Error('dispatcher_source_file');
+                }
+                const input = this.project(selection, contract, inventory, catalog, hooks);
+                this.files.retain(root, 'input.json', Buffer.from(JSON.stringify(input) + '\n'));
+                const validator = new NativeCodexProtocolValidator(
+                    new NativeCodexSchemaRepository(NativeCodexConfiguration.schemaRoot),
+                );
+                const observation = await new NativeCodexObservationService(validator).observe(
+                    input,
+                    backend,
+                );
+                report = {
+                    schema_version: 1,
+                    ...selection,
+                    status: 'observed',
+                    native_acceptance: false,
+                    observation,
+                    unmeasured: [
+                        'native-registration',
+                        'profile-preservation',
+                        'state-row-preservation',
+                        'lifecycle-update-semantics',
+                        'official-conformance',
+                        'independent-acceptance',
+                    ],
+                };
             }
-            const input = this.project(selection, contract, inventory, catalog, hooks);
-            this.files.retain(root, 'input.json', Buffer.from(JSON.stringify(input) + '\n'));
-            const validator = new NativeCodexProtocolValidator(
-                new NativeCodexSchemaRepository(NativeCodexConfiguration.schemaRoot),
-            );
-            const observation = await new NativeCodexObservationService(validator).observe(
-                input,
-                backend,
-            );
-            report = {
-                schema_version: 1,
-                ...selection,
-                status: 'observed',
-                native_acceptance: false,
-                observation,
-                unmeasured: [
-                    'native-registration',
-                    'profile-preservation',
-                    'state-row-preservation',
-                    'lifecycle-update-semantics',
-                    'official-conformance',
-                    'independent-acceptance',
-                ],
-            };
         } catch (error) {
             const mismatch =
                 error instanceof Error && error.message.startsWith('schema_mismatch:')
@@ -263,6 +330,30 @@ export class NativeCodexObserverDispatcher {
             };
         }
         const evidence = [];
+        evidence.push(
+            this.files.retain(
+                root,
+                'fixture-exchanges.json',
+                Buffer.from(
+                    JSON.stringify({
+                        schema_version: 2,
+                        request_count: backend.fixtureRequestCount,
+                        exchanges: backend.fixtureExchanges,
+                    }) + '\n',
+                ),
+            ),
+        );
+        for (const file of backend.stateArtifacts) evidence.push({ ...file });
+        evidence.push(
+            this.files.retain(
+                root,
+                'process-identity.json',
+                Buffer.from(
+                    JSON.stringify({ schema_version: 1, processes: backend.processObservations }) +
+                        '\n',
+                ),
+            ),
+        );
         evidence.push(
             this.files.retain(
                 root,
