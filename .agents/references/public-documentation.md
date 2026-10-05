@@ -35,3 +35,4 @@ Run repository link and public-hygiene checks. Verify upstream revisions and sco
 - [Validation.md](../../docs/Validation.md): required official validation, pinned setup, and PR coverage.
 - [Behavioral Benchmark.md](../../docs/Behavioral%20Benchmark.md): closed synthetic freezes, immutable artifact-backed run receipts and declared baseline/treatment comparisons; byte integrity does not authenticate agent execution or certify readiness.
 - [Pilot Evaluation.md](../../docs/Pilot%20Evaluation.md): actual forward-exercise results and their limitations.
+- [Native Plugin Pilot.md](../../docs/Native%20Plugin%20Pilot.md): historical pinned host observations and the explicit disposable lifecycle operator; source/tests, native evidence and independent acceptance remain separate.

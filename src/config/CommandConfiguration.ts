@@ -28,6 +28,7 @@ import TelemetryStatusCommand from '../command/hook/TelemetryStatusCommand.ts';
 import TelemetryDisableCommand from '../command/hook/TelemetryDisableCommand.ts';
 import ServeMcpCommand from '../command/mcp/ServeMcpCommand.ts';
 import PluginPrepareCommand from '../command/plugin/PluginPrepareCommand.ts';
+import NativePilotRunCommand from '../command/plugin/NativePilotRunCommand.ts';
 import PluginSubmissionCommand from '../command/plugin/PluginSubmissionCommand.ts';
 import OfficialSkillsValidateCommand from '../command/repo/OfficialSkillsValidateCommand.ts';
 import PrepareVersionCommand from '../command/repo/PrepareVersionCommand.ts';
@@ -89,6 +90,7 @@ export class CommandConfiguration {
         'hook:telemetry-disable': TelemetryDisableCommand,
         'mcp:serve': ServeMcpCommand,
         'plugin:prepare': PluginPrepareCommand,
+        'plugin:pilot': NativePilotRunCommand,
         'plugin:submission': PluginSubmissionCommand,
         'repo:validate-official': OfficialSkillsValidateCommand,
         'repo:validate': RepositoryValidateCommand,

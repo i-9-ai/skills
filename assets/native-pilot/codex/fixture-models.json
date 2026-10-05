@@ -1,0 +1,28 @@
+{
+    "models": [
+        {
+            "slug": "native-pilot-fixture",
+            "display_name": "Disposable protocol fixture",
+            "description": "Synthetic local response metadata; no provider inference.",
+            "supported_reasoning_levels": [],
+            "shell_type": "disabled",
+            "visibility": "hide",
+            "supported_in_api": true,
+            "priority": 0,
+            "availability_nux": null,
+            "upgrade": null,
+            "support_verbosity": false,
+            "default_verbosity": null,
+            "apply_patch_tool_type": null,
+            "truncation_policy": {
+                "mode": "bytes",
+                "limit": 16384
+            },
+            "experimental_supported_tools": [],
+            "supports_reasoning_summary_parameter": false,
+            "include_apps_usage_instructions": false,
+            "context_window": 32768,
+            "base_instructions": "This is a disposable loopback protocol fixture. Return the fixed response without tools."
+        }
+    ]
+}

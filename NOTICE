@@ -1,5 +1,18 @@
 Third-party protocol attribution
 
+Native Codex pilot schemas
+
+The declarative JSON schemas in assets/native-pilot/codex/schemas are unchanged
+selected files from OpenAI Codex 0.160.0, commit
+a956835d020762cb2b570053af06f643a11c0ecc. Reviewed source: the precomputed
+experimental JSON schema export, selected schemas, LICENSE and NOTICE.
+Export SHA-256: 63028565f715c584c2dad98163de85dcb03801f9a7c096f5ef07d4769a900984.
+NativeCodexSchemaConfiguration pins each included schema by SHA-256. The folder
+retains the upstream Apache-2.0 license and notice. No native executable,
+upstream runtime implementation or private capture is distributed.
+
+Changesets reference protocol
+
 The commit and pull-request GraphQL fragments in ReleaseReferenceValidator
 follow @changesets/get-github-info 1.0.1. Reviewed files: dist/index.mjs,
 package.json and LICENSE from the immutable npm package identified below.

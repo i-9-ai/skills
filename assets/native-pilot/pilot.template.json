@@ -1,0 +1,27 @@
+{
+    "schema_version": 2,
+    "runtime_layout": "source-ts",
+    "purpose": "local-source-a-b-a",
+    "hosts": ["codex", "claude"],
+    "repetitions": 2,
+    "authority": {
+        "lane": null,
+        "destination": null,
+        "authorization_sha256": null,
+        "retention_destination": null,
+        "retention_authorization_sha256": null,
+        "environment_sha256": null,
+        "platform": null
+    },
+    "source_a": { "revision": null, "tree_sha256": null },
+    "source_b": { "revision": null, "tree_sha256": null },
+    "driver": { "revision": null, "tree_sha256": null },
+    "observer": { "revision": null, "tree_sha256": null, "entrypoint": null },
+    "binaries": {
+        "node": { "version": null, "sha256": null, "platform": null },
+        "codex": { "version": null, "sha256": null, "platform": null },
+        "claude": { "version": null, "sha256": null, "platform": null }
+    },
+    "witnesses": null,
+    "mcp": { "codex": { "a": null, "b": null }, "claude": { "a": null, "b": null } }
+}

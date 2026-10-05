@@ -93,6 +93,7 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
         'package-lock.json',
         '.codex-plugin/plugin.json',
         'assets/plugin-icon.png',
+        'assets/native-pilot',
         'tsconfig.json',
         'tsconfig.build.json',
         'src',
@@ -102,6 +103,7 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
         'docs',
         'README.md',
         'LICENSE',
+        'NOTICE',
     ]) {
         const target = join(cleanSource, path);
         mkdirSync(dirname(target), { recursive: true });
@@ -127,7 +129,7 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
         assert.ok(!name.startsWith('/') && !name.split('/').includes('..'), name);
         assert.match(
             name,
-            /^(?:bin\/index\.(?:mjs|md)|dist\/(?:.*\.js|source-receipt\.json)|\.codex-plugin\/plugin\.json$|assets\/plugin-icon\.png$|\.agents\/skills\/|skills-catalog\.json|docs\/|package\.json|README\.md|LICENSE|NOTICE)/,
+            /^(?:bin\/index\.(?:mjs|md)|dist\/(?:.*\.js|source-receipt\.json)|\.codex-plugin\/plugin\.json$|assets\/(?:plugin-icon\.png$|native-pilot\/)|\.agents\/skills\/|skills-catalog\.json|docs\/|package\.json|README\.md|LICENSE|NOTICE)/,
         );
         assert.doesNotMatch(name, /^(?:src|tests|\.work|tmp|\.codex|\.github|node_modules)\//);
         assert.ok(!name.endsWith('.ts'), name);
@@ -157,6 +159,33 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
     }
     assert.equal(existsSync(join(modules, 'typescript')), false);
     assert.equal(existsSync(join(installed, 'src')), false);
+    assert.ok(names.includes('assets/native-pilot/pilot.template.json'));
+    assert.ok(names.includes('assets/native-pilot/codex/schemas/LICENSE'));
+    assert.ok(names.includes('assets/native-pilot/codex/schemas/NOTICE'));
+    assert.ok(names.includes('NOTICE'));
+    const schemaCheck = JSON.parse(
+        run(
+            process.execPath,
+            [
+                '--input-type=module',
+                '-e',
+                [
+                    'import { pathToFileURL } from "node:url";',
+                    'const { NativeCodexSchemaRepository } = await import(pathToFileURL(process.argv[1]).href);',
+                    'const { NativeCodexSchemaConfiguration } = await import(pathToFileURL(process.argv[3]).href);',
+                    'const repository = new NativeCodexSchemaRepository(process.argv[2]);',
+                    'const names = Object.keys(NativeCodexSchemaConfiguration.identity.files);',
+                    'for (const name of names) repository.get(name);',
+                    'console.log(JSON.stringify({ schemas: names.length }));',
+                ].join('\n'),
+                join(installed, 'dist/repository/NativeCodexSchemaRepository.js'),
+                join(installed, 'assets/native-pilot/codex/schemas'),
+                join(installed, 'dist/config/NativeCodexSchemaConfiguration.js'),
+            ],
+            root,
+        ),
+    );
+    assert.equal(schemaCheck.schemas, 36);
     const installedManifest = JSON.parse(readFileSync(join(installed, 'package.json')));
     assert.equal(installedManifest.private, false);
     assert.deepEqual(installedManifest.publishConfig, {

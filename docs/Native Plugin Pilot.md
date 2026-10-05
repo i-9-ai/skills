@@ -8,6 +8,202 @@ not a claim about every host, model or later revision. The subsequent
 [Codex MCP pilot](https://github.com/i-9-ai/skills/wiki/Codex-MCP-Pilot) adds native tool discovery and explicit
 catalog/read-evidence calls; the historical A/B/A results below remain unchanged.
 
+## Repeatable operator
+
+`plugin pilot` prepares and executes explicitly selected lanes of a Codex/Claude
+lifecycle matrix in fresh, owned containers. It is an installation and lifecycle
+check. It does not score
+the usefulness of a skill or establish model task quality. Use concrete tasks
+and privately selected reference packages for those separate evaluations.
+
+```sh
+npx @i-9.ai/skills plugin pilot --request /staging/native-pilot/operator.json --execute
+```
+
+The registry command requires a release containing this interface. In a prepared
+source checkout, use `node bin/index.mjs plugin pilot` with the same flags.
+
+Keep the request and acquired inputs in a separate staging directory. The closed
+request has exactly these fields:
+
+```json
+{
+  "schema_version": 1,
+  "contract_path": "/staging/native-pilot/contract.json",
+  "inputs_path": "/staging/native-pilot/inputs.json",
+  "container_pin_path": "/staging/native-pilot/container-pin.json",
+  "preparation_root": "/staging/native-pilot/new-run",
+  "lanes": [
+    { "run_id": "00000000-0000-4000-8000-000000000001", "host": "codex", "repetition": 1 },
+    { "run_id": "00000000-0000-4000-8000-000000000002", "host": "claude", "repetition": 1 }
+  ]
+}
+```
+
+The paths above are examples, not acquired inputs. Use a fresh UUID and new
+preparation directory for each run. A complete repeated matrix selects both
+hosts at repetitions 1 and 2. `inputs.json` maps `source_a`, `source_b`, `driver`,
+`observer`, `node`, `codex` and `claude` to canonical absolute acquired paths;
+the contract binds their complete inventories and exact review receipts. The
+container pin binds the local Docker boundary, platform image and measured normal
+account. A caller assertion does not replace those byte and runtime checks.
+
+The implemented native observers require Linux ARM64. A consistently pinned
+AMD64 selection is rejected during contract validation, before preparation or
+container creation. Network isolation requires only loopback interfaces, no
+external routes and an unreachable connection result; both `ENETUNREACH` and
+`EHOSTUNREACH` satisfy that last condition in the validator and projector.
+
+The request selects immutable source A/B, reviewed driver and observer bytes,
+native executable identities, a measured container image and fresh lane outputs.
+It cannot select an arbitrary shell command. Without `--execute`, the command
+rejects the request before preparation or native execution. Inputs must already
+be acquired and reviewed; the operator never downloads clients, installs into a
+real profile or substitutes a real model provider to complete a failing lane.
+
+The prepared phase journal covers native versions, baseline state, installation,
+hook/MCP observations, local A → B → A replacement, removal and owned-resource
+cleanup. Use contract schema 2 and select the bundled internal observer
+`dist/transport/NativePilotNativeObserverRunner.js` for a compiled export, or its
+`src/transport/NativePilotNativeObserverRunner.ts` development counterpart. This
+fixed container dispatcher serves both hosts; it is not a second public CLI.
+
+The bundled parser rechecks retained native records, full loaded package/resource
+inventories and state evidence. Codex uses its pinned RPC schemas, native hook
+trust and completion, actual MCP catalog/resource responses and one bounded local
+response exchange. The total request count includes rejected requests, so an extra
+request cannot disappear from the proof. Its baseline/removal recipe uses no
+thread or turn and requires the fresh lane's native inventories to be empty.
+Claude uses seven fixed version, auth, plugin, MCP health and init-only calls at
+A, B and restored A. It verifies the loaded source bytes and actual SessionStart
+output; MCP health does not prove catalog or resource tool calls.
+
+Claude's native hook/MCP absence inventory is still unsupported. That required
+gate stays false, and the schema-2 lane stops at baseline instead of proceeding
+under a diagnostic exception. The operator therefore cannot yet approve a complete
+two-host lifecycle matrix. For an unsupported gate, retain its raw records and
+use the pinned host's documented manual inspection inside the same disposable
+boundary. Record the exact unresolved gate and the commands, output and state
+comparisons needed to inspect it; manual evidence does not change the automated
+verdict. Do not fall back to a real profile or a model conversation.
+
+A prepared phase is not an observed result; failed and unattempted phases remain
+visible. Process proof binds two live PID/start-time/parent samples to the
+worker-observed child, rather than accepting a collector's asserted PID. Nested
+timeouts now use a 60-second common phase while preserving the 40-second native
+lifetime, 42-second selected-child minimum, one-second child rescue and one-second
+phase finish. Preparation has at most 16 seconds before selected dispatch; a
+smaller remaining budget still refuses to launch the child.
+
+This correction is implemented in source with fake deadline and dispatch tests.
+Two fresh 60-second Codex repetitions dispatched the selected observer and
+installed matching source A bytes, but both stopped at `observe-a` with
+`evidence-integrity-mismatch`: the observer's provenance envelope was compared
+with a bare inventory by its consumer. Closed producer/consumer validation is
+now implemented with matching and rejection tests under the
+[loaded-inventory plan](https://github.com/i-9-ai/skills/blob/main/plans/2026-10-05-19-09-13-loaded-native-inventory-contract.md).
+Neither repetition reached B, rollback or removal. Complete native acceptance
+remains pending; these failures must not be regraded after a source correction.
+The new validator checks the complete envelope against the selected source and
+its exact declared alias omissions. Claude's before/after snapshots, manifest
+bytes and two worker inventories must agree. Unknown fields and overstated
+provenance are rejected; the native-cache and executable-bit limits remain.
+Earlier 45-second failed captures retain
+their original budgets and verdicts. Their four-gate baseline candidate result
+does not establish the separately blocked native absence observation. See the
+[budget plan](https://github.com/i-9-ai/skills/blob/main/plans/2026-10-05-18-02-45-native-observation-budget.md)
+for the measured preparation times, unchanged limits and required verification.
+An unknown process or socket state blocks advancement; a measured zombie
+residual is retained as a terminated residual, never relabeled as process absence.
+
+After the loaded-inventory correction, a later Codex repetition completed all
+20 candidate phases. Its second repetition stopped at restored A because the
+selected MCP status was still `starting`. That response is startup evidence,
+not a connected server. The readiness correction permits bounded status queries
+within the existing request and time limits; only a complete inventory with the
+selected server connected permits catalog/resource calls. Historical failures
+remain unchanged.
+
+A separate private Claude diagnostic captured its init-only operation, but the
+export projector rejected the client's absolute `native-output/latest` debug
+alias. The captured process completed; its generic adapter-error verdict is not
+proof of a timeout. The correction retains only this known alias to an ordinary,
+byte-verified debug file for the selected run and repetition. It never follows
+or materializes the link. This diagnostic does not remove the public schema-2
+absence limitation or establish a complete two-host matrix.
+
+Two fresh Codex 0.160.0 repetitions on 2026-10-05, using Node 24.21.0,
+completed all 20 lifecycle candidate phases after these corrections. The
+retained-artifact reconciliation covered the actual process records, loaded
+A/B/A bytes, native hooks, MCP responses and preserved history. One A observation
+needed two complete MCP status rounds (`starting` then `connected`); the other
+runtime observations needed one. These are source-qualified observations from
+owned disposable containers, with a local response fixture. Both selected package
+versions were 0.3.4, so neither hosted updates nor semantic-version upgrades were
+tested. Library source provenance remained unavailable (`missing_receipt`),
+separately from the verified local source/cache inventories.
+
+A fresh private Claude diagnostic with the corrected source passed preparation,
+baseline and installation, then stopped at A with `evidence-integrity-mismatch`.
+Its second repetition was not attempted. The retained complete envelope contained
+six matching source inventories and was 1,197,393 bytes, above the generic JSON
+reader's 1 MiB cap. The driver rejected it before the loaded-inventory validator;
+this explains a sufficient refusal boundary without claiming an observed exception
+stack. It does not change the public schema-2 absence gate or establish Claude
+lifecycle acceptance. Earlier failed captures keep their original results.
+
+The driver reads loaded inventories through a separate fixed 32 MiB reader,
+bound to the already verified evidence receipt. It checks ordinary single-link
+files, a no-follow descriptor, stable identity and complete bytes before parsing.
+Generic request and review JSON stays capped at 1 MiB; command output and
+observation deadlines are unchanged. Synthetic tests exercise the
+complete six-inventory producer envelope through the driver and reject oversized,
+altered or contradictory inputs. They do not reclassify the failed native capture.
+
+Retention has separate fixed bounds: 32 MiB per ordinary file, 64 MiB of combined
+decoded files and 96 MiB for the encoded export. The worker rejects an oversized
+file before reading it and while it grows; the controller checks declared size
+and encoded length before decoding. Retention receipts use the export bound,
+while other evidence files and loaded inventories remain capped at 32 MiB.
+
+A phase permits at most 128 receipts and 352 MiB in total. That total reserves
+one encoded export, up to three copies of decoded evidence, one loaded inventory
+and a shared 32 MiB control allowance. Retention above 96 MiB and ordinary
+evidence above 224 MiB consume that same control allowance; it cannot be spent
+twice. The projector admits each receipt before new derived writes, and the
+driver rejects overflowing declarations before hashing files. A complete
+Common-to-Driver test transports an export above 32 MiB and all its actual
+derived receipts. This is synthetic pipeline verification, not native acceptance.
+
+SQLite preservation has two explicit outcomes: absent storage stays absent, or
+existing storage stays unchanged during read-only operations. Seeded lanes retain
+the original file and sidecar bytes, issued schema identities and prior user-table
+payloads. A valid migration ledger cannot hide modified SQL or a removed index.
+Unsupported state is retained as blocked; it is never reset or downgraded merely
+to obtain a passing result.
+
+The seeded contract requires `existing_unchanged` for read-only MCP evidence.
+Snapshots bracket Codex's selected native MCP operations and Claude's MCP list/get
+health calls before its init hook writer. The host rechecks the main SQLite file,
+every retained sidecar, issued SQL and row/payload identities. Empty receipt lists
+cannot establish an existing store. At restored A, complete preceding-state and
+history comparisons establish `data_preservation: observed`. The current
+recipes exercise catalog/resource reads and hook context, so selected-source
+database API compatibility remains `data_compatibility: not-exercised` and
+`full_data_compatibility` stays false. Preserved history cannot prove that an
+older reader or writer accepts a newer schema. The later Codex trial retained
+schema 4 while selected source A supports schemas 1-3; the original positive
+compatibility label is historical output qualified by that limitation. No
+native reader/writer refusal is inferred from source inspection, and migration
+guards are never bypassed to obtain compatibility.
+
+The CLI returns a local report receipt and a nonzero status when execution is
+incomplete. Raw profiles, RPC/debug output, source exports and research artifacts
+stay outside the repository, npm package, plugin and Wiki. Source identity,
+synthetic orchestration tests, installed native evidence and independent acceptance
+are separate claims. The 2026-09-29 results below apply only to their recorded
+pins; a new operator run does not inherit them.
+
 ## Candidate and environment
 
 | Item | Observed value |
