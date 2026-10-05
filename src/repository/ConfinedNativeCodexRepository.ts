@@ -26,6 +26,24 @@ import type { ProcessEvent, StreamingProcess } from '../transport/CodexRpcSessio
 import type { FixtureHost } from '../transport/LoopbackResponsesFixture.ts';
 import { NativeCodexConfiguration } from '../config/NativeCodexConfiguration.ts';
 
+export interface NativeCodexProcessEvent {
+    event:
+        | 'started'
+        | 'termination-requested'
+        | 'stdin-eof-requested'
+        | 'signal-requested'
+        | 'exit'
+        | 'streams-closed'
+        | 'execution-error';
+    elapsed_ms: number;
+    pid: number | null;
+    signal: string | null;
+    exit_code: number | null;
+    timed_out: boolean;
+    output_truncated: boolean;
+    execution_error: boolean;
+}
+
 /** Actual implementations are callable only inside the explicitly measured fixed pilot lane. */
 export class ConfinedNativeCodexRepository implements ObserverConfinement {
     readonly evidenceKind = 'confined_native' as const;
@@ -34,10 +52,15 @@ export class ConfinedNativeCodexRepository implements ObserverConfinement {
         direction: 'request' | 'stdout' | 'stderr' | 'fixture-request' | 'fixture-response';
         bytes: Uint8Array;
     }[] = [];
+    readonly processEvents: NativeCodexProcessEvent[] = [];
+    private readonly execute: typeof spawn;
+    private readonly sendSignal: typeof process.kill;
     private rawBytes = 0;
     private fixtureBaseUrl: string | undefined;
     private captureFailure: Error | undefined;
-    constructor() {
+    constructor(options: { execute?: typeof spawn; signal?: typeof process.kill } = {}) {
+        this.execute = options.execute ?? spawn;
+        this.sendSignal = options.signal ?? process.kill;
         this.fixture = {
             start: async (handler, limits) => {
                 this.boundary();
@@ -152,7 +175,7 @@ export class ConfinedNativeCodexRepository implements ObserverConfinement {
             argv.some((arg) => typeof arg !== 'string' || arg.length > 4096 || arg.includes('\0'))
         )
             throw new Error('native_argv');
-        const child = spawn('/pilot/runtime-bin/codex', [...argv], {
+        const child = this.execute('/pilot/runtime-bin/codex', [...argv], {
             cwd: '/pilot/consumer',
             stdio: ['pipe', 'pipe', 'pipe'],
             detached: true,
@@ -161,27 +184,54 @@ export class ConfinedNativeCodexRepository implements ObserverConfinement {
         const queue: ProcessEvent[] = [];
         let wake: (() => void) | undefined;
         let exited = false;
+        let nativeExited = false;
         let timedOut = false;
         let truncated = false;
+        let terminationRequested = false;
+        let exitFacts: Extract<ProcessEvent, { kind: 'exit' }> | null = null;
+        const started = Date.now();
+        const deadline = started + 40_000;
+        const record = (
+            event: NativeCodexProcessEvent['event'],
+            signal: string | null = null,
+            exit_code: number | null = null,
+            execution_error = false,
+        ) => {
+            this.processEvents.push({
+                event,
+                elapsed_ms: Math.max(0, Date.now() - started),
+                pid: child.pid ?? null,
+                signal,
+                exit_code,
+                timed_out: timedOut,
+                output_truncated: truncated,
+                execution_error,
+            });
+        };
+        record('started');
         const enqueue = (event: ProcessEvent) => {
             queue.push(event);
             wake?.();
             wake = undefined;
         };
         const kill = (signal: NodeJS.Signals) => {
-            if (child.pid && !exited) {
+            if (child.pid && !exited && !nativeExited) {
                 try {
-                    process.kill(-child.pid, signal);
+                    record('signal-requested', signal);
+                    this.sendSignal(-child.pid, signal);
                 } catch (error) {
                     if ((error as NodeJS.ErrnoException).code !== 'ESRCH')
                         throw new Error('native_cleanup');
                 }
             }
         };
-        const timer = setTimeout(() => {
-            timedOut = true;
-            kill('SIGKILL');
-        }, 40_000);
+        const timer = setTimeout(
+            () => {
+                timedOut = true;
+                kill('SIGKILL');
+            },
+            Math.max(0, deadline - Date.now()),
+        );
         for (const stream of ['stdout', 'stderr'] as const)
             child[stream].on('data', (bytes: Buffer) => {
                 if (this.rawBytes + bytes.length > 1_048_576) {
@@ -193,21 +243,56 @@ export class ConfinedNativeCodexRepository implements ObserverConfinement {
                 enqueue({ kind: 'bytes', stream, bytes });
             });
         child.on('error', () => {
+            if (exited) return;
             exited = true;
             clearTimeout(timer);
+            record('execution-error', null, null, true);
             enqueue({
                 kind: 'exit',
                 exitCode: null,
                 signal: null,
                 timedOut,
                 outputTruncated: truncated,
+                terminationRequested,
             });
+        });
+        child.once('exit', (exitCode, signal) => {
+            nativeExited = true;
+            clearTimeout(timer);
+            record('exit', signal, exitCode);
+            exitFacts = {
+                kind: 'exit',
+                exitCode,
+                signal,
+                timedOut,
+                outputTruncated: truncated,
+                terminationRequested,
+            };
         });
         child.on('close', (exitCode, signal) => {
             if (exited) return;
             exited = true;
             clearTimeout(timer);
-            enqueue({ kind: 'exit', exitCode, signal, timedOut, outputTruncated: truncated });
+            const matches =
+                exitFacts !== null &&
+                exitFacts.exitCode === exitCode &&
+                exitFacts.signal === signal;
+            record('streams-closed', signal, exitCode, !matches);
+            if (matches) {
+                enqueue({
+                    ...exitFacts!,
+                    outputTruncated: truncated || exitFacts!.outputTruncated,
+                });
+                return;
+            }
+            enqueue({
+                kind: 'exit',
+                exitCode,
+                signal,
+                timedOut,
+                outputTruncated: truncated,
+                terminationRequested: false,
+            });
         });
         let stopping: Promise<{ exited: true }> | undefined;
         return {
@@ -233,21 +318,29 @@ export class ConfinedNativeCodexRepository implements ObserverConfinement {
             },
             terminate: () => {
                 stopping ??= new Promise<{ exited: true }>((resolve, reject) => {
+                    terminationRequested = true;
+                    record('termination-requested');
                     if (exited) {
                         resolve({ exited: true });
                         return;
                     }
                     child.once('close', () => resolve({ exited: true }));
-                    kill('SIGTERM');
-                    const force = setTimeout(() => kill('SIGKILL'), 500);
+                    const remaining = Math.max(0, deadline - Date.now());
+                    // EOF starts upstream RPC/thread cleanup. Use the existing lifetime
+                    // rather than replacing that cleanup with an unconditional 500ms signal.
+                    const term = setTimeout(() => kill('SIGTERM'), Math.max(0, remaining - 1000));
                     const final = setTimeout(
                         () => reject(new Error('native_cleanup_timeout')),
-                        1500,
+                        remaining + 500,
                     );
                     child.once('close', () => {
-                        clearTimeout(force);
+                        clearTimeout(term);
                         clearTimeout(final);
                     });
+                    // The pinned stdio transport starts connection cleanup on EOF. Retain
+                    // that request and its actual exit before any bounded signal escalation.
+                    record('stdin-eof-requested');
+                    child.stdin.end();
                 });
                 return stopping;
             },

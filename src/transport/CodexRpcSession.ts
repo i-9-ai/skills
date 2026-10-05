@@ -12,6 +12,8 @@ export type ProcessEvent =
           signal: string | null;
           timedOut: boolean;
           outputTruncated: boolean;
+          /** Actual native transport records intent when the exit occurs, before queue delivery. */
+          terminationRequested?: boolean;
       };
 export type StreamingProcess = {
     write(bytes: Uint8Array): Promise<void>;
@@ -155,9 +157,11 @@ export class CodexRpcSession {
                 this.codec.finish();
                 if (
                     !this.closing ||
+                    event.terminationRequested === false ||
                     event.timedOut ||
                     event.outputTruncated ||
-                    (event.exitCode !== 0 && event.signal !== 'SIGTERM')
+                    event.exitCode !== 0 ||
+                    event.signal !== null
                 )
                     throw new Error('unexpected_process_exit');
                 return;

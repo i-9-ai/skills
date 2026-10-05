@@ -263,6 +263,19 @@ export class NativeCodexObserverDispatcher {
             };
         }
         const evidence = [];
+        evidence.push(
+            this.files.retain(
+                root,
+                'process-events.json',
+                Buffer.from(
+                    JSON.stringify({
+                        schema_version: 1,
+                        executable: '/pilot/runtime-bin/codex',
+                        events: backend.processEvents,
+                    }) + '\n',
+                ),
+            ),
+        );
         for (const direction of [
             'request',
             'stdout',

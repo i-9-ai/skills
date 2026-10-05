@@ -10,8 +10,9 @@ catalog/read-evidence calls; the historical A/B/A results below remain unchanged
 
 ## Repeatable operator
 
-`plugin pilot` runs an explicitly selected Codex/Claude lifecycle matrix in fresh,
-owned containers. It is an installation and lifecycle check. It does not score
+`plugin pilot` prepares and executes explicitly selected phases of a Codex/Claude
+lifecycle matrix in fresh, owned containers. It is an installation and lifecycle
+check. It does not score
 the usefulness of a skill or establish model task quality. Use concrete tasks
 and privately selected reference packages for those separate evaluations.
 
@@ -54,9 +55,13 @@ rejects the request before preparation or native execution. Inputs must already
 be acquired and reviewed; the operator never downloads clients, installs into a
 real profile or substitutes a real model provider to complete a failing lane.
 
-Each lane records preparation, native versions, baseline state, installation,
+The prepared phase journal covers native versions, baseline state, installation,
 hook/MCP observations, local A → B → A replacement, removal and owned-resource
-cleanup. A failed or unattempted phase remains visible. An unknown process or
+cleanup. At this implementation checkpoint, semantic bindings for loaded package
+inventories, read-only MCP preservation and restored-A rollback evidence remain
+incomplete. Those required gates stay false or unknown, so the bundled operator
+cannot yet approve a complete native lifecycle matrix. A prepared phase is not
+an observed result; failed and unattempted phases remain visible. An unknown process or
 socket state blocks advancement; a measured zombie residual is retained as a
 terminated residual, never relabeled as process absence.
 

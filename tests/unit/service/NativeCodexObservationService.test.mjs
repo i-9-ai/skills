@@ -398,8 +398,8 @@ function fakeRun(selected = input(), mutate = () => {}) {
             closed = true;
             queue.push({
                 kind: 'exit',
-                exitCode: null,
-                signal: 'SIGTERM',
+                exitCode: 0,
+                signal: null,
                 timedOut: false,
                 outputTruncated: false,
             });

@@ -1,8 +1,9 @@
 # Repeatable native host pilots
 
 Issue: [#90](https://github.com/i-9-ai/skills/issues/90).
-Status: implementation in progress; confinement and initial native captures
-observed, complete lifecycle and canonical operator delivery pending.
+Status: implementation in progress; canonical operator checkpoint committed and
+structurally checked, initial native captures retained, full semantic bindings
+and repeated lifecycle acceptance pending.
 
 ## Objective
 
