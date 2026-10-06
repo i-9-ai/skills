@@ -23,6 +23,15 @@ npx @i-9.ai/skills plugin pilot --request /staging/native-pilot/operator.json --
 The registry command requires a release containing this interface. In a prepared
 source checkout, use `node bin/index.mjs plugin pilot` with the same flags.
 
+Copy `assets/native-pilot/pilot.template.json` from the selected package into your
+staging directory and fill its null fields. `runtime_layout` is intentionally
+unresolved: select `compiled-js` for the npm CLI, or `source-ts` for checkout
+execution. The selected driver and observer trees must use that same layout.
+Set `observer.entrypoint` to `dist/transport/NativePilotNativeObserverRunner.js`
+for a compiled tree, or `src/transport/NativePilotNativeObserverRunner.ts` for
+source. An unresolved or mismatched layout blocks preparation; neither value
+automatically builds, converts or executes the selected inputs.
+
 Keep the request and acquired inputs in a separate staging directory. The closed
 request has exactly these fields:
 

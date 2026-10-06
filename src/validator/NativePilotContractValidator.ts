@@ -57,7 +57,6 @@ export class NativePilotContractValidator {
         );
         if (
             raw.schema_version !== 2 ||
-            raw.runtime_layout !== NativePilotConfiguration.runtime_layout ||
             raw.purpose !== 'local-source-a-b-a' ||
             JSON.stringify(raw.hosts) !== '["codex","claude"]' ||
             raw.repetitions !== 2
@@ -71,6 +70,12 @@ export class NativePilotContractValidator {
             if (value === null) missing.push(label);
             else if (!valid(value)) throw new Error(`${label}: invalid resolved value.`);
         };
+        field(
+            'runtime_layout',
+            raw.runtime_layout,
+            (v) => v === NativePilotConfiguration.runtime_layout,
+        );
+
         const identifier = (value: unknown) => match(/^[a-z0-9][a-z0-9._:/-]{0,199}$/, value);
         const platform = (value: unknown) => value === 'linux/arm64';
         const authority = closedObject(
