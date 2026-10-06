@@ -22,6 +22,7 @@ import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { COMMANDS } from '../../src/index.ts';
 import { treeBytes } from '../unit/fixture/SkillBumpFixture.mjs';
+import { fixture as nativePilotFixture } from '../helpers/NativePilotFixture.mjs';
 import {
     catalog as evidenceCatalog,
     follow,
@@ -163,6 +164,60 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
     assert.ok(names.includes('assets/native-pilot/codex/schemas/LICENSE'));
     assert.ok(names.includes('assets/native-pilot/codex/schemas/NOTICE'));
     assert.ok(names.includes('NOTICE'));
+    const pilotSelection = nativePilotFixture(t).contract;
+    pilotSelection.runtime_layout = 'compiled-js';
+    pilotSelection.observer.entrypoint = 'dist/transport/NativePilotNativeObserverRunner.js';
+    const pilotTemplateCheck = JSON.parse(
+        run(
+            process.execPath,
+            [
+                '--input-type=module',
+                '-e',
+                `
+                    import assert from 'node:assert/strict';
+                    import { readFileSync } from 'node:fs';
+                    import { pathToFileURL } from 'node:url';
+
+                    const { NativePilotContractValidator } = await import(pathToFileURL(process.argv[1]).href);
+                    const template = JSON.parse(readFileSync(process.argv[2], 'utf8'));
+                    const selection = JSON.parse(process.argv[3]);
+                    const validator = new NativePilotContractValidator();
+                    assert.equal(template.runtime_layout, null);
+                    assert.ok(validator.inspect(template).missing.includes('runtime_layout'));
+                    assert.throws(() => validator.resolved(template), /Unresolved execution gates/);
+
+                    const fillUnresolved = (value, selected) => {
+                        if (value === null) return selected;
+                        if (typeof value !== 'object' || Array.isArray(value)) return value;
+
+                        return Object.fromEntries(Object.entries(value).map(([key, item]) => [
+                            key, fillUnresolved(item, selected[key]),
+                        ]));
+                    };
+                    const contract = fillUnresolved(template, selection);
+                    assert.deepEqual(validator.resolved(contract), contract);
+                    for (const layout of ['source-ts', 'unknown']) {
+                        assert.throws(() => validator.inspect({ ...contract, runtime_layout: layout }),
+                            /runtime_layout: invalid resolved value/);
+                    }
+                    assert.throws(() => validator.inspect({ ...contract,
+                        observer: { ...contract.observer, entrypoint: 'src/transport/NativePilotNativeObserverRunner.ts' },
+                    }), /observer.entrypoint: invalid resolved value/);
+
+                    console.log(JSON.stringify({ draft: 'blocked', resolved: contract.runtime_layout, mismatched: 'rejected' }));
+                `,
+                join(installed, 'dist/validator/NativePilotContractValidator.js'),
+                join(installed, 'assets/native-pilot/pilot.template.json'),
+                JSON.stringify(pilotSelection),
+            ],
+            root,
+        ),
+    );
+    assert.deepEqual(pilotTemplateCheck, {
+        draft: 'blocked',
+        resolved: 'compiled-js',
+        mismatched: 'rejected',
+    });
     const schemaCheck = JSON.parse(
         run(
             process.execPath,

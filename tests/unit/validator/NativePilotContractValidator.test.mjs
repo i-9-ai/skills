@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { NativePilotContractValidator } from '../../../src/validator/NativePilotContractValidator.ts';
+import { NativePilotPreparationService } from '../../../src/service/NativePilotPreparationService.ts';
 import { fixture } from '../../helpers/NativePilotFixture.mjs';
 
 test('the unselected template reports concrete blockers and cannot resolve to execution', () => {
@@ -12,6 +13,7 @@ test('the unselected template reports concrete blockers and cannot resolve to ex
     const result = validator.inspect(input);
     assert.equal(result.status, 'blocked');
     for (const required of [
+        'runtime_layout',
         'source_a.revision',
         'source_b.tree_sha256',
         'binaries.node.sha256',
@@ -26,6 +28,57 @@ test('the unselected template reports concrete blockers and cannot resolve to ex
         assert.ok(result.missing.includes(required), required);
     }
     assert.throws(() => validator.resolved(input), /Unresolved execution gates/);
+});
+
+test('the bundled draft requires an explicit source layout and refuses mismatches before preparation', (t) => {
+    const template = JSON.parse(
+        readFileSync(new URL('../../../assets/native-pilot/pilot.template.json', import.meta.url)),
+    );
+    assert.deepEqual(
+        template,
+        JSON.parse(
+            readFileSync(
+                new URL('../../fixtures/native-pilot/pilot.template.json', import.meta.url),
+            ),
+        ),
+    );
+    const { contract: selection, inputs, root } = fixture(t);
+    const fillUnresolved = (value, selected) => {
+        if (value === null) return structuredClone(selected);
+        if (typeof value !== 'object' || Array.isArray(value)) return value;
+
+        return Object.fromEntries(
+            Object.entries(value).map(([key, item]) => [key, fillUnresolved(item, selected[key])]),
+        );
+    };
+    const contract = fillUnresolved(template, selection);
+    const service = new NativePilotPreparationService();
+    assert.ok(service.validator.inspect(template).missing.includes('runtime_layout'));
+    assert.deepEqual(service.validator.resolved(contract), contract);
+    let prepared = 0;
+    service.repository.prepare = () => {
+        prepared++;
+    };
+
+    for (const layout of [null, 'compiled-js', 'unknown']) {
+        assert.throws(() => service.prepare({ ...contract, runtime_layout: layout }, inputs, root));
+    }
+    assert.throws(
+        () =>
+            service.prepare(
+                {
+                    ...contract,
+                    observer: {
+                        ...contract.observer,
+                        entrypoint: 'dist/transport/NativePilotNativeObserverRunner.js',
+                    },
+                },
+                inputs,
+                root,
+            ),
+        /observer.entrypoint: invalid resolved value/,
+    );
+    assert.equal(prepared, 0);
 });
 
 test('closed input rejects added commands, promoted scope, weak pins and wrong binary architecture', (t) => {

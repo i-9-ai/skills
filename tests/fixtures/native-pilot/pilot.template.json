@@ -1,6 +1,6 @@
 {
     "schema_version": 2,
-    "runtime_layout": "source-ts",
+    "runtime_layout": null,
     "purpose": "local-source-a-b-a",
     "hosts": ["codex", "claude"],
     "repetitions": 2,
