@@ -64,6 +64,23 @@ function fixture(t, checkpoint) {
     };
 }
 
+test('a native manager finishing between preflight and lock acquisition prevents loose staging', (t) => {
+    const f = fixture(t);
+    const locked = f.repository.locked.bind(f.repository);
+    f.repository.locked = (callback) => {
+        f.repository.directory(f.configuration.state, true);
+        f.repository.publishNative('claude', {
+            schema_version: 1,
+            host: 'claude',
+            root: f.configuration.root,
+        });
+        return locked(callback);
+    };
+    assert.throws(() => f.service.run('install', true), /native plugin route/);
+    assert.equal(existsSync(join(f.configuration.skills, 'alpha')), false);
+    assert.equal(f.repository.receipt(), null);
+});
+
 test('preview is read-only; repeated installation and removal are idempotent and preserve foreign files', (t) => {
     const f = fixture(t);
     assert.deepEqual(f.service.run('install').additions, ['alpha', 'bravo']);

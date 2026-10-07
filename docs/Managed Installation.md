@@ -79,17 +79,24 @@ npx @i-9.ai/skills skills install --project ./consumer --strategy plugin --host 
 ```
 
 The preview lists native commands and the bundled skills/hooks/MCP components.
-Writing preflights the native command contract and observations. Codex supports
+Writing preflights every requested native command and flag, plus observations. Codex supports
 user-scope installation in this adapter; project requests return manual guidance
 without widening scope. Claude scopes both marketplace and plugin operations to
 the requested user or project scope. Unsupported/missing clients return manual
 steps and a nonzero exit for an unfulfilled write request. No client is downloaded.
 
 Native registrations are tracked separately under the same private installation
-state. The adapter records the native response, selected revision and complete
-cache digest. It refuses adoption of an existing unowned plugin, changed cache
+state. The adapter records the native response, requested revision and complete
+cache digest. Before admitting success, it also compares the installed catalog
+and every skill package with the running toolkit's bundle. A matching version
+alone is insufficient; different bytes leave the operation pending. Native
+responses do not establish the actual immutable Git revision, and the result
+labels that as unobserved. The package comparison does not qualify native
+hook/runtime bytes or execution.
+
+It refuses adoption of an existing unowned plugin, changed cache
 bytes or client selection, and duplicate loose/managed plugin routes. A disabled
-plugin's upgrade requires native UI review instead of implicitly re-enabling it.
+plugin requires native UI review for either install or upgrade instead of implicitly re-enabling it.
 Removing the owned plugin preserves its marketplace registration and unrelated
 plugins. Native cache preimages are retained before upgrade/removal.
 

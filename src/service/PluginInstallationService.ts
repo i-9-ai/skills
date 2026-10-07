@@ -10,6 +10,8 @@ import type {
     InstalledPluginObservation,
 } from '../repository/PluginInstallationClientRepository.ts';
 import { SkillInstallationRepository } from '../repository/SkillInstallationRepository.ts';
+import { SkillBundleRepository } from '../repository/SkillBundleRepository.ts';
+import { InstalledCollectionConfiguration } from '../config/InstalledCollectionConfiguration.ts';
 
 interface NativeInstallationRecord {
     schema_version: 1;
@@ -17,7 +19,7 @@ interface NativeInstallationRecord {
     root: string;
     scope: string;
     client: string;
-    revision: string;
+    requested_revision: string;
     observation: InstalledPluginObservation;
 }
 
@@ -27,17 +29,30 @@ export class PluginInstallationService {
     readonly clients: PluginInstallationClientRepository;
     readonly state: SkillInstallationRepository;
     readonly identity: () => { package_version: string; resolved_git_sha: string | null };
+    readonly verifyPackages: (after: InstalledPluginObservation) => boolean;
 
     constructor(
         configuration: SkillInstallationConfiguration,
         clients = new PluginInstallationClientRepository(),
         state = new SkillInstallationRepository(configuration),
         identity = () => new InstalledSkillRepository().catalog().provenance,
+        verifyPackages = (after: InstalledPluginObservation) => {
+            const expected = new SkillBundleRepository().bundle();
+            const actual = new SkillBundleRepository(
+                new InstalledCollectionConfiguration(after.path),
+            ).bundle();
+            return (
+                actual.version === expected.version &&
+                actual.catalog_sha256 === expected.catalog_sha256 &&
+                JSON.stringify(actual.packages) === JSON.stringify(expected.packages)
+            );
+        },
     ) {
         this.configuration = configuration;
         this.clients = clients;
         this.state = state;
         this.identity = identity;
+        this.verifyPackages = verifyPackages;
     }
 
     run(operation: InstallationOperation, host: InstallationHost | undefined, write = false) {
@@ -133,18 +148,7 @@ export class PluginInstallationService {
                 message:
                     'This client/scope needs native UI setup. No installation scope was widened.',
             };
-        if (operation !== 'uninstall') {
-            if (this.state.receipt() || this.state.pending())
-                throw new Error(
-                    'Resolve the owned loose-skill installation before selecting a plugin route.',
-                );
-            for (const item of new InstalledSkillRepository().catalog().skills) {
-                if (this.state.actual(item.name))
-                    throw new Error(
-                        'Existing loose skill copies require explicit migration before plugin installation.',
-                    );
-            }
-        }
+        if (operation !== 'uninstall') this.assertNoLoose();
         if (pending)
             return {
                 ...result,
@@ -153,7 +157,7 @@ export class PluginInstallationService {
                     'Reconcile the recorded interrupted native operation with the host client first.',
             };
         const cwd = scope === 'project' ? dirname(this.configuration.root) : process.cwd();
-        if (!this.clients.support(executable, selected, cwd))
+        if (!this.clients.support(executable, selected, cwd, commands))
             return {
                 ...result,
                 status: 'manual-required',
@@ -188,7 +192,7 @@ export class PluginInstallationService {
             throw new Error(
                 'Native plugin bytes or client changed; manual reconciliation is required.',
             );
-        if (operation === 'upgrade' && before && !observed?.enabled)
+        if (operation !== 'uninstall' && before && !observed?.enabled)
             return {
                 ...result,
                 status: 'manual-required',
@@ -201,11 +205,12 @@ export class PluginInstallationService {
         if (
             operation !== 'uninstall' &&
             observed?.version === identity.package_version &&
-            before?.revision === revision
+            before?.requested_revision === revision
         )
             return { ...result, status: 'unchanged' };
         const id = randomUUID();
         return this.state.locked(() => {
+            if (operation !== 'uninstall') this.assertNoLoose();
             if (
                 JSON.stringify(this.record(selected)) !== JSON.stringify(before) ||
                 this.state.nativeState(selected, true)
@@ -262,13 +267,17 @@ export class PluginInstallationService {
             } else {
                 if (!after || after.version !== identity.package_version)
                     throw new Error('Native plugin version differs from the selected bundle.');
+                if (!this.verifyPackages(after))
+                    throw new Error(
+                        'Native package bytes differ from the selected running bundle; reconciliation is required.',
+                    );
                 this.state.publishNative(selected, {
                     schema_version: 1,
                     host: selected,
                     root: this.configuration.root,
                     scope: this.configuration.scope,
                     client: executable,
-                    revision,
+                    requested_revision: revision,
                     observation: after,
                 } satisfies NativeInstallationRecord);
             }
@@ -281,8 +290,23 @@ export class PluginInstallationService {
                 status: 'observed',
                 installed_version: after?.version ?? null,
                 native_activation: 'not-observed',
+                immutable_native_revision: 'not-observed',
+                selected_package_integrity: after ? 'verified' : 'not-applicable',
             };
         });
+    }
+
+    private assertNoLoose() {
+        if (this.state.receipt() || this.state.pending())
+            throw new Error(
+                'Resolve the owned loose-skill installation before selecting a plugin route.',
+            );
+        for (const item of new InstalledSkillRepository().catalog().skills) {
+            if (this.state.actual(item.name))
+                throw new Error(
+                    'Existing loose skill copies require explicit migration before plugin installation.',
+                );
+        }
     }
 
     private record(host: InstallationHost): NativeInstallationRecord | null {
@@ -294,7 +318,7 @@ export class PluginInstallationService {
             'root',
             'scope',
             'client',
-            'revision',
+            'requested_revision',
             'observation',
         ]);
         const observation = this.state.validator.object(item.observation, [
@@ -309,8 +333,10 @@ export class PluginInstallationService {
             item.root !== this.configuration.root ||
             item.scope !== this.configuration.scope ||
             typeof item.client !== 'string' ||
-            typeof item.revision !== 'string' ||
-            !/^(?:[a-f0-9]{40}|v\d+\.\d+\.\d+(?:-[a-zA-Z0-9.-]+)?)(?![\s\S])/.test(item.revision) ||
+            typeof item.requested_revision !== 'string' ||
+            !/^(?:[a-f0-9]{40}|v\d+\.\d+\.\d+(?:-[a-zA-Z0-9.-]+)?)(?![\s\S])/.test(
+                item.requested_revision,
+            ) ||
             typeof observation.version !== 'string' ||
             typeof observation.path !== 'string' ||
             typeof observation.enabled !== 'boolean'

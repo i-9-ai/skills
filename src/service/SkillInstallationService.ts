@@ -98,14 +98,7 @@ export class SkillInstallationService {
             host_discovery: 'not-verified',
         };
         if (!write || operation === 'status') return result;
-        if (
-            (operation === 'install' || operation === 'upgrade') &&
-            (this.repository.nativeState('codex') ||
-                this.repository.nativeState('claude') ||
-                this.repository.nativeState('codex', true) ||
-                this.repository.nativeState('claude', true))
-        )
-            throw new Error('Resolve the owned native plugin route before creating loose copies.');
+        if (operation === 'install' || operation === 'upgrade') this.assertNoNative();
         if (pending) throw new Error('An interrupted installation needs skills recover --write.');
         if (conflicts.length)
             throw new Error(
@@ -134,6 +127,7 @@ export class SkillInstallationService {
         };
         this.repository.validator.serialize(journal);
         const recovery = this.repository.locked(() => {
+            if (operation === 'install' || operation === 'upgrade') this.assertNoNative();
             if (JSON.stringify(selection) !== JSON.stringify(this.bundle.bundle()))
                 throw new Error('Bundled source changed before installation.');
             return this.repository.apply(journal, this.bundle);
@@ -145,6 +139,16 @@ export class SkillInstallationService {
             receipt: after ? `${this.configuration.state}/receipt.json` : null,
             recovery,
         };
+    }
+
+    private assertNoNative() {
+        if (
+            this.repository.nativeState('codex') ||
+            this.repository.nativeState('claude') ||
+            this.repository.nativeState('codex', true) ||
+            this.repository.nativeState('claude', true)
+        )
+            throw new Error('Resolve the owned native plugin route before creating loose copies.');
     }
 
     private recover(write: boolean) {

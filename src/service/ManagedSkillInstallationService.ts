@@ -9,6 +9,10 @@ import { SkillInstallationRepository } from '../repository/SkillInstallationRepo
 
 /** One orchestration boundary chooses one backend; it never installs both. */
 export class ManagedSkillInstallationService {
+    readonly clients: PluginInstallationClientRepository;
+    constructor(clients = new PluginInstallationClientRepository()) {
+        this.clients = clients;
+    }
     run(
         operation: InstallationOperation,
         flags: {
@@ -20,7 +24,7 @@ export class ManagedSkillInstallationService {
         },
     ) {
         const configuration = new SkillInstallationConfiguration(flags);
-        const clients = new PluginInstallationClientRepository();
+        const clients = this.clients;
         const available = (['codex', 'claude'] as const).filter((host) => clients.detect(host));
         const state = new SkillInstallationRepository(configuration);
         if (flags.strategy === 'plugin')
@@ -30,7 +34,7 @@ export class ManagedSkillInstallationService {
                 flags.write,
             );
         if (flags.host) throw new Error('Select --strategy plugin when selecting a native --host.');
-        if (flags.strategy === 'auto' && (state.receipt() || state.pending() || state.hasLock()))
+        if (flags.strategy === 'auto' && (state.receipt() || state.pending()))
             return {
                 ...new SkillInstallationService(configuration).run(operation, flags.write),
                 strategy: 'skills',
@@ -54,6 +58,12 @@ export class ManagedSkillInstallationService {
                     available_clients: managed,
                 };
         }
+        if (flags.strategy === 'auto' && state.hasLock())
+            return {
+                ...new SkillInstallationService(configuration).run(operation, flags.write),
+                strategy: 'skills',
+                available_clients: available,
+            };
         if (flags.strategy === 'auto' && available.length) {
             if (available.length > 1)
                 return {

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+    cpSync,
     existsSync,
     mkdirSync,
     mkdtempSync,
@@ -15,8 +16,11 @@ import { SkillInstallationConfiguration } from '../../../src/config/SkillInstall
 import { SkillInstallationRepository } from '../../../src/repository/SkillInstallationRepository.ts';
 import { PluginInstallationClientRepository } from '../../../src/repository/PluginInstallationClientRepository.ts';
 import { PluginInstallationService } from '../../../src/service/PluginInstallationService.ts';
+import { SkillInstallationService } from '../../../src/service/SkillInstallationService.ts';
+import { InstalledCollectionConfiguration } from '../../../src/config/InstalledCollectionConfiguration.ts';
+import { InstalledSkillRepository } from '../../../src/repository/InstalledSkillRepository.ts';
 
-function fixture(t, host, global = true) {
+function fixture(t, host, global = true, realBundle = false) {
     const root = realpathSync(mkdtempSync(join(tmpdir(), 'i9-native-install-fixture-')));
     t.after(() => rmSync(root, { recursive: true, force: true }));
     const home = join(root, 'home');
@@ -30,12 +34,17 @@ function fixture(t, host, global = true) {
     const state = new SkillInstallationRepository(configuration);
     const calls = [];
     let current = null;
-    let version = '1.0.0';
+    let version = realBundle
+        ? new InstalledSkillRepository().catalog().provenance.package_version
+        : '1.0.0';
     let revision = 'a'.repeat(40);
     let fail = false;
     let supported = true;
     let enabled = true;
     let marketplace = false;
+    let resource = null;
+    let keepCache = false;
+    const desiredResource = () => resource ?? `Inert resource ${version}\n`;
     const seed = (selectedVersion = version) => {
         const path = join(home, `.${host}/plugins/cache/i9-skills/i9-skills`, selectedVersion);
         mkdirSync(path, { recursive: true });
@@ -43,7 +52,13 @@ function fixture(t, host, global = true) {
             join(path, 'plugin.json'),
             JSON.stringify({ name: 'i9-skills', version: selectedVersion }),
         );
-        writeFileSync(join(path, 'resource.md'), `Inert resource ${selectedVersion}\n`);
+        writeFileSync(join(path, 'resource.md'), desiredResource());
+        if (realBundle) {
+            const source = new InstalledCollectionConfiguration().root();
+            for (const name of ['.agents/skills', 'skills-catalog.json', 'package.json']) {
+                cpSync(join(source, name), join(path, name), { recursive: true });
+            }
+        }
         current = { path, version: selectedVersion };
     };
     clients.detect = (name) =>
@@ -94,14 +109,20 @@ function fixture(t, host, global = true) {
         calls.push(args);
         if (fail) throw new Error('Synthetic native refusal');
         if (args[1] === 'marketplace' && args[2] === 'add') marketplace = true;
-        if (['add', 'install', 'update'].includes(args[1])) seed();
+        if (['add', 'install', 'update'].includes(args[1]) && !keepCache) seed();
         if (['remove', 'uninstall'].includes(args[1])) current = null;
         return '{}';
     };
-    const service = new PluginInstallationService(configuration, clients, state, () => ({
-        package_version: version,
-        resolved_git_sha: revision,
-    }));
+    const service = new PluginInstallationService(
+        configuration,
+        clients,
+        state,
+        () => ({ package_version: version, resolved_git_sha: revision }),
+        realBundle
+            ? undefined
+            : (after) =>
+                  readFileSync(join(after.path, 'resource.md'), 'utf8') === desiredResource(),
+    );
     return {
         root,
         home,
@@ -126,6 +147,13 @@ function fixture(t, host, global = true) {
             version = value;
             revision = 'b'.repeat(40);
         },
+        source: (value) => {
+            resource = value;
+            revision = 'b'.repeat(40);
+        },
+        keepCache: (value) => {
+            keepCache = value;
+        },
     };
 }
 
@@ -137,6 +165,8 @@ for (const host of ['codex', 'claude']) {
         assert.equal(existsSync(f.configuration.root), false);
         const installed = f.service.run('install', host, true);
         assert.equal(installed.written, true);
+        assert.equal(installed.selected_package_integrity, 'verified');
+        assert.equal(installed.immutable_native_revision, 'not-observed');
         assert.equal(existsSync(f.configuration.skills), false);
         assert.equal(f.service.run('install', host, true).status, 'unchanged');
         const before = f.calls.length;
@@ -190,7 +220,56 @@ for (const host of ['codex', 'claude']) {
         assert.equal(f.service.run('recover', host, true).status, 'manual-required');
         assert.equal(f.service.run('upgrade', host, true).written, false);
     });
+
+    test(`${host} refuses old package bytes when a requested source changes without a version change`, (t) => {
+        const f = fixture(t, host);
+        f.service.run('install', host, true);
+        const before = f.state.nativeState(host);
+        f.source('New selected source at the same version\n');
+        f.keepCache(true);
+        assert.throws(() => f.service.run('upgrade', host, true), /package bytes differ/);
+        assert.deepEqual(f.state.nativeState(host), before);
+        assert.equal(before.requested_revision, 'a'.repeat(40));
+        assert.equal(f.state.nativeState(host, true).requested_revision, 'b'.repeat(40));
+        assert.equal(f.service.run('recover', host, true).status, 'manual-required');
+    });
 }
+
+test('default native admission compares all bundled package bytes, rather than version or registry assertions', (t) => {
+    const intact = fixture(t, 'codex', true, true);
+    assert.equal(
+        intact.service.run('install', 'codex', true).selected_package_integrity,
+        'verified',
+    );
+    const changed = fixture(t, 'codex', true, true);
+    const execute = changed.clients.execute;
+    changed.clients.execute = (binary, args, cwd) => {
+        const result = execute(binary, args, cwd);
+        if (args[1] === 'add') {
+            writeFileSync(
+                join(changed.current().path, '.agents/skills/skill-authoring/LICENSE'),
+                'Altered installed license\n',
+            );
+        }
+        return result;
+    };
+    assert.throws(() => changed.service.run('install', 'codex', true), /package bytes differ/);
+    assert.equal(changed.state.nativeState('codex'), null);
+    assert.equal(changed.state.nativeState('codex', true).completed_commands, 2);
+});
+
+test('a loose manager finishing during native preflight prevents later native dispatch', (t) => {
+    const f = fixture(t, 'codex');
+    f.clients.support = () => {
+        new SkillInstallationService(f.configuration).run('install', true);
+        return true;
+    };
+    assert.throws(() => f.service.run('install', 'codex', true), /owned loose-skill installation/);
+    assert.equal(f.calls.length, 0);
+    assert.ok(f.state.receipt());
+    assert.equal(f.state.nativeState('codex'), null);
+    assert.equal(f.state.nativeState('codex', true), null);
+});
 
 test('Codex project setup and unsupported client contracts return manual steps without changing scope', (t) => {
     const project = fixture(t, 'codex', false);
@@ -209,12 +288,13 @@ test('Claude project setup scopes both marketplace and plugin commands to that s
     for (const args of f.calls) assert.equal(args[args.indexOf('--scope') + 1], 'project');
 });
 
-test('an upgrade never re-enables a disabled plugin implicitly', (t) => {
-    const f = fixture(t, 'codex');
-    f.enabled(false);
-    f.service.run('install', 'codex', true);
-    const before = f.calls.length;
-    f.version('2.0.0');
-    assert.equal(f.service.run('upgrade', 'codex', true).status, 'manual-required');
-    assert.equal(f.calls.length, before);
-});
+for (const operation of ['install', 'upgrade'])
+    test(`${operation} never re-enables a disabled owned plugin implicitly`, (t) => {
+        const f = fixture(t, 'codex');
+        f.enabled(false);
+        f.service.run('install', 'codex', true);
+        const before = f.calls.length;
+        f.version('2.0.0');
+        assert.equal(f.service.run(operation, 'codex', true).status, 'manual-required');
+        assert.equal(f.calls.length, before);
+    });

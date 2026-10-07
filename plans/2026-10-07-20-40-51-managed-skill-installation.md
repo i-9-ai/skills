@@ -38,6 +38,13 @@ of the same collection. Hooks/MCP are declared plugin components, not an implici
 skills-only setup. Native install/status/update/removal evidence stays separate
 from local filesystem validation and the existing issue90 native pilot.
 
+The shared ownership lock rechecks backend exclusion before dispatch. Native
+recovery remains manual when a native pending record exists, including a stale
+shared lock. Every mutating native command/flag is probed before starting the
+batch. Disabled owned plugins stay disabled. Admission compares the installed
+catalog and every package with the running bundle; the receipt records a requested
+revision without claiming the host's actual immutable Git revision or activation.
+
 ## Implementation sequence
 
 1. Add typed configuration and closed receipt/transaction validation.

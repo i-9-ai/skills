@@ -58,25 +58,21 @@ export class PluginInstallationClientRepository {
         return result.stdout;
     }
 
-    support(executable: string, host: InstallationHost, cwd: string): boolean {
+    support(executable: string, _host: InstallationHost, cwd: string, batch: string[][]): boolean {
         try {
-            const list = this.execute(executable, ['plugin', 'list', '--help'], cwd);
-            const add = this.execute(
-                executable,
-                ['plugin', host === 'codex' ? 'add' : 'install', '--help'],
-                cwd,
-            );
-            const marketplace = this.execute(
-                executable,
-                ['plugin', 'marketplace', 'add', '--help'],
-                cwd,
-            );
-            return (
-                list.includes('--json') &&
-                (host === 'codex'
-                    ? marketplace.includes('--ref') && add.includes('--json')
-                    : marketplace.includes('--scope') && add.includes('--scope'))
-            );
+            for (const args of [
+                ['plugin', 'list', '--json'],
+                ['plugin', 'marketplace', 'list', '--json'],
+                ...batch,
+            ]) {
+                const prefix = args.slice(0, args[1] === 'marketplace' ? 3 : 2);
+                const help = this.execute(executable, [...prefix, '--help'], cwd);
+                const acceptedFlags = new Set(help.match(/--[a-z][a-z0-9-]*/g) ?? []);
+                for (const flag of args.filter((value) => value.startsWith('--'))) {
+                    if (!acceptedFlags.has(flag)) return false;
+                }
+            }
+            return true;
         } catch {
             return false;
         }
