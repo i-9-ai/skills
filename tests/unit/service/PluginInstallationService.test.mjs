@@ -151,6 +151,9 @@ function fixture(t, host, global = true, realBundle = false) {
             resource = value;
             revision = 'b'.repeat(40);
         },
+        revision: (value) => {
+            revision = value;
+        },
         keepCache: (value) => {
             keepCache = value;
         },
@@ -219,6 +222,24 @@ for (const host of ['codex', 'claude']) {
         );
         assert.equal(f.service.run('recover', host, true).status, 'manual-required');
         assert.equal(f.service.run('upgrade', host, true).written, false);
+    });
+
+    test(`${host} rechecks current package bytes before claiming unchanged with a version-tag fallback`, (t) => {
+        const f = fixture(t, host);
+        f.revision(null);
+        f.service.run('install', host, true);
+        const before = f.state.nativeState(host);
+        const calls = f.calls.length;
+        assert.equal(before.requested_revision, 'v1.0.0');
+        f.source('Changed source with the same fallback tag\n');
+        f.revision(null);
+        const result = f.service.run('upgrade', host, true);
+        assert.equal(result.status, 'manual-required');
+        assert.equal(result.written, false);
+        assert.equal(result.selected_package_integrity, 'conflict');
+        assert.equal(f.calls.length, calls);
+        assert.deepEqual(f.state.nativeState(host), before);
+        assert.equal(f.state.nativeState(host, true), null);
     });
 
     test(`${host} refuses old package bytes when a requested source changes without a version change`, (t) => {

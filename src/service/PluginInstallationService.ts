@@ -206,8 +206,22 @@ export class PluginInstallationService {
             operation !== 'uninstall' &&
             observed?.version === identity.package_version &&
             before?.requested_revision === revision
-        )
-            return { ...result, status: 'unchanged' };
+        ) {
+            if (!this.verifyPackages(observed))
+                return {
+                    ...result,
+                    status: 'manual-required',
+                    selected_package_integrity: 'conflict',
+                    message:
+                        'The owned native packages differ from the running bundle at the same requested revision. Reconcile the source with the native client before updating.',
+                };
+            return {
+                ...result,
+                status: 'unchanged',
+                selected_package_integrity: 'verified',
+                immutable_native_revision: 'not-observed',
+            };
+        }
         const id = randomUUID();
         return this.state.locked(() => {
             if (operation !== 'uninstall') this.assertNoLoose();
