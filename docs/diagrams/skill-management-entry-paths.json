@@ -7,7 +7,7 @@
     "quality_profile": "showcase",
     "views": [
       {"id": "skills", "label": "Use portable skills", "focus": ["task", "discovery", "instructions", "workflow", "result"], "note": "The host discovers installed packages; the agent reads selected instructions and follows a bounded workflow."},
-      {"id": "cli", "label": "Use the CLI", "focus": ["cli", "commands", "mcp", "instructions", "context"], "note": "Registry builds include compiled code; Git downloads prepare it. Explicit setup merges settings; hook events never download."},
+      {"id": "cli", "label": "Use the CLI", "focus": ["cli", "commands", "mcp", "instructions", "context"], "note": "CLI previews owned installation, upgrades and removal. Native plugin routing stays explicit; hook events never download."},
       {"id": "plugin", "label": "Use the root plugin", "focus": ["plugin", "manifests", "hooks", "context", "mcp"], "note": "Trusted Git plugins load local hooks and stdio MCP. Read receipts share ~/.agents/skills-usage.db; startup never downloads."},
       {"id": "public", "label": "Public skills-only plugin", "focus": ["discovery", "instructions", "workflow", "result"], "note": "Public ZIPs include skills without hooks or local MCP. Telemetry needs separate explicit setup and host trust."}
     ]
@@ -51,7 +51,7 @@
     {"id": "hooks-context", "from": "hooks", "to": "context", "label": "read / context"}
   ],
   "cards": [
-    {"dot": "cyan", "title": "Explicit tooling", "items": ["CLI offers catalog reads, maintenance and optional telemetry setup", "Local MCP offers catalog, reports and explicit evidence tools"]},
+    {"dot": "cyan", "title": "Explicit tooling", "items": ["CLI manages owned installs, catalog reads and telemetry", "Local MCP offers catalog, reports and explicit evidence tools"]},
     {"dot": "amber", "title": "Current boundaries", "items": ["Public submission is skills-only; full Git plugins retain hooks and MCP", "Read receipts are demand signals, never proof of activation"]}
   ]
 }

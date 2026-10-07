@@ -397,6 +397,12 @@ records these distinct owners.
 
 ## Host adapters and packed distribution
 
+`skills install`, `skills upgrade`, `skills status`, `skills uninstall` and
+`skills recover` select one managed installation scope. Use `--strategy skills`
+for package directories, or `--strategy plugin --host codex|claude` for native
+adapters. Mutation requires `--write`. See [managed installation](../docs/Managed%20Installation.md)
+for ownership, conflicts, receipts, recovery, native limits and complete examples.
+
 Use hook session-config --host codex|claude|copilot|gemini|antigravity|hermes and hook verify
 --host HOST --file FILE for standalone configuration. Use hook session-index
 --host HOST for its documented output envelope. Read the [host contract](../docs/Host%20Hooks.md)

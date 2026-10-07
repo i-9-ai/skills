@@ -27,6 +27,7 @@ Run `npm run check` and inspect the required official workflow result for the ex
 
 ## Child DOX index
 
+- [Managed installation](../docs/Managed%20Installation.md): one scoped CLI lifecycle with owned package receipts and native host adapters; no implicit setup, release or real-profile mutation during tests.
 - [Native pilot preparation](service/NativePilotPreparationService.ts): verifies selected source/runtime inventories and an inert restore drill before creating a fresh private workspace; preparation never executes candidate code.
 - [Native pilot phases](service/NativePilotDriverService.ts): records bounded sequential source-refresh observations, preserving blocked and unrun phases; supplied receipts do not authenticate an executor.
 - [Loaded native inventories](validator/NativePilotLoadedInventoryValidator.ts): reconciles closed Codex/Claude provenance envelopes and explicit bare inventories against selected source bytes; executable and cache-scope qualifiers do not establish broader native assurance.

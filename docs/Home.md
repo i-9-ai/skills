@@ -5,6 +5,7 @@ preparing distribution, and evolving focused agent skills.
 
 ## Start here
 
+- [Managed installation](https://github.com/i-9-ai/skills/wiki/Managed-Installation): explicit collection installation, owned upgrades/removal, recovery and native plugin routing.
 - [Architecture](https://github.com/i-9-ai/skills/wiki/Architecture): collection boundaries, specialist handoffs, and lifecycle.
 - [Collection review](https://github.com/i-9-ai/skills/wiki/Collection-Review): dated responsibility, overlap and icon decisions for the meta-skill collection.
 - [Authoring standards](https://github.com/i-9-ai/skills/wiki/Authoring-Standards): package design and contribution requirements.

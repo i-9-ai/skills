@@ -29,6 +29,7 @@ Run command integration tests under `tests/integration/cli/`, strict type checki
 
 ## Child DOX index
 
+- [Installation commands](../../docs/Managed%20Installation.md): preview/write installation, upgrade, status, owned removal and recovery; strategies select one backend and preserve unfulfilled native operations.
 - [Record skill quality](skill/SkillsQualityRecordCommand.ts): explicit caller assertions or verified retained benchmark input through `skills quality record`; JSON cannot select observed assurance.
 - [Inspect skill quality](skill/SkillsQualityInspectCommand.ts): bounded source/revision-filtered history through `skills quality inspect`; queries never create, upgrade or delete evidence.
 
