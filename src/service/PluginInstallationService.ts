@@ -72,6 +72,7 @@ export class PluginInstallationService {
         const executable = this.clients.detect(selected);
         const identity = this.identity();
         const revision = identity.resolved_git_sha ?? `v${identity.package_version}`;
+        const before = this.record(selected);
         const scope = this.configuration.scope === 'global' ? 'user' : 'project';
         const source = 'https://github.com/i-9-ai/skills.git';
         const commands =
@@ -85,7 +86,16 @@ export class PluginInstallationService {
                 : operation === 'uninstall'
                   ? [['plugin', 'uninstall', 'i9-skills@i9-skills', '--scope', scope]]
                   : [
-                        ['plugin', 'marketplace', 'add', `${source}#${revision}`, '--scope', scope],
+                        before
+                            ? ['plugin', 'marketplace', 'update', 'i9-skills']
+                            : [
+                                  'plugin',
+                                  'marketplace',
+                                  'add',
+                                  `${source}#${revision}`,
+                                  '--scope',
+                                  scope,
+                              ],
                         [
                             'plugin',
                             operation === 'upgrade' ? 'update' : 'install',
@@ -94,7 +104,6 @@ export class PluginInstallationService {
                             scope,
                         ],
                     ];
-        const before = this.record(selected);
         const pending = this.state.nativeState(selected, true);
         const result = {
             schema_version: 1,
@@ -122,10 +131,16 @@ export class PluginInstallationService {
             };
         if (operation === 'status') {
             if (write) throw new Error('Status never writes.');
-            const intact = before
-                ? this.clients.fingerprint(before.observation.path, selected) ===
-                  before.observation.sha256
-                : null;
+            let intact: boolean | null = null;
+            if (before) {
+                try {
+                    intact =
+                        this.clients.fingerprint(before.observation.path, selected) ===
+                        before.observation.sha256;
+                } catch {
+                    intact = false;
+                }
+            }
             return {
                 ...result,
                 cache_intact: intact,
@@ -133,6 +148,24 @@ export class PluginInstallationService {
                 native_status: 'not-probed',
             };
         }
+        if (
+            selected === 'claude' &&
+            operation !== 'uninstall' &&
+            before &&
+            before.requested_revision !== revision
+        )
+            return {
+                ...result,
+                status: 'manual-required',
+                message:
+                    'Claude marketplace update refreshes the registered pin; repeat add cannot replace it. A different source revision requires native settings review before any command is dispatched.',
+                manual_steps: [
+                    `Review the i9-skills marketplace source ref in the selected ${scope} Claude settings. Preserve other entries and do not remove the marketplace; removal can uninstall unrelated plugins and their data.`,
+                    `Select the intended source revision ${revision} through native settings, then refresh with claude plugin marketplace update i9-skills and update only i9-skills@i9-skills at ${scope} scope.`,
+                    'Continue managing that source transition with the native client. This manager does not silently adopt changed cache bytes or declare the native transition completed.',
+                    'For CLI-managed portable upgrades, first explicitly uninstall the owned native plugin, then preview a skills-only installation in the same scope.',
+                ],
+            };
         if (!write)
             return {
                 ...result,
@@ -357,7 +390,7 @@ export class PluginInstallationService {
         )
             throw new Error('Invalid native ownership record.');
         this.state.validator.sha(observation.sha256);
-        this.clients.cachePath(observation.path, host);
+        this.clients.cacheLocator(observation.path);
         return raw as NativeInstallationRecord;
     }
 }

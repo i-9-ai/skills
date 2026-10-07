@@ -144,7 +144,7 @@ export class PluginInstallationClientRepository {
         };
     }
 
-    cachePath(path: unknown, host: InstallationHost): string {
+    cacheLocator(path: unknown): string {
         if (
             typeof path !== 'string' ||
             path.length > 4096 ||
@@ -153,6 +153,11 @@ export class PluginInstallationClientRepository {
             /[\x00-\x1f\x7f]/.test(path)
         )
             throw new Error('Unsupported native plugin cache path.');
+        return path;
+    }
+
+    cachePath(path: unknown, host: InstallationHost): string {
+        const locator = this.cacheLocator(path);
         const home = this.environment.HOME ?? homedir();
         const parent =
             host === 'codex'
@@ -162,7 +167,7 @@ export class PluginInstallationClientRepository {
                           join(home, '.claude/plugins'),
                       'cache',
                   );
-        const canonical = realpathSync(path);
+        const canonical = realpathSync(locator);
         const base = realpathSync(parent);
         const candidate = relative(base, canonical);
         if (

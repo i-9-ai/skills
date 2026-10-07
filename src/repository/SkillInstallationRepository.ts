@@ -11,7 +11,7 @@ import {
     writeFileSync,
     writeSync,
 } from 'node:fs';
-import { join, parse, relative, resolve } from 'node:path';
+import { dirname, join, parse, relative, resolve, sep } from 'node:path';
 import { SafeRoot } from '../../.agents/skills/skill-authoring/scripts/lib/filesystem.mjs';
 import { strictJson } from '../../.agents/skills/skills-catalog/scripts/catalog_tools.mjs';
 import { SkillInstallationConfiguration } from '../config/SkillInstallationConfiguration.ts';
@@ -39,8 +39,9 @@ export class SkillInstallationRepository {
     }
 
     directory(path: string, create = false): boolean {
-        const parts = relative(parse(path).root, resolve(path)).split('/');
-        let cursor = parse(path).root;
+        const absolute = resolve(path);
+        const parts = relative(parse(absolute).root, absolute).split(sep);
+        let cursor = parse(absolute).root;
         for (const part of parts) {
             cursor = join(cursor, part);
             let info;
@@ -148,6 +149,13 @@ export class SkillInstallationRepository {
     }
 
     locked<T>(callback: () => T, recovery = false): T {
+        if (
+            this.configuration.scope === 'project' &&
+            !this.directory(dirname(this.configuration.root))
+        )
+            throw new Error(
+                'The selected project must already exist as an ordinary caller-owned directory.',
+            );
         this.directory(this.configuration.root, true);
         this.directory(this.configuration.state, true);
         const lock = join(this.configuration.state, 'lock.json');

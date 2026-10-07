@@ -45,6 +45,14 @@ batch. Disabled owned plugins stay disabled. Admission compares the installed
 catalog and every package with the running bundle; the receipt records a requested
 revision without claiming the host's actual immutable Git revision or activation.
 
+The selected project must exist before managed descendants are created. Removal
+uses owned receipts independently of current bundle admission. Broken native
+caches produce status conflicts while malformed receipts remain rejected.
+Claude refresh uses the documented marketplace-update command at the existing
+pin; the verified CLI cannot replace that pin. A source change therefore returns
+manual guidance before dispatch, preserving shared registrations and data rather
+than removing/re-adding a marketplace or inventing a settings writer.
+
 ## Implementation sequence
 
 1. Add typed configuration and closed receipt/transaction validation.

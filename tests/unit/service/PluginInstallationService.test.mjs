@@ -8,6 +8,7 @@ import {
     readFileSync,
     realpathSync,
     rmSync,
+    symlinkSync,
     writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -174,8 +175,11 @@ for (const host of ['codex', 'claude']) {
         assert.equal(f.service.run('install', host, true).status, 'unchanged');
         const before = f.calls.length;
         f.version('2.0.0');
+        if (host === 'claude') f.revision('a'.repeat(40));
         assert.equal(f.service.run('upgrade', host, true).installed_version, '2.0.0');
         assert.equal(f.calls.length, before + 2);
+        if (host === 'claude')
+            assert.deepEqual(f.calls[before], ['plugin', 'marketplace', 'update', 'i9-skills']);
         const removed = f.service.run('uninstall', host, true);
         assert.equal(removed.installed, false);
         assert.equal(f.state.nativeState(host), null);
@@ -200,6 +204,7 @@ for (const host of ['codex', 'claude']) {
         writeFileSync(join(f.current().path, 'resource.md'), 'Local customization');
         const calls = f.calls.length;
         f.version('2.0.0');
+        if (host === 'claude') f.revision('a'.repeat(40));
         assert.throws(() => f.service.run('upgrade', host, true), /bytes or client changed/);
         assert.equal(f.calls.length, calls);
         assert.equal(
@@ -212,6 +217,7 @@ for (const host of ['codex', 'claude']) {
         const f = fixture(t, host);
         f.service.run('install', host, true);
         f.version('2.0.0');
+        if (host === 'claude') f.revision('a'.repeat(40));
         f.fail(true);
         assert.throws(() => f.service.run('upgrade', host, true), /Synthetic native refusal/);
         const pending = f.state.nativeState(host, true);
@@ -248,13 +254,77 @@ for (const host of ['codex', 'claude']) {
         const before = f.state.nativeState(host);
         f.source('New selected source at the same version\n');
         f.keepCache(true);
-        assert.throws(() => f.service.run('upgrade', host, true), /package bytes differ/);
+        if (host === 'claude') {
+            const calls = f.calls.length;
+            const result = f.service.run('upgrade', host, true);
+            assert.equal(result.status, 'manual-required');
+            assert.equal(result.written, false);
+            assert.equal(f.calls.length, calls);
+            assert.equal(f.state.nativeState(host, true), null);
+            assert.ok(
+                result.manual_steps.some((step) => step.includes('do not remove the marketplace')),
+            );
+        } else {
+            assert.throws(() => f.service.run('upgrade', host, true), /package bytes differ/);
+            assert.equal(f.state.nativeState(host, true).requested_revision, 'b'.repeat(40));
+            assert.equal(f.service.run('recover', host, true).status, 'manual-required');
+        }
         assert.deepEqual(f.state.nativeState(host), before);
         assert.equal(before.requested_revision, 'a'.repeat(40));
-        assert.equal(f.state.nativeState(host, true).requested_revision, 'b'.repeat(40));
-        assert.equal(f.service.run('recover', host, true).status, 'manual-required');
+    });
+
+    test(`${host} status reports missing cache bytes as a conflict while preserving the receipt`, (t) => {
+        const f = fixture(t, host);
+        f.service.run('install', host, true);
+        const before = f.state.nativeState(host);
+        const calls = f.calls.length;
+        rmSync(f.current().path, { recursive: true });
+        const result = f.service.run('status', host);
+        assert.equal(result.status, 'conflict');
+        assert.equal(result.cache_intact, false);
+        assert.equal(result.written, false);
+        assert.equal(f.calls.length, calls);
+        assert.deepEqual(f.state.nativeState(host), before);
+        f.state.publishNative(host, { ...before, extra: 'invalid receipt key' });
+        assert.throws(() => f.service.run('status', host), /closed installation record/);
+    });
+
+    test(`${host} status reports a cache link outside its host as a conflict without reading the target`, (t) => {
+        const f = fixture(t, host);
+        f.service.run('install', host, true);
+        const before = f.state.nativeState(host);
+        const cache = f.current().path;
+        rmSync(cache, { recursive: true });
+        const foreign = join(f.root, 'unrelated-cache-target');
+        mkdirSync(foreign);
+        writeFileSync(join(foreign, 'sentinel'), 'Unrelated bytes');
+        symlinkSync(foreign, cache, 'dir');
+        const result = f.service.run('status', host);
+        assert.equal(result.status, 'conflict');
+        assert.equal(result.cache_intact, false);
+        assert.deepEqual(f.state.nativeState(host), before);
+        assert.equal(readFileSync(join(foreign, 'sentinel'), 'utf8'), 'Unrelated bytes');
     });
 }
+
+test('Claude source-pin replacement returns manual steps before launching any client or changing ownership', (t) => {
+    const f = fixture(t, 'claude');
+    f.service.run('install', 'claude', true);
+    const before = f.state.nativeState('claude');
+    f.version('2.0.0');
+    f.clients.execute = () => {
+        throw new Error('Native dispatch must not occur for an unsupported pin transition');
+    };
+    for (const operation of ['install', 'upgrade']) {
+        const result = f.service.run(operation, 'claude', true);
+        assert.equal(result.status, 'manual-required');
+        assert.equal(result.written, false);
+        assert.deepEqual(result.commands[0], ['plugin', 'marketplace', 'update', 'i9-skills']);
+        assert.ok(result.manual_steps.some((step) => step.includes('b'.repeat(40))));
+        assert.deepEqual(f.state.nativeState('claude'), before);
+        assert.equal(f.state.nativeState('claude', true), null);
+    }
+});
 
 test('default native admission compares all bundled package bytes, rather than version or registry assertions', (t) => {
     const intact = fixture(t, 'codex', true, true);

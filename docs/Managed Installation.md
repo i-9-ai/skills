@@ -9,7 +9,9 @@ Installing the toolkit through npm does not install skills or change host settin
 ## Choose scope and strategy
 
 `--project ./consumer` selects that project's `.agents` directory. Without a
-scope flag, the current working directory is the project. `--global` selects
+scope flag, the current working directory is the project. The selected project
+must already exist as an ordinary caller-owned directory; writes create only
+managed descendants. `--global` selects
 `~/.agents`, or the explicit `I9_AGENT_STATE_ROOT` override. The flags are mutually
 exclusive. `auto` strategy uses an existing managed installation first; otherwise
 it detects executable Codex/Claude clients without launching them. Multiple
@@ -61,7 +63,9 @@ metadata overflow is refused before installation writes. Each package has at mos
 64 packages and 128 MiB of content. These are implementation safety bounds.
 
 Uninstallation never removes the skills root, unrelated packages, host settings
-or the shared usage database. Retained transaction directories stay available
+or the shared usage database. Receipt-backed removal works independently of a
+corrupt or incomplete running skill bundle; its output leaves the uninspected
+bundle version null. Retained transaction directories stay available
 for inspection; the manager does not automatically prune recovery history.
 Operations require stable caller-owned ordinary directories; they do not provide
 hostile-race-proof filesystem confinement.
@@ -82,7 +86,16 @@ The preview lists native commands and the bundled skills/hooks/MCP components.
 Writing preflights every requested native command and flag, plus observations. Codex supports
 user-scope installation in this adapter; project requests return manual guidance
 without widening scope. Claude scopes both marketplace and plugin operations to
-the requested user or project scope. Unsupported/missing clients return manual
+the requested user or project scope on initial installation. Refreshes use
+`claude plugin marketplace update i9-skills` before a scoped plugin update;
+that refresh uses the registered ref and has no scope/ref replacement flag.
+Changing an owned Claude source pin therefore returns manual guidance before
+dispatch. Repeat marketplace add cannot change it. The adapter preserves the
+registration rather than removing a marketplace and its unrelated plugins/data.
+After native source changes, continue managing that transition with the native
+client; changed cache bytes are not silently adopted. For ongoing CLI-managed
+upgrades, explicitly uninstall the owned native plugin before selecting the
+portable strategy. Unsupported/missing clients return manual
 steps and a nonzero exit for an unfulfilled write request. No client is downloaded.
 
 Native registrations are tracked separately under the same private installation
@@ -105,11 +118,14 @@ commands and retained preimages. Native settings and rollback belong to the host
 client: `skills recover --strategy plugin --host ...` reports manual reconciliation
 and never treats that as a completed rollback. Native status checks the recorded
 cache; it labels live host status as not probed. Installation/byte observations do
-not establish hook/MCP activation or provider behavior. See
+not establish hook/MCP activation or provider behavior. Missing or unsafe cache
+paths return a JSON conflict; invalid receipt schemas still fail validation. See
 [native lifecycle evidence](https://github.com/i-9-ai/skills/wiki/Native-Plugin-Pilot).
 
 Native command references: [OpenAI marketplace setup](https://developers.openai.com/plugins/build/plugins#add-a-marketplace-from-the-cli),
 [Claude marketplace registration and pinning](https://code.claude.com/docs/en/plugins/host-marketplace).
+The [Claude marketplace command contract](https://code.claude.com/docs/en/plugins/cli-reference#plugin-marketplace-update)
+explains refresh versus source-pin replacement.
 
 ## Entry paths
 

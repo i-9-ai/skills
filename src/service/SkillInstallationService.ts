@@ -28,22 +28,21 @@ export class SkillInstallationService {
 
     run(operation: InstallationOperation, write = false) {
         if (operation === 'recover') return this.recover(write);
-        const selection = this.bundle.bundle();
+        const selection = operation === 'uninstall' ? null : this.bundle.bundle();
         const before = this.repository.receipt();
         const pending = this.repository.pending();
-        const after: SkillInstallationReceipt | null =
-            operation === 'uninstall'
-                ? null
-                : {
-                      schema_version: 1,
-                      collection: 'i9-skills',
-                      root: this.configuration.root,
-                      scope: this.configuration.scope,
-                      version: selection.version,
-                      catalog_sha256: selection.catalog_sha256,
-                      source_git_sha: selection.source_git_sha ?? null,
-                      packages: selection.packages,
-                  };
+        const after: SkillInstallationReceipt | null = selection
+            ? {
+                  schema_version: 1,
+                  collection: 'i9-skills',
+                  root: this.configuration.root,
+                  scope: this.configuration.scope,
+                  version: selection.version,
+                  catalog_sha256: selection.catalog_sha256,
+                  source_git_sha: selection.source_git_sha ?? null,
+                  packages: selection.packages,
+              }
+            : null;
         const conflicts: { name: string; reason: string }[] = [];
         const operations: SkillInstallationJournal['operations'] = [];
         const unchanged: string[] = [];
@@ -79,7 +78,7 @@ export class SkillInstallationService {
             operation,
             scope: this.configuration.scope,
             root: this.configuration.root,
-            version: selection.version,
+            version: selection?.version ?? null,
             installed_version: before?.version ?? null,
             installed: Boolean(before),
             written: false,
@@ -128,7 +127,7 @@ export class SkillInstallationService {
         this.repository.validator.serialize(journal);
         const recovery = this.repository.locked(() => {
             if (operation === 'install' || operation === 'upgrade') this.assertNoNative();
-            if (JSON.stringify(selection) !== JSON.stringify(this.bundle.bundle()))
+            if (selection && JSON.stringify(selection) !== JSON.stringify(this.bundle.bundle()))
                 throw new Error('Bundled source changed before installation.');
             return this.repository.apply(journal, this.bundle);
         });

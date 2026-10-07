@@ -131,6 +131,41 @@ test('upgrade adds, changes and prunes only unchanged owned packages; local edit
     assert.equal(f.service.run('upgrade', true).written, false);
 });
 
+test('receipt-backed removal remains available when the current bundle is corrupt or absent', (t) => {
+    const f = fixture(t);
+    f.service.run('install', true);
+    rmSync(join(f.source, '.agents/skills'), { recursive: true });
+    assert.throws(() => f.bundle.bundle(), /ENOENT/);
+    const preview = f.service.run('uninstall');
+    assert.deepEqual(preview.removals, ['alpha', 'bravo']);
+    assert.equal(preview.version, null);
+    assert.equal(f.service.run('uninstall', true).written, true);
+    assert.equal(f.repository.receipt(), null);
+    assert.equal(existsSync(join(f.configuration.skills, 'alpha')), false);
+    assert.equal(f.service.run('uninstall', true).written, false);
+});
+
+test('a missing selected project is refused without creating any part of the typo path', (t) => {
+    const f = fixture(t);
+    const typo = join(f.root, 'missing-parent', 'mistyped-project');
+    const configuration = new SkillInstallationConfiguration({ project: typo });
+    const service = new SkillInstallationService(configuration, f.bundle);
+    assert.throws(() => service.run('install', true), /project must already exist/);
+    assert.equal(existsSync(join(f.root, 'missing-parent')), false);
+});
+
+test('linked project ancestors are refused before creating managed descendants', (t) => {
+    const f = fixture(t);
+    const link = join(f.root, 'linked-project-parent');
+    symlinkSync(f.root, link, 'dir');
+    const configuration = new SkillInstallationConfiguration({ project: join(link, 'consumer') });
+    assert.throws(
+        () => new SkillInstallationService(configuration, f.bundle).run('install', true),
+        /ordinary directories/,
+    );
+    assert.equal(existsSync(f.configuration.root), false);
+});
+
 for (const phase of ['staged', 'withdrawn', 'published', 'receipt']) {
     test(`a stopped ${phase} transaction retains recovery evidence and restores the complete prior state`, (t) => {
         let stop = false;
