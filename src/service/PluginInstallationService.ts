@@ -70,40 +70,45 @@ export class PluginInstallationService {
                     'Select --host codex or --host claude; detection does not install a client.',
             };
         const executable = this.clients.detect(selected);
-        const identity = this.identity();
-        const revision = identity.resolved_git_sha ?? `v${identity.package_version}`;
         const before = this.record(selected);
+        const identity =
+            operation === 'install' || operation === 'upgrade' ? this.identity() : null;
+        const revision = identity
+            ? (identity.resolved_git_sha ?? `v${identity.package_version}`)
+            : (before?.requested_revision ?? 'unselected');
         const scope = this.configuration.scope === 'global' ? 'user' : 'project';
         const source = 'https://github.com/i-9-ai/skills.git';
         const commands =
-            selected === 'codex'
-                ? operation === 'uninstall'
-                    ? [['plugin', 'remove', 'i9-skills@i9-skills']]
+            operation === 'status' || operation === 'recover'
+                ? []
+                : selected === 'codex'
+                  ? operation === 'uninstall'
+                      ? [['plugin', 'remove', 'i9-skills@i9-skills']]
+                      : [
+                            ['plugin', 'marketplace', 'add', source, '--ref', revision, '--json'],
+                            ['plugin', 'add', 'i9-skills@i9-skills', '--json'],
+                        ]
+                  : operation === 'uninstall'
+                    ? [['plugin', 'uninstall', 'i9-skills@i9-skills', '--scope', scope]]
                     : [
-                          ['plugin', 'marketplace', 'add', source, '--ref', revision, '--json'],
-                          ['plugin', 'add', 'i9-skills@i9-skills', '--json'],
-                      ]
-                : operation === 'uninstall'
-                  ? [['plugin', 'uninstall', 'i9-skills@i9-skills', '--scope', scope]]
-                  : [
-                        before
-                            ? ['plugin', 'marketplace', 'update', 'i9-skills']
-                            : [
-                                  'plugin',
-                                  'marketplace',
-                                  'add',
-                                  `${source}#${revision}`,
-                                  '--scope',
-                                  scope,
-                              ],
-                        [
-                            'plugin',
-                            operation === 'upgrade' ? 'update' : 'install',
-                            'i9-skills@i9-skills',
-                            '--scope',
-                            scope,
-                        ],
-                    ];
+                          before
+                              ? ['plugin', 'marketplace', 'update', 'i9-skills']
+                              : [
+                                    'plugin',
+                                    'marketplace',
+                                    'add',
+                                    `${source}#${revision}`,
+                                    '--scope',
+                                    scope,
+                                ],
+                          [
+                              'plugin',
+                              operation === 'upgrade' ? 'update' : 'install',
+                              'i9-skills@i9-skills',
+                              '--scope',
+                              scope,
+                          ],
+                      ];
         const pending = this.state.nativeState(selected, true);
         const result = {
             schema_version: 1,
@@ -112,7 +117,7 @@ export class PluginInstallationService {
             host: selected,
             scope: this.configuration.scope,
             client: executable,
-            version: identity.package_version,
+            version: identity?.package_version ?? null,
             installed_version: before?.observation.version ?? null,
             installed: Boolean(before),
             written: false,
@@ -237,7 +242,8 @@ export class PluginInstallationService {
         if (operation === 'uninstall' && !before) return { ...result, status: 'absent' };
         if (
             operation !== 'uninstall' &&
-            observed?.version === identity.package_version &&
+            observed &&
+            observed.version === identity?.package_version &&
             before?.requested_revision === revision
         ) {
             if (!this.verifyPackages(observed))
@@ -312,7 +318,7 @@ export class PluginInstallationService {
                     throw new Error('Native plugin remains installed; reconciliation is required.');
                 this.state.clearNative(selected);
             } else {
-                if (!after || after.version !== identity.package_version)
+                if (!after || after.version !== identity?.package_version)
                     throw new Error('Native plugin version differs from the selected bundle.');
                 if (!this.verifyPackages(after))
                     throw new Error(

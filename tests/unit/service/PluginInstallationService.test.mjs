@@ -289,6 +289,22 @@ for (const host of ['codex', 'claude']) {
         assert.throws(() => f.service.run('status', host), /closed installation record/);
     });
 
+    test(`${host} can inspect and remove its owned registration without reading current bundle identity`, (t) => {
+        const f = fixture(t, host);
+        f.service.run('install', host, true);
+        f.service.identity = () => {
+            throw new Error('Current distribution identity is unavailable');
+        };
+        const status = f.service.run('status', host);
+        assert.equal(status.cache_intact, true);
+        assert.equal(status.version, null);
+        assert.deepEqual(status.commands, []);
+        assert.equal(f.service.run('recover', host).status, 'manual-required');
+        assert.equal(f.service.run('uninstall', host, true).installed, false);
+        assert.equal(f.state.nativeState(host), null);
+        assert.equal(f.service.run('uninstall', host, true).status, 'absent');
+    });
+
     test(`${host} status reports a cache link outside its host as a conflict without reading the target`, (t) => {
         const f = fixture(t, host);
         f.service.run('install', host, true);

@@ -119,7 +119,9 @@ client: `skills recover --strategy plugin --host ...` reports manual reconciliat
 and never treats that as a completed rollback. Native status checks the recorded
 cache; it labels live host status as not probed. Installation/byte observations do
 not establish hook/MCP activation or provider behavior. Missing or unsafe cache
-paths return a JSON conflict; invalid receipt schemas still fail validation. See
+paths return a JSON conflict; invalid receipt schemas still fail validation.
+Native status, removal and recovery do not load the running bundle identity;
+their output leaves that uninspected version null. See
 [native lifecycle evidence](https://github.com/i-9-ai/skills/wiki/Native-Plugin-Pilot).
 
 Native command references: [OpenAI marketplace setup](https://developers.openai.com/plugins/build/plugins#add-a-marketplace-from-the-cli),
