@@ -54,7 +54,10 @@ npx @i-9.ai/skills skills recover --project ./consumer --strategy skills
 npx @i-9.ai/skills skills recover --project ./consumer --strategy skills --write
 ```
 
-Recovery restores verified preimages from an interrupted transaction. It also
+An active pending transaction is published only after all candidates have been
+staged and verified. Earlier staging failures retain an inert journal and leave
+the installed receipt/packages unchanged; a fresh attempt is allowed.
+Recovery restores verified preimages from an interrupted transaction and
 handles a stopped owner lock before/after journal publication. A live owner or
 post-interruption consumer edits block recovery. A missing replacement whose
 candidate has already been published is ambiguous with consumer deletion and

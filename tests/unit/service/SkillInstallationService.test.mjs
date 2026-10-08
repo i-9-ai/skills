@@ -211,6 +211,47 @@ test('deleted published replacements block recovery before recreating content or
     assert.deepEqual(readFileSync(join(f.configuration.state, 'pending.json')), pending);
 });
 
+for (const interruptedFile of [1, 3])
+    test(`staging interruption after file ${interruptedFile} keeps complete prior packages and exposes no pending mutation`, (t) => {
+        let stop = false;
+        let files = 0;
+        const f = fixture(t, (phase) => {
+            if (stop && phase === 'candidate-file' && ++files === interruptedFile)
+                throw new Error('Interrupted staging');
+        });
+        f.service.run('install', true);
+        const before = f.repository.receipt();
+        f.put('alpha', 'replacement');
+        f.put('bravo', 'replacement');
+        stop = true;
+        assert.throws(() => f.service.run('upgrade', true), /Interrupted staging/);
+        assert.equal(f.repository.pending(), null);
+        assert.deepEqual(f.repository.receipt(), before);
+        for (const item of before.packages)
+            assert.equal(f.repository.actual(item.name).sha256, item.sha256);
+        assert.equal(f.service.run('recover', true).written, false);
+    });
+
+test('a source read failure during partial staging preserves the installed receipt and permits a fresh retry', (t) => {
+    const f = fixture(t);
+    f.service.run('install', true);
+    const before = f.repository.receipt();
+    f.put('alpha', 'replacement');
+    const bytes = f.bundle.bytes.bind(f.bundle);
+    let reads = 0;
+    f.bundle.bytes = (name, path) => {
+        if (++reads === 2) throw new Error('Source read failed');
+        return bytes(name, path);
+    };
+    assert.throws(() => f.service.run('upgrade', true), /Source read failed/);
+    assert.equal(f.repository.pending(), null);
+    assert.deepEqual(f.repository.receipt(), before);
+    for (const item of before.packages)
+        assert.equal(f.repository.actual(item.name).sha256, item.sha256);
+    f.bundle.bytes = bytes;
+    assert.equal(f.service.run('upgrade', true).written, true);
+});
+
 test('new installation interruption withdraws only its new owned packages on recovery', (t) => {
     const f = fixture(t, (phase) => {
         if (phase === 'published') throw new Error('Interrupted');

@@ -222,7 +222,6 @@ export class SkillInstallationRepository {
             flag: 'wx',
             mode: 0o600,
         });
-        this.publish('pending.json', journal);
         for (const operation of journal.operations) {
             if (!operation.after) continue;
             const target = join(transaction, 'candidate', operation.name);
@@ -237,10 +236,12 @@ export class SkillInstallationRepository {
                 if (bytes.length !== entry.bytes || installationDigest(bytes) !== entry.sha256)
                     throw new Error('Bundled package changed during staging.');
                 writeFileSync(path, bytes, { flag: 'wx', mode: entry.executable ? 0o700 : 0o600 });
+                this.checkpoint('candidate-file');
             }
             if (this.inventory.inventory(target, operation.name).sha256 !== operation.after.sha256)
                 throw new Error('Staged installation inventory differs.');
         }
+        this.publish('pending.json', journal);
         this.checkpoint('staged');
         this.directory(this.configuration.skills, true);
         for (const operation of journal.operations) {

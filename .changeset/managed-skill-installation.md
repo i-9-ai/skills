@@ -13,3 +13,5 @@ Offer `auto`, portable-skills and native-plugin strategies with explicit Codex/C
 Claude marketplace refresh uses the documented update command at the registered ref. Changing an owned Codex or Claude source pin requires native settings review and returns manual guidance before dispatch; the manager does not remove shared marketplaces or silently adopt changed cache bytes.
 
 Retain separate marketplace ownership across native uninstall/reinstall and require Claude `--keep-data` for persistent data preservation. Native status without an installation is explicitly absent. Honor Windows `PATHEXT` for discovery, while unsupported batch/script execution stays manual. Recovery refuses ambiguous deletion of a published replacement before restoring any package.
+
+Publish the pending transaction only after complete verified staging, so first-file, mid-stage and source-read failures preserve the installed state and allow a fresh retry without treating incomplete candidates as deleted published packages.
