@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { mkdtempSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { PluginInstallationClientRepository } from '../../../src/repository/PluginInstallationClientRepository.ts';
@@ -105,4 +105,28 @@ test('Claude capability probing refuses removal when keep-data is unsupported', 
         ]),
         false,
     );
+});
+
+test('Claude cache confinement follows the configured state root and explicit cache override precedence', (t) => {
+    const root = realpathSync(mkdtempSync(join(tmpdir(), 'i9-claude-config-cache-')));
+    t.after(() => rmSync(root, { recursive: true, force: true }));
+    const configured = join(root, 'configured-claude');
+    const selected = join(configured, 'plugins/cache/market/plugin/1');
+    const override = join(root, 'explicit-cache');
+    const overridden = join(override, 'cache/market/plugin/1');
+    mkdirSync(selected, { recursive: true });
+    mkdirSync(overridden, { recursive: true });
+    const client = new PluginInstallationClientRepository({
+        HOME: root,
+        CLAUDE_CONFIG_DIR: configured,
+    });
+    assert.equal(client.cachePath(selected, 'claude'), realpathSync(selected));
+    assert.throws(() => client.cachePath(overridden, 'claude'), /escapes/);
+    const explicit = new PluginInstallationClientRepository({
+        HOME: root,
+        CLAUDE_CONFIG_DIR: configured,
+        CLAUDE_CODE_PLUGIN_CACHE_DIR: override,
+    });
+    assert.equal(explicit.cachePath(overridden, 'claude'), realpathSync(overridden));
+    assert.throws(() => explicit.cachePath(selected, 'claude'), /escapes/);
 });

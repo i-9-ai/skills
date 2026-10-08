@@ -215,7 +215,10 @@ export class PluginInstallationClientRepository {
                 ? join(this.environment.CODEX_HOME ?? join(home, '.codex'), 'plugins/cache')
                 : join(
                       this.environment.CLAUDE_CODE_PLUGIN_CACHE_DIR ??
-                          join(home, '.claude/plugins'),
+                          join(
+                              this.environment.CLAUDE_CONFIG_DIR ?? join(home, '.claude'),
+                              'plugins',
+                          ),
                       'cache',
                   );
         const canonical = realpathSync(locator);

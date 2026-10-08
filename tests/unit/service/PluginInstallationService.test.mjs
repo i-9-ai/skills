@@ -319,7 +319,8 @@ for (const host of ['codex', 'claude']) {
         assert.equal(status.cache_intact, true);
         assert.equal(status.version, null);
         assert.deepEqual(status.commands, []);
-        assert.equal(f.service.run('recover', host).status, 'manual-required');
+        assert.equal(f.service.run('recover', host).status, 'unchanged');
+        assert.equal(f.service.run('recover', host, true).written, false);
         assert.equal(f.service.run('uninstall', host, true).installed, false);
         assert.equal(f.state.nativeState(host), null);
         assert.equal(f.service.run('uninstall', host, true).status, 'absent');
