@@ -54,6 +54,12 @@ npx @i-9.ai/skills skills recover --project ./consumer --strategy skills
 npx @i-9.ai/skills skills recover --project ./consumer --strategy skills --write
 ```
 
+The recovery preview checks the retained journal, preimages, candidates and
+current bytes without writing. It returns `planned` with `restorations` and
+`withdrawals`, or `conflict` with diagnostics. Verification covers every owned
+package in the before receipt, including unchanged names outside the transaction's
+operation list. Consumer edits to any such package block the entire restore.
+
 An active pending transaction is published only after all candidates have been
 staged and verified. Earlier staging failures retain an inert journal and leave
 the installed receipt/packages unchanged; a fresh attempt is allowed.
@@ -137,6 +143,13 @@ paths return a JSON conflict; invalid receipt schemas still fail validation.
 Native status, removal and recovery do not load the running bundle identity;
 their output leaves that uninspected version null. See
 [native lifecycle evidence](https://github.com/i-9-ai/skills/wiki/Native-Plugin-Pilot).
+
+Native recovery with no pending evidence or lock returns an unchanged no-op.
+Pending native operations remain manual; stopped-owner lock cleanup verifies
+ownership before writing. Claude cache confinement follows an explicit
+`CLAUDE_CODE_PLUGIN_CACHE_DIR` first, then `CLAUDE_CONFIG_DIR/plugins`, then the
+ordinary home default, with `cache/` beneath the selected plugins root. See the
+[Claude environment contract](https://code.claude.com/docs/en/env-vars).
 
 Native command references: [OpenAI marketplace setup](https://developers.openai.com/plugins/build/plugins#add-a-marketplace-from-the-cli),
 [Claude marketplace registration and pinning](https://code.claude.com/docs/en/plugins/host-marketplace).

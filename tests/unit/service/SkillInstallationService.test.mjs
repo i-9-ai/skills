@@ -211,6 +211,55 @@ test('deleted published replacements block recovery before recreating content or
     assert.deepEqual(readFileSync(join(f.configuration.state, 'pending.json')), pending);
 });
 
+for (const mutation of ['edit', 'delete'])
+    test(`unchanged owned package ${mutation} blocks both recovery preview and write without restoring another package`, (t) => {
+        let stop = false;
+        const f = fixture(t, (phase) => {
+            if (stop && phase === 'published') throw new Error('Interrupted');
+        });
+        f.service.run('install', true);
+        f.put('alpha', 'replacement');
+        stop = true;
+        assert.throws(() => f.service.run('upgrade', true), /Interrupted/);
+        stop = false;
+        const alpha = readFileSync(join(f.configuration.skills, 'alpha/SKILL.md'));
+        if (mutation === 'edit')
+            writeFileSync(join(f.configuration.skills, 'bravo/SKILL.md'), 'Consumer edit');
+        else rmSync(join(f.configuration.skills, 'bravo'), { recursive: true });
+        const pending = readFileSync(join(f.configuration.state, 'pending.json'));
+        const preview = f.service.run('recover');
+        assert.equal(preview.status, 'conflict');
+        assert.match(preview.conflicts[0].message, /unchanged owned package/);
+        assert.equal(preview.written, false);
+        assert.throws(() => f.service.run('recover', true), /unchanged owned package/);
+        assert.deepEqual(readFileSync(join(f.configuration.skills, 'alpha/SKILL.md')), alpha);
+        assert.deepEqual(readFileSync(join(f.configuration.state, 'pending.json')), pending);
+    });
+
+test('verified recovery preview lists restoration and withdrawal plans without changing files', (t) => {
+    let stop = false;
+    const f = fixture(t, (phase) => {
+        if (stop && phase === 'published') throw new Error('Interrupted');
+    });
+    f.service.run('install', true);
+    f.put('alpha', 'replacement');
+    stop = true;
+    assert.throws(() => f.service.run('upgrade', true), /Interrupted/);
+    stop = false;
+    const pending = readFileSync(join(f.configuration.state, 'pending.json'));
+    const alpha = readFileSync(join(f.configuration.skills, 'alpha/SKILL.md'));
+    const plan = f.service.run('recover');
+    assert.equal(plan.status, 'planned');
+    assert.deepEqual(plan.restorations, ['alpha']);
+    assert.deepEqual(plan.withdrawals, ['alpha']);
+    assert.deepEqual(plan.conflicts, []);
+    assert.deepEqual(readFileSync(join(f.configuration.skills, 'alpha/SKILL.md')), alpha);
+    assert.deepEqual(readFileSync(join(f.configuration.state, 'pending.json')), pending);
+    const transaction = join(f.configuration.state, 'transaction', f.repository.pending().id);
+    writeFileSync(join(transaction, 'previous/alpha/SKILL.md'), 'Changed preimage');
+    assert.equal(f.service.run('recover').status, 'conflict');
+});
+
 for (const interruptedFile of [1, 3])
     test(`staging interruption after file ${interruptedFile} keeps complete prior packages and exposes no pending mutation`, (t) => {
         let stop = false;

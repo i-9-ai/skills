@@ -278,7 +278,8 @@ export class SkillInstallationRepository {
         return transaction;
     }
 
-    recover(journal: SkillInstallationJournal) {
+    inspectRecovery(journal: SkillInstallationJournal) {
+        this.validator.journal(journal, this.configuration.root, this.configuration.scope);
         const transaction = join(this.configuration.state, 'transaction', journal.id);
         if (!this.directory(transaction)) throw new Error('Recovery transaction is missing.');
         const root = new SafeRoot(transaction);
@@ -302,6 +303,11 @@ export class SkillInstallationRepository {
             )
         )
             throw new Error('Receipt changed after the interrupted installation.');
+        const changed = new Set(journal.operations.map((operation) => operation.name));
+        for (const item of journal.before?.packages ?? []) {
+            if (!changed.has(item.name) && this.actual(item.name)?.sha256 !== item.sha256)
+                throw new Error('Consumer edits to an unchanged owned package block recovery.');
+        }
         const states = journal.operations.map((operation) => {
             const current = this.actual(operation.name);
             const previousPath = join(transaction, 'previous', operation.name);
@@ -343,6 +349,11 @@ export class SkillInstallationRepository {
                 );
             return { operation, current, previous, previousPath, withdrawn };
         });
+        return { transaction, states };
+    }
+
+    recover(journal: SkillInstallationJournal) {
+        const { transaction, states } = this.inspectRecovery(journal);
         for (const row of states.reverse()) {
             if (row.current && row.current.sha256 !== row.operation.before?.sha256)
                 renameSync(join(this.configuration.skills, row.operation.name), row.withdrawn);

@@ -143,6 +143,33 @@ export class PluginInstallationService {
             native_activation: 'not-observed',
             available_clients: available,
         };
+        if (operation === 'recover' && !pending) {
+            const pendingHosts = (['codex', 'claude'] as const).filter((name) =>
+                this.state.nativeState(name, true),
+            );
+            if (pendingHosts.length)
+                return {
+                    ...result,
+                    status: 'manual-required',
+                    pending: true,
+                    pending_hosts: pendingHosts,
+                    message:
+                        'Native recovery evidence exists in this shared scope. Reconcile the recorded host operation before treating recovery as empty.',
+                };
+            if (!this.state.hasLock()) return { ...result, status: 'unchanged' };
+            if (!write) return { ...result, status: 'preview', pending_lock: true };
+            return this.state.locked(() => {
+                if (
+                    this.state.pending() ||
+                    this.state.nativeState('codex', true) ||
+                    this.state.nativeState('claude', true)
+                )
+                    throw new Error(
+                        'Installation recovery state changed before clearing the lock.',
+                    );
+                return { ...result, status: 'observed', written: true, recovered_lock: true };
+            }, true);
+        }
         if (operation === 'recover')
             return {
                 ...result,

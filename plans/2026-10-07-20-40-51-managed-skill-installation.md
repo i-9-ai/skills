@@ -75,6 +75,13 @@ to reject an ambiguously deleted published replacement before restoring anything
 
 ## Acceptance, authority and rollback
 
+Post-merge diagnostics follow-up: honor CLAUDE_CONFIG_DIR beneath the explicit
+cache override, make empty native recovery idempotent, verify unchanged owned
+packages before restoration, and use one non-mutating recovery inspection for
+both preview and write. Disposable regressions, source/tarball checks, patch
+Changeset and independent exact-head review remain required; original review
+threads are reconciled in the focused follow-up PR before publication.
+
 The issue's seven acceptance criteria remain the delivery checklist. Run explicit
 `npm ci`, Node24 `npm run check`, `npm run package:check`, Changeset status and
 `git diff --check`; required official CI must match the reviewed head.

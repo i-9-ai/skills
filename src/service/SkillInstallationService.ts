@@ -152,17 +152,42 @@ export class SkillInstallationService {
 
     private recover(write: boolean) {
         const pending = this.repository.pending();
+        let plan: ReturnType<SkillInstallationRepository['inspectRecovery']> | null = null;
+        let conflict: string | null = null;
+        if (pending) {
+            try {
+                plan = this.repository.inspectRecovery(pending);
+            } catch (error) {
+                conflict =
+                    error instanceof Error
+                        ? error.message
+                        : 'Recovery evidence verification failed.';
+            }
+        }
         const result = {
             schema_version: 1,
             operation: 'recover',
             pending_transaction: pending?.id ?? null,
             written: false,
+            status: pending ? (conflict ? 'conflict' : 'planned') : 'unchanged',
+            restorations:
+                plan?.states.filter((row) => row.previous).map((row) => row.operation.name) ?? [],
+            withdrawals:
+                plan?.states
+                    .filter(
+                        (row) => row.current && row.current.sha256 !== row.operation.before?.sha256,
+                    )
+                    .map((row) => row.operation.name) ?? [],
+            conflicts: conflict
+                ? [{ reason: 'recovery-verification-failed', message: conflict }]
+                : [],
         };
         if (!write) return result;
+        if (conflict) throw new Error(conflict);
         if (!pending) {
             if (!this.repository.hasLock()) return result;
             return this.repository.locked(
-                () => ({ ...result, written: true, recovered_lock: true }),
+                () => ({ ...result, status: 'observed', written: true, recovered_lock: true }),
                 true,
             );
         }
@@ -171,6 +196,6 @@ export class SkillInstallationService {
                 throw new Error('Recovery journal changed.');
             return this.repository.recover(pending);
         }, true);
-        return { ...result, written: true, recovery };
+        return { ...result, status: 'observed', written: true, recovery };
     }
 }
