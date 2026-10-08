@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { spawnSync } from 'node:child_process';
 import { lstatSync, mkdirSync, realpathSync, symlinkSync, writeFileSync } from 'node:fs';
-import { delimiter, isAbsolute, join, relative, sep } from 'node:path';
+import { delimiter, extname, isAbsolute, join, relative, sep } from 'node:path';
 import { homedir } from 'node:os';
 import { SafeRoot } from '../../.agents/skills/skill-authoring/scripts/lib/filesystem.mjs';
 import { strictJson } from '../../.agents/skills/skills-catalog/scripts/catalog_tools.mjs';
@@ -18,26 +18,49 @@ export interface InstalledPluginObservation {
 /** Fixed native commands; no shell, arbitrary plugin selector, provider call or installer download. */
 export class PluginInstallationClientRepository {
     readonly environment: NodeJS.ProcessEnv;
-    constructor(environment = process.env) {
+    readonly platform: string;
+    constructor(environment = process.env, platform: string = process.platform) {
         this.environment = environment;
+        this.platform = platform;
     }
 
     detect(host: InstallationHost): string | null {
-        for (const directory of (this.environment.PATH ?? '').split(delimiter)) {
+        const windows = this.platform === 'win32';
+        const extensions = windows
+            ? [
+                  ...new Set(
+                      (this.environment.PATHEXT ?? '.COM;.EXE;.BAT;.CMD')
+                          .split(';')
+                          .filter((value) => /^\.[a-z0-9]+$/i.test(value))
+                          .flatMap((value) => [value.toUpperCase(), value.toLowerCase()]),
+                  ),
+                  '',
+              ]
+            : [''];
+        for (const directory of (this.environment.PATH ?? '').split(windows ? ';' : delimiter)) {
             if (!isAbsolute(directory)) continue;
-            const path = join(directory, host);
-            try {
-                const canonical = realpathSync(path);
-                const info = lstatSync(canonical);
-                if (info.isFile() && Boolean(info.mode & 0o111)) return canonical;
-            } catch {
-                /* A missing PATH entry is not an installation request. */
+            for (const extension of extensions) {
+                const path = join(directory, host + extension);
+                try {
+                    const canonical = realpathSync(path);
+                    const info = lstatSync(canonical);
+                    if (info.isFile() && (windows || Boolean(info.mode & 0o111))) return canonical;
+                } catch {
+                    /* A missing PATH entry is not an installation request. */
+                }
             }
         }
         return null;
     }
 
     execute(executable: string, args: string[], cwd: string): string {
+        if (
+            this.platform === 'win32' &&
+            !['', '.exe', '.com'].includes(extname(executable).toLowerCase())
+        )
+            throw new Error(
+                'Native batch/script launchers require manual setup; this adapter does not introduce a command shell.',
+            );
         const result = spawnSync(executable, args, {
             cwd,
             env: this.environment,
@@ -79,13 +102,41 @@ export class PluginInstallationClientRepository {
     }
 
     marketplaceExists(executable: string, host: InstallationHost, cwd: string): boolean {
+        return this.marketplaceRows(executable, host, cwd).some(
+            (row) => row && typeof row === 'object' && row.name === 'i9-skills',
+        );
+    }
+
+    claudeMarketplaceMatches(executable: string, cwd: string, revision: string): boolean {
+        const rows = this.marketplaceRows(executable, 'claude', cwd).filter(
+            (row) => row && typeof row === 'object' && row.name === 'i9-skills',
+        );
+        if (rows.length !== 1) return false;
+        const row = rows[0];
+        return (
+            row.ref === revision &&
+            ((row.source === 'github' && row.repo === 'i-9-ai/skills') ||
+                (row.source === 'git' &&
+                    typeof row.url === 'string' &&
+                    [
+                        'https://github.com/i-9-ai/skills',
+                        'https://github.com/i-9-ai/skills.git',
+                    ].includes(row.url)))
+        );
+    }
+
+    private marketplaceRows(
+        executable: string,
+        host: InstallationHost,
+        cwd: string,
+    ): Record<string, unknown>[] {
         const raw = strictJson(
             Buffer.from(this.execute(executable, ['plugin', 'marketplace', 'list', '--json'], cwd)),
         );
         const rows = host === 'codex' ? (raw as { marketplaces?: unknown }).marketplaces : raw;
         if (!Array.isArray(rows) || rows.length > 1024)
             throw new Error('Unsupported native marketplace-list contract.');
-        return rows.some((row) => row && typeof row === 'object' && row.name === 'i9-skills');
+        return rows;
     }
 
     observe(

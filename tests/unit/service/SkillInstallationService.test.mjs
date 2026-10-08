@@ -192,6 +192,25 @@ for (const phase of ['staged', 'withdrawn', 'published', 'receipt']) {
     });
 }
 
+test('deleted published replacements block recovery before recreating content or changing other packages', (t) => {
+    let stop = false;
+    const f = fixture(t, (phase) => {
+        if (stop && phase === 'published') throw new Error('Interrupted');
+    });
+    f.service.run('install', true);
+    f.put('alpha', 'replacement');
+    stop = true;
+    assert.throws(() => f.service.run('upgrade', true), /Interrupted/);
+    stop = false;
+    const pending = readFileSync(join(f.configuration.state, 'pending.json'));
+    const bravo = readFileSync(join(f.configuration.skills, 'bravo/SKILL.md'));
+    rmSync(join(f.configuration.skills, 'alpha'), { recursive: true });
+    assert.throws(() => f.service.run('recover', true), /consumer deletion blocks recovery/);
+    assert.equal(existsSync(join(f.configuration.skills, 'alpha')), false);
+    assert.deepEqual(readFileSync(join(f.configuration.skills, 'bravo/SKILL.md')), bravo);
+    assert.deepEqual(readFileSync(join(f.configuration.state, 'pending.json')), pending);
+});
+
 test('new installation interruption withdraws only its new owned packages on recovery', (t) => {
     const f = fixture(t, (phase) => {
         if (phase === 'published') throw new Error('Interrupted');

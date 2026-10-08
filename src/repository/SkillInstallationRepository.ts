@@ -99,6 +99,14 @@ export class SkillInstallationRepository {
         return this.json(`native-${host}${pending ? '-pending' : ''}.json`);
     }
 
+    marketplaceState(host: 'codex' | 'claude'): unknown | null {
+        return this.json(`native-${host}-marketplace.json`);
+    }
+
+    publishMarketplace(host: 'codex' | 'claude', value: unknown) {
+        this.publish(`native-${host}-marketplace.json`, value);
+    }
+
     publishNative(host: 'codex' | 'claude', value: unknown, pending = false) {
         this.publish(`native-${host}${pending ? '-pending' : ''}.json`, value);
     }
@@ -312,7 +320,8 @@ export class SkillInstallationRepository {
             if (previous && current?.sha256 === operation.before?.sha256)
                 throw new Error('Ambiguous duplicate recovery preimages.');
             const withdrawn = join(transaction, 'withdrawn', operation.name);
-            if (this.directory(withdrawn)) {
+            const hasWithdrawn = this.directory(withdrawn);
+            if (hasWithdrawn) {
                 if (
                     this.inventory.inventory(withdrawn, operation.name).sha256 !==
                     operation.after?.sha256
@@ -321,6 +330,16 @@ export class SkillInstallationRepository {
                 if (current?.sha256 === operation.after?.sha256)
                     throw new Error('Ambiguous duplicate withdrawn bytes.');
             }
+            const candidatePath = join(transaction, 'candidate', operation.name);
+            const candidate = this.directory(candidatePath)
+                ? this.inventory.inventory(candidatePath, operation.name)
+                : null;
+            if (candidate && candidate.sha256 !== operation.after?.sha256)
+                throw new Error('Retained candidate changed.');
+            if (!current && operation.after && !candidate && !hasWithdrawn)
+                throw new Error(
+                    'Missing published package or ambiguous consumer deletion blocks recovery.',
+                );
             return { operation, current, previous, previousPath, withdrawn };
         });
         for (const row of states.reverse()) {

@@ -56,7 +56,10 @@ npx @i-9.ai/skills skills recover --project ./consumer --strategy skills --write
 
 Recovery restores verified preimages from an interrupted transaction. It also
 handles a stopped owner lock before/after journal publication. A live owner or
-post-interruption consumer edits block recovery. A second interrupted recovery
+post-interruption consumer edits block recovery. A missing replacement whose
+candidate has already been published is ambiguous with consumer deletion and
+blocks restoration; verified retained candidates/withdrawn bytes distinguish
+supported interrupted phases. A second interrupted recovery
 can resume. Receipts and journals have the same fixed 4 MiB admission/read bound;
 metadata overflow is refused before installation writes. Each package has at most
 2,048 entries, 4 MiB per ordinary file and 32 MiB in total; bundles have at most
@@ -89,14 +92,18 @@ without widening scope. Claude scopes both marketplace and plugin operations to
 the requested user or project scope on initial installation. Refreshes use
 `claude plugin marketplace update i9-skills` before a scoped plugin update;
 that refresh uses the registered ref and has no scope/ref replacement flag.
-Changing an owned Claude source pin therefore returns manual guidance before
-dispatch. Repeat marketplace add cannot change it. The adapter preserves the
+Changing an owned source pin for either Codex or Claude returns manual guidance
+before dispatch. Repeat marketplace add cannot replace the registered source.
+The adapter preserves the
 registration rather than removing a marketplace and its unrelated plugins/data.
 After native source changes, continue managing that transition with the native
 client; changed cache bytes are not silently adopted. For ongoing CLI-managed
 upgrades, explicitly uninstall the owned native plugin before selecting the
 portable strategy. Unsupported/missing clients return manual
 steps and a nonzero exit for an unfulfilled write request. No client is downloaded.
+Windows discovery honors `PATHEXT` without requiring POSIX execute bits. Native
+executable contracts remain preflighted; detected batch/script launchers return
+manual guidance because this adapter does not introduce a command shell.
 
 Native registrations are tracked separately under the same private installation
 state. The adapter records the native response, requested revision and complete
@@ -111,7 +118,11 @@ It refuses adoption of an existing unowned plugin, changed cache
 bytes or client selection, and duplicate loose/managed plugin routes. A disabled
 plugin requires native UI review for either install or upgrade instead of implicitly re-enabling it.
 Removing the owned plugin preserves its marketplace registration and unrelated
-plugins. Native cache preimages are retained before upgrade/removal.
+plugins. A separate closed marketplace ownership record survives removal so the
+same verified registration can be reused for reinstall; unowned or changed
+registrations remain blocked. Claude removal requires `--keep-data`, preserving
+its persistent data directory; owned options/settings remain governed by the
+native client. Native cache preimages are retained before upgrade/removal.
 
 After a failed native operation, its bounded pending record includes completed
 commands and retained preimages. Native settings and rollback belong to the host
@@ -128,6 +139,8 @@ Native command references: [OpenAI marketplace setup](https://developers.openai.
 [Claude marketplace registration and pinning](https://code.claude.com/docs/en/plugins/host-marketplace).
 The [Claude marketplace command contract](https://code.claude.com/docs/en/plugins/cli-reference#plugin-marketplace-update)
 explains refresh versus source-pin replacement.
+See also [Codex source-registration handling](https://github.com/openai/codex/blob/main/codex-rs/core-plugins/src/marketplace_add.rs)
+and [Claude uninstall data handling](https://code.claude.com/docs/en/plugins/cli-reference#what-an-uninstall-deletes-and-keeps).
 
 ## Entry paths
 

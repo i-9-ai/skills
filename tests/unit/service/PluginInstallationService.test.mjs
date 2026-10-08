@@ -43,6 +43,8 @@ function fixture(t, host, global = true, realBundle = false) {
     let supported = true;
     let enabled = true;
     let marketplace = false;
+    let marketplaceRef = null;
+    const data = join(home, `.${host}/plugins/data/i9-skills`);
     let resource = null;
     let keepCache = false;
     const desiredResource = () => resource ?? `Inert resource ${version}\n`;
@@ -71,7 +73,14 @@ function fixture(t, host, global = true, realBundle = false) {
                 host === 'codex'
                     ? { marketplaces: marketplace ? [{ name: 'i9-skills', root }] : [] }
                     : marketplace
-                      ? [{ name: 'i9-skills' }]
+                      ? [
+                            {
+                                name: 'i9-skills',
+                                source: 'git',
+                                url: 'https://github.com/i-9-ai/skills.git',
+                                ref: marketplaceRef,
+                            },
+                        ]
                       : [],
             );
         if (args[1] === 'list') {
@@ -109,9 +118,20 @@ function fixture(t, host, global = true, realBundle = false) {
         }
         calls.push(args);
         if (fail) throw new Error('Synthetic native refusal');
-        if (args[1] === 'marketplace' && args[2] === 'add') marketplace = true;
+        if (args[1] === 'marketplace' && args[2] === 'add') {
+            const requested =
+                host === 'codex' ? args[args.indexOf('--ref') + 1] : args[3].split('#').at(-1);
+            if (marketplace && requested !== marketplaceRef)
+                throw new Error('Synthetic native source-pin replacement refusal');
+            marketplace = true;
+            marketplaceRef = requested;
+        }
         if (['add', 'install', 'update'].includes(args[1]) && !keepCache) seed();
-        if (['remove', 'uninstall'].includes(args[1])) current = null;
+        if (['remove', 'uninstall'].includes(args[1])) {
+            current = null;
+            if (host === 'claude' && !args.includes('--keep-data'))
+                rmSync(data, { recursive: true, force: true });
+        }
         return '{}';
     };
     const service = new PluginInstallationService(
@@ -133,6 +153,7 @@ function fixture(t, host, global = true, realBundle = false) {
         state,
         service,
         calls,
+        data,
         seed,
         current: () => current,
         fail: (value) => {
@@ -175,7 +196,7 @@ for (const host of ['codex', 'claude']) {
         assert.equal(f.service.run('install', host, true).status, 'unchanged');
         const before = f.calls.length;
         f.version('2.0.0');
-        if (host === 'claude') f.revision('a'.repeat(40));
+        f.revision('a'.repeat(40));
         assert.equal(f.service.run('upgrade', host, true).installed_version, '2.0.0');
         assert.equal(f.calls.length, before + 2);
         if (host === 'claude')
@@ -189,6 +210,9 @@ for (const host of ['codex', 'claude']) {
         );
         assert.equal(existsSync(join(f.configuration.state, 'native-preimage')), true);
         assert.equal(f.service.run('uninstall', host, true).status, 'absent');
+        assert.equal(f.service.run('status', host).status, 'absent');
+        assert.equal(f.service.run('status', host).marketplace_owned, true);
+        assert.equal(f.service.run('install', host, true).written, true);
     });
 
     test(`${host} does not adopt unowned plugins or overwrite cache customizations`, (t) => {
@@ -204,7 +228,7 @@ for (const host of ['codex', 'claude']) {
         writeFileSync(join(f.current().path, 'resource.md'), 'Local customization');
         const calls = f.calls.length;
         f.version('2.0.0');
-        if (host === 'claude') f.revision('a'.repeat(40));
+        f.revision('a'.repeat(40));
         assert.throws(() => f.service.run('upgrade', host, true), /bytes or client changed/);
         assert.equal(f.calls.length, calls);
         assert.equal(
@@ -217,7 +241,7 @@ for (const host of ['codex', 'claude']) {
         const f = fixture(t, host);
         f.service.run('install', host, true);
         f.version('2.0.0');
-        if (host === 'claude') f.revision('a'.repeat(40));
+        f.revision('a'.repeat(40));
         f.fail(true);
         assert.throws(() => f.service.run('upgrade', host, true), /Synthetic native refusal/);
         const pending = f.state.nativeState(host, true);
@@ -254,7 +278,7 @@ for (const host of ['codex', 'claude']) {
         const before = f.state.nativeState(host);
         f.source('New selected source at the same version\n');
         f.keepCache(true);
-        if (host === 'claude') {
+        {
             const calls = f.calls.length;
             const result = f.service.run('upgrade', host, true);
             assert.equal(result.status, 'manual-required');
@@ -264,10 +288,6 @@ for (const host of ['codex', 'claude']) {
             assert.ok(
                 result.manual_steps.some((step) => step.includes('do not remove the marketplace')),
             );
-        } else {
-            assert.throws(() => f.service.run('upgrade', host, true), /package bytes differ/);
-            assert.equal(f.state.nativeState(host, true).requested_revision, 'b'.repeat(40));
-            assert.equal(f.service.run('recover', host, true).status, 'manual-required');
         }
         assert.deepEqual(f.state.nativeState(host), before);
         assert.equal(before.requested_revision, 'a'.repeat(40));
@@ -322,6 +342,29 @@ for (const host of ['codex', 'claude']) {
         assert.equal(readFileSync(join(foreign, 'sentinel'), 'utf8'), 'Unrelated bytes');
     });
 }
+
+test('Claude removal preserves persistent data through the native keep-data flag', (t) => {
+    const f = fixture(t, 'claude');
+    f.service.run('install', 'claude', true);
+    mkdirSync(f.data, { recursive: true });
+    writeFileSync(join(f.data, 'evidence'), 'Inert persistent data');
+    f.service.run('uninstall', 'claude', true);
+    assert.ok(f.calls.at(-1).includes('--keep-data'));
+    assert.equal(readFileSync(join(f.data, 'evidence'), 'utf8'), 'Inert persistent data');
+});
+
+test('native status without ownership is absent and does not launch a client', (t) => {
+    for (const host of ['codex', 'claude']) {
+        const f = fixture(t, host);
+        f.clients.execute = () => {
+            throw new Error('Status must not launch a client');
+        };
+        const result = f.service.run('status', host);
+        assert.equal(result.status, 'absent');
+        assert.equal(result.installed, false);
+        assert.equal(result.marketplace_owned, false);
+    }
+});
 
 test('Claude source-pin replacement returns manual steps before launching any client or changing ownership', (t) => {
     const f = fixture(t, 'claude');
@@ -402,6 +445,7 @@ for (const operation of ['install', 'upgrade'])
         f.service.run('install', 'codex', true);
         const before = f.calls.length;
         f.version('2.0.0');
+        f.revision('a'.repeat(40));
         assert.equal(f.service.run(operation, 'codex', true).status, 'manual-required');
         assert.equal(f.calls.length, before);
     });

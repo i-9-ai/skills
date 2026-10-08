@@ -42,7 +42,10 @@ export class ManagedSkillInstallationService {
             };
         if (flags.strategy === 'auto') {
             const managed = (['codex', 'claude'] as const).filter(
-                (host) => state.nativeState(host) || state.nativeState(host, true),
+                (host) =>
+                    state.nativeState(host) ||
+                    state.nativeState(host, true) ||
+                    state.marketplaceState(host),
             );
             if (managed.length === 1)
                 return new PluginInstallationService(configuration, clients).run(

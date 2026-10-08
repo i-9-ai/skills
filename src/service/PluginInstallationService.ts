@@ -23,6 +23,10 @@ interface NativeInstallationRecord {
     observation: InstalledPluginObservation;
 }
 
+type NativeMarketplaceRecord = Omit<NativeInstallationRecord, 'observation'> & {
+    source: 'https://github.com/i-9-ai/skills.git';
+};
+
 /** Native hosts own activation and configuration; verified cache observations guard our registrations. */
 export class PluginInstallationService {
     readonly configuration: SkillInstallationConfiguration;
@@ -71,11 +75,13 @@ export class PluginInstallationService {
             };
         const executable = this.clients.detect(selected);
         const before = this.record(selected);
+        const marketplace = this.marketplace(selected);
+        const ownedSource = before ?? marketplace;
         const identity =
             operation === 'install' || operation === 'upgrade' ? this.identity() : null;
         const revision = identity
             ? (identity.resolved_git_sha ?? `v${identity.package_version}`)
-            : (before?.requested_revision ?? 'unselected');
+            : (ownedSource?.requested_revision ?? 'unselected');
         const scope = this.configuration.scope === 'global' ? 'user' : 'project';
         const source = 'https://github.com/i-9-ai/skills.git';
         const commands =
@@ -89,9 +95,18 @@ export class PluginInstallationService {
                             ['plugin', 'add', 'i9-skills@i9-skills', '--json'],
                         ]
                   : operation === 'uninstall'
-                    ? [['plugin', 'uninstall', 'i9-skills@i9-skills', '--scope', scope]]
+                    ? [
+                          [
+                              'plugin',
+                              'uninstall',
+                              'i9-skills@i9-skills',
+                              '--scope',
+                              scope,
+                              '--keep-data',
+                          ],
+                      ]
                     : [
-                          before
+                          ownedSource
                               ? ['plugin', 'marketplace', 'update', 'i9-skills']
                               : [
                                     'plugin',
@@ -120,6 +135,7 @@ export class PluginInstallationService {
             version: identity?.package_version ?? null,
             installed_version: before?.observation.version ?? null,
             installed: Boolean(before),
+            marketplace_owned: Boolean(ownedSource),
             written: false,
             commands,
             pending: Boolean(pending),
@@ -149,24 +165,19 @@ export class PluginInstallationService {
             return {
                 ...result,
                 cache_intact: intact,
-                status: intact === false ? 'conflict' : 'recorded',
+                status: before ? (intact === false ? 'conflict' : 'recorded') : 'absent',
                 native_status: 'not-probed',
             };
         }
-        if (
-            selected === 'claude' &&
-            operation !== 'uninstall' &&
-            before &&
-            before.requested_revision !== revision
-        )
+        if (operation !== 'uninstall' && ownedSource && ownedSource.requested_revision !== revision)
             return {
                 ...result,
                 status: 'manual-required',
                 message:
-                    'Claude marketplace update refreshes the registered pin; repeat add cannot replace it. A different source revision requires native settings review before any command is dispatched.',
+                    'The selected native client cannot replace this registered source pin through repeat add or refresh. Review a different source revision through native settings before any command is dispatched.',
                 manual_steps: [
-                    `Review the i9-skills marketplace source ref in the selected ${scope} Claude settings. Preserve other entries and do not remove the marketplace; removal can uninstall unrelated plugins and their data.`,
-                    `Select the intended source revision ${revision} through native settings, then refresh with claude plugin marketplace update i9-skills and update only i9-skills@i9-skills at ${scope} scope.`,
+                    `Review the i9-skills marketplace source ref in the selected ${scope} ${selected} settings. Preserve other entries and do not remove the marketplace; removal can affect unrelated plugins and their data.`,
+                    `Select the intended source revision ${revision} through native settings and update only i9-skills@i9-skills at ${scope} scope using the supported native commands.`,
                     'Continue managing that source transition with the native client. This manager does not silently adopt changed cache bytes or declare the native transition completed.',
                     'For CLI-managed portable upgrades, first explicitly uninstall the owned native plugin, then preview a skills-only installation in the same scope.',
                 ],
@@ -203,15 +214,29 @@ export class PluginInstallationService {
             };
         const observed = this.clients.observe(executable, selected, this.configuration.scope, cwd);
         const marketplaceExists = this.clients.marketplaceExists(executable, selected, cwd);
-        if (operation !== 'uninstall' && !before && !observed && marketplaceExists)
+        if (operation !== 'uninstall' && !before && !marketplace && !observed && marketplaceExists)
             return {
                 ...result,
                 status: 'manual-required',
                 message:
                     'An existing unowned marketplace requires native-client reconciliation; it will not be overwritten.',
             };
-        if (before && !marketplaceExists)
+        if (ownedSource && !marketplaceExists)
             throw new Error('The managed native marketplace is missing.');
+        if (marketplace && marketplace.client !== executable)
+            throw new Error('The managed native marketplace client changed.');
+        if (
+            selected === 'claude' &&
+            ownedSource &&
+            operation !== 'uninstall' &&
+            !this.clients.claudeMarketplaceMatches(executable, cwd, ownedSource.requested_revision)
+        )
+            return {
+                ...result,
+                status: 'manual-required',
+                message:
+                    'The recorded marketplace source no longer matches the native registration. Preserve it and reconcile through the client.',
+            };
         if (!before && observed)
             return {
                 ...result,
@@ -266,6 +291,7 @@ export class PluginInstallationService {
             if (operation !== 'uninstall') this.assertNoLoose();
             if (
                 JSON.stringify(this.record(selected)) !== JSON.stringify(before) ||
+                JSON.stringify(this.marketplace(selected)) !== JSON.stringify(marketplace) ||
                 this.state.nativeState(selected, true)
             )
                 throw new Error('Native ownership state changed.');
@@ -316,6 +342,16 @@ export class PluginInstallationService {
             if (operation === 'uninstall') {
                 if (after)
                     throw new Error('Native plugin remains installed; reconciliation is required.');
+                if (!marketplace && before)
+                    this.state.publishMarketplace(selected, {
+                        schema_version: 1,
+                        host: selected,
+                        root: this.configuration.root,
+                        scope: this.configuration.scope,
+                        client: executable,
+                        requested_revision: before.requested_revision,
+                        source,
+                    } satisfies NativeMarketplaceRecord);
                 this.state.clearNative(selected);
             } else {
                 if (!after || after.version !== identity?.package_version)
@@ -333,6 +369,15 @@ export class PluginInstallationService {
                     requested_revision: revision,
                     observation: after,
                 } satisfies NativeInstallationRecord);
+                this.state.publishMarketplace(selected, {
+                    schema_version: 1,
+                    host: selected,
+                    root: this.configuration.root,
+                    scope: this.configuration.scope,
+                    client: executable,
+                    requested_revision: revision,
+                    source,
+                } satisfies NativeMarketplaceRecord);
             }
             this.state.clearNative(selected, true);
             return {
@@ -398,5 +443,33 @@ export class PluginInstallationService {
         this.state.validator.sha(observation.sha256);
         this.clients.cacheLocator(observation.path);
         return raw as NativeInstallationRecord;
+    }
+
+    private marketplace(host: InstallationHost): NativeMarketplaceRecord | null {
+        const raw = this.state.marketplaceState(host);
+        if (raw === null) return null;
+        const item = this.state.validator.object(raw, [
+            'schema_version',
+            'host',
+            'root',
+            'scope',
+            'client',
+            'requested_revision',
+            'source',
+        ]);
+        if (
+            item.schema_version !== 1 ||
+            item.host !== host ||
+            item.root !== this.configuration.root ||
+            item.scope !== this.configuration.scope ||
+            typeof item.client !== 'string' ||
+            item.source !== 'https://github.com/i-9-ai/skills.git' ||
+            typeof item.requested_revision !== 'string' ||
+            !/^(?:[a-f0-9]{40}|v\d+\.\d+\.\d+(?:-[a-zA-Z0-9.-]+)?)(?![\s\S])/.test(
+                item.requested_revision,
+            )
+        )
+            throw new Error('Invalid native marketplace ownership record.');
+        return raw as NativeMarketplaceRecord;
     }
 }

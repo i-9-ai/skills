@@ -49,9 +49,17 @@ The selected project must exist before managed descendants are created. Removal
 uses owned receipts independently of current bundle admission. Broken native
 caches produce status conflicts while malformed receipts remain rejected.
 Claude refresh uses the documented marketplace-update command at the existing
-pin; the verified CLI cannot replace that pin. A source change therefore returns
+pin; neither verified native client can replace a registered pin through repeat
+add. A source change therefore returns
 manual guidance before dispatch, preserving shared registrations and data rather
 than removing/re-adding a marketplace or inventing a settings writer.
+
+Retain closed marketplace ownership separately from plugin/cache ownership so
+uninstall/reinstall remains convergent without adopting unowned registrations.
+Claude removal requires the supported keep-data flag. Native absence is explicit.
+Windows detection follows PATHEXT; execution stays shell-free, with batch/script
+launchers explicitly manual. Recovery uses retained candidate/withdrawn evidence
+to reject an ambiguously deleted published replacement before restoring anything.
 
 ## Implementation sequence
 
