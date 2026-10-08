@@ -1,5 +1,108 @@
 # Changelog
 
+## 0.4.0
+
+### Minor Changes
+
+- [#97](https://github.com/i-9-ai/skills/pull/97) [`1eb73e8`](https://github.com/i-9-ai/skills/commit/1eb73e86f057e38d714ab9da3388d9c2ee3d0504) Thanks [@coisa](https://github.com/coisa)! - Add `plugin pilot --request <absolute-operator.json> --execute` to prepare and execute explicitly selected Codex/Claude plugin pilot lanes in owned disposable containers. The single CLI retains source/runtime identities and phase journals for A → B → A, loaded package/resource bytes, hooks, MCP and preserved rollback history. Bundled static parsers recheck actual retained records; selected observer code runs only inside the measured container. Codex includes a no-turn absence recipe and bounded RPC/loopback observation. Claude uses fixed init-only and MCP health recipes, with state snapshots before its hook writer; health is not a catalog/resource tool-call proof.
+
+  Claude's native hook/MCP absence gate remains unsupported and blocks its schema-2 lane at baseline, so the operator cannot yet approve a complete two-host lifecycle matrix. Blocked and unattempted phases remain explicit; manual inspection does not silently turn them into automated passes.
+
+  Preservation checks distinguish absent storage from unchanged existing SQLite history and require complete main-file/sidecar witnesses, issued SQL and prior payloads. Native identity proof binds dual live process samples to the worker's actual child; bounded nested deadlines retain shutdown/report time without extending phase authority. Process/socket audits preserve diagnostics and stop on unexpected live activity. Ordinary tests use fake execution; the operator does not download native clients, install into a real user profile, enable telemetry implicitly, perform provider calls or establish skill task quality. Native acceptance remains specific to separately reviewed retained runs.
+
+  Increase only the common observation phase from 45 to 60 seconds to accommodate measured preparation time before selected dispatch. The 40-second native lifetime, selected-child minimum, rescue/report reserves and other process and acceptance bounds remain unchanged. Fake boundary tests cover the correction. Fresh Codex trials reached selected dispatch but exposed a loaded-inventory producer/consumer mismatch and remain failed; full native validation is incomplete, and earlier 45-second failed captures retain their original verdicts.
+
+  Validate loaded-inventory provenance envelopes from both bundled observers instead of comparing their whole documents with a bare inventory. Check complete selected-source and installed inventories, declared Codex alias omissions, and Claude's before/after snapshots, manifest bytes and independent worker inventories. Reject unknown formats and inconsistent or overstated evidence. Actual-producer-to-Driver synthetic tests cover A, B and restored A; they do not regrade prior native failures or establish native acceptance.
+
+  Read complete loaded-inventory envelopes with a fixed 32 MiB bound tied to their verified evidence receipts. Generic request/review JSON remains capped at 1 MiB. No-follow descriptor reads, stable single-link identity and complete digests reject changed files before parsing; source inventory and time limits remain unchanged. This corrects the producer/consumer size mismatch without promoting an earlier failed Claude capture into a pass.
+
+  Reject unsupported AMD64 contracts before preparation and use one shared predicate for measured unreachable-network results in validation and projection. Align retained evidence with fixed purpose bounds: ordinary files stay at 32 MiB, combined decoded exports at 64 MiB and encoded retention receipts at 96 MiB. Worker and controller admission reject oversized or falsely declared files before decoding. Complete phase evidence has a fixed 352 MiB ceiling and one shared control reserve, checked before derived writes or receipt hashing; generic JSON and native output/deadline limits are unchanged. A real Common-to-Driver synthetic case transports a 34,251,142-byte export and all 63 actual projected receipts. This proves the corrected evidence pipeline, not native or model task acceptance.
+
+  Wait for the selected Codex MCP's confirmed connection using bounded retained status queries within the existing request and time limits. Retain only Claude's known inert `native-output/latest` debug alias when its exact owned target is an ordinary verified exported file. Neither change accepts arbitrary links, extends native authority or rewrites failed captures.
+
+  Report rollback preservation separately from selected-source database compatibility. The current recipes expose `data_preservation: observed` after complete history checks and `data_compatibility: not-exercised`; `full_data_compatibility` remains false. Preserving a newer schema does not prove that an older reader/writer can use it. Two fresh Codex repetitions completed all lifecycle candidate phases, with retained process/source/hook/MCP/history reconciliation. Both selected packages were 0.3.4; hosted and semantic-version updates remain untested, and library provenance remains unavailable independently of local source/cache integrity. A fresh private Claude diagnostic stopped on observation integrity, leaving its second repetition unattempted. Historical failures are unchanged, and a complete supported two-host native result remains unverified.
+
+- [#96](https://github.com/i-9-ai/skills/pull/96) [`0994488`](https://github.com/i-9-ai/skills/commit/0994488e95ddd7ecceadd7d461e5cac0c5877979) Thanks [@coisa](https://github.com/coisa)! - Add `skills quality record` and `skills quality inspect`, plus equivalent
+  `skill_quality_record` and `skill_quality_inspect` MCP operations, for bounded
+  quality receipts tied to every byte of one source-qualified skill revision.
+  Preserve caller assertions, failed/blocked/missing behavioral coverage and
+  verified retained benchmark identities separately from observed conformance.
+
+  The prepared official validator can explicitly select `--quality-request`,
+  `--quality-db` and `--quality-output` together to retain a compact process artifact
+  and a receipt only for unchanged selected package bytes after completed setup
+  and a matched tool version. Normal validation still checks every canonical
+  package and the scaffold. Caller JSON cannot select an observed assurance tier.
+  CI attributes fork observations to the head repository; unrepresentable Git refs
+  remain unknown rather than blocking conformance. Package inspection retains the
+  shared 2,048-entry traversal limit, including directories.
+
+  Add the quality projection through schema migration 4 without changing issued
+  migrations or existing evidence. Read-only queries never create or upgrade
+  storage; older consumers reject the new schema instead of resetting it. Memory
+  inspection displays quality separately from read/lifecycle counts. Retained
+  hashes establish byte identity, not authenticated grading, general quality,
+  native-installation or publication readiness.
+
+- [#103](https://github.com/i-9-ai/skills/pull/103) [`ad4efc9`](https://github.com/i-9-ai/skills/commit/ad4efc954f3e9a685a69921efe6840e40cc1f319) Thanks [@coisa](https://github.com/coisa)! - Add `skills install`, `skills upgrade`, `skills status`, `skills uninstall` and `skills recover` with explicit project/global scopes, read-only previews and `--write`. Reconcile the running bundled collection using complete owned-package receipts; preserve local edits, unmanaged packages, unrelated settings and usage evidence. Retain package preimages and bounded journals for interrupted, resumable recovery, including stopped owner locks.
+
+  Require an existing ordinary project root. Receipt-backed uninstallation remains available when the running bundle is incomplete or invalid. Native status reports missing or unsafe caches as JSON conflicts while rejecting malformed receipts.
+
+  Native status, removal and recovery use recorded installation data without loading current bundle identity; uninspected bundle versions are reported as null.
+
+  Offer `auto`, portable-skills and native-plugin strategies with explicit Codex/Claude selection. Supported native routes preflight each requested command, verify the selected catalog/package bytes, record requested revisions and cache digests, retain preimages, avoid duplicate managed loose/plugin installations and preserve disabled-plugin state. Unsupported clients/scopes, byte mismatches and interrupted native operations return manual guidance rather than false completion. The actual immutable native Git revision, native hooks/MCP activation, provider behavior and real consumer-profile testing remain unobserved. The manager neither updates its own executable, runs package setup nor publishes a release.
+
+  Claude marketplace refresh uses the documented update command at the registered ref. Changing an owned Codex or Claude source pin requires native settings review and returns manual guidance before dispatch; the manager does not remove shared marketplaces or silently adopt changed cache bytes.
+
+  Retain separate marketplace ownership across native uninstall/reinstall and require Claude `--keep-data` for persistent data preservation. Native status without an installation is explicitly absent. Honor Windows `PATHEXT` for discovery, while unsupported batch/script execution stays manual. Recovery refuses ambiguous deletion of a published replacement before restoring any package.
+
+  Publish the pending transaction only after complete verified staging, so first-file, mid-stage and source-read failures preserve the installed state and allow a fresh retry without treating incomplete candidates as deleted published packages.
+
+- [#93](https://github.com/i-9-ai/skills/pull/93) [`6545479`](https://github.com/i-9-ai/skills/commit/6545479e2733682c5b3f57e9cdda7954dcdd4173) Thanks [@coisa](https://github.com/coisa)! - Add `benchmark prepare`, `benchmark import-run`, and `benchmark compare` for
+  closed synthetic suites, frozen skill-package digests, immutable artifact-backed
+  run receipts, and baseline/treatment comparisons. Include a four-case lifecycle
+  corpus and operator guidance for critical failures, missing pairs, unmeasured
+  metrics, reported overruns of the time budget, and declared execution conditions.
+  Retain a privacy-reviewed public view of eight real agent attempts, including
+  incomplete authoring/refactoring deliveries and explicit comparison limits.
+  Keep the source-only corpus and pilot evidence under `benchmarks/behavioral/`,
+  outside Wiki/site copies and the npm package, while retaining the operator
+  guide and honest outcome summary in public documentation.
+  The CLI never executes models or case scripts; artifact integrity does not
+  authenticate agent execution or certify skill readiness.
+
+### Patch Changes
+
+- [#95](https://github.com/i-9-ai/skills/pull/95) [`c0134e6`](https://github.com/i-9-ai/skills/commit/c0134e6ce7cc11145c0dbf6fae54541130893a08) Thanks [@coisa](https://github.com/coisa)! - Make the authoring record and refactoring plan explicit incremental outputs. Keep verified intake, source/reuse decisions, current resources, actual checks, failures and remaining gates in those deliverables while the workflow continues. The first refactoring draft connects provisional or blocked decisions to affected resources, consumers, ordered steps, verification and rollback; substantive inspection updates that plan before optional bulk analysis. Inventory complete resource paths, including extensionless and hidden files.
+
+  Bound optional or repeated inspection by the acceptance question it resolves. Required research, security and conformance stages remain required, and a partial record or plan remains incomplete rather than proving readiness.
+
+  Add a complete inline refactoring-plan example connecting resource and declared-consumer dispositions, recovery before mutation, semantic mode and fallback checks, final-candidate `skills-ref validate`, transition and rollback. Keep proposed checks separate from performed evidence and leave unavailable requirements or consumers explicitly unresolved.
+
+  Link the behavioral evaluation guide to a scoped report of real global-reference cases. Preserve failed and incomplete comparisons, grading and timing limits, and the distinction between a useful delivery and complete workflow readiness; the report does not establish a general or causal quality benefit.
+
+- [#98](https://github.com/i-9-ai/skills/pull/98) [`c3bead0`](https://github.com/i-9-ai/skills/commit/c3bead0c5a1338a6967e4a9786e34bb9aa24fe79) Thanks [@coisa](https://github.com/coisa)! - Document the proposed independent GitHub skill collection and add a reproducible
+  standalone consumer fixture using the existing catalog and aggregate-index
+  helpers. The Node.js test prepares local issue evidence and a Wiki preview from
+  original fake records, checks explicitly queried open/closed scope, bounded
+  duplicate keys, complete handoff facts and repository identity, excludes
+  agent instructions, and preserves drafts when Wiki prerequisites or authority
+  are missing.
+
+  The proposal keeps issue and Wiki responsibilities separate and records the
+  remaining owner, source-admission and release decisions. No domain package is
+  added to the collection, and the fixture does not execute GitHub operations,
+  verify installed domain interfaces, establish native readiness or publish a
+  module.
+
+- [#105](https://github.com/i-9-ai/skills/pull/105) [`7493199`](https://github.com/i-9-ai/skills/commit/7493199a9dd6a010ab6a5fc5c9284bb2aedf1591) Thanks [@coisa](https://github.com/coisa)! - Honor the configured Claude state root for native cache confinement. Make empty native recovery a no-op and retain manual handling of actual pending evidence.
+
+  Check both hosts' pending records in the shared installation scope before reporting empty recovery, including an explicit request for the other host after a failed operation released its lock.
+
+  Verify unchanged owned packages before restoration, and expose the same journal, retained-byte and consumer-state checks in read-only recovery previews with planned restorations or conflicts. Local changes block the entire restore before mutation.
+
+- [#99](https://github.com/i-9-ai/skills/pull/99) [`abfa6ee`](https://github.com/i-9-ai/skills/commit/abfa6ee3f6b7a561ed11d6b1540850038d31a182) Thanks [@coisa](https://github.com/coisa)! - Make the bundled `assets/native-pilot/pilot.template.json` usable with both checkout and npm `plugin pilot` runtimes. Leave `runtime_layout` explicitly unresolved and report it as a missing execution gate; select `source-ts` for checkout execution or `compiled-js` for the installed CLI, with matching reviewed driver/observer trees and entrypoints. Reject unresolved, unknown or mismatched layouts before preparation. Real npm tarball tests cover draft inspection, completion of only null fields and incompatible-layout rejection without running native clients or granting native acceptance.
+
 ## 0.3.4
 
 ### Patch Changes
