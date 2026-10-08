@@ -144,6 +144,18 @@ export class PluginInstallationService {
             available_clients: available,
         };
         if (operation === 'recover' && !pending) {
+            const pendingHosts = (['codex', 'claude'] as const).filter((name) =>
+                this.state.nativeState(name, true),
+            );
+            if (pendingHosts.length)
+                return {
+                    ...result,
+                    status: 'manual-required',
+                    pending: true,
+                    pending_hosts: pendingHosts,
+                    message:
+                        'Native recovery evidence exists in this shared scope. Reconcile the recorded host operation before treating recovery as empty.',
+                };
             if (!this.state.hasLock()) return { ...result, status: 'unchanged' };
             if (!write) return { ...result, status: 'preview', pending_lock: true };
             return this.state.locked(() => {

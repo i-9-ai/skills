@@ -367,6 +367,26 @@ test('native status without ownership is absent and does not launch a client', (
     }
 });
 
+test('explicit recovery for another host cannot hide native pending evidence after its lock is released', (t) => {
+    const f = fixture(t, 'claude');
+    f.service.run('install', 'claude', true);
+    f.version('2.0.0');
+    f.revision('a'.repeat(40));
+    f.fail(true);
+    assert.throws(() => f.service.run('upgrade', 'claude', true), /Synthetic native refusal/);
+    assert.equal(f.state.hasLock(), false);
+    const pending = f.state.nativeState('claude', true);
+    f.clients.execute = () => {
+        throw new Error('Recovery must not invoke a native client');
+    };
+    const result = f.service.run('recover', 'codex', true);
+    assert.equal(result.status, 'manual-required');
+    assert.equal(result.written, false);
+    assert.equal(result.pending, true);
+    assert.deepEqual(result.pending_hosts, ['claude']);
+    assert.deepEqual(f.state.nativeState('claude', true), pending);
+});
+
 test('Claude source-pin replacement returns manual steps before launching any client or changing ownership', (t) => {
     const f = fixture(t, 'claude');
     f.service.run('install', 'claude', true);
