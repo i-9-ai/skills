@@ -26,6 +26,10 @@ flowchart LR
     CLI -->|benchmark prepare / import-run / compare| Benchmark[Retained behavioral experiment]
     CLI -->|skills quality record / inspect| Quality[Explicit quality receipts]
     CLI -->|plugin pilot / explicit execution| Pilot[Owned disposable native hosts]
+    CLI -->|skills install / upgrade / uninstall| Install[Managed scope and ownership receipts]
+    Install -->|verified package transaction| Packages[Portable installed packages]
+    Install -->|selected native strategy| Host
+    Install -->|interrupted| Recovery[Explicit recovery and retained preimages]
     Pilot --> PilotEvidence[Private lifecycle journals]
     MCP -->|skill_quality_record / skill_quality_inspect| Quality
     Quality --> Evidence

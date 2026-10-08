@@ -255,6 +255,52 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
         assert.match(help, /USAGE/u, route);
         assert.ok(help.includes(`i9-skills ${route.replaceAll(':', ' ')}`), route);
     }
+    const managedConsumer = join(root, 'managed-consumer');
+    mkdirSync(managedConsumer);
+    const managedArgs = ['--project', managedConsumer, '--strategy', 'skills'];
+    const installPreview = JSON.parse(
+        run(process.execPath, [launcher, 'skills', 'install', ...managedArgs], root),
+    );
+    assert.equal(installPreview.written, false);
+    assert.equal(existsSync(join(managedConsumer, '.agents')), false);
+    const managedInstalled = JSON.parse(
+        run(process.execPath, [launcher, 'skills', 'install', ...managedArgs, '--write'], root),
+    );
+    assert.equal(managedInstalled.written, true);
+    for (const skill of sourceCatalog.skills) {
+        assert.deepEqual(
+            readFileSync(join(managedConsumer, '.agents/skills', skill.name, 'SKILL.md')),
+            readFileSync(join(installed, skill.path, 'SKILL.md')),
+        );
+    }
+    assert.equal(
+        JSON.parse(
+            run(process.execPath, [launcher, 'skills', 'upgrade', ...managedArgs, '--write'], root),
+        ).written,
+        false,
+    );
+    assert.equal(
+        JSON.parse(run(process.execPath, [launcher, 'skills', 'status', ...managedArgs], root))
+            .changing,
+        false,
+    );
+    assert.equal(
+        JSON.parse(
+            run(
+                process.execPath,
+                [launcher, 'skills', 'uninstall', ...managedArgs, '--write'],
+                root,
+            ),
+        ).written,
+        true,
+    );
+    assert.equal(existsSync(join(managedConsumer, '.agents/skills/skill-authoring')), false);
+    assert.equal(
+        JSON.parse(run(process.execPath, [launcher, 'skills', 'recover', ...managedArgs], root))
+            .written,
+        false,
+    );
+
     const implicitValidation = spawnSync(process.execPath, [launcher, 'repo', 'validate'], {
         cwd: root,
         env: environment,

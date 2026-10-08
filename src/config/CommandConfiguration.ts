@@ -46,6 +46,11 @@ import TelemetryCatalogObserveCommand from '../command/telemetry/TelemetryCatalo
 import SkillsObserveCommand from '../command/skill/SkillsObserveCommand.ts';
 import SkillsReportBumpCommand from '../command/skill/SkillsReportBumpCommand.ts';
 import SkillsOnboardingCommand from '../command/skill/SkillsOnboardingCommand.ts';
+import SkillsInstallCommand from '../command/skill/SkillsInstallCommand.ts';
+import SkillsUpgradeCommand from '../command/skill/SkillsUpgradeCommand.ts';
+import SkillsStatusCommand from '../command/skill/SkillsStatusCommand.ts';
+import SkillsUninstallCommand from '../command/skill/SkillsUninstallCommand.ts';
+import SkillsRecoverCommand from '../command/skill/SkillsRecoverCommand.ts';
 import SkillsMemorySummarizeCommand from '../command/skill/SkillsMemorySummarizeCommand.ts';
 import SkillsMemoryRetentionCommand from '../command/skill/SkillsMemoryRetentionCommand.ts';
 
@@ -55,6 +60,11 @@ import SkillsQualityInspectCommand from '../command/skill/SkillsQualityInspectCo
 /** Owns public command routes independently of class names and source layout. */
 export class CommandConfiguration {
     static readonly commands = {
+        'skills:install': SkillsInstallCommand,
+        'skills:upgrade': SkillsUpgradeCommand,
+        'skills:status': SkillsStatusCommand,
+        'skills:uninstall': SkillsUninstallCommand,
+        'skills:recover': SkillsRecoverCommand,
         'benchmark:prepare': BenchmarkPrepareCommand,
         'benchmark:import-run': BenchmarkImportRunCommand,
         'benchmark:compare': BenchmarkCompareCommand,

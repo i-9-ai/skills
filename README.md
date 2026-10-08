@@ -73,6 +73,11 @@ The Skills CLI asks for a supported agent target when it cannot determine one. A
 
 ## Run the toolkit CLI
 
+The candidate [managed installation commands](docs/Managed%20Installation.md)
+coordinate owned collection upgrades/removal and native plugin routing through
+this toolkit. They preview by default and require `--write`; use a candidate
+checkout until a release containing the interface is available.
+
 Installing the skill packages and running this repository's toolkit are separate
 operations. Published builds require Node.js 24+ and npm, and run directly
 without a global installation:

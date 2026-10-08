@@ -21,6 +21,8 @@ Run `npm test` from the repository root. Tests make no network requests and leav
 
 ## Child DOX index
 
+- [Managed collection installation](unit/service/SkillInstallationService.test.mjs): ownership, bounds, local conflicts and resumable transaction recovery in disposable fixtures.
+- [Native installation adapters](unit/service/PluginInstallationService.test.mjs): fake Codex/Claude command contracts and retained cache state; no actual client installation or provider execution.
 - [GitHub family consumer](integration/collection/github-family-consumer.test.mjs): original issue/Wiki consumer evidence through existing catalog helpers; no actual GitHub, domain-package or native-host execution.
 - [Native pilot preparation](unit/service/NativePilotPreparationService.test.mjs): inert source/runtime identity and restore rejection with synthetic disposable inputs; no native execution.
 - [Native pilot orchestration](unit/service/NativePilotDriverService.test.mjs): fake phase journals, blocked observations and preservation/cleanup boundaries; no Docker or provider calls.
