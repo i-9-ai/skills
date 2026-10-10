@@ -22,6 +22,8 @@ Verify every requirement has an implementation and a check or an explicit limit.
 
 ## Child DOX index
 
+- [Optional sidebar panel proposal](2026-10-10-11-03-38-skills-sidebar-panel-proposal.md): proposed MCP App entry, local read-only catalog/evidence views and disposable visual preview; native registration, implementation and public delivery remain unverified.
+
 - [Managed skill installation](2026-10-07-20-40-51-managed-skill-installation.md): preview-first collection lifecycle, owned package receipts and recoverable transactions, with explicit host routing and no real-profile installation during development.
 - [Native pilot template layout](2026-10-06-00-00-31-native-pilot-template-layout.md): explicitly resolve source or compiled runtime layout in the bundled draft, with real tarball compatibility tests and unchanged native authority.
 - [Native pilot review contracts](2026-10-05-22-52-40-native-pilot-review-contracts.md): reject unsupported architectures before preparation and reconcile measured isolation and bounded retention across the pilot pipeline; native acceptance and prior failures remain separate.

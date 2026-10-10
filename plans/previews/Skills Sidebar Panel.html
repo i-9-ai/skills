@@ -1,0 +1,1201 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="robots" content="noindex, nofollow" />
+        <title>I-9 Skills — sidebar panel proposal</title>
+        <style>
+            :root {
+                color-scheme: dark;
+                --background: #101912;
+                --surface: #18241b;
+                --raised: #223025;
+                --ink: #f7f9f2;
+                --muted: #bdc6ba;
+                --line: #3b4b3d;
+                --accent: #d7f46b;
+                --focus: #d7f46b;
+                --accent-ink: #14231a;
+            }
+
+            [data-theme='light'] {
+                color-scheme: light;
+                --background: #f7f9f2;
+                --surface: #ffffff;
+                --raised: #eaf0e4;
+                --ink: #14231a;
+                --muted: #536056;
+                --line: #b7bfb6;
+                --focus: #315d38;
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+            body {
+                margin: 0;
+                background: var(--background);
+                color: var(--ink);
+                font:
+                    15px/1.55 Arial,
+                    Helvetica,
+                    sans-serif;
+            }
+            button,
+            input,
+            select,
+            textarea {
+                font: inherit;
+            }
+            button,
+            input,
+            select {
+                min-height: 44px;
+                color: var(--ink);
+                background: var(--surface);
+                border: 1px solid var(--line);
+                border-radius: 5px;
+            }
+            button {
+                padding: 9px 15px;
+                cursor: pointer;
+            }
+            button:hover {
+                background: var(--raised);
+            }
+            :focus-visible {
+                outline: 3px solid var(--focus);
+                outline-offset: 3px;
+            }
+            input,
+            select {
+                padding: 9px 12px;
+            }
+            h1,
+            h2,
+            h3,
+            p {
+                margin: 0;
+            }
+            h1 {
+                font-size: 30px;
+                line-height: 1.15;
+                letter-spacing: -1px;
+            }
+            h2 {
+                font-size: 21px;
+                letter-spacing: -0.4px;
+            }
+            h3 {
+                font-size: 16px;
+            }
+            code {
+                font-size: 12px;
+                overflow-wrap: anywhere;
+            }
+            a {
+                color: var(--accent);
+                text-underline-offset: 3px;
+            }
+            [data-theme='light'] a,
+            [data-theme='light'] .inspector .eyebrow,
+            [data-theme='light'] .wordmark span {
+                color: #315d38;
+            }
+            [hidden] {
+                display: none !important;
+            }
+            .muted {
+                color: var(--muted);
+            }
+            .eyebrow {
+                font: 11px/1.4 monospace;
+                letter-spacing: 1.1px;
+                text-transform: uppercase;
+            }
+            .proposal-notice {
+                padding: 10px 24px;
+                color: var(--accent-ink);
+                background: var(--accent);
+                font-size: 12px;
+                text-align: center;
+            }
+            .frame {
+                max-width: 1440px;
+                margin: auto;
+                padding: 26px 36px 40px;
+            }
+            .app-header {
+                display: flex;
+                align-items: center;
+                gap: 20px;
+                padding-bottom: 22px;
+                border-bottom: 1px solid var(--line);
+            }
+            .wordmark {
+                font-size: 22px;
+                font-weight: 700;
+                letter-spacing: -1.2px;
+            }
+            .wordmark span {
+                color: var(--accent);
+            }
+            .header-note {
+                margin-left: auto;
+                font-size: 12px;
+            }
+            .tabs {
+                display: flex;
+                gap: 8px;
+                margin: 20px 0 28px;
+            }
+            .tabs button {
+                border-color: transparent;
+                background: transparent;
+            }
+            .tabs button[aria-pressed='true'] {
+                background: var(--raised);
+                border-color: var(--line);
+            }
+            .section-heading {
+                display: flex;
+                align-items: end;
+                justify-content: space-between;
+                gap: 20px;
+                margin-bottom: 24px;
+            }
+            .section-heading p {
+                margin-top: 8px;
+                max-width: 610px;
+                color: var(--muted);
+            }
+            .primary {
+                color: var(--accent-ink);
+                background: var(--accent);
+                border-color: var(--accent);
+                font-weight: 700;
+            }
+            .primary:hover {
+                color: var(--accent-ink);
+                background: #e4ff8a;
+            }
+            .toolbar {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) 190px;
+                gap: 12px;
+                margin-bottom: 12px;
+            }
+            .toolbar input {
+                width: 100%;
+            }
+            .result-note {
+                margin-bottom: 20px;
+                font-size: 12px;
+                color: var(--muted);
+            }
+            .library {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) 370px;
+                align-items: start;
+                gap: 28px;
+            }
+            .results {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 12px;
+            }
+            .skill {
+                padding: 20px;
+                text-align: left;
+                border: 1px solid var(--line);
+                background: var(--surface);
+                min-height: 170px;
+            }
+            .skill[aria-pressed='true'] {
+                outline: 1px solid var(--focus);
+                border-color: var(--focus);
+            }
+            .skill:focus-visible {
+                outline: 3px solid var(--focus);
+                outline-offset: 3px;
+            }
+            .skill-title {
+                display: block;
+                font-size: 17px;
+                font-weight: 700;
+                margin: 8px 0;
+            }
+            .skill-description {
+                display: block;
+                font-size: 13px;
+                color: var(--muted);
+                line-height: 1.5;
+            }
+            .tag {
+                display: inline-block;
+                margin: 12px 6px 0 0;
+                font: 11px/1.4 monospace;
+                color: var(--muted);
+            }
+            .tag::before {
+                content: '#';
+            }
+            .inspector {
+                position: sticky;
+                top: 24px;
+                background: var(--surface);
+                border: 1px solid var(--line);
+                border-radius: 6px;
+                padding: 26px;
+            }
+            .inspector .eyebrow {
+                color: var(--accent);
+            }
+            .inspector h2 {
+                margin: 14px 0;
+                overflow-wrap: anywhere;
+            }
+            .inspector > p {
+                font-size: 14px;
+                color: var(--muted);
+            }
+            .facts {
+                margin: 22px 0;
+                border-top: 1px solid var(--line);
+            }
+            .facts div {
+                display: flex;
+                justify-content: space-between;
+                gap: 14px;
+                padding: 11px 0;
+                border-bottom: 1px solid var(--line);
+                font-size: 12px;
+            }
+            .facts dt {
+                color: var(--muted);
+            }
+            .facts dd {
+                margin: 0;
+                text-align: right;
+            }
+            .inspector .primary,
+            .inspector .secondary {
+                display: block;
+                width: 100%;
+                margin-top: 10px;
+            }
+            .inspector .footnote {
+                margin-top: 16px;
+                font-size: 11px;
+            }
+            .state {
+                padding: 40px 28px;
+                border: 1px dashed var(--line);
+                border-radius: 6px;
+                grid-column: 1 / -1;
+            }
+            .state p {
+                max-width: 520px;
+                margin: 10px 0 18px;
+                color: var(--muted);
+            }
+            .evidence-layout {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) 340px;
+                gap: 28px;
+            }
+            .evidence-empty {
+                min-height: 300px;
+                padding: 32px;
+                border: 1px solid var(--line);
+                border-radius: 6px;
+                background: var(--surface);
+            }
+            .evidence-empty h2 {
+                margin: 14px 0 12px;
+            }
+            .evidence-empty p {
+                color: var(--muted);
+                max-width: 550px;
+            }
+            .evidence-empty p + p {
+                margin-top: 22px;
+            }
+            .evidence-empty button {
+                margin-top: 24px;
+            }
+            .noscript-note {
+                padding: 24px;
+            }
+            .measure {
+                padding: 16px 0;
+                border-bottom: 1px solid var(--line);
+            }
+            .measure p {
+                margin-top: 6px;
+                font-size: 13px;
+                color: var(--muted);
+            }
+            .connection {
+                max-width: 800px;
+                padding: 30px;
+                border: 1px solid var(--line);
+                background: var(--surface);
+                border-radius: 6px;
+            }
+            .connection h2 {
+                margin-bottom: 12px;
+            }
+            .connection p {
+                color: var(--muted);
+                margin: 12px 0;
+            }
+            .connection ol {
+                padding-left: 22px;
+            }
+            .connection li {
+                margin: 14px 0;
+            }
+            .design-controls {
+                margin-top: 32px;
+                border-top: 1px solid var(--line);
+                padding-top: 18px;
+                color: var(--muted);
+                font-size: 12px;
+            }
+            .design-controls summary {
+                cursor: pointer;
+                padding: 10px 0;
+            }
+            .controls-row {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 20px;
+                margin-top: 14px;
+            }
+            .controls-row label {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            .design-controls p {
+                margin-top: 12px;
+            }
+            .compact .results {
+                display: block;
+            }
+            .compact .skill {
+                min-height: 0;
+                width: 100%;
+                border-radius: 0;
+                padding: 15px 18px;
+                margin-bottom: -1px;
+            }
+            .compact .skill-title {
+                font-size: 15px;
+                margin: 4px 0;
+            }
+            .compact .tag {
+                margin-top: 5px;
+            }
+            .compact .library {
+                grid-template-columns: minmax(0, 1fr) 370px;
+            }
+            dialog {
+                width: min(640px, calc(100% - 32px));
+                max-height: calc(100vh - 40px);
+                padding: 28px;
+                border: 1px solid var(--line);
+                border-radius: 8px;
+                color: var(--ink);
+                background: var(--surface);
+            }
+            dialog::backdrop {
+                background: #000a;
+            }
+            dialog h2 {
+                margin-bottom: 12px;
+            }
+            dialog textarea {
+                width: 100%;
+                min-height: 180px;
+                margin: 18px 0;
+                padding: 15px;
+                resize: vertical;
+                border: 1px solid var(--line);
+                border-radius: 5px;
+                color: var(--ink);
+                background: var(--background);
+            }
+            .dialog-actions {
+                display: flex;
+                justify-content: end;
+                gap: 10px;
+            }
+            @media (max-width: 1050px) {
+                .frame {
+                    padding: 24px;
+                }
+                .library,
+                .compact .library {
+                    grid-template-columns: minmax(0, 1fr) 310px;
+                    gap: 18px;
+                }
+                .results {
+                    grid-template-columns: 1fr;
+                }
+            }
+            @media (max-width: 720px) {
+                .frame {
+                    padding: 18px;
+                }
+                .proposal-notice {
+                    padding: 10px 14px;
+                }
+                .app-header {
+                    flex-wrap: wrap;
+                    gap: 10px;
+                }
+                .header-note {
+                    margin-left: 0;
+                    flex: 1;
+                }
+                .tabs {
+                    gap: 2px;
+                }
+                .tabs button {
+                    padding: 9px 12px;
+                }
+                .section-heading {
+                    display: block;
+                }
+                .section-heading button {
+                    margin-top: 18px;
+                    width: 100%;
+                }
+                .toolbar,
+                .library,
+                .compact .library,
+                .evidence-layout {
+                    grid-template-columns: 1fr;
+                }
+                .inspector {
+                    position: static;
+                    grid-row: 1;
+                }
+                .controls-row {
+                    display: block;
+                }
+                .controls-row label {
+                    display: block;
+                    margin-bottom: 16px;
+                }
+                .controls-row select {
+                    width: 100%;
+                    margin-top: 8px;
+                }
+            }
+            @media (prefers-reduced-motion: reduce) {
+                *,
+                *::before,
+                *::after {
+                    animation: none !important;
+                    transition: none !important;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="proposal-notice">
+            DESIGN PROPOSAL · This preview is not connected to Codex, MCP or your evidence store.
+        </div>
+        <div class="frame">
+            <header class="app-header">
+                <div class="wordmark"><span>i-9</span> skills</div>
+                <div class="header-note muted">A proposed workspace for the life of a skill.</div>
+                <button id="theme" type="button">Use light theme</button>
+            </header>
+
+            <nav class="tabs" aria-label="Panel views">
+                <button type="button" data-view="library" aria-pressed="true">Library</button>
+                <button type="button" data-view="evidence" aria-pressed="false">Evidence</button>
+                <button type="button" data-view="connection" aria-pressed="false">
+                    Connection
+                </button>
+            </nav>
+
+            <main>
+                <section id="library-view" aria-labelledby="library-title">
+                    <div class="section-heading">
+                        <div>
+                            <h1 id="library-title">Find the right skill.</h1>
+                            <p>
+                                Explore responsibilities, inspect a package, then prepare a focused
+                                task.
+                            </p>
+                        </div>
+                        <button id="create" type="button" class="primary">Draft a new skill</button>
+                    </div>
+                    <div class="toolbar">
+                        <input
+                            id="search"
+                            type="search"
+                            aria-label="Search skills"
+                            placeholder="Search names, responsibilities or tags"
+                        />
+                        <select id="filter" aria-label="Filter by tag">
+                            <option value="">All responsibilities</option>
+                        </select>
+                    </div>
+                    <p id="result-note" class="result-note" aria-live="polite"></p>
+                    <div class="library">
+                        <div id="results" class="results" aria-label="Skill results"></div>
+                        <aside id="inspector" class="inspector" aria-labelledby="selected-title">
+                            <div class="eyebrow">Bundled collection · catalog snapshot</div>
+                            <h2 id="selected-title"></h2>
+                            <p id="selected-description"></p>
+                            <dl class="facts">
+                                <div>
+                                    <dt>Package version</dt>
+                                    <dd>0.3.4</dd>
+                                </div>
+                                <div>
+                                    <dt>Entrypoint</dt>
+                                    <dd><code>SKILL.md</code></dd>
+                                </div>
+                                <div>
+                                    <dt>Quality evidence</dt>
+                                    <dd>Not loaded in preview</dd>
+                                </div>
+                                <div>
+                                    <dt>Observed usage</dt>
+                                    <dd>Not connected</dd>
+                                </div>
+                            </dl>
+                            <button id="review" type="button" class="primary">
+                                Prepare a review
+                            </button>
+                            <button id="evolve" type="button" class="secondary">
+                                Plan an evolution
+                            </button>
+                            <p class="footnote">
+                                Prepares a visible draft. It does not send a message, execute a
+                                skill or change its files.
+                            </p>
+                        </aside>
+                    </div>
+                </section>
+
+                <section id="evidence-view" aria-labelledby="evidence-title" hidden>
+                    <div class="section-heading">
+                        <div>
+                            <h1 id="evidence-title">Evidence before decisions.</h1>
+                            <p>
+                                Understand what was observed, over which period, and for which
+                                source.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="evidence-layout">
+                        <div class="evidence-empty">
+                            <span class="eyebrow muted">Evidence state · not connected</span>
+                            <h2>No local evidence is loaded.</h2>
+                            <p>
+                                A real panel would query a caller-selected collection and period.
+                                This preview leaves counts empty: no data is different from zero
+                                usage.
+                            </p>
+                            <p>
+                                Opening a panel would not enable hooks, create a database or record
+                                a skill activation.
+                            </p>
+                            <button id="evidence-draft" type="button">
+                                Draft an evidence inspection
+                            </button>
+                        </div>
+                        <aside aria-label="Planned evidence distinctions">
+                            <div class="measure">
+                                <h3>Observed reads</h3>
+                                <p>
+                                    Recorded file-read observations, qualified by source and
+                                    revision.
+                                </p>
+                            </div>
+                            <div class="measure">
+                                <h3>Distinct sessions</h3>
+                                <p>
+                                    Repeated reads in one task are different from demand across
+                                    tasks.
+                                </p>
+                            </div>
+                            <div class="measure">
+                                <h3>Qualified outcomes</h3>
+                                <p>
+                                    Explicit lifecycle and quality evidence retains its coverage and
+                                    assurance.
+                                </p>
+                            </div>
+                            <div class="measure">
+                                <h3>Evolution handoff</h3>
+                                <p>
+                                    Prepare a question from the evidence. Frequency alone does not
+                                    establish quality or importance.
+                                </p>
+                            </div>
+                        </aside>
+                    </div>
+                </section>
+
+                <section id="connection-view" aria-labelledby="connection-title" hidden>
+                    <div class="section-heading">
+                        <h1 id="connection-title">One core. Optional interface.</h1>
+                    </div>
+                    <div class="connection">
+                        <h2>The host integration still needs a native pilot.</h2>
+                        <p>
+                            The proposed panel uses an optional MCP Apps adapter. The CLI, skills
+                            and existing data remain usable without this interface.
+                        </p>
+                        <ol>
+                            <li>
+                                Verify that the selected host can launch a global sidebar entry.
+                            </li>
+                            <li>Load prepared local UI assets and bounded catalog results.</li>
+                            <li>
+                                Inspect explicit local evidence without creating or changing its
+                                store.
+                            </li>
+                            <li>
+                                Enable a task handoff only after its host capability is
+                                demonstrated.
+                            </li>
+                        </ol>
+                        <p>
+                            The public skills-only plugin stays unchanged until a supported
+                            distribution path is validated. This preview installs and publishes
+                            nothing.
+                        </p>
+                    </div>
+                </section>
+            </main>
+
+            <details class="design-controls">
+                <summary>Explore the proposal</summary>
+                <div class="controls-row">
+                    <label
+                        >Layout
+                        <select id="layout">
+                            <option value="browse">Catalog &amp; inspector · recommended</option>
+                            <option value="compact">Compact list · conservative</option>
+                            <option value="evidence">Evidence first · exploratory</option>
+                        </select>
+                    </label>
+                    <label
+                        >Catalog scenario
+                        <select id="scenario">
+                            <option value="ready">Metadata available</option>
+                            <option value="loading">Loading</option>
+                            <option value="empty">No matching packages</option>
+                            <option value="error">Catalog error</option>
+                            <option value="disconnected">Host bridge unavailable</option>
+                        </select>
+                    </label>
+                </div>
+                <p>
+                    Catalog metadata is frozen from the repository at 7493199. Evidence and
+                    connection states are design scenarios. Controls change this page only; no
+                    network requests, local storage or host commands are used.
+                </p>
+            </details>
+        </div>
+
+        <dialog id="draft-dialog" aria-labelledby="draft-title">
+            <h2 id="draft-title">Prepared task</h2>
+            <p class="muted">
+                Review or edit this draft. In this preview, no conversation is created and nothing
+                is sent.
+            </p>
+            <textarea id="draft" aria-label="Task draft"></textarea>
+            <div class="dialog-actions">
+                <button id="select-draft" type="button" class="primary">Select draft</button>
+                <button id="close-draft" type="button">Close</button>
+            </div>
+        </dialog>
+
+        <noscript
+            ><p class="noscript-note">
+                This design preview uses JavaScript for catalog filtering and draft preparation. The
+                architecture proposal contains the complete noninteractive description.
+            </p></noscript
+        >
+        <script id="catalog-data" type="application/json">
+{
+  "schema_version": 1,
+  "skills": [
+    {
+      "name": "skill-authoring",
+      "description": "Use to author or revise a focused skill package from a goal and design, coordinating discovery, synthesis, and evaluation through companion skills. Use skills-discovery for search alone.",
+      "tags": [
+        "authoring",
+        "orchestration",
+        "skills"
+      ]
+    },
+    {
+      "name": "skill-design",
+      "description": "Use to resolve a skill's responsibility, interface, and design tradeoffs from a brief or merge plan before authoring. It does not discover sources or implement the package.",
+      "tags": [
+        "design",
+        "scoping",
+        "skills"
+      ]
+    },
+    {
+      "name": "skill-domain-research",
+      "description": "Use to research one proposed skill's subject, reconciling process-owner facts, reviewed skill claims, and current authoritative web sources into a bounded evidence dossier.",
+      "tags": [
+        "evidence",
+        "provenance",
+        "research",
+        "skills"
+      ]
+    },
+    {
+      "name": "skill-evaluator",
+      "description": "Use to evaluate a skill package against frozen behavioral cases and a baseline, returning evidence and a readiness verdict. It does not author fixes or publish the skill.",
+      "tags": [
+        "evaluation",
+        "skills",
+        "testing"
+      ]
+    },
+    {
+      "name": "skill-evidence-collection",
+      "description": "Use to collect, normalize, and preserve bounded evidence about one skill or skill collection for a later evaluation, lifecycle, or evolution decision. It does not judge or change the target.",
+      "tags": [
+        "evidence",
+        "governance",
+        "skills"
+      ]
+    },
+    {
+      "name": "skill-evolution",
+      "description": "Use to update one existing skill from new evidence while preserving its responsibility, provenance, compatibility, and a reviewable change record.",
+      "tags": [
+        "evolution",
+        "maintenance",
+        "skills"
+      ]
+    },
+    {
+      "name": "skill-icon-design",
+      "description": "Use to design or refresh a distinct, accessible SVG icon for one skill package from its responsibility and visual constraints. It does not redesign other package content.",
+      "tags": [
+        "icons",
+        "skills",
+        "visual-design"
+      ]
+    },
+    {
+      "name": "skill-installation",
+      "description": "Use to install one approved skill package at an immutable source revision into a selected agent environment and return an auditable installation receipt.",
+      "tags": [
+        "installation",
+        "provenance",
+        "skills"
+      ]
+    },
+    {
+      "name": "skill-lifecycle-review",
+      "description": "Use to determine the lifecycle state and next justified transition for one skill from current evidence without editing or publishing the package.",
+      "tags": [
+        "governance",
+        "lifecycle",
+        "skills"
+      ]
+    },
+    {
+      "name": "skill-migration",
+      "description": "Use to migrate one skill package between collections while preserving behavior, provenance, history, compatibility, and an auditable handoff.",
+      "tags": [
+        "migration",
+        "portability",
+        "skills"
+      ]
+    },
+    {
+      "name": "skill-naming",
+      "description": "Use to select or review a skill's canonical name, grouping related skills by domain and checking scope, cardinality, and known collisions. Return a naming decision without renaming files.",
+      "tags": [
+        "naming",
+        "organization",
+        "skills"
+      ]
+    },
+    {
+      "name": "skill-optimization",
+      "description": "Use to improve one skill through scored rollouts, bounded candidate edits, and held-out validation. It does not discover sources, author unrelated skills, or publish changes.",
+      "tags": [
+        "evaluation",
+        "optimization",
+        "skills"
+      ]
+    },
+    {
+      "name": "skill-publication",
+      "description": "Use to publish one approved skill package through an authorized distribution channel after exact-revision release gates have passed.",
+      "tags": [
+        "publication",
+        "release",
+        "skills"
+      ]
+    },
+    {
+      "name": "skill-routing",
+      "description": "Use to decide whether a task should activate one skill, an ordered set of skills, or no skill from supplied catalogs. It recommends a route but does not invoke, install, or modify skills.",
+      "tags": [
+        "routing",
+        "selection",
+        "skills"
+      ]
+    },
+    {
+      "name": "skill-security-review",
+      "description": "Use to review one skill package for secrets, private data, unsafe instructions, dangerous scripts, dependencies, permissions, and disclosure risk.",
+      "tags": [
+        "review",
+        "security",
+        "skills"
+      ]
+    },
+    {
+      "name": "skills-audit",
+      "description": "Use to audit a collection of installed or authored skills for inventory, provenance, validation, policy, and drift, producing one findings report.",
+      "tags": [
+        "audit",
+        "compliance",
+        "skills"
+      ]
+    },
+    {
+      "name": "skills-catalog",
+      "description": "Use to create, synchronize, or validate a repository or global catalog from installed SKILL.md metadata. It maintains inventory and summaries but does not choose a skill for a task.",
+      "tags": [
+        "catalog",
+        "metadata",
+        "skills"
+      ]
+    },
+    {
+      "name": "skills-catalog-index",
+      "description": "Use to combine explicit skill catalogs into a local searchable index, synchronize their change history, or record evidenced evolution operations. It does not maintain source catalogs or choose a skill.",
+      "tags": [
+        "catalog",
+        "history",
+        "index",
+        "skills"
+      ]
+    },
+    {
+      "name": "skills-discovery",
+      "description": "Use to discover and qualify existing skills for a specific task, returning pinned candidates and evidence. It does not install, merge, or author a skill.",
+      "tags": [
+        "discovery",
+        "research",
+        "skills"
+      ]
+    },
+    {
+      "name": "skills-host-compatibility",
+      "description": "Use to verify declared repository-local aliases for a canonical skill collection and return a bounded structural compatibility report.",
+      "tags": [
+        "aliases",
+        "compatibility",
+        "skills"
+      ]
+    },
+    {
+      "name": "skills-maintenance-scheduling",
+      "description": "Use to turn an approved recurring maintenance goal for a bounded skill collection into an approval-ready schedule proposal. It does not configure a scheduler or execute maintenance.",
+      "tags": [
+        "governance",
+        "maintenance",
+        "scheduling",
+        "skills"
+      ]
+    },
+    {
+      "name": "skills-refactoring",
+      "description": "Use to turn an audit of an existing skill collection into a bounded decomposition and reorganization plan without editing the packages.",
+      "tags": [
+        "decomposition",
+        "refactoring",
+        "skills"
+      ]
+    },
+    {
+      "name": "skills-snapshot",
+      "description": "Create, verify, list, restore, and explicitly prune deterministic snapshots of a caller-selected skill collection or package. Use before risky skill maintenance; do not use to install or refactor skills.",
+      "tags": [
+        "backup",
+        "restore",
+        "skills",
+        "snapshot"
+      ]
+    },
+    {
+      "name": "skills-synthesis",
+      "description": "Use to synthesize useful contributions from two or more reviewed skills into one coherent synthesis plan. It does not search for candidates, write the final package, or certify its quality.",
+      "tags": [
+        "provenance",
+        "skills",
+        "synthesis"
+      ]
+    },
+    {
+      "name": "skills-usage-setup",
+      "description": "Use to preview, explicitly enable, inspect, or remove optional skill-read observations for selected skill collections while preserving unrelated host settings and local evidence.",
+      "tags": [
+        "observations",
+        "setup",
+        "skills"
+      ]
+    }
+  ]
+}
+</script>
+        <script>
+            /** Disposable design behavior: no host bridge, persistence or tool calls. */
+            class SkillPanelPreview {
+                constructor() {
+                    this.skills = JSON.parse(
+                        document.querySelector('#catalog-data').textContent,
+                    ).skills;
+                    this.selected = this.skills.find((skill) => skill.name === 'skill-design');
+                    this.query = '';
+                    this.tag = '';
+                    this.scenario = 'ready';
+
+                    this.bindControls();
+                    this.populateTags();
+                    this.render();
+                }
+
+                bindControls() {
+                    document.querySelector('#search').addEventListener('input', (event) => {
+                        this.query = event.target.value.toLowerCase();
+                        this.render();
+                    });
+                    document.querySelector('#filter').addEventListener('change', (event) => {
+                        this.tag = event.target.value;
+                        this.render();
+                    });
+                    document.querySelector('#scenario').addEventListener('change', (event) => {
+                        this.scenario = event.target.value;
+                        this.render();
+                    });
+                    document.querySelector('#layout').addEventListener('change', (event) => {
+                        document.body.classList.toggle('compact', event.target.value === 'compact');
+                        this.setView(event.target.value === 'evidence' ? 'evidence' : 'library');
+                    });
+                    document.querySelectorAll('[data-view]').forEach((button) => {
+                        button.addEventListener('click', () => this.setView(button.dataset.view));
+                    });
+                    document.querySelector('#theme').addEventListener('click', (event) => {
+                        const isDark = document.documentElement.dataset.theme === 'dark';
+                        document.documentElement.dataset.theme = isDark ? 'light' : 'dark';
+                        event.target.textContent = isDark ? 'Use dark theme' : 'Use light theme';
+                    });
+                    document
+                        .querySelector('#review')
+                        .addEventListener('click', () => this.prepare('review'));
+                    document
+                        .querySelector('#evolve')
+                        .addEventListener('click', () => this.prepare('evolve'));
+                    document
+                        .querySelector('#create')
+                        .addEventListener('click', () => this.prepare('create'));
+                    document
+                        .querySelector('#evidence-draft')
+                        .addEventListener('click', () => this.prepare('evidence'));
+                    document
+                        .querySelector('#close-draft')
+                        .addEventListener('click', () =>
+                            document.querySelector('#draft-dialog').close(),
+                        );
+                    document.querySelector('#select-draft').addEventListener('click', () => {
+                        const draft = document.querySelector('#draft');
+                        draft.focus();
+                        draft.select();
+                    });
+                }
+
+                populateTags() {
+                    const tags = new Set(this.skills.flatMap((skill) => skill.tags || []));
+                    [...tags].sort().forEach((tag) => {
+                        const option = document.createElement('option');
+                        option.value = tag;
+                        option.textContent = tag;
+                        document.querySelector('#filter').append(option);
+                    });
+                }
+
+                setView(view) {
+                    ['library', 'evidence', 'connection'].forEach((name) => {
+                        document.querySelector('#' + name + '-view').hidden = name !== view;
+                    });
+                    document.querySelectorAll('[data-view]').forEach((button) => {
+                        button.setAttribute('aria-pressed', String(button.dataset.view === view));
+                    });
+                }
+
+                render() {
+                    const results = document.querySelector('#results');
+                    results.replaceChildren();
+                    document.querySelector('#inspector').hidden = this.scenario !== 'ready';
+                    document
+                        .querySelector('#library-view')
+                        .setAttribute('aria-busy', String(this.scenario === 'loading'));
+
+                    if (this.scenario !== 'ready') {
+                        this.renderScenario(results);
+                        return;
+                    }
+
+                    const matches = this.skills.filter((skill) => {
+                        const text = [skill.name, skill.description, ...(skill.tags || [])]
+                            .join(' ')
+                            .toLowerCase();
+                        return (
+                            text.includes(this.query) &&
+                            (!this.tag || (skill.tags || []).includes(this.tag))
+                        );
+                    });
+                    document.querySelector('#result-note').textContent =
+                        String(matches.length) +
+                        ' of ' +
+                        String(this.skills.length) +
+                        ' bundled packages · frozen catalog metadata';
+
+                    if (matches.length === 0) {
+                        this.renderState(
+                            results,
+                            'No matching skills.',
+                            'Try a different term or responsibility. Nothing has been installed, removed or hidden from the actual catalog.',
+                        );
+                        document.querySelector('#inspector').hidden = true;
+                        return;
+                    }
+
+                    if (!matches.some((skill) => skill.name === this.selected.name))
+                        this.selected = matches[0];
+                    matches.forEach((skill) => results.append(this.skillButton(skill)));
+                    document.querySelector('#selected-title').textContent = this.selected.name;
+                    document.querySelector('#selected-description').textContent =
+                        this.selected.description;
+                }
+
+                skillButton(skill) {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = 'skill';
+                    button.setAttribute('aria-pressed', String(skill.name === this.selected.name));
+                    button.setAttribute('aria-label', 'Inspect ' + skill.name);
+
+                    this.appendText(button, 'eyebrow muted', 'Bundled package');
+                    this.appendText(button, 'skill-title', skill.name);
+                    this.appendText(button, 'skill-description', skill.description);
+                    (skill.tags || [])
+                        .slice(0, 3)
+                        .forEach((tag) => this.appendText(button, 'tag', tag));
+
+                    button.addEventListener('click', () => {
+                        this.selected = skill;
+                        this.render();
+                        document.querySelector('.skill[aria-pressed="true"]').focus();
+                    });
+                    return button;
+                }
+
+                appendText(parent, className, text) {
+                    const element = document.createElement('span');
+                    element.className = className;
+                    element.textContent = text;
+                    parent.append(element);
+                }
+
+                renderScenario(results) {
+                    document.querySelector('#result-note').textContent =
+                        'Simulated design state · no host connection';
+                    const states = {
+                        loading: [
+                            'Reading catalog metadata…',
+                            'This is a static loading scenario. No tool or file read is in progress.',
+                        ],
+                        empty: [
+                            'No matching packages.',
+                            'The selected collection could be empty or outside this search. The panel should disclose incomplete coverage.',
+                        ],
+                        error: [
+                            'The catalog could not be read.',
+                            'Preserve the selected source and show a bounded diagnostic. A panel must not repair or overwrite the catalog automatically.',
+                        ],
+                        disconnected: [
+                            'The host bridge is unavailable.',
+                            'Keep the skill workflow available through a verified manual fallback. Do not install a plugin or enable hooks automatically.',
+                        ],
+                    };
+                    const [title, message] = states[this.scenario];
+                    this.renderState(results, title, message);
+                }
+
+                renderState(results, title, message) {
+                    const container = document.createElement('div');
+                    container.className = 'state';
+                    const heading = document.createElement('h2');
+                    heading.textContent = title;
+                    const paragraph = document.createElement('p');
+                    paragraph.textContent = message;
+                    const restore = document.createElement('button');
+                    restore.type = 'button';
+                    restore.textContent = 'Restore catalog preview';
+                    restore.addEventListener('click', () => {
+                        this.query = '';
+                        this.tag = '';
+                        this.scenario = 'ready';
+                        document.querySelector('#search').value = '';
+                        document.querySelector('#filter').value = '';
+                        document.querySelector('#scenario').value = 'ready';
+                        this.render();
+                    });
+                    container.append(heading, paragraph, restore);
+                    results.append(container);
+                }
+
+                prepare(action) {
+                    const identity =
+                        this.selected.name +
+                        ' from the I-9 Skills bundled collection (catalog snapshot 7493199, package 0.3.4).';
+                    const prompts = {
+                        review:
+                            'Review ' +
+                            identity +
+                            ' Resolve and verify the actual available package and its revision, then inspect its entrypoint and required references. Report scope, completeness and evidence gaps before proposing changes.',
+                        evolve:
+                            'Plan an evolution of ' +
+                            identity +
+                            ' Inspect the actual package and its evidence first. Reassess responsibility, naming and overlap. Present justified changes and verification criteria; do not infer quality from read frequency.',
+                        create: 'Help me design a focused meta-skill for this goal: [describe the goal]. Resolve available research, design, authoring and evaluation skills before choosing a route. Include complete examples, explicit boundaries and verification.',
+                        evidence:
+                            'Inspect skill evidence for this collection and period: [select source and dates]. Distinguish observed reads, distinct sessions, caller assertions and verified quality receipts. Preserve missing coverage; do not create a database or enable hooks.',
+                    };
+                    document.querySelector('#draft').value = prompts[action];
+                    document.querySelector('#draft-dialog').showModal();
+                }
+            }
+
+            new SkillPanelPreview();
+        </script>
+    </body>
+</html>
