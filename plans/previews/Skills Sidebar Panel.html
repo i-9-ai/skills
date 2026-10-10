@@ -15,6 +15,7 @@
                 --muted: #bdc6ba;
                 --line: #3b4b3d;
                 --accent: #d7f46b;
+                --focus: #d7f46b;
                 --accent-ink: #14231a;
             }
 
@@ -26,6 +27,7 @@
                 --ink: #14231a;
                 --muted: #536056;
                 --line: #b7bfb6;
+                --focus: #315d38;
             }
 
             * {
@@ -63,7 +65,7 @@
                 background: var(--raised);
             }
             :focus-visible {
-                outline: 3px solid var(--accent);
+                outline: 3px solid var(--focus);
                 outline-offset: 3px;
             }
             input,
@@ -211,8 +213,12 @@
                 min-height: 170px;
             }
             .skill[aria-pressed='true'] {
-                outline: 1px solid var(--accent);
-                border-color: var(--accent);
+                outline: 1px solid var(--focus);
+                border-color: var(--focus);
+            }
+            .skill:focus-visible {
+                outline: 3px solid var(--focus);
+                outline-offset: 3px;
             }
             .skill-title {
                 display: block;
