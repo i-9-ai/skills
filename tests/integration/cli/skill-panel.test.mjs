@@ -59,6 +59,15 @@ test('the shared stdio protocol carries real catalog, retained candidate, approv
     input.write(JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }) + '\n');
     const tools = (await rpc('tools/list')).result.tools;
     assert.equal(tools.length, 6);
+    const opening = tools.find((tool) => tool.name === 'skill_panel_open');
+    assert.equal(opening.icons?.length, 1);
+    assert.equal(opening.icons[0].mimeType, 'image/png');
+    assert.equal(opening.icons[0].src.split(',')[0], 'data:image/png;base64');
+    assert.deepEqual(
+        Buffer.from(opening.icons[0].src.split(',')[1], 'base64'),
+        fs.readFileSync(new URL('../../../assets/plugin-icon.png', import.meta.url)),
+    );
+    assert.deepEqual(opening.icons[0].sizes, ['512x512']);
     assert.equal(
         tools.some((tool) => tool.name === 'skill_read_record'),
         false,
@@ -86,7 +95,7 @@ test('the shared stdio protocol carries real catalog, retained candidate, approv
     );
     assert.equal(clientUi.result.contents[0].text, ui.result.contents[0].text);
     assert.deepEqual((await rpc('resources/templates/list')).result, { resourceTemplates: [] });
-    assert.equal(tools.find((tool) => tool.name === 'skill_panel_open').title, 'I-9 Skills');
+    assert.equal(opening.title, 'I-9 Skills');
     for (const invalid of [
         { uri: resources[0].uri, unrelated: true },
         { uri: resources[0].uri, _meta: null },

@@ -88,6 +88,10 @@ export class SkillPanelService {
         return new SkillPanelResourceRepository().read();
     }
 
+    icons() {
+        return new SkillPanelResourceRepository().icons();
+    }
+
     private present<T extends { skill: string; before: string; after: string }>(proposal: T) {
         return {
             ...proposal,

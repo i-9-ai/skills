@@ -181,7 +181,13 @@ export class SkillMcpTransport {
         let ready = false;
         let buffer = Buffer.alloc(0);
         const serverInfo = this.serverInfo;
-        const advertisedTools = store.panel ? SkillPanelToolConfiguration.tools : tools;
+        const advertisedTools = store.panel
+            ? SkillPanelToolConfiguration.tools.map((tool) =>
+                  tool.name === 'skill_panel_open'
+                      ? { ...tool, icons: store.panel!.icons() }
+                      : tool,
+              )
+            : tools;
 
         function callTool(params: Request['params']) {
             const name = params?.name;

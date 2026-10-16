@@ -248,11 +248,16 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
     );
     assert.equal(panelClient.status, 0, panelClient.stderr);
     const panelReplies = panelClient.stdout.trim().split('\n').map(JSON.parse);
-    assert.equal(
-        panelReplies
-            .find((reply) => reply.id === 2)
-            .result.tools.find((tool) => tool.name === 'skill_panel_open').title,
-        'I-9 Skills',
+    const opening = panelReplies
+        .find((reply) => reply.id === 2)
+        .result.tools.find((tool) => tool.name === 'skill_panel_open');
+    assert.equal(opening.title, 'I-9 Skills');
+    assert.equal(opening.icons?.length, 1);
+    assert.equal(opening.icons[0].mimeType, 'image/png');
+    assert.equal(opening.icons[0].src.split(',')[0], 'data:image/png;base64');
+    assert.deepEqual(
+        Buffer.from(opening.icons[0].src.split(',')[1], 'base64'),
+        readFileSync(join(installed, 'assets/plugin-icon.png')),
     );
     assert.equal(
         panelReplies.find((reply) => reply.id === 3).result.contents[0].text,

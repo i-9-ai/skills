@@ -44,6 +44,15 @@ host actually loaded; an already open component may retain its prior process.
 Tool discovery, successful HTML retrieval and visible native rendering are
 separate checks when investigating a host's “could not display” message.
 
+## Native entry icon
+
+The opening tool advertises the bundled I-9 Skills icon through standard MCP
+`icons` metadata, encoded as a bounded PNG data URL. No external image request or
+local absolute path is needed. A supporting host can use it for the native
+entry; actual display and caching depend on that host. Missing or invalid optional
+branding falls back to its generic icon without disabling the panel. Plugin
+listing `logo` and `composerIcon` describe separate presentation surfaces.
+
 ## Include read-only global skills
 
 Add an explicitly selected global collection without copying its packages:
