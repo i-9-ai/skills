@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { createHash } from 'node:crypto';
 import { realpathSync } from 'node:fs';
-import { basename } from 'node:path';
+import { basename, dirname, join, sep } from 'node:path';
 import { SafeRoot } from '../../.agents/skills/skill-authoring/scripts/lib/filesystem.mjs';
 import { SkillPanelConfiguration } from '../config/SkillPanelConfiguration.ts';
 import { SkillOperationError } from '../validator/SkillOperationError.ts';
@@ -30,11 +30,13 @@ export class SkillPanelCatalogRepository {
         if (this.configuration.globalCollection) {
             try {
                 const global = realpathSync(this.configuration.globalCollection);
-                this.configuration.assertSeparate(
-                    global,
+                this.assertWritableTargets(
                     realpathSync(this.configuration.collection),
+                    join(
+                        realpathSync(dirname(this.configuration.state)),
+                        basename(this.configuration.state),
+                    ),
                 );
-                this.configuration.assertSeparate(global, this.configuration.state);
                 sources.push({
                     directory: global,
                     label: 'global',
@@ -103,8 +105,10 @@ export class SkillPanelCatalogRepository {
         const root = new SafeRoot(entry.canonicalPath);
         try {
             const bytes = root.readBytes('SKILL.md', 131_072);
-            const text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
-            const metadata = new YamlFrontmatterValidator().parse(text) as Record<string, unknown>;
+            const text = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(bytes);
+            const metadata = new YamlFrontmatterValidator().parse(
+                text.replace(/^\uFEFF/u, ''),
+            ) as Record<string, unknown>;
             if (metadata?.name !== entry.name) throw new SkillOperationError('invalid_input');
             return {
                 skill: entry.skill,
@@ -121,6 +125,30 @@ export class SkillPanelCatalogRepository {
             };
         } finally {
             root.close();
+        }
+    }
+
+    /** Called before state creation or mutation, including direct repository callers. */
+    assertWritableTargets(collection: string, state: string): void {
+        if (!this.configuration.globalCollection) return;
+        const global = realpathSync(this.configuration.globalCollection);
+        if (global === sep || global.split(sep).includes('.system')) {
+            throw new Error('Select an ordinary global reference root.');
+        }
+        this.configuration.assertSeparate(global, collection);
+        this.configuration.assertSeparate(global, state);
+        const references = new SkillDiscoveryRepository().read([
+            { directory: global, label: 'global' },
+        ]);
+        for (const entry of references.skills) {
+            // A global alias does not revoke the caller's existing selected-copy
+            // authority. Every other reference, including external links, stays read-only.
+            const selectedPackage =
+                entry.canonicalPath === collection ||
+                entry.canonicalPath.startsWith(collection + sep);
+            if (selectedPackage) continue;
+            this.configuration.assertSeparate(entry.canonicalPath, collection);
+            this.configuration.assertSeparate(entry.canonicalPath, state);
         }
     }
 }

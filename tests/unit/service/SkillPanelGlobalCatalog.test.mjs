@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 import test from 'node:test';
 import { SkillPanelConfiguration } from '../../../src/config/SkillPanelConfiguration.ts';
 import { SkillPanelService } from '../../../src/service/SkillPanelService.ts';
+import { SkillEvolutionRepository } from '../../../src/repository/SkillEvolutionRepository.ts';
 import { skillPanelFixture } from '../fixture/SkillPanelFixture.mjs';
 
 function fixture(t) {
@@ -114,4 +116,100 @@ test('global coverage failures do not hide selected skills or enable arbitrary f
     assert.equal(missing.open({}).skills.length, 1);
     assert(missing.open({}).warnings.some((warning) => warning.includes('global')));
     assert.throws(() => new SkillPanelConfiguration(f.collection, f.state, f.state));
+});
+
+for (const location of ['global-root', 'linked-package']) {
+    for (const action of ['prepare', 'apply', 'recover']) {
+        test(`${action} refuses physically global proposal state through ${location} before any write`, (t) => {
+            const f = fixture(t);
+            let protectedRoot = f.global;
+            if (location === 'linked-package') {
+                protectedRoot = join(f.root, 'external-package');
+                fs.mkdirSync(protectedRoot);
+                fs.writeFileSync(
+                    join(protectedRoot, 'SKILL.md'),
+                    '---\nname: linked-package\ndescription: An external global reference.\n---\n\n# Reference\n',
+                );
+                fs.symlinkSync(protectedRoot, join(f.global, 'linked-package'));
+            }
+            fs.mkdirSync(join(protectedRoot, 'ordinary-parent'));
+            const alias = join(f.root, 'protected-alias');
+            fs.symlinkSync(protectedRoot, alias);
+            const state = join(alias, 'ordinary-parent/private-proposals');
+            const configuration = new SkillPanelConfiguration(f.collection, state, f.global);
+            const panel = new SkillPanelService(configuration);
+            const repository = new SkillEvolutionRepository(configuration);
+            assert(panel.open({}).warnings.some((warning) => /overlap/.test(warning)));
+            const input =
+                action === 'prepare'
+                    ? {
+                          skill: 'example-skill',
+                          base_sha256: f.inspect().package_sha256,
+                          after: f.after,
+                          rationale: 'Must not write in a global reference.',
+                      }
+                    : {
+                          action,
+                          approved: true,
+                          proposal_id: '11111111-1111-4111-8111-111111111111',
+                          base_sha256: '0'.repeat(64),
+                          candidate_sha256: '1'.repeat(64),
+                      };
+            assert.throws(() => repository[action](input), { code: 'panel_storage_unavailable' });
+            assert.equal(fs.existsSync(state), false);
+            assert.equal(fs.readFileSync(f.entrypoint, 'utf8'), f.before);
+        });
+    }
+}
+
+test('global inspection preserves a leading BOM in returned text, hashes and byte counts', (t) => {
+    const f = fixture(t);
+    const path = f.add('bom-skill');
+    const bytes = Buffer.concat([
+        Buffer.from([0xef, 0xbb, 0xbf]),
+        fs.readFileSync(join(path, 'SKILL.md')),
+    ]);
+    fs.writeFileSync(join(path, 'SKILL.md'), bytes);
+    const row = f.service.open({}).skills.find((entry) => entry.source === 'global');
+    const inspected = f.service.inspect({ skill: row.skill });
+    assert.deepEqual(Buffer.from(inspected.text), bytes);
+    assert.equal(
+        inspected.sha256,
+        createHash('sha256').update(Buffer.from(inspected.text)).digest('hex'),
+    );
+    assert.equal(inspected.bytes, bytes.length);
+});
+
+test('a global alias of an explicitly selected private copy preserves its existing authority', (t) => {
+    const f = fixture(t);
+    fs.symlinkSync(f.skill, join(f.global, 'selected-copy-alias'));
+    const catalog = f.service.open({});
+    assert.equal(catalog.skills.length, 1);
+    assert.equal(catalog.skills[0].source, 'selected');
+    assert.equal(catalog.skills[0].read_only, false);
+    const proposal = f.service.propose({
+        skill: 'example-skill',
+        base_sha256: f.inspect().package_sha256,
+        after: f.after,
+        rationale: 'Retain existing selected-copy authority.',
+    });
+    assert.equal(proposal.status, 'proposed');
+    assert.equal(fs.readFileSync(f.entrypoint, 'utf8'), f.before);
+});
+
+test('a global root alias cannot expose the reserved system collection', (t) => {
+    const f = fixture(t);
+    fs.mkdirSync(join(f.root, '.system', 'hidden-skill'), { recursive: true });
+    fs.writeFileSync(
+        join(f.root, '.system/hidden-skill/SKILL.md'),
+        '---\nname: hidden-skill\ndescription: Reserved system package.\n---\n\n# Hidden\n',
+    );
+    const alias = join(f.root, 'system-alias');
+    fs.symlinkSync(join(f.root, '.system'), alias);
+    const service = new SkillPanelService(
+        new SkillPanelConfiguration(f.collection, f.state, alias),
+    );
+    const result = service.open({});
+    assert.equal(result.skills.length, 1);
+    assert(result.warnings.length > 0);
 });

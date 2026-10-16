@@ -65,6 +65,15 @@ excludes hidden system directories, and deduplicates real package paths. Equal
 names at different paths remain separate, with stable opaque `global:` IDs;
 names alone cannot redirect inspection to another package.
 
+An alias of a package already in the selected private collection deduplicates to
+that selected entry and preserves its existing editing authority. Other global
+references remain read-only. Before creating proposal state or acquiring a write
+lock, the backend compares physical global roots and referenced package paths
+with the selected collection and state destination. An ancestor alias cannot
+silently place state inside a global reference. Unavailable or overlapping
+global selections must be corrected before a write; there is no fallback that
+disables this protection automatically.
+
 Use **All sources**, **Selected collection** or **Global · read only**, then
 search by human name or description. **Refresh live catalog** reloads available
 pages from actual source metadata. The MCP tool accepts optional integer `offset`
@@ -77,6 +86,8 @@ source metadata changes during pagination.
 
 Selecting a global reference reads only its bounded UTF-8 `SKILL.md` (128 KiB),
 with its entrypoint hash, rather than asserting a complete package fingerprint.
+Returned text preserves exact UTF-8 bytes, including a leading BOM; parsing
+normalizes only a separate metadata view.
 **Prepare a review** drafts an unsent read-only request. **Plan an evolution** is
 disabled for these references, and the backend rejects global IDs for candidate
 writes. The existing selected-package workflow below retains its explicit approval

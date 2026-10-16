@@ -14,6 +14,7 @@ import {
     type PanelApproval,
 } from '../validator/SkillPanelValidator.ts';
 import { SkillPackageRevisionRepository } from './SkillPackageRevisionRepository.ts';
+import { SkillPanelCatalogRepository } from './SkillPanelCatalogRepository.ts';
 
 const hash = (bytes: string | Buffer) => createHash('sha256').update(bytes).digest('hex');
 type Validation = {
@@ -432,6 +433,10 @@ export class SkillEvolutionRepository {
                 allowMissingLeaf: true,
             });
             this.configuration.assertSeparate(collection.path, target.absolute);
+            new SkillPanelCatalogRepository(this.configuration).assertWritableTargets(
+                collection.path,
+                target.absolute,
+            );
             if (target.info === null) {
                 if (!write) throw new SkillOperationError('panel_storage_unavailable');
                 parent.verifySnapshot(target, { includeLeaf: false });

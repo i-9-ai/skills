@@ -9,3 +9,5 @@ The shared server remains unchanged unless both pilot paths are selected. The pi
 The entry uses the human-readable title “I-9 Skills”. Fixed UI resource retrieval accepts reserved client request metadata, and resource-template discovery returns an empty list; other resource URIs and unrelated arguments remain rejected.
 
 Optionally select `--panel-global-collection` to browse global skills alongside the editable pilot collection. Source labels, filtering and paginated loading preserve distinct same-name packages while deduplicating actual package paths. Global `SKILL.md` inspection and unsent review drafts are read-only; candidate, apply and recovery remain limited to the original selected collection. Global package links and ordinary namespaces are supported, with hidden system directories excluded and incomplete discovery reported.
+
+Global inspection preserves exact UTF-8 entrypoint bytes, including BOMs. Physical-path checks reject proposal state inside global roots or references before any state or lock is created; a global alias does not revoke an explicitly selected private copy's existing authority.
