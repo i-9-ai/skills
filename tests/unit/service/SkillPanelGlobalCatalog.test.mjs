@@ -248,6 +248,22 @@ test('a global root alias cannot expose the reserved system collection', (t) => 
     assert(result.warnings.length > 0);
 });
 
+test('a differently cased package link cannot expose a reserved system package', (t) => {
+    const f = fixture(t);
+    const reserved = join(f.root, '.system', 'hidden-skill');
+    fs.mkdirSync(reserved, { recursive: true });
+    fs.writeFileSync(
+        join(reserved, 'SKILL.md'),
+        '---\nname: hidden-skill\ndescription: Reserved system package.\n---\n\n# Hidden\n',
+    );
+    const caseAlias = join(f.root, '.SYSTEM', 'HIDDEN-SKILL');
+    fs.symlinkSync(
+        fs.existsSync(caseAlias) ? caseAlias : reserved,
+        join(f.global, 'visible-alias'),
+    );
+    assert.equal(f.service.open({}).total, 1);
+});
+
 test('an existing state leaf resolves physical identity even with different path casing', (t) => {
     const f = fixture(t);
     const global = join(f.root, 'GlobalReferences');

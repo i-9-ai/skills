@@ -59,6 +59,7 @@ export class SkillPanelCatalogRepository {
         for (const entry of [...selected.skills, ...global.skills]) {
             try {
                 const canonicalPath = realpathSync.native(entry.canonicalPath);
+                if (canonicalPath.split(sep).includes('.system')) continue;
                 if (!unique.has(canonicalPath) || entry.sources.includes('selected')) {
                     unique.set(canonicalPath, { ...entry, canonicalPath });
                 }
