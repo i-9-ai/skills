@@ -5,7 +5,10 @@ import fs from 'node:fs';
 import { join } from 'node:path';
 import { PassThrough } from 'node:stream';
 import test from 'node:test';
-import { SkillMcpTransport } from '../../../src/transport/SkillMcpTransport.ts';
+import {
+    MAX_MCP_RESPONSE_BYTES,
+    SkillMcpTransport,
+} from '../../../src/transport/SkillMcpTransport.ts';
 import { skillPanelFixture } from '../../unit/fixture/SkillPanelFixture.mjs';
 
 test('the shared stdio protocol carries real catalog, retained candidate, approval, apply and recovery', async (t) => {
@@ -55,7 +58,15 @@ test('the shared stdio protocol carries real catalog, retained candidate, approv
     assert.deepEqual(init.result.capabilities.resources, {});
     input.write(JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }) + '\n');
     const tools = (await rpc('tools/list')).result.tools;
-    assert.equal(tools.length, 21);
+    assert.equal(tools.length, 6);
+    assert.equal(
+        tools.some((tool) => tool.name === 'skill_read_record'),
+        false,
+    );
+    assert.equal(
+        (await call('skill_read_record', {})).structuredContent.error.code,
+        'unknown_tool',
+    );
     assert.deepEqual(tools.find((tool) => tool.name === 'skill_panel_apply')._meta.ui.visibility, [
         'app',
     ]);
@@ -95,6 +106,42 @@ test('the shared stdio protocol carries real catalog, retained candidate, approv
         'recovered',
     );
     assert.equal(fs.readFileSync(f.entrypoint, 'utf8'), f.before);
+
+    // Long escaped lines remain valid below 32 KiB; the text fallback must not
+    // duplicate the full before/after/diff payload and overflow the MCP envelope.
+    const escaped = String.fromCharCode(92, 34).repeat(15000);
+    const largeBefore = f.before + '\n```text\n' + escaped + '\n```\n';
+    const largeAfter = f.after + '\n```text\n' + escaped.split('').reverse().join('') + '\n```\n';
+    fs.writeFileSync(f.entrypoint, largeBefore);
+    const base = f.inspect().package_sha256;
+    const envelope = await rpc('tools/call', {
+        name: 'skill_panel_propose',
+        arguments: {
+            skill: 'example-skill',
+            base_sha256: base,
+            after: largeAfter,
+            rationale: 'Review the bounded escaped-text candidate.',
+        },
+    });
+    assert.equal(envelope.error, undefined);
+    assert(Buffer.byteLength(JSON.stringify(envelope)) <= MAX_MCP_RESPONSE_BYTES);
+    assert(envelope.result.content[0].text.length < 200);
+    const large = envelope.result.structuredContent;
+    assert.equal(large.before, largeBefore);
+    assert.equal(large.after, largeAfter);
+    assert.equal(large.validation.local.status, 'passed');
+    const inspected = await call('skill_panel_proposal', { proposal_id: large.proposal_id });
+    assert.equal(inspected.isError, undefined);
+    assert.equal(inspected.structuredContent.before, largeBefore);
+    assert.equal(
+        (await call('skill_panel_apply', f.approval(large))).structuredContent.status,
+        'applied',
+    );
+    assert.equal(
+        (await call('skill_panel_recover', f.approval(large, 'recover'))).structuredContent.status,
+        'recovered',
+    );
+    assert.equal(fs.readFileSync(f.entrypoint, 'utf8'), largeBefore);
 });
 
 test('mcp serve validates paired explicit selections and the dependency-free plugin entrypoint uses the same server', (t) => {

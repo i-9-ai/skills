@@ -2,6 +2,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { createHash } from 'node:crypto';
+import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 import test from 'node:test';
 import vm from 'node:vm';
@@ -48,6 +49,69 @@ test('real proposal retains original and candidate without touching source; diff
         f.service.proposal({ proposal_id: proposal.proposal_id }).candidate_sha256,
         proposal.candidate_sha256,
     );
+});
+
+for (const shape of [
+    'normal',
+    'no-final-newlines',
+    'add-final-newline',
+    'remove-final-newline',
+    'crlf',
+]) {
+    test('apply and recovery diffs reproduce exact retained bytes: ' + shape, (t) => {
+        const f = skillPanelFixture(t);
+        let before = f.before;
+        let after = f.after;
+        if (shape === 'no-final-newlines') {
+            before = before.slice(0, -1);
+            after = after.slice(0, -1);
+        }
+        if (shape === 'add-final-newline') {
+            before = before.slice(0, -1);
+            after = f.before;
+        }
+        if (shape === 'remove-final-newline') after = before.slice(0, -1);
+        if (shape === 'crlf') {
+            before = before.replaceAll('\n', '\r\n');
+            after = after.replaceAll('\n', '\r\n');
+        }
+        fs.writeFileSync(f.entrypoint, before);
+        const proposal = f.propose({ after });
+        for (const [diff, expected] of [
+            [proposal.diff, after],
+            [proposal.recovery_diff, before],
+        ]) {
+            const run = spawnSync('git', ['apply', '--whitespace=nowarn', '-'], {
+                cwd: f.collection,
+                input: diff,
+                encoding: 'utf8',
+                timeout: 5000,
+                env: { ...process.env, GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: '/dev/null' },
+            });
+            assert.equal(run.status, 0, run.stderr);
+            assert.deepEqual(fs.readFileSync(f.entrypoint), Buffer.from(expected));
+        }
+    });
+}
+
+test('a leading UTF-8 BOM is retained in inspection, proposal hashes, apply and recovery', (t) => {
+    const f = skillPanelFixture(t);
+    const before = '\uFEFF' + f.before;
+    const after = '\uFEFF' + f.after;
+    fs.writeFileSync(f.entrypoint, before);
+    assert.equal(f.inspect().text, before);
+    assert.equal(
+        f.inspect().sha256,
+        createHash('sha256').update(Buffer.from(before)).digest('hex'),
+    );
+    const proposal = f.propose({ after });
+    assert.equal(proposal.before, before);
+    assert.equal(proposal.after, after);
+    assert.equal(proposal.validation.local.status, 'passed');
+    f.service.apply(f.approval(proposal));
+    assert.deepEqual(fs.readFileSync(f.entrypoint), Buffer.from(after));
+    f.service.recover(f.approval(proposal, 'recover'));
+    assert.deepEqual(fs.readFileSync(f.entrypoint), Buffer.from(before));
 });
 
 test('explicit exact approval applies once, preserves other files and recovers once', (t) => {
@@ -206,11 +270,50 @@ test('an interrupted applied write can be inspected and finalized without replay
     fs.writeFileSync(join(f.state, proposal.proposal_id, 'applying.json'), seal(outcome));
     fs.writeFileSync(f.entrypoint, f.after);
     const inode = fs.statSync(f.entrypoint).ino;
+    const observed = f.service.proposal({ proposal_id: proposal.proposal_id });
+    assert.equal(observed.status, 'proposed', 'No completion receipt is fabricated by inspection');
+    assert.equal(observed.source_state, 'candidate');
+    assert.equal(observed.write_intent, 'apply');
+    assert.equal(observed.source_sha256, proposal.candidate_sha256);
+    assert.equal(fs.existsSync(join(f.state, proposal.proposal_id, 'applied.json')), false);
     const result = f.service.apply(f.approval(proposal));
     assert.equal(result.status, 'applied');
     assert.equal(result.changed, false);
     assert.equal(fs.statSync(f.entrypoint).ino, inode);
     assert.equal(f.service.recover(f.approval(proposal, 'recover')).status, 'recovered');
+});
+
+test('read-only reconciliation reports changed source and interrupted recovery without inventing completion', (t) => {
+    const f = skillPanelFixture(t);
+    const proposal = f.propose();
+    assert.equal(proposal.source_state, 'original');
+    assert.equal(proposal.write_intent, null);
+    const applied = f.service.apply(f.approval(proposal));
+    assert.equal(applied.source_state, 'candidate');
+    fs.appendFileSync(f.entrypoint, 'Newer work.\n');
+    const changed = f.service.proposal({ proposal_id: proposal.proposal_id });
+    assert.equal(changed.source_state, 'changed');
+    assert.equal(changed.status, 'applied');
+    fs.writeFileSync(f.entrypoint, f.before);
+    fs.writeFileSync(
+        join(f.state, proposal.proposal_id, 'recovering.json'),
+        seal({
+            proposal_id: proposal.proposal_id,
+            base_sha256: proposal.base_sha256,
+            candidate_sha256: proposal.candidate_sha256,
+            action: 'recovering',
+        }),
+    );
+    const observed = f.service.proposal({ proposal_id: proposal.proposal_id });
+    assert.equal(observed.status, 'applied');
+    assert.equal(observed.source_state, 'original');
+    assert.equal(observed.write_intent, 'recover');
+    assert.equal(fs.existsSync(join(f.state, proposal.proposal_id, 'recovered.json')), false);
+    const restored = f.service.recover(f.approval(proposal, 'recover'));
+    assert.equal(restored.changed, false);
+    assert.equal(restored.status, 'recovered');
+    assert.equal(restored.source_state, 'original');
+    assert.equal(restored.write_intent, null);
 });
 
 test('packaged MCP resource has live controls and no frozen catalog or remote code', (t) => {

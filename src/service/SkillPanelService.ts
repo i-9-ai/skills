@@ -96,8 +96,9 @@ export class SkillPanelService {
     }
 
     private diff(skill: string, before: string, after: string): string {
-        const left = before.split('\n');
-        const right = after.split('\n');
+        // Preserve line terminators as part of identity, including EOF-only changes.
+        const left = before.match(/[^\n]*\n|[^\n]+$/g) ?? [];
+        const right = after.match(/[^\n]*\n|[^\n]+$/g) ?? [];
         let start = 0;
         while (start < left.length && start < right.length && left[start] === right[start]) start++;
         let end = 0;
@@ -111,14 +112,23 @@ export class SkillPanelService {
         const context = Math.min(3, end);
         const oldEnd = left.length - end;
         const newEnd = right.length - end;
+        const oldCount = oldEnd + context - from;
+        const newCount = newEnd + context - from;
+        const render = (prefix: string, lines: string[]) =>
+            lines.flatMap((line) =>
+                line.endsWith('\n')
+                    ? [prefix + line.slice(0, -1)]
+                    : [prefix + line, '\\ No newline at end of file'],
+            );
         return [
             `--- a/${skill}/SKILL.md`,
             `+++ b/${skill}/SKILL.md`,
-            `@@ -${from + 1},${oldEnd + context - from} +${from + 1},${newEnd + context - from} @@`,
-            ...left.slice(from, start).map((line) => ` ${line}`),
-            ...left.slice(start, oldEnd).map((line) => `-${line}`),
-            ...right.slice(start, newEnd).map((line) => `+${line}`),
-            ...left.slice(oldEnd, oldEnd + context).map((line) => ` ${line}`),
+            `@@ -${oldCount ? from + 1 : from},${oldCount} +${newCount ? from + 1 : from},${newCount} @@`,
+            ...render(' ', left.slice(from, start)),
+            ...render('-', left.slice(start, oldEnd)),
+            ...render('+', right.slice(start, newEnd)),
+            ...render(' ', left.slice(oldEnd, oldEnd + context)),
+            '',
         ].join('\n');
     }
 

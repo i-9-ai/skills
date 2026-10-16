@@ -64,10 +64,7 @@ export class SkillEvolutionRepository {
             const before = this.inspect(input.skill);
             if (before.package_sha256 !== input.base_sha256 || before.text === input.after)
                 this.conflict();
-            const metadata = new PortableFrontmatterValidator().parse(input.after) as Record<
-                string,
-                unknown
-            >;
+            const metadata = this.parseMetadata(input.after);
             if (metadata.name !== input.skill) throw new SkillOperationError('invalid_input');
             const count = fs
                 .readdirSync(state.path)
@@ -218,13 +215,9 @@ export class SkillEvolutionRepository {
             )
                 throw new SkillOperationError('invalid_input');
             const revision = this.revisions.inspect(directory);
-            const text = new TextDecoder('utf-8', { fatal: true }).decode(
-                root.readBytes('SKILL.md', PANEL_TEXT_BYTES),
-            );
-            const metadata = new PortableFrontmatterValidator().parse(text) as Record<
-                string,
-                unknown
-            >;
+            const bytes = root.readBytes('SKILL.md', PANEL_TEXT_BYTES);
+            const text = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(bytes);
+            const metadata = this.parseMetadata(text);
             if (metadata.name !== basename(directory))
                 throw new SkillOperationError('invalid_input');
             const modes = inventory
@@ -241,7 +234,7 @@ export class SkillEvolutionRepository {
                 this.conflict();
             return {
                 text,
-                sha256: hash(text),
+                sha256: hash(bytes),
                 package_sha256,
                 description: String(metadata.description),
                 files: revision.files,
@@ -250,6 +243,15 @@ export class SkillEvolutionRepository {
         } finally {
             root.close();
         }
+    }
+
+    private parseMetadata(text: string): Record<string, unknown> {
+        // Ignore a leading BOM only for parsing; retained text, hashes and writes
+        // always preserve the original UTF-8 bytes.
+        return new PortableFrontmatterValidator().parse(text.replace(/^\uFEFF/u, '')) as Record<
+            string,
+            unknown
+        >;
     }
 
     private copyPackage(source: string, destination: string, replacement?: string): void {
@@ -344,11 +346,23 @@ export class SkillEvolutionRepository {
         if (JSON.stringify(validation) !== JSON.stringify(receipt.validation)) this.conflict();
         const recovered = this.hasRecord(state, `${id}/recovered.json`, receipt, 'recovered');
         const applied = this.hasRecord(state, `${id}/applied.json`, receipt, 'applied');
+        const recovering = this.hasRecord(state, `${id}/recovering.json`, receipt, 'recovering');
+        const applying = this.hasRecord(state, `${id}/applying.json`, receipt, 'applying');
+        const source = this.inspect(receipt.skill);
         return {
             ...receipt,
             before: original.text,
             after: candidate.text,
             status: recovered ? 'recovered' : applied ? 'applied' : 'proposed',
+            source_sha256: source.package_sha256,
+            source_state:
+                source.package_sha256 === receipt.base_sha256
+                    ? 'original'
+                    : source.package_sha256 === receipt.candidate_sha256
+                      ? 'candidate'
+                      : 'changed',
+            write_intent:
+                recovering && !recovered ? 'recover' : applying && !applied ? 'apply' : null,
         };
     }
 

@@ -181,15 +181,19 @@ export class SkillMcpTransport {
         let ready = false;
         let buffer = Buffer.alloc(0);
         const serverInfo = this.serverInfo;
-        const advertisedTools = store.panel
-            ? [...tools, ...SkillPanelToolConfiguration.tools]
-            : tools;
+        const advertisedTools = store.panel ? SkillPanelToolConfiguration.tools : tools;
 
         function callTool(params: Request['params']) {
             const name = params?.name;
             const args = params?.arguments === undefined ? {} : params.arguments;
 
             try {
+                if (
+                    store.panel &&
+                    !SkillPanelToolConfiguration.tools.some((tool) => tool.name === name)
+                ) {
+                    throw new SkillOperationError('unknown_tool');
+                }
                 const handlers: Record<string, (input: unknown) => unknown> = {
                     ...(store.panel
                         ? {
@@ -226,7 +230,14 @@ export class SkillMcpTransport {
 
                 const value = handler(args);
                 return {
-                    content: [{ type: 'text', text: JSON.stringify(value) }],
+                    content: [
+                        {
+                            type: 'text',
+                            text: store.panel
+                                ? 'Local skill panel result. Exact source, proposal and validation data are in structuredContent.'
+                                : JSON.stringify(value),
+                        },
+                    ],
                     structuredContent: value,
                 };
             } catch (error) {

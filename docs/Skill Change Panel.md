@@ -26,8 +26,10 @@ node bin/index.mjs mcp serve \
 Both flags are required together. The dependency-free local plugin entrypoint
 accepts the same selections after `--host codex`, `--host claude` or
 `--host copilot`. This is an explicit configuration choice; existing manifests
-do not silently turn the panel or its write operations on. Normal catalog and
-telemetry operations keep their existing contracts.
+do not silently turn the panel or its write operations on. The explicitly selected
+pilot mode exposes only its six panel tools; unrelated evidence/database writes
+are unavailable. Without these flags, the normal catalog and telemetry MCP keeps
+its existing tools and contracts.
 
 Open `skill_panel_open` in an MCP Apps-capable host. A plain MCP client can read
 its structured result and the fixed `ui://i9-skills/skill-panel/v1.html` resource.
@@ -87,8 +89,15 @@ instead of overwriting newer work. Repeating a completed operation verifies the
 expected current bytes and returns a no-op rather than repeating a write.
 
 If a response times out, the write result is unknown. Use **Refresh proposal
-state** before another write. Persisted intents let the backend reconcile an
-already completed replacement without replaying it. A crash may leave a
+state** before another write. Closing the workflow, selecting another skill or
+receiving another proposal cannot discard the pending operation; **Inspect
+unresolved write** reopens it. Inspection compares actual source bytes with the
+retained original/candidate and reports `source_state`, `source_sha256` and
+`write_intent` separately from recorded completion. It never writes or invents a
+completion receipt. Changed source disables application and recovery; an
+inspected interrupted replacement can be finalized only with fresh approval.
+Persisted intents let the backend reconcile an already completed replacement
+without replaying it. A crash may leave a
 `mutation.lock`; preserve its state and inspect the owner/process before a human
 removes a stale lock. There is no automatic lock reset or recovery-data deletion.
 Root identity rechecks detect some concurrent changes; they are not a race-proof

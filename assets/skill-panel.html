@@ -788,7 +788,10 @@
                 </p>
                 <div class="panel-actions">
                     <button id="refresh" type="button" disabled>Refresh live catalog</button
-                    ><button id="resume" type="button" disabled>Open retained proposal</button>
+                    ><button id="resume" type="button" disabled>Open retained proposal</button
+                    ><button id="unresolved-write" type="button" hidden>
+                        Inspect unresolved write
+                    </button>
                 </div>
             </div>
             <main>
@@ -977,6 +980,7 @@
                 proposal = null;
                 mode = 'apply';
                 uncertain = false;
+                unresolved = null;
                 catalog = [];
                 lastFocus = null;
                 incoming = null;
@@ -1016,6 +1020,9 @@
                     this.el('apply').addEventListener('click', () => this.run(() => this.commit()));
                     this.el('inspect-proposal').addEventListener('click', () =>
                         this.run(() => this.refreshProposal()),
+                    );
+                    this.el('unresolved-write').addEventListener('click', () =>
+                        this.showUnresolved(),
                     );
                     this.el('edit').addEventListener('click', () => {
                         this.mode = 'apply';
@@ -1193,9 +1200,12 @@
                 }
 
                 async inspect(skill) {
+                    if (this.unresolved) return this.showUnresolved();
                     const result = await this.call('skill_panel_inspect', { skill });
                     this.selected = result;
                     this.proposal = null;
+                    this.uncertain = false;
+                    this.el('approval').checked = false;
                     this.el('selected-title').textContent = result.skill;
                     this.el('selected-description').textContent = result.description;
                     this.el('selected-hash').textContent = result.package_sha256;
@@ -1239,6 +1249,7 @@
                 }
 
                 startEditor() {
+                    if (this.unresolved) return this.showUnresolved();
                     this.mode = 'apply';
                     this.proposal = null;
                     this.uncertain = false;
@@ -1255,6 +1266,7 @@
                 }
 
                 invalidate() {
+                    if (this.unresolved) return this.showUnresolved();
                     this.proposal = null;
                     this.uncertain = false;
                     this.el('proposal-view').hidden = true;
@@ -1268,6 +1280,7 @@
                 }
 
                 async preview() {
+                    if (this.unresolved) return this.showUnresolved();
                     const result = await this.call('skill_panel_propose', {
                         skill: this.selected.skill,
                         base_sha256: this.selected.package_sha256,
@@ -1275,6 +1288,7 @@
                         rationale: this.el('rationale').value,
                     });
                     this.mode = 'apply';
+                    this.uncertain = false;
                     this.renderProposal(result);
                     this.el('workflow-status').textContent =
                         'Candidate and preimage retained. Review the actual diff and performed validation; no source file has changed.';
@@ -1283,7 +1297,6 @@
 
                 renderProposal(proposal) {
                     this.proposal = proposal;
-                    this.uncertain = false;
                     const recovery = this.mode === 'recover';
                     this.el('candidate-editor').hidden = true;
                     this.el('proposal-view').hidden = false;
@@ -1292,6 +1305,10 @@
                         proposal.proposal_id +
                         ' · state: ' +
                         proposal.status +
+                        ' · current source: ' +
+                        proposal.source_state +
+                        ' · pending intent: ' +
+                        (proposal.write_intent || 'none') +
                         ' · base: ' +
                         proposal.base_sha256 +
                         ' · candidate: ' +
@@ -1340,48 +1357,85 @@
 
                 actions() {
                     const proposal = this.proposal;
-                    const allowed =
+                    const blocked = this.uncertain || Boolean(this.unresolved);
+                    const canApply =
+                        proposal?.status === 'proposed' &&
+                        proposal.validation.local.status === 'passed' &&
+                        (proposal.source_state === 'original' ||
+                            (proposal.source_state === 'candidate' &&
+                                proposal.write_intent === 'apply'));
+                    const canRecover =
                         proposal &&
-                        !this.uncertain &&
-                        (this.mode === 'recover'
-                            ? proposal.status === 'applied'
-                            : proposal.status === 'proposed' &&
-                              proposal.validation.local.status === 'passed');
+                        ((proposal.source_state === 'candidate' &&
+                            (proposal.status === 'applied' || proposal.write_intent)) ||
+                            (proposal.source_state === 'original' &&
+                                proposal.write_intent === 'recover'));
+                    const allowed =
+                        proposal && !blocked && (this.mode === 'recover' ? canRecover : canApply);
                     this.el('apply').disabled =
                         this.busy || !allowed || !this.el('approval').checked;
                     this.el('approval').disabled = this.busy || !allowed;
-                    this.el('recover-prepare').hidden =
-                        !proposal || proposal.status !== 'applied' || this.mode === 'recover';
-                    this.el('recover-prepare').disabled = this.busy;
+                    this.el('recover-prepare').hidden = !canRecover || this.mode === 'recover';
+                    this.el('recover-prepare').disabled = this.busy || blocked;
                     this.el('edit').disabled =
                         this.busy ||
-                    this.uncertain ||
+                        blocked ||
                         !proposal ||
                         proposal.status !== 'proposed' ||
+                        proposal.source_state !== 'original' ||
+                        Boolean(proposal.write_intent) ||
                         this.mode === 'recover';
                     this.el('preview').disabled =
                         this.busy ||
+                        blocked ||
                         !this.selected ||
                         this.el('candidate').value === this.selected.text ||
                         !this.el('rationale').value.trim();
                     this.el('inspect-proposal').disabled = this.busy || !proposal;
+                    this.el('unresolved-write').hidden = !this.unresolved;
+                    this.el('unresolved-write').disabled = this.busy;
+                }
+
+                showUnresolved(detail = '') {
+                    if (!this.unresolved) return;
+                    this.mode = this.unresolved.action;
+                    this.uncertain = true;
+                    this.renderProposal(this.unresolved.proposal);
+                    this.el('workflow-title').textContent =
+                        'Inspect unresolved ' + this.mode + ' · ' + this.proposal.skill;
+                    this.el('workflow-base').textContent =
+                        'Retained proposal ID: ' + this.proposal.proposal_id;
+                    this.el('workflow-status').textContent =
+                        (detail ? detail + ' ' : '') +
+                        'The write result is unknown. Refresh this retained proposal to inspect actual source bytes and recorded intent before changing selection, editing or approving another write.';
+                    if (!this.el('workflow-dialog').open) this.openDialog('workflow-dialog');
+                    this.el('inspect-proposal').focus();
                 }
 
                 async refreshProposal() {
-                    if (!this.proposal) return;
+                    const proposal = this.unresolved?.proposal || this.proposal;
+                    if (!proposal) return;
                     const result = await this.call('skill_panel_proposal', {
-                        proposal_id: this.proposal.proposal_id,
+                        proposal_id: proposal.proposal_id,
                     });
+                    this.unresolved = null;
+                    this.uncertain = false;
                     this.renderProposal(result);
                     this.el('workflow-status').textContent =
                         'Retained proposal state re-read: ' +
                         result.status +
-                        '. No source write requested.';
+                        '; actual source: ' +
+                        result.source_state +
+                        '; pending write intent: ' +
+                        (result.write_intent || 'none') +
+                        '. No source write requested. Any next write requires fresh approval.';
                 }
 
                 async acceptIncoming(result) {
+                    if (this.unresolved) return this.showUnresolved();
                     await this.inspect(result.skill);
                     this.mode = 'apply';
+                    this.uncertain = false;
                     this.el('workflow-title').textContent = 'Review ' + result.skill;
                     this.el('workflow-base').textContent =
                         'Exact proposal source: ' + result.base_sha256;
@@ -1394,7 +1448,13 @@
                 }
 
                 async commit() {
-                    if (!this.proposal || !this.el('approval').checked || this.uncertain) return;
+                    if (
+                        !this.proposal ||
+                        !this.el('approval').checked ||
+                        this.uncertain ||
+                        this.unresolved
+                    )
+                        return;
                     const proposal = this.proposal;
                     const action = this.mode;
                     this.el('approval').checked = false;
@@ -1409,6 +1469,8 @@
                                 approved: true,
                             },
                         );
+                        this.unresolved = null;
+                        this.uncertain = false;
                         this.renderProposal(result);
                         const current = await this.call('skill_panel_inspect', {
                             skill: result.skill,
@@ -1422,10 +1484,8 @@
                                 : 'Approved entrypoint applied. The original package remains retained for guarded recovery.';
                         this.el('workflow-status').focus();
                     } catch (error) {
-                        this.uncertain = true;
-                        this.el('workflow-status').textContent =
-                            error.message + ' Refresh proposal state before another write.';
-                        throw error;
+                        this.unresolved = { proposal, action };
+                        this.showUnresolved(error.message);
                     }
                 }
             }
