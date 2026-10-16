@@ -56,6 +56,14 @@ operator demonstration. Record discovery counts/warnings without publishing
 private names, source text or absolute paths. Native process refresh and native
 resource acceptance remain distinct from a loopback browser bridge.
 
+Write authorization must resolve existing physical destination leaves, including
+filesystem case aliases, and derive external reference boundaries independently
+of metadata success. Walk ordinary global directories with a 32-level/16,384-entry
+bound, protect linked targets without traversing external repositories, and fail
+closed for writes on incomplete boundary coverage. Preserve available read-only
+catalog entries and warnings. Regression cases include invalid YAML, ancestral
+aliases, destination case aliases, BOM byte identity and incomplete coverage.
+
 ## Authority and removal
 
 The request authorizes reading the named global collection for this local panel

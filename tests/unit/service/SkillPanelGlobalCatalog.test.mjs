@@ -118,12 +118,12 @@ test('global coverage failures do not hide selected skills or enable arbitrary f
     assert.throws(() => new SkillPanelConfiguration(f.collection, f.state, f.state));
 });
 
-for (const location of ['global-root', 'linked-package']) {
+for (const location of ['global-root', 'linked-package', 'invalid-linked-package']) {
     for (const action of ['prepare', 'apply', 'recover']) {
         test(`${action} refuses physically global proposal state through ${location} before any write`, (t) => {
             const f = fixture(t);
             let protectedRoot = f.global;
-            if (location === 'linked-package') {
+            if (location !== 'global-root') {
                 protectedRoot = join(f.root, 'external-package');
                 fs.mkdirSync(protectedRoot);
                 fs.writeFileSync(
@@ -131,6 +131,12 @@ for (const location of ['global-root', 'linked-package']) {
                     '---\nname: linked-package\ndescription: An external global reference.\n---\n\n# Reference\n',
                 );
                 fs.symlinkSync(protectedRoot, join(f.global, 'linked-package'));
+                if (location === 'invalid-linked-package') {
+                    fs.writeFileSync(
+                        join(protectedRoot, 'SKILL.md'),
+                        '---\nname: linked-package\nname: duplicate-key\ndescription: Unsupported metadata must not authorize writes.\n---\n',
+                    );
+                }
             }
             fs.mkdirSync(join(protectedRoot, 'ordinary-parent'));
             const alias = join(f.root, 'protected-alias');
@@ -212,4 +218,66 @@ test('a global root alias cannot expose the reserved system collection', (t) => 
     const result = service.open({});
     assert.equal(result.skills.length, 1);
     assert(result.warnings.length > 0);
+});
+
+test('an existing state leaf resolves physical identity even with different path casing', (t) => {
+    const f = fixture(t);
+    const global = join(f.root, 'GlobalReferences');
+    const state = join(f.root, 'globalreferences');
+    fs.mkdirSync(global, { mode: 0o700 });
+    if (!fs.existsSync(state)) fs.symlinkSync(global, state);
+    assert.equal(fs.realpathSync.native(global), fs.realpathSync.native(state));
+    const service = new SkillPanelService(new SkillPanelConfiguration(f.collection, state, global));
+    assert(service.open({}).warnings.some((warning) => /overlap/.test(warning)));
+    assert.throws(
+        () =>
+            service.propose({
+                skill: 'example-skill',
+                base_sha256: f.inspect().package_sha256,
+                after: f.after,
+                rationale: 'An alias must not bypass the reference root.',
+            }),
+        { code: 'panel_storage_unavailable' },
+    );
+    assert.deepEqual(fs.readdirSync(global), []);
+});
+
+test('incomplete filesystem boundary discovery refuses state creation', (t) => {
+    const f = fixture(t);
+    fs.mkdirSync(join(f.global, ...Array.from({ length: 34 }, () => 'nested')), {
+        recursive: true,
+    });
+    assert.throws(
+        () =>
+            f.service.propose({
+                skill: 'example-skill',
+                base_sha256: f.inspect().package_sha256,
+                after: f.after,
+                rationale: 'Unknown reference bounds cannot authorize a write.',
+            }),
+        { code: 'panel_storage_unavailable' },
+    );
+    assert.equal(fs.existsSync(f.state), false);
+});
+
+test('incomplete write-boundary coverage preserves available read-only references', (t) => {
+    const f = fixture(t);
+    f.add('available-reference');
+    fs.symlinkSync(join(f.root, 'missing-reference'), join(f.global, 'broken-reference'));
+    const catalog = f.service.open({});
+    const reference = catalog.skills.find((entry) => entry.source === 'global');
+    assert.equal(reference.name, 'available-reference');
+    assert.equal(f.service.inspect({ skill: reference.skill }).read_only, true);
+    assert(catalog.warnings.some((warning) => warning.includes('writes are disabled')));
+    assert.throws(
+        () =>
+            f.service.propose({
+                skill: 'example-skill',
+                base_sha256: f.inspect().package_sha256,
+                after: f.after,
+                rationale: 'Incomplete reference bounds cannot grant write authority.',
+            }),
+        { code: 'panel_storage_unavailable' },
+    );
+    assert.equal(fs.existsSync(f.state), false);
 });

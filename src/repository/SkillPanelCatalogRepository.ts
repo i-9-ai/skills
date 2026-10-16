@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import { createHash } from 'node:crypto';
-import { realpathSync } from 'node:fs';
+import { lstatSync, opendirSync, realpathSync } from 'node:fs';
 import { basename, dirname, join, sep } from 'node:path';
 import { SafeRoot } from '../../.agents/skills/skill-authoring/scripts/lib/filesystem.mjs';
 import { SkillPanelConfiguration } from '../config/SkillPanelConfiguration.ts';
@@ -29,23 +29,20 @@ export class SkillPanelCatalogRepository {
         const warnings: string[] = [];
         if (this.configuration.globalCollection) {
             try {
-                const global = realpathSync(this.configuration.globalCollection);
-                this.assertWritableTargets(
-                    realpathSync(this.configuration.collection),
-                    join(
-                        realpathSync(dirname(this.configuration.state)),
-                        basename(this.configuration.state),
-                    ),
-                );
                 sources.push({
-                    directory: global,
+                    directory: this.globalRoot(),
                     label: 'global',
                     followPackageLinks: true,
                     maxDepth: 8,
                 });
             } catch {
+                warnings.push('global: collection unavailable; coverage is incomplete.');
+            }
+            try {
+                this.assertWritableTargets(this.configuration.collection, this.configuration.state);
+            } catch {
                 warnings.push(
-                    'global: collection unavailable or overlapping; coverage is incomplete.',
+                    'global: write boundary unavailable or overlapping; writes are disabled.',
                 );
             }
         }
@@ -131,24 +128,62 @@ export class SkillPanelCatalogRepository {
     /** Called before state creation or mutation, including direct repository callers. */
     assertWritableTargets(collection: string, state: string): void {
         if (!this.configuration.globalCollection) return;
-        const global = realpathSync(this.configuration.globalCollection);
-        if (global === sep || global.split(sep).includes('.system')) {
-            throw new Error('Select an ordinary global reference root.');
-        }
+        const global = this.globalRoot();
+        collection = this.physicalTarget(collection);
+        state = this.physicalTarget(state);
         this.configuration.assertSeparate(global, collection);
         this.configuration.assertSeparate(global, state);
-        const references = new SkillDiscoveryRepository().read([
-            { directory: global, label: 'global' },
-        ]);
-        for (const entry of references.skills) {
-            // A global alias does not revoke the caller's existing selected-copy
-            // authority. Every other reference, including external links, stays read-only.
-            const selectedPackage =
-                entry.canonicalPath === collection ||
-                entry.canonicalPath.startsWith(collection + sep);
-            if (selectedPackage) continue;
-            this.configuration.assertSeparate(entry.canonicalPath, collection);
-            this.configuration.assertSeparate(entry.canonicalPath, state);
+
+        // Metadata validity cannot authorize writes. Inspect filesystem reference
+        // boundaries independently, and refuse writes when coverage is incomplete.
+        const pending = [{ directory: global, depth: 0 }];
+        const visited = new Set<string>();
+        let entries = 0;
+        while (pending.length > 0) {
+            const item = pending.pop()!;
+            if (visited.has(item.directory)) continue;
+            if (item.depth > 32) throw new Error('Reference boundary depth limit reached.');
+            visited.add(item.directory);
+            const directory = opendirSync(item.directory);
+            try {
+                let entry;
+                while ((entry = directory.readSync()) !== null) {
+                    if (++entries > 16_384) throw new Error('Reference boundary limit reached.');
+                    if (entry.name.startsWith('.')) continue;
+                    if (!entry.isDirectory() && !entry.isSymbolicLink()) continue;
+                    const target = realpathSync.native(join(item.directory, entry.name));
+                    if (!lstatSync(target).isDirectory()) continue;
+
+                    // Aliases do not revoke explicitly selected private-copy authority.
+                    if (target === collection || target.startsWith(collection + sep)) continue;
+                    this.configuration.assertSeparate(target, collection);
+                    this.configuration.assertSeparate(target, state);
+
+                    // Discovery follows package links, never linked namespaces. Protect
+                    // the entire external target without crawling another repository.
+                    if (entry.isSymbolicLink()) continue;
+                    pending.push({ directory: target, depth: item.depth + 1 });
+                }
+            } finally {
+                directory.closeSync();
+            }
+        }
+    }
+
+    private globalRoot(): string {
+        const root = realpathSync.native(this.configuration.globalCollection!);
+        if (root === sep || root.split(sep).includes('.system') || !lstatSync(root).isDirectory()) {
+            throw new Error('Select an ordinary global reference root.');
+        }
+        return root;
+    }
+
+    private physicalTarget(path: string): string {
+        try {
+            return realpathSync.native(path);
+        } catch (error) {
+            if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+            return join(realpathSync.native(dirname(path)), basename(path));
         }
     }
 }

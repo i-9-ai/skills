@@ -68,11 +68,18 @@ names alone cannot redirect inspection to another package.
 An alias of a package already in the selected private collection deduplicates to
 that selected entry and preserves its existing editing authority. Other global
 references remain read-only. Before creating proposal state or acquiring a write
-lock, the backend compares physical global roots and referenced package paths
-with the selected collection and state destination. An ancestor alias cannot
-silently place state inside a global reference. Unavailable or overlapping
-global selections must be corrected before a write; there is no fallback that
-disables this protection automatically.
+lock, the backend compares physical global roots and filesystem reference paths
+with the selected collection and state destination, including an existing
+destination's actual case. This check is independent of metadata validity:
+invalid YAML cannot remove a linked package's protection. Ancestor aliases cannot
+silently place state inside a global reference.
+
+The boundary walk inspects ordinary global directories up to 32 levels and
+16,384 entries, protects whole linked targets without crawling external
+repositories, and refuses writes on unavailable, broken, overlapping or
+incompletely checked boundaries. Available read-only references remain visible
+with a warning. Correct the selected paths or reference coverage before writing;
+there is no fallback that disables this protection automatically.
 
 Use **All sources**, **Selected collection** or **Global · read only**, then
 search by human name or description. **Refresh live catalog** reloads available
