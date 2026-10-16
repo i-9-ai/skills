@@ -22,6 +22,8 @@ Verify every requirement has an implementation and a check or an explicit limit.
 
 ## Child DOX index
 
+- [Native panel resource compatibility](2026-10-16-22-54-28-native-panel-resource-compatibility.md): fixed-resource reads with reserved client metadata and friendly sidebar naming; no added file access, mutation authority or native acceptance claim.
+
 - [Functional skill-change panel pilot](2026-10-16-21-05-42-native-skill-change-pilot.md): real selected-package inspection, supplied candidate diff and explicit guarded apply/recover through the shared MCP; no autonomous generation or public delivery.
 
 - [Sidebar review experience](2026-10-16-20-01-32-sidebar-review-experience.md): accessible action explanations, honest snapshot state and illustrative diff approval; no live editor or skill mutation.

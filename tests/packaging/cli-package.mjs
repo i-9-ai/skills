@@ -189,6 +189,64 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
             restored: true,
         },
     );
+    const panelFrames = [
+        {
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'initialize',
+            params: {
+                protocolVersion: '2025-11-25',
+                capabilities: {},
+                clientInfo: { name: 'fixture-client', version: '1' },
+            },
+        },
+        { jsonrpc: '2.0', method: 'notifications/initialized' },
+        { jsonrpc: '2.0', id: 2, method: 'tools/list' },
+        {
+            jsonrpc: '2.0',
+            id: 3,
+            method: 'resources/read',
+            params: {
+                uri: 'ui://i9-skills/skill-panel/v1.html',
+                _meta: { progressToken: 'fixture-resource' },
+            },
+        },
+        { jsonrpc: '2.0', id: 4, method: 'resources/templates/list' },
+    ];
+    const panelClient = spawnSync(
+        process.execPath,
+        [
+            join(installed, 'dist/transport/PluginMcpServer.js'),
+            '--host',
+            'codex',
+            '--panel-collection',
+            panel.collection,
+            '--panel-state',
+            panel.state,
+        ],
+        {
+            cwd: root,
+            env: environment,
+            encoding: 'utf8',
+            timeout: 10000,
+            input: panelFrames.map(JSON.stringify).join('\n') + '\n',
+        },
+    );
+    assert.equal(panelClient.status, 0, panelClient.stderr);
+    const panelReplies = panelClient.stdout.trim().split('\n').map(JSON.parse);
+    assert.equal(
+        panelReplies
+            .find((reply) => reply.id === 2)
+            .result.tools.find((tool) => tool.name === 'skill_panel_open').title,
+        'I-9 Skills',
+    );
+    assert.equal(
+        panelReplies.find((reply) => reply.id === 3).result.contents[0].text,
+        readFileSync(join(installed, 'assets/skill-panel.html'), 'utf8'),
+    );
+    assert.deepEqual(panelReplies.find((reply) => reply.id === 4).result, {
+        resourceTemplates: [],
+    });
     const pilotSelection = nativePilotFixture(t).contract;
     pilotSelection.runtime_layout = 'compiled-js';
     pilotSelection.observer.entrypoint = 'dist/transport/NativePilotNativeObserverRunner.js';

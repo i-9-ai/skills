@@ -265,10 +265,17 @@ export class SkillMcpTransport {
             if (request.method === 'tools/list') return { tools: advertisedTools };
             if (store.panel && request.method === 'resources/list')
                 return { resources: [SkillPanelToolConfiguration.resource] };
+            if (store.panel && request.method === 'resources/templates/list')
+                return { resourceTemplates: [] };
             if (store.panel && request.method === 'resources/read') {
+                const params = request.params;
+                const metadata = params?._meta;
                 if (
-                    Object.keys(request.params ?? {}).length !== 1 ||
-                    request.params?.uri !== SkillPanelToolConfiguration.resource.uri
+                    !params ||
+                    Object.keys(params).some((key) => key !== 'uri' && key !== '_meta') ||
+                    params.uri !== SkillPanelToolConfiguration.resource.uri ||
+                    (Object.hasOwn(params, '_meta') &&
+                        (!metadata || typeof metadata !== 'object' || Array.isArray(metadata)))
                 )
                     throw new Error('Unknown panel resource');
                 return { contents: [store.panel.resource()] };

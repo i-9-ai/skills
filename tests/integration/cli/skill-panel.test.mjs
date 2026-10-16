@@ -75,6 +75,26 @@ test('the shared stdio protocol carries real catalog, retained candidate, approv
     assert.equal((await rpc('resources/read', { uri: 'file:///not-selected' })).error.code, -32602);
     const ui = await rpc('resources/read', { uri: resources[0].uri });
     assert.match(ui.result.contents[0].text, /Live selected files/);
+    const clientUi = await rpc('resources/read', {
+        uri: resources[0].uri,
+        _meta: { progressToken: 'fixture-resource', 'fixture/client': { request: 'read' } },
+    });
+    assert.equal(
+        clientUi.error,
+        undefined,
+        'Reserved request metadata must not reject the fixed UI',
+    );
+    assert.equal(clientUi.result.contents[0].text, ui.result.contents[0].text);
+    assert.deepEqual((await rpc('resources/templates/list')).result, { resourceTemplates: [] });
+    assert.equal(tools.find((tool) => tool.name === 'skill_panel_open').title, 'I-9 Skills');
+    for (const invalid of [
+        { uri: resources[0].uri, unrelated: true },
+        { uri: resources[0].uri, _meta: null },
+        { uri: resources[0].uri, _meta: [] },
+        { uri: resources[0].uri, _meta: 'invalid' },
+        { uri: 'file:///not-selected', _meta: { progressToken: 1 } },
+    ])
+        assert.equal((await rpc('resources/read', invalid)).error.code, -32602);
     assert.equal(
         (await call('skill_panel_open', {})).structuredContent.skills[0].skill,
         'example-skill',

@@ -36,6 +36,14 @@ its structured result and the fixed `ui://i9-skills/skill-panel/v1.html` resourc
 Opening the panel does not enable hooks, record usage or create a database.
 No remote assets, model call or network service are required by the panel.
 
+The sidebar entry is titled **I-9 Skills**; `skill_panel_open` remains its stable
+technical tool name. Fixed-resource reads accept standard client request metadata
+and template discovery returns an empty list. Metadata never selects another
+resource or grants access. After updating a local lab, verify which version the
+host actually loaded; an already open component may retain its prior process.
+Tool discovery, successful HTML retrieval and visible native rendering are
+separate checks when investigating a host's “could not display” message.
+
 ## Review a real candidate
 
 1. Select a skill. The panel reads actual `SKILL.md` content, file count, byte

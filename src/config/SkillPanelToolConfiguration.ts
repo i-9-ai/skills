@@ -29,6 +29,7 @@ export class SkillPanelToolConfiguration {
     static readonly tools = [
         {
             name: 'skill_panel_open',
+            title: 'I-9 Skills',
             description:
                 'Open the optional local skill-change pilot and read its explicitly selected live catalog. No state, hooks or telemetry are created.',
             inputSchema: object({}),
