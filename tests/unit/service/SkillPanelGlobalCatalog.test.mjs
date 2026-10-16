@@ -203,6 +203,34 @@ test('a global alias of an explicitly selected private copy preserves its existi
     assert.equal(fs.readFileSync(f.entrypoint, 'utf8'), f.before);
 });
 
+test('case aliases deduplicate before source preference and global identity generation', (t) => {
+    const f = fixture(t);
+    const selectedCase = join(f.root, 'SELECTED SKILLS', 'EXAMPLE-SKILL');
+    fs.symlinkSync(
+        fs.existsSync(selectedCase) ? selectedCase : f.skill,
+        join(f.global, 'selected-alias'),
+    );
+    const reference = f.add('global-reference');
+    const globalCase = join(f.root, 'GLOBAL SKILLS', 'GLOBAL-REFERENCE');
+    fs.symlinkSync(
+        fs.existsSync(globalCase) ? globalCase : reference,
+        join(f.global, 'global-alias'),
+    );
+    const catalog = f.service.open({});
+    assert.equal(catalog.total, 2);
+    assert.deepEqual(
+        catalog.skills.map((entry) => [entry.name, entry.source, entry.read_only]),
+        [
+            ['example-skill', 'selected', false],
+            ['global-reference', 'global', true],
+        ],
+    );
+    assert.equal(
+        catalog.skills[1].skill,
+        'global:' + createHash('sha256').update(fs.realpathSync.native(reference)).digest('hex'),
+    );
+});
+
 test('a global root alias cannot expose the reserved system collection', (t) => {
     const f = fixture(t);
     fs.mkdirSync(join(f.root, '.system', 'hidden-skill'), { recursive: true });

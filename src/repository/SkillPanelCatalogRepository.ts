@@ -7,7 +7,7 @@ import { SkillPanelConfiguration } from '../config/SkillPanelConfiguration.ts';
 import { SkillOperationError } from '../validator/SkillOperationError.ts';
 import { YamlFrontmatterValidator } from '../validator/YamlFrontmatterValidator.ts';
 import { PortableFrontmatterValidator } from '../validator/PortableFrontmatterValidator.ts';
-import { SkillDiscoveryRepository } from './SkillDiscoveryRepository.ts';
+import { SkillDiscoveryRepository, type SkillSummary } from './SkillDiscoveryRepository.ts';
 
 /** Live metadata and read-only global entrypoints; never retains candidates or opens state. */
 export class SkillPanelCatalogRepository {
@@ -53,12 +53,21 @@ export class SkillPanelCatalogRepository {
             sources.length > 1
                 ? new SkillDiscoveryRepository().read(sources.slice(1))
                 : { skills: [], warnings: [] };
-        const unique = new Map(
-            [...selected.skills, ...global.skills].map((entry) => [entry.canonicalPath, entry]),
-        );
+        const unique = new Map<string, SkillSummary>();
         // The selected collection retains its existing mutation interface even if
         // a reference alias names the same physical package. References grant no writes.
-        for (const entry of selected.skills) unique.set(entry.canonicalPath, entry);
+        for (const entry of [...selected.skills, ...global.skills]) {
+            try {
+                const canonicalPath = realpathSync.native(entry.canonicalPath);
+                if (!unique.has(canonicalPath) || entry.sources.includes('selected')) {
+                    unique.set(canonicalPath, { ...entry, canonicalPath });
+                }
+            } catch {
+                warnings.push(
+                    `${entry.sources[0]}: changed package skipped; coverage is incomplete.`,
+                );
+            }
+        }
         const discovery = {
             skills: [...unique.values()].sort(
                 (left, right) =>
