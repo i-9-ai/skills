@@ -22,6 +22,8 @@ Verify every requirement has an implementation and a check or an explicit limit.
 
 ## Child DOX index
 
+- [Sidebar review experience](2026-10-16-20-01-32-sidebar-review-experience.md): accessible action explanations, honest snapshot state and illustrative diff approval; no live editor or skill mutation.
+
 - [Local sidebar feasibility](2026-10-16-19-35-25-local-sidebar-feasibility.md): reversible read-only MCP Apps lab and native installation checks; visible Codex sidebar acceptance remains a separate observation.
 
 - [Optional sidebar panel proposal](2026-10-10-11-03-38-skills-sidebar-panel-proposal.md): proposed MCP App entry, local read-only catalog/evidence views and disposable visual preview; native registration, implementation and public delivery remain unverified.

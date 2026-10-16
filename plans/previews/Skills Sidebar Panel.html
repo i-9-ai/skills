@@ -289,6 +289,178 @@
                 margin-top: 16px;
                 font-size: 11px;
             }
+            .snapshot-status {
+                margin-top: 18px;
+                padding: 12px 14px;
+                border-left: 3px solid var(--line);
+                background: var(--raised);
+                font-size: 12px;
+            }
+            .snapshot-status strong {
+                display: block;
+                margin-bottom: 5px;
+            }
+            .action-row {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) 44px;
+                gap: 8px;
+                margin-top: 10px;
+            }
+            .inspector .action-row > button {
+                margin-top: 0;
+            }
+            .help-button {
+                padding: 0;
+                font-size: 18px;
+                font-weight: 700;
+                border-radius: 50%;
+                color: var(--muted);
+            }
+            .workflow-dialog {
+                width: min(1080px, calc(100% - 24px));
+            }
+            .workflow-header {
+                position: sticky;
+                top: 0;
+                z-index: 1;
+                display: flex;
+                justify-content: space-between;
+                align-items: start;
+                gap: 18px;
+                margin: -28px -28px 0;
+                padding: 24px 28px 12px;
+                border-bottom: 1px solid var(--line);
+                background: var(--surface);
+            }
+            .workflow-header h2 {
+                overflow-wrap: anywhere;
+            }
+            .workflow-grid,
+            .example-files {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 16px;
+                margin-top: 20px;
+            }
+            .workflow-card {
+                min-width: 0;
+                padding: 18px;
+                border: 1px solid var(--line);
+                border-radius: 6px;
+                background: var(--background);
+            }
+            .workflow-card h3,
+            .workflow-card p + p,
+            .help-copy p + p {
+                margin-bottom: 10px;
+            }
+            .workflow-card p,
+            .help-copy,
+            .workflow-purpose {
+                font-size: 13px;
+                color: var(--muted);
+            }
+            .workflow-purpose {
+                margin: 12px 0;
+                max-width: 850px;
+            }
+            .workflow-card code,
+            .snapshot-status code {
+                color: var(--ink);
+            }
+            .workflow-card dl {
+                margin-bottom: 0;
+            }
+            .workflow-card button {
+                margin-top: 12px;
+            }
+            .workflow-steps {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px 28px;
+                padding-left: 20px;
+                margin: 20px 0;
+                font-size: 12px;
+                color: var(--muted);
+            }
+            .example-warning {
+                margin: 22px 0 0;
+                padding: 13px 16px;
+                border: 1px dashed var(--focus);
+                border-radius: 5px;
+                font-size: 13px;
+            }
+            .example-files pre,
+            .diff-lines {
+                overflow-x: auto;
+                padding: 15px;
+                margin: 12px 0 0;
+                background: var(--background);
+                border: 1px solid var(--line);
+                border-radius: 5px;
+                font: 12px/1.7 monospace;
+                tab-size: 4;
+            }
+            .example-files pre {
+                white-space: pre-wrap;
+                overflow-wrap: anywhere;
+            }
+            .diff-lines {
+                white-space: pre-wrap;
+                overflow-wrap: anywhere;
+            }
+            .diff-lines span {
+                display: block;
+                padding: 1px 6px;
+            }
+            .diff-lines .removed {
+                background: #b83a3425;
+                border-left: 3px solid #d97870;
+            }
+            .diff-lines .added {
+                background: #80a93625;
+                border-left: 3px solid var(--focus);
+            }
+            .approval-box {
+                margin-top: 18px;
+                padding-top: 18px;
+                border-top: 1px solid var(--line);
+            }
+            .approval-box label {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin: 16px 0;
+                font-size: 13px;
+            }
+            .approval-box input {
+                min-height: 24px;
+                width: 24px;
+                flex-shrink: 0;
+            }
+            .approval-status {
+                min-height: 45px;
+                font-weight: 700;
+                font-size: 13px;
+            }
+            button:disabled {
+                cursor: not-allowed;
+                opacity: 0.55;
+            }
+            @media (max-width: 720px) {
+                .workflow-grid,
+                .example-files {
+                    grid-template-columns: 1fr;
+                }
+                .workflow-dialog {
+                    padding: 18px;
+                }
+                .workflow-header {
+                    flex-wrap: wrap;
+                    margin: -18px -18px 0;
+                    padding: 18px 18px 12px;
+                }
+            }
             .state {
                 padding: 40px 28px;
                 border: 1px dashed var(--line);
@@ -430,8 +602,10 @@
             }
             .dialog-actions {
                 display: flex;
+                flex-wrap: wrap;
                 justify-content: end;
                 gap: 10px;
+                margin-top: 16px;
             }
             @media (max-width: 1050px) {
                 .frame {
@@ -555,6 +729,13 @@
                             <div class="eyebrow">Bundled collection · catalog snapshot</div>
                             <h2 id="selected-title"></h2>
                             <p id="selected-description"></p>
+                            <div class="snapshot-status">
+                                <strong>Snapshot status · metadata loaded</strong>
+                                <span>
+                                    This is a catalog snapshot. Installed files and their current
+                                    review state have not been inspected.
+                                </span>
+                            </div>
                             <dl class="facts">
                                 <div>
                                     <dt>Package version</dt>
@@ -565,6 +746,10 @@
                                     <dd><code>SKILL.md</code></dd>
                                 </div>
                                 <div>
+                                    <dt>Source snapshot</dt>
+                                    <dd><code>7493199</code></dd>
+                                </div>
+                                <div>
                                     <dt>Quality evidence</dt>
                                     <dd>Not loaded in preview</dd>
                                 </div>
@@ -573,15 +758,37 @@
                                     <dd>Not connected</dd>
                                 </div>
                             </dl>
-                            <button id="review" type="button" class="primary">
-                                Prepare a review
-                            </button>
-                            <button id="evolve" type="button" class="secondary">
-                                Plan an evolution
-                            </button>
+                            <div class="action-row">
+                                <button id="review" type="button" class="primary">
+                                    Prepare a review
+                                </button>
+                                <button
+                                    class="help-button"
+                                    type="button"
+                                    data-help="review"
+                                    aria-label="Explain Prepare a review"
+                                    aria-haspopup="dialog"
+                                >
+                                    ?
+                                </button>
+                            </div>
+                            <div class="action-row">
+                                <button id="evolve" type="button" class="secondary">
+                                    Plan an evolution
+                                </button>
+                                <button
+                                    class="help-button"
+                                    type="button"
+                                    data-help="evolve"
+                                    aria-label="Explain Plan an evolution"
+                                    aria-haspopup="dialog"
+                                >
+                                    ?
+                                </button>
+                            </div>
                             <p class="footnote">
-                                Prepares a visible draft. It does not send a message, execute a
-                                skill or change its files.
+                                Inspect the workflow, prepare its task, or try an illustrative diff
+                                and approval. No agent runs and no skill files change here.
                             </p>
                         </aside>
                     </div>
@@ -710,6 +917,128 @@
             </details>
         </div>
 
+        <dialog id="help-dialog" aria-labelledby="help-title">
+            <h2 id="help-title"></h2>
+            <div class="help-copy">
+                <p id="help-purpose"></p>
+                <p id="help-output"></p>
+                <p>
+                    In this design, you can prepare a task draft and inspect an illustrative
+                    proposal. A real change would need a source-bound diff, performed validation
+                    results and your explicit approval before application.
+                </p>
+            </div>
+            <div class="dialog-actions">
+                <button id="close-help" type="button">Close explanation</button>
+            </div>
+        </dialog>
+
+        <dialog id="workflow-dialog" class="workflow-dialog" aria-labelledby="workflow-title">
+            <div class="workflow-header">
+                <div>
+                    <p class="eyebrow muted">Workflow proposal · no live editor</p>
+                    <h2 id="workflow-title"></h2>
+                </div>
+                <button id="close-workflow" type="button">Close workflow</button>
+            </div>
+            <p id="workflow-purpose" class="workflow-purpose"></p>
+            <ol class="workflow-steps">
+                <li>Inspect the current source</li>
+                <li>Review the proposal and checks</li>
+                <li>Approve the exact change</li>
+            </ol>
+            <div class="workflow-grid">
+                <section class="workflow-card" aria-labelledby="snapshot-heading">
+                    <h3 id="snapshot-heading">Selected skill snapshot</h3>
+                    <p><code id="workflow-skill"></code></p>
+                    <p id="workflow-description"></p>
+                    <dl class="facts">
+                        <div>
+                            <dt>Bundle / source</dt>
+                            <dd>0.3.4 / <code>7493199</code></dd>
+                        </div>
+                        <div>
+                            <dt>Actual installed bytes</dt>
+                            <dd>Not inspected</dd>
+                        </div>
+                        <div>
+                            <dt>Latest review</dt>
+                            <dd>Not loaded</dd>
+                        </div>
+                        <div>
+                            <dt>Pending file changes</dt>
+                            <dd>Not loaded</dd>
+                        </div>
+                    </dl>
+                </section>
+                <section class="workflow-card" aria-labelledby="proposal-heading">
+                    <h3 id="proposal-heading">No proposal has been generated</h3>
+                    <p>
+                        A real run would return findings or a change plan, affected files and
+                        validation evidence. A review can conclude that no edit is needed.
+                    </p>
+                    <p>
+                        This preview cannot run that task. Prepare an editable request, or load a
+                        clearly labeled example to explore the approval flow.
+                    </p>
+                    <button id="workflow-draft" type="button">Edit task draft</button>
+                    <button id="load-example" type="button" class="primary">
+                        Load illustrative proposal
+                    </button>
+                </section>
+            </div>
+            <section id="example-proposal" hidden aria-labelledby="example-heading">
+                <h3 id="example-heading" class="example-warning" tabindex="-1">
+                    Illustrative change · example-skill/SKILL.md
+                </h3>
+                <p id="example-boundary" class="workflow-purpose"></p>
+                <div class="example-files">
+                    <section aria-labelledby="before-heading">
+                        <h3 id="before-heading">Current example</h3>
+                        <pre><code id="example-before"></code></pre>
+                    </section>
+                    <section aria-labelledby="after-heading">
+                        <h3 id="after-heading">Proposed example</h3>
+                        <pre><code id="example-after"></code></pre>
+                    </section>
+                </div>
+                <h3 class="workflow-purpose">Diff · same illustrative file</h3>
+                <pre id="example-diff" class="diff-lines" aria-label="Illustrative file diff"></pre>
+                <div class="workflow-grid">
+                    <section class="workflow-card">
+                        <h3>Why these example changes?</h3>
+                        <p>
+                            Make the inputs, expected result and verification explicit so another
+                            agent can follow the procedure without guessing.
+                        </p>
+                    </section>
+                    <section class="workflow-card">
+                        <h3>Validation · not run</h3>
+                        <p>
+                            This sample has no performed conformance or behavioral checks. A real
+                            proposal must show actual results, failures and remaining gates.
+                        </p>
+                    </section>
+                </div>
+                <div class="approval-box">
+                    <p id="approval-status" class="approval-status" role="status" tabindex="-1"></p>
+                    <label>
+                        <input id="proposal-ack" type="checkbox" />
+                        I have reviewed this illustrative diff. This is not approval to change a
+                        skill.
+                    </label>
+                    <div class="dialog-actions">
+                        <button id="request-example-changes" type="button">
+                            Request changes to example
+                        </button>
+                        <button id="approve-example" type="button" class="primary" disabled>
+                            Approve example only
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </dialog>
+
         <dialog id="draft-dialog" aria-labelledby="draft-title">
             <h2 id="draft-title">Prepared task</h2>
             <p class="muted">
@@ -730,241 +1059,137 @@
             </p></noscript
         >
         <script id="catalog-data" type="application/json">
-{
-  "schema_version": 1,
-  "skills": [
-    {
-      "name": "skill-authoring",
-      "description": "Use to author or revise a focused skill package from a goal and design, coordinating discovery, synthesis, and evaluation through companion skills. Use skills-discovery for search alone.",
-      "tags": [
-        "authoring",
-        "orchestration",
-        "skills"
-      ]
-    },
-    {
-      "name": "skill-design",
-      "description": "Use to resolve a skill's responsibility, interface, and design tradeoffs from a brief or merge plan before authoring. It does not discover sources or implement the package.",
-      "tags": [
-        "design",
-        "scoping",
-        "skills"
-      ]
-    },
-    {
-      "name": "skill-domain-research",
-      "description": "Use to research one proposed skill's subject, reconciling process-owner facts, reviewed skill claims, and current authoritative web sources into a bounded evidence dossier.",
-      "tags": [
-        "evidence",
-        "provenance",
-        "research",
-        "skills"
-      ]
-    },
-    {
-      "name": "skill-evaluator",
-      "description": "Use to evaluate a skill package against frozen behavioral cases and a baseline, returning evidence and a readiness verdict. It does not author fixes or publish the skill.",
-      "tags": [
-        "evaluation",
-        "skills",
-        "testing"
-      ]
-    },
-    {
-      "name": "skill-evidence-collection",
-      "description": "Use to collect, normalize, and preserve bounded evidence about one skill or skill collection for a later evaluation, lifecycle, or evolution decision. It does not judge or change the target.",
-      "tags": [
-        "evidence",
-        "governance",
-        "skills"
-      ]
-    },
-    {
-      "name": "skill-evolution",
-      "description": "Use to update one existing skill from new evidence while preserving its responsibility, provenance, compatibility, and a reviewable change record.",
-      "tags": [
-        "evolution",
-        "maintenance",
-        "skills"
-      ]
-    },
-    {
-      "name": "skill-icon-design",
-      "description": "Use to design or refresh a distinct, accessible SVG icon for one skill package from its responsibility and visual constraints. It does not redesign other package content.",
-      "tags": [
-        "icons",
-        "skills",
-        "visual-design"
-      ]
-    },
-    {
-      "name": "skill-installation",
-      "description": "Use to install one approved skill package at an immutable source revision into a selected agent environment and return an auditable installation receipt.",
-      "tags": [
-        "installation",
-        "provenance",
-        "skills"
-      ]
-    },
-    {
-      "name": "skill-lifecycle-review",
-      "description": "Use to determine the lifecycle state and next justified transition for one skill from current evidence without editing or publishing the package.",
-      "tags": [
-        "governance",
-        "lifecycle",
-        "skills"
-      ]
-    },
-    {
-      "name": "skill-migration",
-      "description": "Use to migrate one skill package between collections while preserving behavior, provenance, history, compatibility, and an auditable handoff.",
-      "tags": [
-        "migration",
-        "portability",
-        "skills"
-      ]
-    },
-    {
-      "name": "skill-naming",
-      "description": "Use to select or review a skill's canonical name, grouping related skills by domain and checking scope, cardinality, and known collisions. Return a naming decision without renaming files.",
-      "tags": [
-        "naming",
-        "organization",
-        "skills"
-      ]
-    },
-    {
-      "name": "skill-optimization",
-      "description": "Use to improve one skill through scored rollouts, bounded candidate edits, and held-out validation. It does not discover sources, author unrelated skills, or publish changes.",
-      "tags": [
-        "evaluation",
-        "optimization",
-        "skills"
-      ]
-    },
-    {
-      "name": "skill-publication",
-      "description": "Use to publish one approved skill package through an authorized distribution channel after exact-revision release gates have passed.",
-      "tags": [
-        "publication",
-        "release",
-        "skills"
-      ]
-    },
-    {
-      "name": "skill-routing",
-      "description": "Use to decide whether a task should activate one skill, an ordered set of skills, or no skill from supplied catalogs. It recommends a route but does not invoke, install, or modify skills.",
-      "tags": [
-        "routing",
-        "selection",
-        "skills"
-      ]
-    },
-    {
-      "name": "skill-security-review",
-      "description": "Use to review one skill package for secrets, private data, unsafe instructions, dangerous scripts, dependencies, permissions, and disclosure risk.",
-      "tags": [
-        "review",
-        "security",
-        "skills"
-      ]
-    },
-    {
-      "name": "skills-audit",
-      "description": "Use to audit a collection of installed or authored skills for inventory, provenance, validation, policy, and drift, producing one findings report.",
-      "tags": [
-        "audit",
-        "compliance",
-        "skills"
-      ]
-    },
-    {
-      "name": "skills-catalog",
-      "description": "Use to create, synchronize, or validate a repository or global catalog from installed SKILL.md metadata. It maintains inventory and summaries but does not choose a skill for a task.",
-      "tags": [
-        "catalog",
-        "metadata",
-        "skills"
-      ]
-    },
-    {
-      "name": "skills-catalog-index",
-      "description": "Use to combine explicit skill catalogs into a local searchable index, synchronize their change history, or record evidenced evolution operations. It does not maintain source catalogs or choose a skill.",
-      "tags": [
-        "catalog",
-        "history",
-        "index",
-        "skills"
-      ]
-    },
-    {
-      "name": "skills-discovery",
-      "description": "Use to discover and qualify existing skills for a specific task, returning pinned candidates and evidence. It does not install, merge, or author a skill.",
-      "tags": [
-        "discovery",
-        "research",
-        "skills"
-      ]
-    },
-    {
-      "name": "skills-host-compatibility",
-      "description": "Use to verify declared repository-local aliases for a canonical skill collection and return a bounded structural compatibility report.",
-      "tags": [
-        "aliases",
-        "compatibility",
-        "skills"
-      ]
-    },
-    {
-      "name": "skills-maintenance-scheduling",
-      "description": "Use to turn an approved recurring maintenance goal for a bounded skill collection into an approval-ready schedule proposal. It does not configure a scheduler or execute maintenance.",
-      "tags": [
-        "governance",
-        "maintenance",
-        "scheduling",
-        "skills"
-      ]
-    },
-    {
-      "name": "skills-refactoring",
-      "description": "Use to turn an audit of an existing skill collection into a bounded decomposition and reorganization plan without editing the packages.",
-      "tags": [
-        "decomposition",
-        "refactoring",
-        "skills"
-      ]
-    },
-    {
-      "name": "skills-snapshot",
-      "description": "Create, verify, list, restore, and explicitly prune deterministic snapshots of a caller-selected skill collection or package. Use before risky skill maintenance; do not use to install or refactor skills.",
-      "tags": [
-        "backup",
-        "restore",
-        "skills",
-        "snapshot"
-      ]
-    },
-    {
-      "name": "skills-synthesis",
-      "description": "Use to synthesize useful contributions from two or more reviewed skills into one coherent synthesis plan. It does not search for candidates, write the final package, or certify its quality.",
-      "tags": [
-        "provenance",
-        "skills",
-        "synthesis"
-      ]
-    },
-    {
-      "name": "skills-usage-setup",
-      "description": "Use to preview, explicitly enable, inspect, or remove optional skill-read observations for selected skill collections while preserving unrelated host settings and local evidence.",
-      "tags": [
-        "observations",
-        "setup",
-        "skills"
-      ]
-    }
-  ]
-}
-</script>
+            {
+                "schema_version": 1,
+                "skills": [
+                    {
+                        "name": "skill-authoring",
+                        "description": "Use to author or revise a focused skill package from a goal and design, coordinating discovery, synthesis, and evaluation through companion skills. Use skills-discovery for search alone.",
+                        "tags": ["authoring", "orchestration", "skills"]
+                    },
+                    {
+                        "name": "skill-design",
+                        "description": "Use to resolve a skill's responsibility, interface, and design tradeoffs from a brief or merge plan before authoring. It does not discover sources or implement the package.",
+                        "tags": ["design", "scoping", "skills"]
+                    },
+                    {
+                        "name": "skill-domain-research",
+                        "description": "Use to research one proposed skill's subject, reconciling process-owner facts, reviewed skill claims, and current authoritative web sources into a bounded evidence dossier.",
+                        "tags": ["evidence", "provenance", "research", "skills"]
+                    },
+                    {
+                        "name": "skill-evaluator",
+                        "description": "Use to evaluate a skill package against frozen behavioral cases and a baseline, returning evidence and a readiness verdict. It does not author fixes or publish the skill.",
+                        "tags": ["evaluation", "skills", "testing"]
+                    },
+                    {
+                        "name": "skill-evidence-collection",
+                        "description": "Use to collect, normalize, and preserve bounded evidence about one skill or skill collection for a later evaluation, lifecycle, or evolution decision. It does not judge or change the target.",
+                        "tags": ["evidence", "governance", "skills"]
+                    },
+                    {
+                        "name": "skill-evolution",
+                        "description": "Use to update one existing skill from new evidence while preserving its responsibility, provenance, compatibility, and a reviewable change record.",
+                        "tags": ["evolution", "maintenance", "skills"]
+                    },
+                    {
+                        "name": "skill-icon-design",
+                        "description": "Use to design or refresh a distinct, accessible SVG icon for one skill package from its responsibility and visual constraints. It does not redesign other package content.",
+                        "tags": ["icons", "skills", "visual-design"]
+                    },
+                    {
+                        "name": "skill-installation",
+                        "description": "Use to install one approved skill package at an immutable source revision into a selected agent environment and return an auditable installation receipt.",
+                        "tags": ["installation", "provenance", "skills"]
+                    },
+                    {
+                        "name": "skill-lifecycle-review",
+                        "description": "Use to determine the lifecycle state and next justified transition for one skill from current evidence without editing or publishing the package.",
+                        "tags": ["governance", "lifecycle", "skills"]
+                    },
+                    {
+                        "name": "skill-migration",
+                        "description": "Use to migrate one skill package between collections while preserving behavior, provenance, history, compatibility, and an auditable handoff.",
+                        "tags": ["migration", "portability", "skills"]
+                    },
+                    {
+                        "name": "skill-naming",
+                        "description": "Use to select or review a skill's canonical name, grouping related skills by domain and checking scope, cardinality, and known collisions. Return a naming decision without renaming files.",
+                        "tags": ["naming", "organization", "skills"]
+                    },
+                    {
+                        "name": "skill-optimization",
+                        "description": "Use to improve one skill through scored rollouts, bounded candidate edits, and held-out validation. It does not discover sources, author unrelated skills, or publish changes.",
+                        "tags": ["evaluation", "optimization", "skills"]
+                    },
+                    {
+                        "name": "skill-publication",
+                        "description": "Use to publish one approved skill package through an authorized distribution channel after exact-revision release gates have passed.",
+                        "tags": ["publication", "release", "skills"]
+                    },
+                    {
+                        "name": "skill-routing",
+                        "description": "Use to decide whether a task should activate one skill, an ordered set of skills, or no skill from supplied catalogs. It recommends a route but does not invoke, install, or modify skills.",
+                        "tags": ["routing", "selection", "skills"]
+                    },
+                    {
+                        "name": "skill-security-review",
+                        "description": "Use to review one skill package for secrets, private data, unsafe instructions, dangerous scripts, dependencies, permissions, and disclosure risk.",
+                        "tags": ["review", "security", "skills"]
+                    },
+                    {
+                        "name": "skills-audit",
+                        "description": "Use to audit a collection of installed or authored skills for inventory, provenance, validation, policy, and drift, producing one findings report.",
+                        "tags": ["audit", "compliance", "skills"]
+                    },
+                    {
+                        "name": "skills-catalog",
+                        "description": "Use to create, synchronize, or validate a repository or global catalog from installed SKILL.md metadata. It maintains inventory and summaries but does not choose a skill for a task.",
+                        "tags": ["catalog", "metadata", "skills"]
+                    },
+                    {
+                        "name": "skills-catalog-index",
+                        "description": "Use to combine explicit skill catalogs into a local searchable index, synchronize their change history, or record evidenced evolution operations. It does not maintain source catalogs or choose a skill.",
+                        "tags": ["catalog", "history", "index", "skills"]
+                    },
+                    {
+                        "name": "skills-discovery",
+                        "description": "Use to discover and qualify existing skills for a specific task, returning pinned candidates and evidence. It does not install, merge, or author a skill.",
+                        "tags": ["discovery", "research", "skills"]
+                    },
+                    {
+                        "name": "skills-host-compatibility",
+                        "description": "Use to verify declared repository-local aliases for a canonical skill collection and return a bounded structural compatibility report.",
+                        "tags": ["aliases", "compatibility", "skills"]
+                    },
+                    {
+                        "name": "skills-maintenance-scheduling",
+                        "description": "Use to turn an approved recurring maintenance goal for a bounded skill collection into an approval-ready schedule proposal. It does not configure a scheduler or execute maintenance.",
+                        "tags": ["governance", "maintenance", "scheduling", "skills"]
+                    },
+                    {
+                        "name": "skills-refactoring",
+                        "description": "Use to turn an audit of an existing skill collection into a bounded decomposition and reorganization plan without editing the packages.",
+                        "tags": ["decomposition", "refactoring", "skills"]
+                    },
+                    {
+                        "name": "skills-snapshot",
+                        "description": "Create, verify, list, restore, and explicitly prune deterministic snapshots of a caller-selected skill collection or package. Use before risky skill maintenance; do not use to install or refactor skills.",
+                        "tags": ["backup", "restore", "skills", "snapshot"]
+                    },
+                    {
+                        "name": "skills-synthesis",
+                        "description": "Use to synthesize useful contributions from two or more reviewed skills into one coherent synthesis plan. It does not search for candidates, write the final package, or certify its quality.",
+                        "tags": ["provenance", "skills", "synthesis"]
+                    },
+                    {
+                        "name": "skills-usage-setup",
+                        "description": "Use to preview, explicitly enable, inspect, or remove optional skill-read observations for selected skill collections while preserving unrelated host settings and local evidence.",
+                        "tags": ["observations", "setup", "skills"]
+                    }
+                ]
+            }
+        </script>
         <script>
             /** Disposable design behavior: no host bridge, persistence or tool calls. */
             class SkillPanelPreview {
@@ -1009,10 +1234,44 @@
                     });
                     document
                         .querySelector('#review')
-                        .addEventListener('click', () => this.prepare('review'));
+                        .addEventListener('click', () => this.openWorkflow('review'));
                     document
                         .querySelector('#evolve')
-                        .addEventListener('click', () => this.prepare('evolve'));
+                        .addEventListener('click', () => this.openWorkflow('evolve'));
+                    document.querySelectorAll('[data-help]').forEach((button) => {
+                        button.addEventListener('click', () => this.explain(button.dataset.help));
+                    });
+                    document.querySelector('#close-help').addEventListener('click', () => {
+                        document.querySelector('#help-dialog').close();
+                    });
+                    document.querySelector('#close-workflow').addEventListener('click', () => {
+                        document.querySelector('#workflow-dialog').close();
+                    });
+                    document.querySelector('#workflow-draft').addEventListener('click', () => {
+                        document.querySelector('#workflow-dialog').close();
+                        this.prepare(this.workflowAction);
+                    });
+                    document.querySelector('#load-example').addEventListener('click', () => {
+                        this.loadExample();
+                    });
+                    document.querySelector('#proposal-ack').addEventListener('change', (event) => {
+                        document.querySelector('#approve-example').disabled =
+                            this.exampleState !== 'proposed' || !event.target.checked;
+                    });
+                    document.querySelector('#approve-example').addEventListener('click', () => {
+                        if (
+                            this.exampleState !== 'proposed' ||
+                            !document.querySelector('#proposal-ack').checked
+                        )
+                            return;
+                        this.finishExample('approved');
+                    });
+                    document
+                        .querySelector('#request-example-changes')
+                        .addEventListener('click', () => {
+                            if (this.exampleState !== 'proposed') return;
+                            this.finishExample('changes-requested');
+                        });
                     document
                         .querySelector('#create')
                         .addEventListener('click', () => this.prepare('create'));
@@ -1173,6 +1432,109 @@
                     results.append(container);
                 }
 
+                explain(action) {
+                    const descriptions = {
+                        review: {
+                            title: 'What does Prepare a review do?',
+                            purpose:
+                                'Inspect the selected package for clear scope, complete instructions, useful examples and evidence gaps. A review reports findings; it does not assume that a change is needed.',
+                            output: 'Expected result: a review report. If a fix is proposed, show its exact diff and validation separately before asking for approval.',
+                        },
+                        evolve: {
+                            title: 'What does Plan an evolution do?',
+                            purpose:
+                                'Use a concrete goal or new evidence to plan changes to an existing skill. Reassess its responsibility, name, overlap and compatibility while preserving useful behavior.',
+                            output: 'Expected result: a justified change plan, followed by a proposed patch when requested. You inspect the patch and its checks before approving application.',
+                        },
+                    };
+                    const description = descriptions[action];
+                    document.querySelector('#help-title').textContent = description.title;
+                    document.querySelector('#help-purpose').textContent = description.purpose;
+                    document.querySelector('#help-output').textContent = description.output;
+                    document.querySelector('#help-dialog').showModal();
+                }
+
+                openWorkflow(action) {
+                    this.workflowAction = action;
+                    this.exampleState = null;
+                    document.querySelector('#workflow-title').textContent =
+                        (action === 'review' ? 'Review ' : 'Evolve ') + this.selected.name;
+                    document.querySelector('#workflow-purpose').textContent =
+                        action === 'review'
+                            ? 'Start with an inspection and findings. Any suggested edit becomes a separate, reviewable proposal before application.'
+                            : 'Start with a goal and evidence. Review the change plan, then inspect the proposed file changes and validation before approval.';
+                    document.querySelector('#workflow-skill').textContent = this.selected.name;
+                    document.querySelector('#workflow-description').textContent =
+                        this.selected.description;
+                    document.querySelector('#example-proposal').hidden = true;
+                    document.querySelector('#proposal-ack').checked = false;
+                    document.querySelector('#proposal-ack').disabled = false;
+                    document.querySelector('#approve-example').disabled = true;
+                    document.querySelector('#request-example-changes').disabled = true;
+                    document.querySelector('#load-example').textContent =
+                        'Load illustrative proposal';
+                    document.querySelector('#workflow-dialog').showModal();
+                }
+
+                loadExample() {
+                    this.exampleState = 'proposed';
+                    const before = [
+                        '## Procedure',
+                        '',
+                        '1. Read the requested input.',
+                        '2. Produce the result.',
+                    ];
+                    const after = [
+                        '## Procedure',
+                        '',
+                        '1. Verify the selected package and revision.',
+                        '2. Identify required inputs and resolve missing facts.',
+                        '3. Produce the reviewable result.',
+                        '4. Record performed checks and remaining gaps.',
+                    ];
+                    document.querySelector('#example-before').textContent = before.join('\n');
+                    document.querySelector('#example-after').textContent = after.join('\n');
+                    document.querySelector('#example-boundary').textContent =
+                        'Synthetic example only. These lines are not the contents of ' +
+                        this.selected.name +
+                        '. No agent generated this patch or ran its checks.';
+                    const diff = document.querySelector('#example-diff');
+                    diff.replaceChildren();
+                    const lines = [
+                        ['context', '--- a/example-skill/SKILL.md'],
+                        ['context', '+++ b/example-skill/SKILL.md'],
+                        ['context', '@@ -1,4 +1,6 @@'],
+                        ['context', ' ## Procedure'],
+                        ['context', ' '],
+                        ...before.slice(2).map((line) => ['removed', '-' + line]),
+                        ...after.slice(2).map((line) => ['added', '+' + line]),
+                    ];
+                    lines.forEach(([kind, text]) => this.appendText(diff, kind, text));
+                    document.querySelector('#example-proposal').hidden = false;
+                    document.querySelector('#proposal-ack').checked = false;
+                    document.querySelector('#proposal-ack').disabled = false;
+                    document.querySelector('#approve-example').disabled = true;
+                    document.querySelector('#request-example-changes').disabled = false;
+                    document.querySelector('#load-example').textContent =
+                        'Reset illustrative proposal';
+                    document.querySelector('#approval-status').textContent =
+                        'Example awaiting review. No real proposal or validation exists.';
+                    document.querySelector('#example-heading').focus();
+                }
+
+                finishExample(state) {
+                    this.exampleState = state;
+                    document.querySelector('#proposal-ack').checked = state === 'approved';
+                    document.querySelector('#proposal-ack').disabled = true;
+                    document.querySelector('#approve-example').disabled = true;
+                    document.querySelector('#request-example-changes').disabled = true;
+                    document.querySelector('#approval-status').textContent =
+                        state === 'approved'
+                            ? 'Example approved in this page only. No skill files changed. Real validation is still not run.'
+                            : 'Changes requested for this example. No approval is recorded. Reset the example to review it again.';
+                    document.querySelector('#approval-status').focus();
+                }
+
                 prepare(action) {
                     const identity =
                         this.selected.name +
@@ -1181,11 +1543,11 @@
                         review:
                             'Review ' +
                             identity +
-                            ' Resolve and verify the actual available package and its revision, then inspect its entrypoint and required references. Report scope, completeness and evidence gaps before proposing changes.',
+                            ' Resolve and verify the actual available package and its revision, then inspect its entrypoint and required references. Report scope, completeness and evidence gaps. If edits are proposed, show the exact file diff and performed checks, then wait for explicit approval before applying changes.',
                         evolve:
                             'Plan an evolution of ' +
                             identity +
-                            ' Inspect the actual package and its evidence first. Reassess responsibility, naming and overlap. Present justified changes and verification criteria; do not infer quality from read frequency.',
+                            ' Inspect the actual package and its evidence first. Reassess responsibility, naming and overlap. Present justified changes, the exact proposed file diff and actual validation results. Wait for explicit approval before applying changes; do not infer quality from read frequency.',
                         create: 'Help me design a focused meta-skill for this goal: [describe the goal]. Resolve available research, design, authoring and evaluation skills before choosing a route. Include complete examples, explicit boundaries and verification.',
                         evidence:
                             'Inspect skill evidence for this collection and period: [select source and dates]. Distinguish observed reads, distinct sessions, caller assertions and verified quality receipts. Preserve missing coverage; do not create a database or enable hooks.',
