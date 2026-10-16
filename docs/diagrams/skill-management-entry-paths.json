@@ -6,52 +6,311 @@
     "locale": "en",
     "quality_profile": "showcase",
     "views": [
-      {"id": "skills", "label": "Use portable skills", "focus": ["task", "discovery", "instructions", "workflow", "result"], "note": "The host discovers installed packages; the agent reads selected instructions and follows a bounded workflow."},
-      {"id": "cli", "label": "Use the CLI", "focus": ["cli", "commands", "mcp", "instructions", "context"], "note": "CLI previews owned installation, upgrades and removal. Native plugin routing stays explicit; hook events never download."},
-      {"id": "plugin", "label": "Use the root plugin", "focus": ["plugin", "manifests", "hooks", "context", "mcp"], "note": "Trusted Git plugins load local hooks and stdio MCP. Read receipts share ~/.agents/skills-usage.db; startup never downloads."},
-      {"id": "public", "label": "Public skills-only plugin", "focus": ["discovery", "instructions", "workflow", "result"], "note": "Public ZIPs include skills without hooks or local MCP. Telemetry needs separate explicit setup and host trust."}
+      {
+        "id": "skills",
+        "label": "Use portable skills",
+        "focus": [
+          "task",
+          "discovery",
+          "instructions",
+          "workflow",
+          "result"
+        ],
+        "note": "The host discovers installed packages; the agent reads selected instructions and follows a bounded workflow."
+      },
+      {
+        "id": "cli",
+        "label": "Use the CLI",
+        "focus": [
+          "cli",
+          "commands",
+          "mcp",
+          "instructions",
+          "context"
+        ],
+        "note": "CLI previews owned installation, upgrades and removal. Native plugin routing stays explicit; hook events never download."
+      },
+      {
+        "id": "plugin",
+        "label": "Use the root plugin",
+        "focus": [
+          "plugin",
+          "manifests",
+          "hooks",
+          "context",
+          "mcp"
+        ],
+        "note": "Trusted Git plugins load local hooks and stdio MCP. Read receipts share ~/.agents/skills-usage.db; startup never downloads."
+      },
+      {
+        "id": "public",
+        "label": "Public skills-only plugin",
+        "focus": [
+          "discovery",
+          "instructions",
+          "workflow",
+          "result"
+        ],
+        "note": "Public ZIPs include skills without hooks or local MCP. Telemetry needs separate explicit setup and host trust."
+      },
+      {
+        "id": "panel",
+        "label": "Local change panel pilot",
+        "focus": [
+          "cli",
+          "commands",
+          "mcp",
+          "instructions",
+          "workflow",
+          "result"
+        ],
+        "note": "Candidate source: supplied SKILL.md diff and local checks; exact approval gates apply/recover. Public plugin unchanged."
+      }
     ]
   },
   "lanes": [
-    {"id": "use", "label": "Portable skills"},
-    {"id": "tooling", "label": "Explicit CLI / MCP"},
-    {"id": "host", "label": "Repository-root plugin"}
+    {
+      "id": "use",
+      "label": "Portable skills"
+    },
+    {
+      "id": "tooling",
+      "label": "Explicit CLI / MCP"
+    },
+    {
+      "id": "host",
+      "label": "Repository-root plugin"
+    }
   ],
   "phases": [
-    {"id": "enter", "label": "Choose an entry", "fromCol": 0, "toCol": 1, "variant": "emphasis"},
-    {"id": "retrieve", "label": "Read", "fromCol": 2, "toCol": 2},
-    {"id": "work", "label": "Follow the selected skill", "fromCol": 3, "toCol": 4, "variant": "dashed"}
+    {
+      "id": "enter",
+      "label": "Choose an entry",
+      "fromCol": 0,
+      "toCol": 1,
+      "variant": "emphasis"
+    },
+    {
+      "id": "retrieve",
+      "label": "Read",
+      "fromCol": 2,
+      "toCol": 2
+    },
+    {
+      "id": "work",
+      "label": "Follow the selected skill",
+      "fromCol": 3,
+      "toCol": 4,
+      "variant": "dashed"
+    }
   ],
-  "mainPath": ["task", "discovery", "instructions", "workflow", "result"],
+  "mainPath": [
+    "task",
+    "discovery",
+    "instructions",
+    "workflow",
+    "result"
+  ],
   "nodes": [
-    {"id": "task", "lane": "use", "col": 0, "type": "external", "label": "User task", "sublabel": "one concrete outcome", "width": 140},
-    {"id": "discovery", "lane": "use", "col": 1, "type": "frontend", "label": "Host discovery", "sublabel": "installed skill packages", "width": 148},
-    {"id": "instructions", "lane": "use", "col": 2, "type": "database", "label": "Selected SKILL.md", "sublabel": "bounded references", "width": 154},
-    {"id": "workflow", "lane": "use", "col": 3, "type": "backend", "label": "Meta-skill workflow", "sublabel": "research / create / improve", "width": 164},
-    {"id": "result", "lane": "use", "col": 4, "type": "security", "label": "Reviewable output", "sublabel": "evidence and limits", "width": 154},
-    {"id": "cli", "lane": "tooling", "col": 0, "type": "external", "label": "npm / Git CLI", "sublabel": "explicit npx download", "width": 140},
-    {"id": "commands", "lane": "tooling", "col": 1, "type": "backend", "label": "i9-skills commands", "sublabel": "prepared Node 24 CLI", "width": 148},
-    {"id": "mcp", "lane": "tooling", "col": 2, "type": "messagebus", "label": "Local stdio MCP", "sublabel": "bundled catalog and tools", "width": 154},
-    {"id": "plugin", "lane": "host", "col": 0, "type": "external", "label": "Root plugin", "sublabel": "reviewed repository copy", "width": 140},
-    {"id": "manifests", "lane": "host", "col": 1, "type": "frontend", "label": "Host manifests", "sublabel": "Codex / Claude / Copilot", "width": 148},
-    {"id": "hooks", "lane": "host", "col": 2, "type": "backend", "label": "Lifecycle hooks", "sublabel": "startup / read receipts", "width": 156},
-    {"id": "context", "lane": "host", "col": 3, "type": "database", "label": "Context / evidence", "sublabel": "shared agent state", "width": 154}
+    {
+      "id": "task",
+      "lane": "use",
+      "col": 0,
+      "type": "external",
+      "label": "User task",
+      "sublabel": "one concrete outcome",
+      "width": 140
+    },
+    {
+      "id": "discovery",
+      "lane": "use",
+      "col": 1,
+      "type": "frontend",
+      "label": "Host discovery",
+      "sublabel": "installed skill packages",
+      "width": 148
+    },
+    {
+      "id": "instructions",
+      "lane": "use",
+      "col": 2,
+      "type": "database",
+      "label": "Selected SKILL.md",
+      "sublabel": "bounded references",
+      "width": 154
+    },
+    {
+      "id": "workflow",
+      "lane": "use",
+      "col": 3,
+      "type": "backend",
+      "label": "Meta-skill workflow",
+      "sublabel": "research / create / improve",
+      "width": 164
+    },
+    {
+      "id": "result",
+      "lane": "use",
+      "col": 4,
+      "type": "security",
+      "label": "Reviewable output",
+      "sublabel": "evidence and limits",
+      "width": 154
+    },
+    {
+      "id": "cli",
+      "lane": "tooling",
+      "col": 0,
+      "type": "external",
+      "label": "npm / Git CLI",
+      "sublabel": "explicit npx download",
+      "width": 140
+    },
+    {
+      "id": "commands",
+      "lane": "tooling",
+      "col": 1,
+      "type": "backend",
+      "label": "i9-skills commands",
+      "sublabel": "prepared Node 24 CLI",
+      "width": 148
+    },
+    {
+      "id": "mcp",
+      "lane": "tooling",
+      "col": 2,
+      "type": "messagebus",
+      "label": "Local stdio MCP",
+      "sublabel": "catalog / optional local pilot",
+      "width": 154
+    },
+    {
+      "id": "plugin",
+      "lane": "host",
+      "col": 0,
+      "type": "external",
+      "label": "Root plugin",
+      "sublabel": "reviewed repository copy",
+      "width": 140
+    },
+    {
+      "id": "manifests",
+      "lane": "host",
+      "col": 1,
+      "type": "frontend",
+      "label": "Host manifests",
+      "sublabel": "Codex / Claude / Copilot",
+      "width": 148
+    },
+    {
+      "id": "hooks",
+      "lane": "host",
+      "col": 2,
+      "type": "backend",
+      "label": "Lifecycle hooks",
+      "sublabel": "startup / read receipts",
+      "width": 156
+    },
+    {
+      "id": "context",
+      "lane": "host",
+      "col": 3,
+      "type": "database",
+      "label": "Context / evidence",
+      "sublabel": "shared agent state",
+      "width": 154
+    }
   ],
   "edges": [
-    {"id": "task-discovery", "from": "task", "to": "discovery", "label": "native inventory", "variant": "emphasis"},
-    {"id": "discovery-instructions", "from": "discovery", "to": "instructions", "label": "select and read", "variant": "emphasis"},
-    {"id": "instructions-workflow", "from": "instructions", "to": "workflow", "label": "guidance", "variant": "emphasis"},
-    {"id": "workflow-result", "from": "workflow", "to": "result", "label": "verify", "variant": "emphasis"},
-    {"id": "cli-commands", "from": "cli", "to": "commands", "label": "install then run"},
-    {"id": "commands-mcp", "from": "commands", "to": "mcp", "label": "mcp serve"},
-    {"id": "mcp-instructions", "from": "mcp", "to": "instructions", "label": "catalog read"},
-    {"id": "plugin-manifests", "from": "plugin", "to": "manifests", "label": "enable in host"},
-    {"id": "manifests-mcp", "from": "manifests", "to": "mcp", "label": "native stdio"},
-    {"id": "manifests-hooks", "from": "manifests", "to": "hooks", "label": "trusted events"},
-    {"id": "hooks-context", "from": "hooks", "to": "context", "label": "read / context"}
+    {
+      "id": "task-discovery",
+      "from": "task",
+      "to": "discovery",
+      "label": "native inventory",
+      "variant": "emphasis"
+    },
+    {
+      "id": "discovery-instructions",
+      "from": "discovery",
+      "to": "instructions",
+      "label": "select and read",
+      "variant": "emphasis"
+    },
+    {
+      "id": "instructions-workflow",
+      "from": "instructions",
+      "to": "workflow",
+      "label": "guidance",
+      "variant": "emphasis"
+    },
+    {
+      "id": "workflow-result",
+      "from": "workflow",
+      "to": "result",
+      "label": "verify",
+      "variant": "emphasis"
+    },
+    {
+      "id": "cli-commands",
+      "from": "cli",
+      "to": "commands",
+      "label": "install then run"
+    },
+    {
+      "id": "commands-mcp",
+      "from": "commands",
+      "to": "mcp",
+      "label": "mcp serve"
+    },
+    {
+      "id": "mcp-instructions",
+      "from": "mcp",
+      "to": "instructions",
+      "label": "catalog read"
+    },
+    {
+      "id": "plugin-manifests",
+      "from": "plugin",
+      "to": "manifests",
+      "label": "enable in host"
+    },
+    {
+      "id": "manifests-mcp",
+      "from": "manifests",
+      "to": "mcp",
+      "label": "native stdio"
+    },
+    {
+      "id": "manifests-hooks",
+      "from": "manifests",
+      "to": "hooks",
+      "label": "trusted events"
+    },
+    {
+      "id": "hooks-context",
+      "from": "hooks",
+      "to": "context",
+      "label": "read / context"
+    }
   ],
   "cards": [
-    {"dot": "cyan", "title": "Explicit tooling", "items": ["CLI manages owned installs, catalog reads and telemetry", "Local MCP offers catalog, reports and explicit evidence tools"]},
-    {"dot": "amber", "title": "Current boundaries", "items": ["Public submission is skills-only; full Git plugins retain hooks and MCP", "Read receipts are demand signals, never proof of activation"]}
+    {
+      "dot": "cyan",
+      "title": "Explicit tooling",
+      "items": [
+        "CLI manages owned installs, catalog reads and telemetry",
+        "Local MCP offers catalog, reports and explicit evidence tools",
+        "Candidate-source panel: live inspection, supplied diff and exact approval"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Current boundaries",
+      "items": [
+        "Public submission is skills-only; full Git plugins retain hooks and MCP",
+        "Read receipts are demand signals, never proof of activation",
+        "Panel preserves recovery; local checks do not replace official evaluation"
+      ]
+    }
   ]
 }

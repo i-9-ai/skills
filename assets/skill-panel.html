@@ -1,0 +1,1435 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>I-9 Skills · Local change pilot</title>
+        <style>
+            :root {
+                color-scheme: dark;
+                --background: #101912;
+                --surface: #18241b;
+                --raised: #223025;
+                --ink: #f7f9f2;
+                --muted: #bdc6ba;
+                --line: #3b4b3d;
+                --accent: #d7f46b;
+                --focus: #d7f46b;
+                --accent-ink: #14231a;
+            }
+
+            [data-theme='light'] {
+                color-scheme: light;
+                --background: #f7f9f2;
+                --surface: #ffffff;
+                --raised: #eaf0e4;
+                --ink: #14231a;
+                --muted: #536056;
+                --line: #b7bfb6;
+                --focus: #315d38;
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+            body {
+                margin: 0;
+                background: var(--background);
+                color: var(--ink);
+                font:
+                    15px/1.55 Arial,
+                    Helvetica,
+                    sans-serif;
+            }
+            button,
+            input,
+            select,
+            textarea {
+                font: inherit;
+            }
+            button,
+            input,
+            select {
+                min-height: 44px;
+                color: var(--ink);
+                background: var(--surface);
+                border: 1px solid var(--line);
+                border-radius: 5px;
+            }
+            button {
+                padding: 9px 15px;
+                cursor: pointer;
+            }
+            button:hover {
+                background: var(--raised);
+            }
+            :focus-visible {
+                outline: 3px solid var(--focus);
+                outline-offset: 3px;
+            }
+            input,
+            select {
+                padding: 9px 12px;
+            }
+            h1,
+            h2,
+            h3,
+            p {
+                margin: 0;
+            }
+            h1 {
+                font-size: 30px;
+                line-height: 1.15;
+                letter-spacing: -1px;
+            }
+            h2 {
+                font-size: 21px;
+                letter-spacing: -0.4px;
+            }
+            h3 {
+                font-size: 16px;
+            }
+            code {
+                font-size: 12px;
+                overflow-wrap: anywhere;
+            }
+            a {
+                color: var(--accent);
+                text-underline-offset: 3px;
+            }
+            [data-theme='light'] a,
+            [data-theme='light'] .inspector .eyebrow,
+            [data-theme='light'] .wordmark span {
+                color: #315d38;
+            }
+            [hidden] {
+                display: none !important;
+            }
+            .muted {
+                color: var(--muted);
+            }
+            .eyebrow {
+                font: 11px/1.4 monospace;
+                letter-spacing: 1.1px;
+                text-transform: uppercase;
+            }
+            .proposal-notice {
+                padding: 10px 24px;
+                color: var(--accent-ink);
+                background: var(--accent);
+                font-size: 12px;
+                text-align: center;
+            }
+            .frame {
+                max-width: 1440px;
+                margin: auto;
+                padding: 26px 36px 40px;
+            }
+            .app-header {
+                display: flex;
+                align-items: center;
+                gap: 20px;
+                padding-bottom: 22px;
+                border-bottom: 1px solid var(--line);
+            }
+            .wordmark {
+                font-size: 22px;
+                font-weight: 700;
+                letter-spacing: -1.2px;
+            }
+            .wordmark span {
+                color: var(--accent);
+            }
+            .header-note {
+                margin-left: auto;
+                font-size: 12px;
+            }
+            .tabs {
+                display: flex;
+                gap: 8px;
+                margin: 20px 0 28px;
+            }
+            .tabs button {
+                border-color: transparent;
+                background: transparent;
+            }
+            .tabs button[aria-pressed='true'] {
+                background: var(--raised);
+                border-color: var(--line);
+            }
+            .section-heading {
+                display: flex;
+                align-items: end;
+                justify-content: space-between;
+                gap: 20px;
+                margin-bottom: 24px;
+            }
+            .section-heading p {
+                margin-top: 8px;
+                max-width: 610px;
+                color: var(--muted);
+            }
+            .primary {
+                color: var(--accent-ink);
+                background: var(--accent);
+                border-color: var(--accent);
+                font-weight: 700;
+            }
+            .primary:hover {
+                color: var(--accent-ink);
+                background: #e4ff8a;
+            }
+            .toolbar {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) 190px;
+                gap: 12px;
+                margin-bottom: 12px;
+            }
+            .toolbar input {
+                width: 100%;
+            }
+            .result-note {
+                margin-bottom: 20px;
+                font-size: 12px;
+                color: var(--muted);
+            }
+            .library {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) 370px;
+                align-items: start;
+                gap: 28px;
+            }
+            .results {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 12px;
+            }
+            .skill {
+                padding: 20px;
+                text-align: left;
+                border: 1px solid var(--line);
+                background: var(--surface);
+                min-height: 170px;
+            }
+            .skill[aria-pressed='true'] {
+                outline: 1px solid var(--focus);
+                border-color: var(--focus);
+            }
+            .skill:focus-visible {
+                outline: 3px solid var(--focus);
+                outline-offset: 3px;
+            }
+            .skill-title {
+                display: block;
+                font-size: 17px;
+                font-weight: 700;
+                margin: 8px 0;
+            }
+            .skill-description {
+                display: block;
+                font-size: 13px;
+                color: var(--muted);
+                line-height: 1.5;
+            }
+            .tag {
+                display: inline-block;
+                margin: 12px 6px 0 0;
+                font: 11px/1.4 monospace;
+                color: var(--muted);
+            }
+            .tag::before {
+                content: '#';
+            }
+            .inspector {
+                position: sticky;
+                top: 24px;
+                background: var(--surface);
+                border: 1px solid var(--line);
+                border-radius: 6px;
+                padding: 26px;
+            }
+            .inspector .eyebrow {
+                color: var(--accent);
+            }
+            .inspector h2 {
+                margin: 14px 0;
+                overflow-wrap: anywhere;
+            }
+            .inspector > p {
+                font-size: 14px;
+                color: var(--muted);
+            }
+            .facts {
+                margin: 22px 0;
+                border-top: 1px solid var(--line);
+            }
+            .facts div {
+                display: flex;
+                justify-content: space-between;
+                gap: 14px;
+                padding: 11px 0;
+                border-bottom: 1px solid var(--line);
+                font-size: 12px;
+            }
+            .facts dt {
+                color: var(--muted);
+            }
+            .facts dd {
+                margin: 0;
+                text-align: right;
+            }
+            .inspector .primary,
+            .inspector .secondary {
+                display: block;
+                width: 100%;
+                margin-top: 10px;
+            }
+            .inspector .footnote {
+                margin-top: 16px;
+                font-size: 11px;
+            }
+            .snapshot-status {
+                margin-top: 18px;
+                padding: 12px 14px;
+                border-left: 3px solid var(--line);
+                background: var(--raised);
+                font-size: 12px;
+            }
+            .snapshot-status strong {
+                display: block;
+                margin-bottom: 5px;
+            }
+            .action-row {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) 44px;
+                gap: 8px;
+                margin-top: 10px;
+            }
+            .inspector .action-row > button {
+                margin-top: 0;
+            }
+            .help-button {
+                padding: 0;
+                font-size: 18px;
+                font-weight: 700;
+                border-radius: 50%;
+                color: var(--muted);
+            }
+            .workflow-dialog {
+                width: min(1080px, calc(100% - 24px));
+            }
+            .workflow-header {
+                position: sticky;
+                top: -28px;
+                z-index: 1;
+                display: flex;
+                justify-content: space-between;
+                align-items: start;
+                gap: 18px;
+                margin: -28px -28px 0;
+                padding: 24px 28px 12px;
+                border-bottom: 1px solid var(--line);
+                background: var(--surface);
+            }
+            .workflow-header h2 {
+                overflow-wrap: anywhere;
+            }
+            .workflow-grid,
+            .example-files {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 16px;
+                margin-top: 20px;
+            }
+            .workflow-card {
+                min-width: 0;
+                padding: 18px;
+                border: 1px solid var(--line);
+                border-radius: 6px;
+                background: var(--background);
+            }
+            .workflow-card h3,
+            .workflow-card p + p,
+            .help-copy p + p {
+                margin-bottom: 10px;
+            }
+            .workflow-card p,
+            .help-copy,
+            .workflow-purpose {
+                font-size: 13px;
+                color: var(--muted);
+            }
+            .workflow-purpose {
+                margin: 12px 0;
+                max-width: 850px;
+            }
+            .workflow-card code,
+            .snapshot-status code {
+                color: var(--ink);
+            }
+            .workflow-card dl {
+                margin-bottom: 0;
+            }
+            .workflow-card button {
+                margin-top: 12px;
+            }
+            .workflow-steps {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px 28px;
+                padding-left: 20px;
+                margin: 20px 0;
+                font-size: 12px;
+                color: var(--muted);
+            }
+            .example-warning {
+                margin: 22px 0 0;
+                padding: 13px 16px;
+                border: 1px dashed var(--focus);
+                border-radius: 5px;
+                font-size: 13px;
+            }
+            .example-files pre,
+            .diff-lines {
+                overflow-x: auto;
+                padding: 15px;
+                margin: 12px 0 0;
+                background: var(--background);
+                border: 1px solid var(--line);
+                border-radius: 5px;
+                font: 12px/1.7 monospace;
+                tab-size: 4;
+            }
+            .example-files pre {
+                white-space: pre-wrap;
+                overflow-wrap: anywhere;
+            }
+            .diff-lines {
+                white-space: pre-wrap;
+                overflow-wrap: anywhere;
+            }
+            .diff-lines span {
+                display: block;
+                padding: 1px 6px;
+            }
+            .diff-lines .removed {
+                background: #b83a3425;
+                border-left: 3px solid #d97870;
+            }
+            .diff-lines .added {
+                background: #80a93625;
+                border-left: 3px solid var(--focus);
+            }
+            .approval-box {
+                margin-top: 18px;
+                padding-top: 18px;
+                border-top: 1px solid var(--line);
+            }
+            .approval-box label {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin: 16px 0;
+                font-size: 13px;
+            }
+            .approval-box input {
+                min-height: 24px;
+                width: 24px;
+                flex-shrink: 0;
+            }
+            .approval-status {
+                min-height: 45px;
+                font-weight: 700;
+                font-size: 13px;
+            }
+            button:disabled {
+                cursor: not-allowed;
+                opacity: 0.55;
+            }
+            @media (max-width: 720px) {
+                .workflow-grid,
+                .example-files {
+                    grid-template-columns: 1fr;
+                }
+                .workflow-dialog {
+                    padding: 18px;
+                }
+                .workflow-header {
+                    top: -18px;
+                    flex-wrap: wrap;
+                    margin: -18px -18px 0;
+                    padding: 18px 18px 12px;
+                }
+            }
+            .state {
+                padding: 40px 28px;
+                border: 1px dashed var(--line);
+                border-radius: 6px;
+                grid-column: 1 / -1;
+            }
+            .state p {
+                max-width: 520px;
+                margin: 10px 0 18px;
+                color: var(--muted);
+            }
+            .evidence-layout {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) 340px;
+                gap: 28px;
+            }
+            .evidence-empty {
+                min-height: 300px;
+                padding: 32px;
+                border: 1px solid var(--line);
+                border-radius: 6px;
+                background: var(--surface);
+            }
+            .evidence-empty h2 {
+                margin: 14px 0 12px;
+            }
+            .evidence-empty p {
+                color: var(--muted);
+                max-width: 550px;
+            }
+            .evidence-empty p + p {
+                margin-top: 22px;
+            }
+            .evidence-empty button {
+                margin-top: 24px;
+            }
+            .noscript-note {
+                padding: 24px;
+            }
+            .measure {
+                padding: 16px 0;
+                border-bottom: 1px solid var(--line);
+            }
+            .measure p {
+                margin-top: 6px;
+                font-size: 13px;
+                color: var(--muted);
+            }
+            .connection {
+                max-width: 800px;
+                padding: 30px;
+                border: 1px solid var(--line);
+                background: var(--surface);
+                border-radius: 6px;
+            }
+            .connection h2 {
+                margin-bottom: 12px;
+            }
+            .connection p {
+                color: var(--muted);
+                margin: 12px 0;
+            }
+            .connection ol {
+                padding-left: 22px;
+            }
+            .connection li {
+                margin: 14px 0;
+            }
+            .design-controls {
+                margin-top: 32px;
+                border-top: 1px solid var(--line);
+                padding-top: 18px;
+                color: var(--muted);
+                font-size: 12px;
+            }
+            .design-controls summary {
+                cursor: pointer;
+                padding: 10px 0;
+            }
+            .controls-row {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 20px;
+                margin-top: 14px;
+            }
+            .controls-row label {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            .design-controls p {
+                margin-top: 12px;
+            }
+            .compact .results {
+                display: block;
+            }
+            .compact .skill {
+                min-height: 0;
+                width: 100%;
+                border-radius: 0;
+                padding: 15px 18px;
+                margin-bottom: -1px;
+            }
+            .compact .skill-title {
+                font-size: 15px;
+                margin: 4px 0;
+            }
+            .compact .tag {
+                margin-top: 5px;
+            }
+            .compact .library {
+                grid-template-columns: minmax(0, 1fr) 370px;
+            }
+            dialog {
+                width: min(640px, calc(100% - 32px));
+                max-height: calc(100vh - 40px);
+                padding: 28px;
+                border: 1px solid var(--line);
+                border-radius: 8px;
+                color: var(--ink);
+                background: var(--surface);
+            }
+            dialog::backdrop {
+                background: #000a;
+            }
+            dialog h2 {
+                margin-bottom: 12px;
+            }
+            dialog textarea {
+                width: 100%;
+                min-height: 180px;
+                margin: 18px 0;
+                padding: 15px;
+                resize: vertical;
+                border: 1px solid var(--line);
+                border-radius: 5px;
+                color: var(--ink);
+                background: var(--background);
+            }
+            .dialog-actions {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: end;
+                gap: 10px;
+                margin-top: 16px;
+            }
+            @media (max-width: 1050px) {
+                .frame {
+                    padding: 24px;
+                }
+                .library,
+                .compact .library {
+                    grid-template-columns: minmax(0, 1fr) 310px;
+                    gap: 18px;
+                }
+                .results {
+                    grid-template-columns: 1fr;
+                }
+            }
+            @media (max-width: 720px) {
+                .frame {
+                    padding: 18px;
+                }
+                .proposal-notice {
+                    padding: 10px 14px;
+                }
+                .app-header {
+                    flex-wrap: wrap;
+                    gap: 10px;
+                }
+                .header-note {
+                    margin-left: 0;
+                    flex: 1;
+                }
+                .tabs {
+                    gap: 2px;
+                }
+                .tabs button {
+                    padding: 9px 12px;
+                }
+                .section-heading {
+                    display: block;
+                }
+                .section-heading button {
+                    margin-top: 18px;
+                    width: 100%;
+                }
+                .toolbar,
+                .library,
+                .compact .library,
+                .evidence-layout {
+                    grid-template-columns: 1fr;
+                }
+                .inspector {
+                    position: static;
+                    grid-row: 1;
+                }
+                .controls-row {
+                    display: block;
+                }
+                .controls-row label {
+                    display: block;
+                    margin-bottom: 16px;
+                }
+                .controls-row select {
+                    width: 100%;
+                    margin-top: 8px;
+                }
+            }
+            @media (prefers-reduced-motion: reduce) {
+                *,
+                *::before,
+                *::after {
+                    animation: none !important;
+                    transition: none !important;
+                }
+            }
+
+            .panel-status {
+                padding: 16px 28px;
+                border-bottom: 1px solid var(--line);
+                overflow-wrap: anywhere;
+            }
+            .package-card {
+                width: 100%;
+                display: grid;
+                gap: 10px;
+                padding: 20px;
+                text-align: left;
+                border: 1px solid var(--line);
+                border-radius: 6px;
+                background: var(--surface);
+            }
+            .package-card[aria-pressed='true'] {
+                border-color: var(--accent);
+            }
+            .package-card p {
+                color: var(--muted);
+                font-size: 13px;
+            }
+            .source-text,
+            .candidate-text {
+                width: 100%;
+                min-height: 280px;
+                padding: 16px;
+                border: 1px solid var(--line);
+                border-radius: 6px;
+                background: var(--background);
+                color: var(--text);
+                font: 12px/1.6 monospace;
+                resize: vertical;
+            }
+            .candidate-text {
+                min-height: 360px;
+            }
+            .rationale-text {
+                width: 100%;
+                min-height: 72px;
+                margin: 8px 0 16px;
+                padding: 12px;
+                background: var(--background);
+                color: var(--text);
+                border: 1px solid var(--line);
+                border-radius: 6px;
+            }
+            .panel-actions {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                margin-top: 18px;
+            }
+            .panel-actions button:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+            .panel-diff {
+                white-space: pre-wrap;
+                overflow-wrap: anywhere;
+                font: 12px/1.6 monospace;
+                padding: 16px;
+                background: var(--background);
+                max-height: 420px;
+                overflow: auto;
+            }
+            .panel-diff span {
+                display: block;
+            }
+            .panel-diff .added {
+                background: var(--accent-soft);
+                border-left: 3px solid var(--accent);
+            }
+            .panel-diff .removed {
+                background: #b2573c26;
+                border-left: 3px solid #c27a61;
+            }
+            .panel-hash {
+                word-break: break-all;
+                font-size: 11px;
+            }
+            .panel-checks {
+                margin: 16px 0;
+                padding: 16px;
+                border: 1px solid var(--line);
+                border-radius: 6px;
+            }
+            [hidden] {
+                display: none !important;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="proposal-notice">
+            LOCAL FUNCTIONAL PILOT · Live selected files. Applying and restoring change SKILL.md
+            only after explicit approval.
+        </div>
+        <div class="frame">
+            <header class="app-header">
+                <div class="wordmark"><span>i-9</span> skills</div>
+                <span class="header-note muted">Inspect. Propose. Review. Approve.</span
+                ><button id="theme" type="button">Use light theme</button>
+            </header>
+            <div class="panel-status">
+                <p id="connection" role="status">
+                    Initializing the host bridge. No file has been changed.
+                </p>
+                <div class="panel-actions">
+                    <button id="refresh" type="button" disabled>Refresh live catalog</button
+                    ><button id="resume" type="button" disabled>Open retained proposal</button>
+                </div>
+            </div>
+            <main>
+                <section aria-labelledby="library-title">
+                    <div class="section-heading">
+                        <div>
+                            <h1 id="library-title">Work on one skill.</h1>
+                            <p>
+                                Real content and source identity from an explicitly selected local
+                                collection.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="toolbar">
+                        <input
+                            id="search"
+                            type="search"
+                            aria-label="Search skills"
+                            placeholder="Search names or responsibilities"
+                        />
+                    </div>
+                    <p id="result-note" class="result-note" aria-live="polite"></p>
+                    <div class="library">
+                        <div id="results" class="results" aria-label="Skill results"></div>
+                        <aside class="inspector" aria-labelledby="selected-title">
+                            <div class="eyebrow">Selected local collection · live read</div>
+                            <h2 id="selected-title">Select a skill</h2>
+                            <p id="selected-description"></p>
+                            <div id="selected-state" class="snapshot-status">
+                                No package has been inspected.
+                            </div>
+                            <dl class="facts">
+                                <div>
+                                    <dt>Package identity</dt>
+                                    <dd class="panel-hash" id="selected-hash">Not inspected</dd>
+                                </div>
+                                <div>
+                                    <dt>Official / behavioral evidence</dt>
+                                    <dd>Not loaded by this pilot</dd>
+                                </div>
+                            </dl>
+                            <div class="action-row">
+                                <button id="review" type="button" disabled>Prepare a review</button
+                                ><button
+                                    class="help-button"
+                                    id="review-help"
+                                    aria-label="Explain Prepare a review"
+                                    type="button"
+                                >
+                                    ?
+                                </button>
+                            </div>
+                            <div class="action-row">
+                                <button id="evolve" type="button" class="primary" disabled>
+                                    Plan an evolution</button
+                                ><button
+                                    class="help-button"
+                                    id="evolve-help"
+                                    aria-label="Explain Plan an evolution"
+                                    type="button"
+                                >
+                                    ?
+                                </button>
+                            </div>
+                            <p class="footnote">
+                                The backend does not generate a candidate or call a model. Supply
+                                reviewed text here or prepare it with your authoring agent. Opening
+                                this panel does not enable telemetry.
+                            </p>
+                            <label for="source">Current SKILL.md · actual bytes</label
+                            ><textarea
+                                id="source"
+                                class="source-text"
+                                readonly
+                                spellcheck="false"
+                            ></textarea>
+                        </aside>
+                    </div>
+                </section>
+            </main>
+        </div>
+        <dialog id="help-dialog" aria-labelledby="help-title">
+            <button id="help-close" type="button">Close explanation</button>
+            <h2 id="help-title"></h2>
+            <p id="help-copy" class="help-copy"></p>
+        </dialog>
+        <dialog id="draft-dialog" aria-labelledby="draft-title">
+            <button id="draft-close" type="button">Close task draft</button>
+            <h2 id="draft-title">Review task · not executed</h2>
+            <p>
+                Copy this request to your authoring agent. No message or model call is sent
+                automatically.
+            </p>
+            <textarea
+                id="task-draft"
+                class="candidate-text"
+                aria-label="Review task draft"
+            ></textarea>
+        </dialog>
+        <dialog id="resume-dialog" aria-labelledby="resume-title">
+            <button id="resume-close" type="button">Close retained proposal lookup</button>
+            <h2 id="resume-title">Inspect a retained proposal</h2>
+            <p>
+                Enter its ID from an earlier result. This reads existing state without applying
+                anything.
+            </p>
+            <label for="resume-id">Proposal ID</label
+            ><input id="resume-id" type="text" maxlength="36" /><button
+                id="resume-load"
+                type="button"
+            >
+                Inspect retained proposal
+            </button>
+        </dialog>
+        <dialog id="workflow-dialog" class="workflow-dialog" aria-labelledby="workflow-title">
+            <div class="workflow-header">
+                <div>
+                    <p class="eyebrow">Real local workflow · explicit approval</p>
+                    <h2 id="workflow-title">Propose a change</h2>
+                </div>
+                <button id="workflow-close" type="button">Close workflow</button>
+            </div>
+            <p id="workflow-status" class="workflow-purpose" role="status" tabindex="-1">
+                No candidate has been retained.
+            </p>
+            <p class="panel-hash" id="workflow-base"></p>
+            <div id="candidate-editor">
+                <label for="candidate">Proposed SKILL.md · supplied text</label
+                ><textarea id="candidate" class="candidate-text" spellcheck="false"></textarea
+                ><label for="rationale">Why should this change?</label
+                ><textarea
+                    id="rationale"
+                    class="rationale-text"
+                    maxlength="2000"
+                    placeholder="Describe the evidence, intended improvement and any limits."
+                ></textarea
+                ><button id="preview" type="button" class="primary" disabled>
+                    Preview and validate
+                </button>
+            </div>
+            <section id="proposal-view" aria-label="Retained proposal and validation" hidden>
+                <h3 id="proposal-title">Review the exact change</h3>
+                <p class="panel-hash" id="proposal-id"></p>
+                <p id="proposal-rationale"></p>
+                <div class="example-files">
+                    <section class="workflow-card">
+                        <h3 id="before-title">Current retained version</h3>
+                        <pre id="before" class="panel-diff"></pre>
+                    </section>
+                    <section class="workflow-card">
+                        <h3 id="after-title">Proposed retained version</h3>
+                        <pre id="after" class="panel-diff"></pre>
+                    </section>
+                </div>
+                <h3>Exact file diff</h3>
+                <pre id="diff" class="panel-diff" aria-label="Exact proposed file diff"></pre>
+                <div id="checks" class="panel-checks"></div>
+                <p class="footnote">
+                    Local structural checks do not replace official Agent Skills conformance or
+                    behavioral evaluation. This pilot never certifies release readiness. Keep the
+                    state directory to preserve recovery.
+                </p>
+                <label
+                    ><input id="approval" type="checkbox" /><span id="approval-label"
+                        >I reviewed this exact diff and the validation limits and approve applying
+                        this change.</span
+                    ></label
+                >
+                <div class="panel-actions">
+                    <button id="inspect-proposal" type="button">Refresh proposal state</button
+                    ><button id="edit" type="button">Request changes / edit candidate</button
+                    ><button id="recover-prepare" type="button" hidden>Review recovery</button
+                    ><button id="apply" type="button" class="primary" disabled>
+                        Apply approved change
+                    </button>
+                </div>
+            </section>
+        </dialog>
+        <script>
+            class SkillChangePanel {
+                pending = new Map();
+                nextId = 0;
+                connected = false;
+                busy = false;
+                selected = null;
+                proposal = null;
+                mode = 'apply';
+                uncertain = false;
+                catalog = [];
+                lastFocus = null;
+                incoming = null;
+
+                constructor() {
+                    this.el = (id) => document.getElementById(id);
+                    window.addEventListener('message', (event) => this.receive(event));
+                    this.el('refresh').addEventListener('click', () =>
+                        this.run(() => this.loadCatalog()),
+                    );
+                    this.el('search').addEventListener('input', () => this.renderCatalog());
+                    this.el('theme').addEventListener('click', () => {
+                        const light = document.documentElement.dataset.theme !== 'light';
+                        document.documentElement.dataset.theme = light ? 'light' : 'dark';
+                        this.el('theme').textContent = light ? 'Use dark theme' : 'Use light theme';
+                    });
+                    for (const type of ['review', 'evolve']) {
+                        this.el(type + '-help').addEventListener('click', () => this.help(type));
+                    }
+                    for (const [button, dialog] of [
+                        ['help-close', 'help-dialog'],
+                        ['draft-close', 'draft-dialog'],
+                        ['resume-close', 'resume-dialog'],
+                        ['workflow-close', 'workflow-dialog'],
+                    ]) {
+                        this.el(button).addEventListener('click', () => this.el(dialog).close());
+                        this.el(dialog).addEventListener('close', () => this.lastFocus?.focus());
+                    }
+                    this.el('review').addEventListener('click', () => this.draft());
+                    this.el('evolve').addEventListener('click', () => this.startEditor());
+                    for (const id of ['candidate', 'rationale'])
+                        this.el(id).addEventListener('input', () => this.invalidate());
+                    this.el('preview').addEventListener('click', () =>
+                        this.run(() => this.preview()),
+                    );
+                    this.el('approval').addEventListener('change', () => this.actions());
+                    this.el('apply').addEventListener('click', () => this.run(() => this.commit()));
+                    this.el('inspect-proposal').addEventListener('click', () =>
+                        this.run(() => this.refreshProposal()),
+                    );
+                    this.el('edit').addEventListener('click', () => {
+                        this.mode = 'apply';
+                        this.el('candidate-editor').hidden = false;
+                        this.invalidate();
+                        this.el('candidate').focus();
+                    });
+                    this.el('recover-prepare').addEventListener('click', () => {
+                        this.mode = 'recover';
+                        this.renderProposal(this.proposal);
+                        this.el('workflow-status').textContent =
+                            'Review the reverse diff. Recovery requires a new explicit approval.';
+                    });
+                    this.el('resume').addEventListener('click', () =>
+                        this.openDialog('resume-dialog'),
+                    );
+                    this.el('resume-load').addEventListener('click', () =>
+                        this.run(async () => {
+                            const result = await this.call('skill_panel_proposal', {
+                                proposal_id: this.el('resume-id').value.trim(),
+                            });
+                            this.el('resume-dialog').close();
+                            await this.acceptIncoming(result);
+                        }),
+                    );
+                    this.initialize();
+                }
+
+                receive(event) {
+                    if (
+                        event.source !== window.parent ||
+                        !event.data ||
+                        event.data.jsonrpc !== '2.0'
+                    )
+                        return;
+                    const message = event.data;
+                    if (message.method === 'ping' && Object.hasOwn(message, 'id')) {
+                        window.parent.postMessage(
+                            { jsonrpc: '2.0', id: message.id, result: {} },
+                            '*',
+                        );
+                        return;
+                    }
+                    if (this.pending.has(message.id)) {
+                        const request = this.pending.get(message.id);
+                        this.pending.delete(message.id);
+                        clearTimeout(request.timer);
+                        if (message.error)
+                            request.reject(new Error('The host refused the panel request.'));
+                        else request.resolve(message.result);
+                        return;
+                    }
+                    if (
+                        message.method === 'ui/notifications/tool-result' &&
+                        message.params?.structuredContent?.proposal_id
+                    ) {
+                        this.incoming = message.params.structuredContent;
+                        if (this.connected && !this.busy)
+                            this.run(() => this.acceptIncoming(this.incoming));
+                    }
+                }
+
+                request(method, params) {
+                    const id = ++this.nextId;
+                    return new Promise((resolve, reject) => {
+                        const timer = setTimeout(() => {
+                            this.pending.delete(id);
+                            reject(
+                                new Error(
+                                    'No host response within 8 seconds. If a write was requested, its result is unknown: refresh the retained proposal before retrying.',
+                                ),
+                            );
+                        }, 8000);
+                        this.pending.set(id, { resolve, reject, timer });
+                        window.parent.postMessage({ jsonrpc: '2.0', id, method, params }, '*');
+                    });
+                }
+
+                async call(name, arguments_) {
+                    const result = await this.request('tools/call', {
+                        name,
+                        arguments: arguments_,
+                    });
+                    if (result?.isError || !result?.structuredContent)
+                        throw new Error(
+                            result?.structuredContent?.error?.message ||
+                                'The panel operation returned no usable result.',
+                        );
+                    return result.structuredContent;
+                }
+
+                async initialize() {
+                    if (window.parent === window) {
+                        this.el('connection').textContent =
+                            'Standalone view only. Open this resource through the explicitly configured MCP panel to read real skills. No data is loaded.';
+                        return;
+                    }
+                    try {
+                        await this.request('ui/initialize', {
+                            appInfo: { name: 'i9-skills-local-panel', version: '1.0.0' },
+                            appCapabilities: {},
+                            protocolVersion: '2026-01-26',
+                        });
+                        window.parent.postMessage(
+                            { jsonrpc: '2.0', method: 'ui/notifications/initialized', params: {} },
+                            '*',
+                        );
+                        this.connected = true;
+                        this.el('refresh').disabled = false;
+                        this.el('resume').disabled = false;
+                        await this.loadCatalog();
+                        if (this.incoming) await this.acceptIncoming(this.incoming);
+                    } catch (error) {
+                        this.el('connection').textContent =
+                            error.message +
+                            ' Close and reopen this component to retry initialization.';
+                        if (!this.connected) this.el('refresh').disabled = true;
+                    }
+                }
+
+                async run(operation) {
+                    if (this.busy) return;
+                    this.busy = true;
+                    this.actions();
+                    try {
+                        await operation();
+                    } catch (error) {
+                        this.el('connection').textContent = error.message;
+                        this.el('workflow-status').textContent = error.message;
+                    } finally {
+                        this.busy = false;
+                        this.actions();
+                    }
+                }
+
+                async loadCatalog() {
+                    const result = await this.call('skill_panel_open', {});
+                    this.catalog = result.skills;
+                    this.el('connection').textContent =
+                        'Connected to selected collection "' +
+                        result.collection +
+                        '". Live reads; no telemetry is enabled. ' +
+                        result.warnings.join(' ');
+                    this.renderCatalog();
+                }
+
+                renderCatalog() {
+                    const query = this.el('search').value.toLowerCase();
+                    const matches = this.catalog.filter((item) =>
+                        (item.skill + ' ' + item.description).toLowerCase().includes(query),
+                    );
+                    this.el('results').replaceChildren();
+                    for (const item of matches) {
+                        const button = document.createElement('button');
+                        button.type = 'button';
+                        button.className = 'package-card';
+                        button.setAttribute('aria-label', 'Inspect ' + item.skill);
+                        button.setAttribute(
+                            'aria-pressed',
+                            String(this.selected?.skill === item.skill),
+                        );
+                        const title = document.createElement('strong');
+                        title.textContent = item.skill;
+                        const text = document.createElement('p');
+                        text.textContent = item.description;
+                        button.append(title, text);
+                        button.addEventListener('click', () =>
+                            this.run(() => this.inspect(item.skill)),
+                        );
+                        this.el('results').append(button);
+                    }
+                    this.el('result-note').textContent =
+                        matches.length +
+                        ' real package(s) shown. Select one to inspect its actual bytes.';
+                }
+
+                async inspect(skill) {
+                    const result = await this.call('skill_panel_inspect', { skill });
+                    this.selected = result;
+                    this.proposal = null;
+                    this.el('selected-title').textContent = result.skill;
+                    this.el('selected-description').textContent = result.description;
+                    this.el('selected-hash').textContent = result.package_sha256;
+                    this.el('selected-state').textContent =
+                        'Actual disk read · ' +
+                        result.files +
+                        ' files · ' +
+                        result.bytes +
+                        ' bytes. Review and behavioral state are not inferred.';
+                    this.el('source').value = result.text;
+                    this.el('review').disabled = false;
+                    this.el('evolve').disabled = false;
+                    this.renderCatalog();
+                }
+
+                openDialog(id) {
+                    this.lastFocus = document.activeElement;
+                    this.el(id).showModal();
+                }
+
+                help(type) {
+                    this.el('help-title').textContent =
+                        type === 'review'
+                            ? 'What does Prepare a review do?'
+                            : 'What does Plan an evolution do?';
+                    this.el('help-copy').textContent =
+                        type === 'review'
+                            ? 'Prepare an editable inspection request bound to the actual package hash. No task is sent or executed automatically. A review can conclude that no edit is needed.'
+                            : 'Start from the real entrypoint and supply a complete candidate with its rationale. Preview retains the original and candidate, computes their diff and runs local structural checks. Applying requires reviewing that exact proposal and explicitly approving it. Official conformance and behavioral checks are separate.';
+                    this.openDialog('help-dialog');
+                }
+
+                draft() {
+                    this.el('task-draft').value =
+                        'Review ' +
+                        this.selected.skill +
+                        ' at package SHA256 ' +
+                        this.selected.package_sha256 +
+                        '. Inspect the actual source and its responsibility, self-sufficiency, examples and validation gaps. Report findings with evidence. If an evolution is justified, author complete candidate SKILL.md text, preserve the name and use skill_panel_propose with this exact base_sha256. Show the retained diff and performed checks. Wait for the operator to approve in the panel; never call apply or recover on their behalf.';
+                    this.openDialog('draft-dialog');
+                }
+
+                startEditor() {
+                    this.mode = 'apply';
+                    this.proposal = null;
+                    this.uncertain = false;
+                    this.el('workflow-title').textContent = 'Evolve ' + this.selected.skill;
+                    this.el('workflow-base').textContent =
+                        'Selected package SHA256: ' + this.selected.package_sha256;
+                    this.el('candidate').value = this.selected.text;
+                    this.el('rationale').value = '';
+                    this.el('candidate-editor').hidden = false;
+                    this.el('workflow-status').textContent =
+                        'No candidate has been retained. Edit the actual text and explain the change.';
+                    this.invalidate();
+                    this.openDialog('workflow-dialog');
+                }
+
+                invalidate() {
+                    this.proposal = null;
+                    this.uncertain = false;
+                    this.el('proposal-view').hidden = true;
+                    this.el('approval').checked = false;
+                    this.el('preview').disabled =
+                        this.busy ||
+                        !this.selected ||
+                        this.el('candidate').value === this.selected.text ||
+                        !this.el('rationale').value.trim();
+                    this.actions();
+                }
+
+                async preview() {
+                    const result = await this.call('skill_panel_propose', {
+                        skill: this.selected.skill,
+                        base_sha256: this.selected.package_sha256,
+                        after: this.el('candidate').value,
+                        rationale: this.el('rationale').value,
+                    });
+                    this.mode = 'apply';
+                    this.renderProposal(result);
+                    this.el('workflow-status').textContent =
+                        'Candidate and preimage retained. Review the actual diff and performed validation; no source file has changed.';
+                    this.el('workflow-status').focus();
+                }
+
+                renderProposal(proposal) {
+                    this.proposal = proposal;
+                    this.uncertain = false;
+                    const recovery = this.mode === 'recover';
+                    this.el('candidate-editor').hidden = true;
+                    this.el('proposal-view').hidden = false;
+                    this.el('proposal-id').textContent =
+                        'Proposal ' +
+                        proposal.proposal_id +
+                        ' · state: ' +
+                        proposal.status +
+                        ' · base: ' +
+                        proposal.base_sha256 +
+                        ' · candidate: ' +
+                        proposal.candidate_sha256;
+                    this.el('proposal-title').textContent = recovery
+                        ? 'Review recovery of the preserved version'
+                        : 'Review the exact retained change';
+                    this.el('proposal-rationale').textContent = proposal.rationale;
+                    this.el('before-title').textContent = recovery
+                        ? 'Current candidate version'
+                        : 'Preserved original version';
+                    this.el('after-title').textContent = recovery
+                        ? 'Version to restore'
+                        : 'Proposed candidate version';
+                    this.el('before').textContent = recovery ? proposal.after : proposal.before;
+                    this.el('after').textContent = recovery ? proposal.before : proposal.after;
+                    this.el('diff').replaceChildren();
+                    for (const line of (recovery ? proposal.recovery_diff : proposal.diff).split(
+                        '\n',
+                    )) {
+                        const span = document.createElement('span');
+                        span.textContent = line;
+                        if (line.startsWith('+')) span.className = 'added';
+                        if (line.startsWith('-')) span.className = 'removed';
+                        this.el('diff').append(span);
+                    }
+                    this.el('checks').textContent =
+                        'Actual local structural validation: ' +
+                        proposal.validation.local.status +
+                        '. ' +
+                        proposal.validation.local.detail +
+                        ' Official validation: ' +
+                        proposal.validation.official +
+                        '. Behavioral evaluation: ' +
+                        proposal.validation.behavioral +
+                        '.';
+                    this.el('approval').checked = false;
+                    this.el('approval-label').textContent = recovery
+                        ? 'I reviewed this exact reverse diff and approve restoring the preserved version.'
+                        : 'I reviewed this exact diff and the validation limits and approve applying this change.';
+                    this.el('apply').textContent = recovery
+                        ? 'Restore approved version'
+                        : 'Apply approved change';
+                    this.actions();
+                }
+
+                actions() {
+                    const proposal = this.proposal;
+                    const allowed =
+                        proposal &&
+                        !this.uncertain &&
+                        (this.mode === 'recover'
+                            ? proposal.status === 'applied'
+                            : proposal.status === 'proposed' &&
+                              proposal.validation.local.status === 'passed');
+                    this.el('apply').disabled =
+                        this.busy || !allowed || !this.el('approval').checked;
+                    this.el('approval').disabled = this.busy || !allowed;
+                    this.el('recover-prepare').hidden =
+                        !proposal || proposal.status !== 'applied' || this.mode === 'recover';
+                    this.el('recover-prepare').disabled = this.busy;
+                    this.el('edit').disabled =
+                        this.busy ||
+                    this.uncertain ||
+                        !proposal ||
+                        proposal.status !== 'proposed' ||
+                        this.mode === 'recover';
+                    this.el('preview').disabled =
+                        this.busy ||
+                        !this.selected ||
+                        this.el('candidate').value === this.selected.text ||
+                        !this.el('rationale').value.trim();
+                    this.el('inspect-proposal').disabled = this.busy || !proposal;
+                }
+
+                async refreshProposal() {
+                    if (!this.proposal) return;
+                    const result = await this.call('skill_panel_proposal', {
+                        proposal_id: this.proposal.proposal_id,
+                    });
+                    this.renderProposal(result);
+                    this.el('workflow-status').textContent =
+                        'Retained proposal state re-read: ' +
+                        result.status +
+                        '. No source write requested.';
+                }
+
+                async acceptIncoming(result) {
+                    await this.inspect(result.skill);
+                    this.mode = 'apply';
+                    this.el('workflow-title').textContent = 'Review ' + result.skill;
+                    this.el('workflow-base').textContent =
+                        'Exact proposal source: ' + result.base_sha256;
+                    this.el('candidate').value = result.after;
+                    this.el('rationale').value = result.rationale;
+                    this.renderProposal(result);
+                    this.el('workflow-status').textContent =
+                        'Retained proposal loaded from the server. No approval is assumed.';
+                    if (!this.el('workflow-dialog').open) this.openDialog('workflow-dialog');
+                }
+
+                async commit() {
+                    if (!this.proposal || !this.el('approval').checked || this.uncertain) return;
+                    const proposal = this.proposal;
+                    const action = this.mode;
+                    this.el('approval').checked = false;
+                    try {
+                        const result = await this.call(
+                            action === 'recover' ? 'skill_panel_recover' : 'skill_panel_apply',
+                            {
+                                action,
+                                proposal_id: proposal.proposal_id,
+                                base_sha256: proposal.base_sha256,
+                                candidate_sha256: proposal.candidate_sha256,
+                                approved: true,
+                            },
+                        );
+                        this.renderProposal(result);
+                        const current = await this.call('skill_panel_inspect', {
+                            skill: result.skill,
+                        });
+                        this.selected = current;
+                        this.el('source').value = current.text;
+                        this.el('selected-hash').textContent = current.package_sha256;
+                        this.el('workflow-status').textContent =
+                            result.status === 'recovered'
+                                ? 'Preserved entrypoint restored. The proposal and recovery evidence remain retained.'
+                                : 'Approved entrypoint applied. The original package remains retained for guarded recovery.';
+                        this.el('workflow-status').focus();
+                    } catch (error) {
+                        this.uncertain = true;
+                        this.el('workflow-status').textContent =
+                            error.message + ' Refresh proposal state before another write.';
+                        throw error;
+                    }
+                }
+            }
+            new SkillChangePanel();
+        </script>
+    </body>
+</html>

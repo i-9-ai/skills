@@ -412,7 +412,9 @@ function evidence(locale) {
                 text('h2', m.title) + element('ul', {}, items),
             ) +
                 link(m.link, documentation + '/Compatibility', { class: 'text-link' }) +
-                text('p', m.providers, { class: 'provider-limits' }),
+                text('p', m.providers, { class: 'provider-limits' }) +
+                text('p', m.panel, { class: 'provider-limits' }) +
+                link(m.panelLink, documentation + '/Skill-Change-Panel', { class: 'text-link' }),
         ),
     );
 }

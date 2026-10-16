@@ -8,8 +8,11 @@ import { SkillQualityToolConfiguration } from '../config/SkillQualityToolConfigu
 import { SkillEvidenceToolConfiguration } from '../config/SkillEvidenceToolConfiguration.ts';
 import { SkillBumpToolConfiguration } from '../config/SkillBumpToolConfiguration.ts';
 import { SkillBumpReportError } from '../validator/SkillBumpReportError.ts';
+import { SkillPanelToolConfiguration } from '../config/SkillPanelToolConfiguration.ts';
+import type { SkillPanelService } from '../service/SkillPanelService.ts';
 
 export type SkillMcpOperations = {
+    panel?: SkillPanelService;
     record(value: unknown): unknown;
     rank(value: unknown): unknown;
     search(value: unknown): unknown;
@@ -178,6 +181,9 @@ export class SkillMcpTransport {
         let ready = false;
         let buffer = Buffer.alloc(0);
         const serverInfo = this.serverInfo;
+        const advertisedTools = store.panel
+            ? [...tools, ...SkillPanelToolConfiguration.tools]
+            : tools;
 
         function callTool(params: Request['params']) {
             const name = params?.name;
@@ -185,6 +191,17 @@ export class SkillMcpTransport {
 
             try {
                 const handlers: Record<string, (input: unknown) => unknown> = {
+                    ...(store.panel
+                        ? {
+                              skill_panel_open: (value: unknown) => store.panel!.open(value),
+                              skill_panel_inspect: (value: unknown) => store.panel!.inspect(value),
+                              skill_panel_propose: (value: unknown) => store.panel!.propose(value),
+                              skill_panel_proposal: (value: unknown) =>
+                                  store.panel!.proposal(value),
+                              skill_panel_apply: (value: unknown) => store.panel!.apply(value),
+                              skill_panel_recover: (value: unknown) => store.panel!.recover(value),
+                          }
+                        : {}),
                     skill_read_record: (value) => store.record(value),
                     skill_read_rankings: (value) => store.rank(value),
                     skill_catalog_search: (value) => store.search(value),
@@ -227,14 +244,24 @@ export class SkillMcpTransport {
                 initialized = true;
                 return {
                     protocolVersion: '2025-11-25',
-                    capabilities: { tools: {} },
+                    capabilities: { tools: {}, ...(store.panel ? { resources: {} } : {}) },
                     serverInfo,
                 };
             }
 
             if (request.method === 'ping') return {};
             if (!ready) throw new Error('Initialize first');
-            if (request.method === 'tools/list') return { tools };
+            if (request.method === 'tools/list') return { tools: advertisedTools };
+            if (store.panel && request.method === 'resources/list')
+                return { resources: [SkillPanelToolConfiguration.resource] };
+            if (store.panel && request.method === 'resources/read') {
+                if (
+                    Object.keys(request.params ?? {}).length !== 1 ||
+                    request.params?.uri !== SkillPanelToolConfiguration.resource.uri
+                )
+                    throw new Error('Unknown panel resource');
+                return { contents: [store.panel.resource()] };
+            }
             if (request.method === 'tools/call') return callTool(request.params);
             return undefined;
         }

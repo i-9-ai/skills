@@ -34,6 +34,9 @@ flowchart LR
     MCP -->|skill_quality_record / skill_quality_inspect| Quality
     Quality --> Evidence
     MCP -->|catalog tools| Catalog
+    MCP -->|explicit panel collection and state| Panel[Optional local change panel]
+    Panel -->|supplied candidate| Proposal[Retained preimage, exact diff and local checks]
+    Proposal -->|explicit exact approval| Apply[Guarded SKILL.md apply or recovery]
     Catalog --> Read
     Read --> Work[Portable meta-skill workflow]
 ```
@@ -52,6 +55,14 @@ queries; the MCP exposes the catalog, onboarding, bump reports and explicit
 evidence tools. See [CLI distribution](https://github.com/i-9-ai/skills/wiki/Distribution-Readiness),
 [plugin preparation](https://github.com/i-9-ai/skills/wiki/Plugin-Preparation) and
 the [interactive entry-path map](https://i-9-ai.github.io/skills/skill-management-entry-paths.html).
+
+The candidate-source [local change panel](https://github.com/i-9-ai/skills/wiki/Skill-Change-Panel)
+uses this same MCP with explicit collection and proposal-state selections.
+It inspects actual files and retains supplied candidate text with its diff and
+local structural validation. Apply/recovery require operator approval of exact
+source and candidate identities. The backend does not generate text, execute
+candidate scripts or certify official/behavioral validation. Public skills-only
+plugins and ordinary MCP startup do not enable this optional pilot.
 
 The explicit [native pilot operator](https://github.com/i-9-ai/skills/wiki/Native-Plugin-Pilot)
 uses the same CLI and statically bundled observation parser. Selected collector

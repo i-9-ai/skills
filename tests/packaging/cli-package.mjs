@@ -18,11 +18,12 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve, sep } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import test from 'node:test';
 import { COMMANDS } from '../../src/index.ts';
 import { treeBytes } from '../unit/fixture/SkillBumpFixture.mjs';
 import { fixture as nativePilotFixture } from '../helpers/NativePilotFixture.mjs';
+import { skillPanelFixture } from '../unit/fixture/SkillPanelFixture.mjs';
 import {
     catalog as evidenceCatalog,
     follow,
@@ -94,6 +95,7 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
         'package-lock.json',
         '.codex-plugin/plugin.json',
         'assets/plugin-icon.png',
+        'assets/skill-panel.html',
         'assets/native-pilot',
         'tsconfig.json',
         'tsconfig.build.json',
@@ -130,7 +132,7 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
         assert.ok(!name.startsWith('/') && !name.split('/').includes('..'), name);
         assert.match(
             name,
-            /^(?:bin\/index\.(?:mjs|md)|dist\/(?:.*\.js|source-receipt\.json)|\.codex-plugin\/plugin\.json$|assets\/(?:plugin-icon\.png$|native-pilot\/)|\.agents\/skills\/|skills-catalog\.json|docs\/|package\.json|README\.md|LICENSE|NOTICE)/,
+            /^(?:bin\/index\.(?:mjs|md)|dist\/(?:.*\.js|source-receipt\.json)|\.codex-plugin\/plugin\.json$|assets\/(?:plugin-icon\.png$|skill-panel\.html$|native-pilot\/)|\.agents\/skills\/|skills-catalog\.json|docs\/|package\.json|README\.md|LICENSE|NOTICE)/,
         );
         assert.doesNotMatch(name, /^(?:src|tests|\.work|tmp|\.codex|\.github|node_modules)\//);
         assert.ok(!name.endsWith('.ts'), name);
@@ -164,6 +166,29 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
     assert.ok(names.includes('assets/native-pilot/codex/schemas/LICENSE'));
     assert.ok(names.includes('assets/native-pilot/codex/schemas/NOTICE'));
     assert.ok(names.includes('NOTICE'));
+    assert.ok(names.includes('assets/skill-panel.html'));
+    const panel = skillPanelFixture(t);
+    const panelProgram = `
+        import { SkillPanelService } from ${JSON.stringify(pathToFileURL(join(installed, 'dist/service/SkillPanelService.js')).href)};
+        import { SkillPanelConfiguration } from ${JSON.stringify(pathToFileURL(join(installed, 'dist/config/SkillPanelConfiguration.js')).href)};
+        const service = new SkillPanelService(new SkillPanelConfiguration(${JSON.stringify(panel.collection)}, ${JSON.stringify(panel.state)}));
+        const before = service.inspect({skill:'example-skill'});
+        const proposed = service.propose({skill:'example-skill',base_sha256:before.package_sha256,after:before.text.replace('2. Produce the reviewable result.','2. Produce the reviewable result with performed checks.'),rationale:'Verify the installed local change workflow.'});
+        const approval = {action:'apply',proposal_id:proposed.proposal_id,base_sha256:proposed.base_sha256,candidate_sha256:proposed.candidate_sha256,approved:true};
+        const applied = service.apply(approval);
+        const recovered = service.recover({...approval,action:'recover'});
+        console.log(JSON.stringify({resource:service.resource().mimeType,local:proposed.validation.local.status,applied:applied.status,recovered:recovered.status,restored:service.inspect({skill:'example-skill'}).package_sha256===before.package_sha256}));
+    `;
+    assert.deepEqual(
+        JSON.parse(run(process.execPath, ['--input-type=module', '-e', panelProgram], root)),
+        {
+            resource: 'text/html;profile=mcp-app',
+            local: 'passed',
+            applied: 'applied',
+            recovered: 'recovered',
+            restored: true,
+        },
+    );
     const pilotSelection = nativePilotFixture(t).contract;
     pilotSelection.runtime_layout = 'compiled-js';
     pilotSelection.observer.entrypoint = 'dist/transport/NativePilotNativeObserverRunner.js';

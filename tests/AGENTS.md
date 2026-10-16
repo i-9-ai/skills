@@ -21,6 +21,9 @@ Run `npm test` from the repository root. Tests make no network requests and leav
 
 ## Child DOX index
 
+- [Local skill-change workflow](unit/service/SkillPanelService.test.mjs): actual disposable package inspection, exact proposals, approval, guarded application/recovery, interruption and linked/tampered/stale refusal; no user package or native host is modified.
+- [Panel MCP protocol](integration/cli/skill-panel.test.mjs): optional resource/tool advertisement and the complete shared stdio workflow with explicit selections; protocol tests do not establish native UI support.
+
 - [Managed collection installation](unit/service/SkillInstallationService.test.mjs): ownership, bounds, local conflicts and resumable transaction recovery in disposable fixtures.
 - [Native installation adapters](unit/service/PluginInstallationService.test.mjs): fake Codex/Claude command contracts and retained cache state; no actual client installation or provider execution.
 - [GitHub family consumer](integration/collection/github-family-consumer.test.mjs): original issue/Wiki consumer evidence through existing catalog helpers; no actual GitHub, domain-package or native-host execution.

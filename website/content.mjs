@@ -167,6 +167,8 @@ export const messages = {
                 },
             ],
             link: 'Read compatibility and evidence',
+            panel: 'Candidate-source local panel pilot: inspect a selected skill, review a supplied candidate diff and structural checks, then explicitly approve apply or recovery. Not enabled in the current npm release or public plugin.',
+            panelLink: 'Understand the local panel pilot',
             providers:
                 'Codex and Claude plugin pilots exercise selected native paths. Copilot CLI evidence covers ephemeral legacy-plugin MCP discovery and direct calls, without a model turn or persistent installation. Icons and hooks remain host-dependent.',
         },
@@ -297,6 +299,8 @@ export const messages = {
                 },
             ],
             link: 'Ler compatibilidade e evidências',
+            panel: 'Piloto local no código candidato: inspecione uma skill selecionada, revise o diff de uma proposta fornecida e as verificações estruturais e aprove explicitamente a aplicação ou recuperação. Não está ativado na versão npm atual nem no plugin público.',
+            panelLink: 'Entenda o piloto local do painel',
             providers:
                 'Os pilotos de plugin do Codex e Claude exercitam caminhos nativos específicos. A evidência do Copilot CLI cobre descoberta MCP e chamadas diretas de plugin legado efêmero, sem turno de modelo nem instalação persistente. Ícones e hooks dependem do host.',
         },
@@ -429,6 +433,8 @@ export const messages = {
                 },
             ],
             link: 'Leer compatibilidad y evidencia',
+            panel: 'Piloto local en el código candidato: inspeccione una skill seleccionada, revise el diff de una propuesta suministrada y las comprobaciones estructurales y apruebe explícitamente la aplicación o recuperación. No está activado en la versión npm actual ni en el plugin público.',
+            panelLink: 'Conozca el piloto local del panel',
             providers:
                 'Los pilotos de plugins de Codex y Claude prueban rutas nativas específicas. La evidencia de Copilot CLI cubre descubrimiento MCP y llamadas directas de un plugin legado efímero, sin turno de modelo ni instalación persistente. Los iconos y hooks dependen del host.',
         },

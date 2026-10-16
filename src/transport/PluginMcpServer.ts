@@ -5,14 +5,18 @@ import { SkillMcpService } from '../service/SkillMcpService.ts';
 export class PluginMcpServer {
     async run(): Promise<void> {
         const [flag, host, ...extra] = process.argv.slice(2);
+        const panel =
+            extra.length === 4 && extra[0] === '--panel-collection' && extra[2] === '--panel-state'
+                ? { collection: extra[1], state: extra[3] }
+                : undefined;
         if (
             flag !== '--host' ||
             !['codex', 'claude', 'copilot'].includes(host) ||
-            extra.length > 0
+            (extra.length > 0 && panel === undefined)
         ) {
             throw new Error('Select one supported plugin host');
         }
-        await new SkillMcpService({ host: host as 'codex' | 'claude' | 'copilot' }).serve();
+        await new SkillMcpService({ host: host as 'codex' | 'claude' | 'copilot', panel }).serve();
     }
 }
 

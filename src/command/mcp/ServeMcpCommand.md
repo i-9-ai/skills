@@ -1,5 +1,13 @@
 # Skill MCP entrypoint
 
+The optional candidate-source [local skill-change panel](../../../docs/Skill%20Change%20Panel.md)
+uses this same server with both `--panel-collection /absolute/pilot/skills` and
+`--panel-state /absolute/pilot/proposals`. It reads actual selected packages,
+retains supplied candidate diffs and exposes operator-approved apply/recover.
+Neither initialization nor inspection creates state. Local structural checks
+remain distinct from official validation and behavioral evaluation. Existing
+plugin manifests and the public skills-only submission do not enable the pilot.
+
 `skill_bump_report` returns a bounded evidence-based comparison;
 `skill_onboarding` returns an inert versioned guide and complete synthetic examples.
 Both are read-only and need no evidence database. See

@@ -6,6 +6,13 @@ tools only read bundled files; they do not record
 usage, activate skills, scan the caller's home or execute package scripts.
 Recording evidence requires a separate explicit call with evidence from its emitter.
 
+An optional [local skill-change panel](https://github.com/i-9-ai/skills/wiki/Skill-Change-Panel)
+in candidate source extends this same server only when `--panel-collection` and
+`--panel-state` are explicitly selected. It supplies live inspection, retained
+candidate diffs and operator-approved apply/recover. It does not generate text,
+run official/behavioral validation or enable telemetry. Published 0.3.4 and the
+public skills-only plugin do not provide that pilot.
+
 ## Start
 
 Use Node.js 24+ and run `npm ci` explicitly in the checkout first. Configure a
