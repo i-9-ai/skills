@@ -5,10 +5,11 @@ import { isAbsolute, relative, resolve, sep } from 'node:path';
 export class SkillPanelConfiguration {
     readonly collection: string;
     readonly state: string;
+    readonly globalCollection?: string;
     static readonly resourceUri = 'ui://i9-skills/skill-panel/v1.html';
 
-    constructor(collection: string, state: string) {
-        for (const value of [collection, state]) {
+    constructor(collection: string, state: string, globalCollection?: string) {
+        for (const value of [collection, state, ...(globalCollection ? [globalCollection] : [])]) {
             if (!isAbsolute(value) || !value.isWellFormed() || value.includes('\0')) {
                 throw new Error('Panel paths must be explicit absolute directories.');
             }
@@ -19,6 +20,12 @@ export class SkillPanelConfiguration {
         this.collection = resolve(collection);
         this.state = resolve(state);
         this.assertSeparate(this.collection, this.state);
+        if (globalCollection !== undefined) {
+            if (!globalCollection) throw new Error('Select an absolute global collection.');
+            this.globalCollection = resolve(globalCollection);
+            this.assertSeparate(this.globalCollection, this.collection);
+            this.assertSeparate(this.globalCollection, this.state);
+        }
     }
 
     assertSeparate(collection: string, state: string): void {

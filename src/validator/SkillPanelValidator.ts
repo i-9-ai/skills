@@ -63,6 +63,25 @@ export class SkillPanelValidator {
         return this.name(this.object(value, ['skill']).skill);
     }
 
+    inspection(value: unknown): string {
+        const skill = this.object(value, ['skill']).skill;
+        if (typeof skill === 'string' && /^global:[a-f0-9]{64}$/.test(skill)) return skill;
+        return this.name(skill);
+    }
+
+    catalog(value: unknown) {
+        if (!value || typeof value !== 'object' || Array.isArray(value)) this.invalid();
+        const query = value as Record<string, unknown>;
+        if (Object.keys(query).some((key) => !['offset', 'limit'].includes(key))) this.invalid();
+        const offset = query.offset === undefined ? 0 : query.offset;
+        const limit = query.limit === undefined ? 128 : query.limit;
+        if (!Number.isInteger(offset) || (offset as number) < 0 || (offset as number) > 1024)
+            this.invalid();
+        if (!Number.isInteger(limit) || (limit as number) < 1 || (limit as number) > 128)
+            this.invalid();
+        return { offset: offset as number, limit: limit as number };
+    }
+
     candidate(value: unknown) {
         const data = this.object(value, ['skill', 'base_sha256', 'after', 'rationale']);
         return {

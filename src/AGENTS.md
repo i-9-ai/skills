@@ -28,6 +28,7 @@ Run `npm run check` and inspect the required official workflow result for the ex
 ## Child DOX index
 
 - [Local skill-change panel](../docs/Skill%20Change%20Panel.md): explicit selected-package inspection and retained candidate diffs through the shared MCP, with guarded operator-approved entrypoint apply/recover; no autonomous generation or readiness certification.
+- [Panel catalog](repository/SkillPanelCatalogRepository.ts): source-qualified selected/global discovery and read-only global entrypoint inspection; no global mutation or proposal-state access.
 - [Skill evolution filesystem](repository/SkillEvolutionRepository.ts): private package preimages, stale-state rejection, write intents and guarded single-file recovery in a stable owned workspace; no global discovery or automatic cleanup.
 
 - [Managed installation](../docs/Managed%20Installation.md): one scoped CLI lifecycle with owned package receipts and native host adapters; no implicit setup, release or real-profile mutation during tests.

@@ -166,6 +166,12 @@ test('the shared stdio protocol carries real catalog, retained candidate, approv
 
 test('mcp serve validates paired explicit selections and the dependency-free plugin entrypoint uses the same server', (t) => {
     const f = skillPanelFixture(t);
+    const global = join(f.root, 'global');
+    fs.mkdirSync(join(global, 'personal-reference'), { recursive: true });
+    fs.writeFileSync(
+        join(global, 'personal-reference', 'SKILL.md'),
+        '---\nname: personal-reference\ndescription: Read one global input.\n---\n\n# Personal reference\n',
+    );
     const root = new URL('../../../', import.meta.url).pathname;
     const environment = {
         ...process.env,
@@ -201,6 +207,8 @@ test('mcp serve validates paired explicit selections and the dependency-free plu
             f.collection,
             '--panel-state',
             f.state,
+            '--panel-global-collection',
+            global,
         ],
         {
             cwd: root,
@@ -214,6 +222,8 @@ test('mcp serve validates paired explicit selections and the dependency-free plu
     const results = run.stdout.trim().split('\n').map(JSON.parse);
     assert.equal(results[1].result.resources.length, 1);
     assert.equal(results[2].result.structuredContent.skills[0].skill, 'example-skill');
+    assert.equal(results[2].result.structuredContent.skills[1].name, 'personal-reference');
+    assert.equal(results[2].result.structuredContent.skills[1].read_only, true);
     assert.equal(fs.existsSync(f.state), false);
     assert.equal(fs.existsSync(join(f.root, '.agents')), false);
 });

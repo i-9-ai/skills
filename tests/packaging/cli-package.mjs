@@ -168,6 +168,12 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
     assert.ok(names.includes('NOTICE'));
     assert.ok(names.includes('assets/skill-panel.html'));
     const panel = skillPanelFixture(t);
+    const globalPanel = join(panel.root, 'global references');
+    mkdirSync(join(globalPanel, 'global-example'), { recursive: true });
+    writeFileSync(
+        join(globalPanel, 'global-example', 'SKILL.md'),
+        '---\nname: global-example\ndescription: Read one global reference.\n---\n\n# Global reference\n',
+    );
     const panelProgram = `
         import { SkillPanelService } from ${JSON.stringify(pathToFileURL(join(installed, 'dist/service/SkillPanelService.js')).href)};
         import { SkillPanelConfiguration } from ${JSON.stringify(pathToFileURL(join(installed, 'dist/config/SkillPanelConfiguration.js')).href)};
@@ -212,6 +218,12 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
             },
         },
         { jsonrpc: '2.0', id: 4, method: 'resources/templates/list' },
+        {
+            jsonrpc: '2.0',
+            id: 5,
+            method: 'tools/call',
+            params: { name: 'skill_panel_open', arguments: {} },
+        },
     ];
     const panelClient = spawnSync(
         process.execPath,
@@ -223,6 +235,8 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
             panel.collection,
             '--panel-state',
             panel.state,
+            '--panel-global-collection',
+            globalPanel,
         ],
         {
             cwd: root,
@@ -247,6 +261,11 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
     assert.deepEqual(panelReplies.find((reply) => reply.id === 4).result, {
         resourceTemplates: [],
     });
+    const globalRow = panelReplies
+        .find((reply) => reply.id === 5)
+        .result.structuredContent.skills.find((row) => row.source === 'global');
+    assert.equal(globalRow.name, 'global-example');
+    assert.equal(globalRow.read_only, true);
     const pilotSelection = nativePilotFixture(t).contract;
     pilotSelection.runtime_layout = 'compiled-js';
     pilotSelection.observer.entrypoint = 'dist/transport/NativePilotNativeObserverRunner.js';

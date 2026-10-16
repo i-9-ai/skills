@@ -8,6 +8,13 @@ Neither initialization nor inspection creates state. Local structural checks
 remain distinct from official validation and behavioral evaluation. Existing
 plugin manifests and the public skills-only submission do not enable the pilot.
 
+Add `--panel-global-collection /absolute/global/skills` to include a live read-only
+global catalog alongside those selected editable packages. The same flag is
+supported by the dependency-free plugin entrypoint. Names at different package
+paths retain distinct identities; the panel loads paged results, filters by source
+and permits global entrypoint inspection and unsent review drafts only. Global
+discovery never creates state or grants global candidate/apply/recovery access.
+
 `skill_bump_report` returns a bounded evidence-based comparison;
 `skill_onboarding` returns an inert versioned guide and complete synthetic examples.
 Both are read-only and need no evidence database. See

@@ -20,7 +20,7 @@ export type SkillMcpOptions = {
     host?: 'codex' | 'claude' | 'copilot';
     environment?: NodeJS.ProcessEnv;
     callerRoot?: string;
-    panel?: { collection: string; state: string };
+    panel?: { collection: string; state: string; globalCollection?: string };
 };
 
 /** Shares catalog operations and acquires usage storage only for explicit usage calls. */
@@ -43,7 +43,11 @@ export class SkillMcpService {
         this.catalog = new SkillCatalogService(this.installed);
         if (options.panel)
             this.panel = new SkillPanelService(
-                new SkillPanelConfiguration(options.panel.collection, options.panel.state),
+                new SkillPanelConfiguration(
+                    options.panel.collection,
+                    options.panel.state,
+                    options.panel.globalCollection,
+                ),
             );
     }
 

@@ -15,6 +15,8 @@ const element = () => ({
     textContent: '',
     replaceChildren() {},
     append() {},
+    setAttribute() {},
+    addEventListener() {},
     focus() {
         this.focused = true;
     },
@@ -63,6 +65,101 @@ function view() {
     panel.renderCatalog = () => {};
     return panel;
 }
+
+test('the panel loads every catalog page and searches human names within a source filter', async () => {
+    const panel = view();
+    const seen = [];
+    panel.call = async (_name, query) => {
+        seen.push(query);
+        if (!query.offset)
+            return {
+                collection: 'pilot',
+                skills: [
+                    {
+                        skill: 'example-skill',
+                        name: 'example-skill',
+                        source: 'selected',
+                        description: 'Selected copy.',
+                    },
+                ],
+                warnings: [],
+                next_offset: 1,
+            };
+        return {
+            collection: 'pilot',
+            skills: [
+                {
+                    skill: 'global:' + 'a'.repeat(64),
+                    name: 'personal-reference',
+                    source: 'global',
+                    description: 'Global source.',
+                },
+            ],
+            warnings: [],
+            next_offset: null,
+        };
+    };
+    await panel.loadCatalog();
+    assert.equal(panel.catalog.length, 2);
+    assert.equal(seen.length, 2);
+    panel.el('source-filter').value = 'global';
+    panel.el('search').value = 'personal-reference';
+    Panel.prototype.renderCatalog.call(panel);
+    assert.match(panel.el('result-note').textContent, /^1 real package/);
+    panel.el('source-filter').value = 'selected';
+    Panel.prototype.renderCatalog.call(panel);
+    assert.match(panel.el('result-note').textContent, /^0 real package/);
+});
+
+test('global inspection prepares a read-only review and cannot start a mutation workflow', async () => {
+    const panel = view();
+    let calls = 0;
+    panel.call = async () => {
+        calls++;
+        return {
+            skill: 'global:' + 'a'.repeat(64),
+            name: 'personal-reference',
+            source: 'global',
+            read_only: true,
+            sha256: 'entrypoint-hash',
+            package_sha256: null,
+            text: 'Actual global source.',
+            description: 'A global reference.',
+            bytes: 21,
+            files: 1,
+        };
+    };
+    await panel.inspect('global:' + 'a'.repeat(64));
+    assert.equal(panel.el('selected-title').textContent, 'personal-reference');
+    assert.equal(panel.el('selected-hash').textContent, 'entrypoint-hash');
+    assert.equal(panel.el('evolve').disabled, true);
+    panel.el('candidate').value = 'A previous draft';
+    panel.el('rationale').value = 'A previous rationale';
+    panel.actions();
+    assert.equal(panel.el('preview').disabled, true);
+    assert.match(panel.el('selected-state').textContent, /read.only/i);
+    panel.draft();
+    assert.match(panel.el('task-draft').value, /read.only/i);
+    assert.doesNotMatch(panel.el('task-draft').value, /use skill_panel_propose/);
+    panel.startEditor();
+    await panel.preview();
+    assert.equal(panel.el('workflow-dialog').open, false);
+    assert.equal(calls, 1);
+});
+
+test('a catalog change between pages preserves the previous view and requires a fresh load', async () => {
+    const panel = view();
+    panel.catalog = [{ skill: 'retained-entry' }];
+    panel.call = async (_name, query) => ({
+        collection: 'pilot',
+        skills: [],
+        warnings: [],
+        next_offset: query.offset ? null : 1,
+        catalog_revision: query.offset ? 'changed' : 'original',
+    });
+    await assert.rejects(() => panel.loadCatalog(), /Catalog changed/);
+    assert.equal(panel.catalog[0].skill, 'retained-entry');
+});
 
 test('the served panel binds apply/recovery controls to reviewed, valid, certain state', () => {
     const panel = view();

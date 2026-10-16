@@ -22,7 +22,10 @@ test('live catalog and actual inspection never initialize proposal state', (t) =
     assert.deepEqual(f.service.open({}).skills, [
         {
             skill: 'example-skill',
+            name: 'example-skill',
             description: 'Review one synthetic input and produce an evidenced result.',
+            source: 'selected',
+            read_only: false,
         },
     ]);
     const observed = f.inspect();

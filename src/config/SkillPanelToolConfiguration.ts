@@ -31,8 +31,14 @@ export class SkillPanelToolConfiguration {
             name: 'skill_panel_open',
             title: 'I-9 Skills',
             description:
-                'Open the optional local skill-change pilot and read its explicitly selected live catalog. No state, hooks or telemetry are created.',
-            inputSchema: object({}),
+                'Open the optional local skill-change pilot and page its explicitly selected live catalog and optional global read-only references. Use next_offset to retrieve subsequent pages. No state, hooks or telemetry are created.',
+            inputSchema: {
+                ...object({
+                    offset: { type: 'integer', minimum: 0, maximum: 1024 },
+                    limit: { type: 'integer', minimum: 1, maximum: 128 },
+                }),
+                required: [],
+            },
             annotations: { readOnlyHint: true, openWorldHint: false },
             _meta: {
                 ui: { resourceUri: SkillPanelConfiguration.resourceUri },
@@ -42,8 +48,15 @@ export class SkillPanelToolConfiguration {
         {
             name: 'skill_panel_inspect',
             description:
-                'Read an ordinary direct selected skill and its exact entrypoint/package identity; no scripts execute or state is written.',
-            inputSchema: object({ skill }),
+                'Read a selected editable package or a discovered source-qualified global reference. Global inspection reads SKILL.md only; no scripts execute or state is written.',
+            inputSchema: object({
+                skill: {
+                    anyOf: [
+                        skill,
+                        { type: 'string', pattern: '^global:[a-f0-9]{64}$', maxLength: 71 },
+                    ],
+                },
+            }),
             annotations: { readOnlyHint: true, openWorldHint: false },
         },
         {

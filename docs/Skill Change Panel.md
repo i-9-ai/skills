@@ -44,6 +44,46 @@ host actually loaded; an already open component may retain its prior process.
 Tool discovery, successful HTML retrieval and visible native rendering are
 separate checks when investigating a host's “could not display” message.
 
+## Include read-only global skills
+
+Add an explicitly selected global collection without copying its packages:
+
+```sh
+node bin/index.mjs mcp serve \
+  --panel-collection /absolute/local-pilot/skills \
+  --panel-state /absolute/local-pilot/proposals \
+  --panel-global-collection "$HOME/.agents/skills"
+```
+
+The plugin entrypoint accepts the same optional flag after both pilot paths.
+Global reference parsing uses the existing production YAML dependency: prepare
+the checkout with `npm ci` or use the prepared artifact. Selected-only plugin
+discovery keeps its dependency-free parser.
+Omitting it preserves selected-only discovery. The server never guesses a home
+directory. Global discovery follows package links and ordinary namespaces,
+excludes hidden system directories, and deduplicates real package paths. Equal
+names at different paths remain separate, with stable opaque `global:` IDs;
+names alone cannot redirect inspection to another package.
+
+Use **All sources**, **Selected collection** or **Global · read only**, then
+search by human name or description. **Refresh live catalog** reloads available
+pages from actual source metadata. The MCP tool accepts optional integer `offset`
+and `limit` (1–128, default 128), returning `total` and `next_offset`. Plain clients
+must follow `next_offset` until null. The combined catalog is bounded at 1,024
+packages, with 4,096 inspected directory entries per source, and reports incomplete coverage or broken sources;
+catalog descriptions are shortened to 256 code points for display.
+The UI checks `catalog_revision` between pages and requests a fresh load when
+source metadata changes during pagination.
+
+Selecting a global reference reads only its bounded UTF-8 `SKILL.md` (128 KiB),
+with its entrypoint hash, rather than asserting a complete package fingerprint.
+**Prepare a review** drafts an unsent read-only request. **Plan an evolution** is
+disabled for these references, and the backend rejects global IDs for candidate
+writes. The existing selected-package workflow below retains its explicit approval
+and recovery rules. A global reference does not need this repository's icon or
+license layout to appear. Its text is source material, never permission to run a
+script, modify a package or broaden access. No global catalog or usage state is written.
+
 ## Review a real candidate
 
 1. Select a skill. The panel reads actual `SKILL.md` content, file count, byte
@@ -113,7 +153,7 @@ sandbox for an attacker-controlled filesystem.
 
 ## Bounds and current limits
 
-The pilot supports direct packages only, up to 64 catalog results, 512 package
+The editable pilot supports direct packages only, 512 package
 entries, 8 MiB per package and 32 KiB UTF-8 entrypoint/candidate text. It rejects
 package links, hardlinks, special entries and unsafe or overlapping state.
 At most 16 retained proposal directories are accepted per state directory;

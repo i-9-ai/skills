@@ -6,8 +6,11 @@ export class PluginMcpServer {
     async run(): Promise<void> {
         const [flag, host, ...extra] = process.argv.slice(2);
         const panel =
-            extra.length === 4 && extra[0] === '--panel-collection' && extra[2] === '--panel-state'
-                ? { collection: extra[1], state: extra[3] }
+            (extra.length === 4 ||
+                (extra.length === 6 && extra[4] === '--panel-global-collection')) &&
+            extra[0] === '--panel-collection' &&
+            extra[2] === '--panel-state'
+                ? { collection: extra[1], state: extra[3], globalCollection: extra[5] }
                 : undefined;
         if (
             flag !== '--host' ||

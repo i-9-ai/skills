@@ -188,6 +188,20 @@
             .toolbar input {
                 width: 100%;
             }
+            .toolbar select {
+                min-width: 0;
+                padding: 12px;
+                font: inherit;
+                color: var(--text);
+                background: var(--surface);
+                border: 1px solid var(--line);
+                border-radius: 6px;
+            }
+            .package-card small {
+                display: block;
+                margin-top: 8px;
+                color: var(--muted);
+            }
             .result-note {
                 margin-bottom: 20px;
                 font-size: 12px;
@@ -800,8 +814,8 @@
                         <div>
                             <h1 id="library-title">Work on one skill.</h1>
                             <p>
-                                Real content and source identity from an explicitly selected local
-                                collection.
+                                Real content from selected local collections, with a visible origin
+                                and editing boundary for each skill.
                             </p>
                         </div>
                     </div>
@@ -812,12 +826,19 @@
                             aria-label="Search skills"
                             placeholder="Search names or responsibilities"
                         />
+                        <select id="source-filter" aria-label="Filter skills by source">
+                            <option value="all">All sources</option>
+                            <option value="selected">Selected collection</option>
+                            <option value="global">Global · read only</option>
+                        </select>
                     </div>
                     <p id="result-note" class="result-note" aria-live="polite"></p>
                     <div class="library">
                         <div id="results" class="results" aria-label="Skill results"></div>
                         <aside class="inspector" aria-labelledby="selected-title">
-                            <div class="eyebrow">Selected local collection · live read</div>
+                            <div class="eyebrow" id="selected-origin">
+                                Selected local collection · live read
+                            </div>
                             <h2 id="selected-title">Select a skill</h2>
                             <p id="selected-description"></p>
                             <div id="selected-state" class="snapshot-status">
@@ -825,7 +846,7 @@
                             </div>
                             <dl class="facts">
                                 <div>
-                                    <dt>Package identity</dt>
+                                    <dt id="selected-hash-label">Package identity</dt>
                                     <dd class="panel-hash" id="selected-hash">Not inspected</dd>
                                 </div>
                                 <div>
@@ -992,6 +1013,7 @@
                         this.run(() => this.loadCatalog()),
                     );
                     this.el('search').addEventListener('input', () => this.renderCatalog());
+                    this.el('source-filter').addEventListener('change', () => this.renderCatalog());
                     this.el('theme').addEventListener('click', () => {
                         const light = document.documentElement.dataset.theme !== 'light';
                         document.documentElement.dataset.theme = light ? 'light' : 'dark';
@@ -1159,36 +1181,76 @@
                 }
 
                 async loadCatalog() {
-                    const result = await this.call('skill_panel_open', {});
-                    this.catalog = result.skills;
+                    let result = await this.call('skill_panel_open', {});
+                    const catalog = [...result.skills];
+                    const warnings = new Set(result.warnings);
+                    const revision = result.catalog_revision;
+                    let offset = 0;
+                    let pages = 1;
+                    while (result.next_offset != null) {
+                        if (
+                            !Number.isInteger(result.next_offset) ||
+                            result.next_offset <= offset ||
+                            ++pages > 16
+                        ) {
+                            throw new Error(
+                                'Catalog pagination changed; refresh the selected collections.',
+                            );
+                        }
+                        offset = result.next_offset;
+                        result = await this.call('skill_panel_open', { offset });
+                        if (result.catalog_revision !== revision) {
+                            throw new Error(
+                                'Catalog changed while loading; refresh the selected collections.',
+                            );
+                        }
+                        catalog.push(...result.skills);
+                        for (const warning of result.warnings) warnings.add(warning);
+                    }
+                    this.catalog = catalog;
                     this.el('connection').textContent =
                         'Connected to selected collection "' +
                         result.collection +
-                        '". Live reads; no telemetry is enabled. ' +
-                        result.warnings.join(' ');
+                        '"' +
+                        (catalog.some((item) => item.source === 'global')
+                            ? ' and global read-only references'
+                            : '') +
+                        '. Live reads; no telemetry is enabled. ' +
+                        [...warnings].join(' ');
                     this.renderCatalog();
                 }
 
                 renderCatalog() {
                     const query = this.el('search').value.toLowerCase();
-                    const matches = this.catalog.filter((item) =>
-                        (item.skill + ' ' + item.description).toLowerCase().includes(query),
+                    const source = this.el('source-filter').value || 'all';
+                    const matches = this.catalog.filter(
+                        (item) =>
+                            (source === 'all' || (item.source || 'selected') === source) &&
+                            ((item.name || item.skill) + ' ' + item.description)
+                                .toLowerCase()
+                                .includes(query),
                     );
                     this.el('results').replaceChildren();
                     for (const item of matches) {
                         const button = document.createElement('button');
                         button.type = 'button';
                         button.className = 'package-card';
-                        button.setAttribute('aria-label', 'Inspect ' + item.skill);
+                        const name = item.name || item.skill;
+                        const origin = item.read_only
+                            ? 'Global · read only · ' + item.skill.slice(7, 15)
+                            : 'Selected collection · editable';
+                        button.setAttribute('aria-label', 'Inspect ' + name + ' · ' + origin);
                         button.setAttribute(
                             'aria-pressed',
                             String(this.selected?.skill === item.skill),
                         );
                         const title = document.createElement('strong');
-                        title.textContent = item.skill;
+                        title.textContent = name;
+                        const badge = document.createElement('small');
+                        badge.textContent = origin;
                         const text = document.createElement('p');
                         text.textContent = item.description;
-                        button.append(title, text);
+                        button.append(title, badge, text);
                         button.addEventListener('click', () =>
                             this.run(() => this.inspect(item.skill)),
                         );
@@ -1206,18 +1268,26 @@
                     this.proposal = null;
                     this.uncertain = false;
                     this.el('approval').checked = false;
-                    this.el('selected-title').textContent = result.skill;
+                    this.el('selected-title').textContent = result.name || result.skill;
+                    this.el('selected-origin').textContent = result.read_only
+                        ? 'Global collection · read only'
+                        : 'Selected local collection · editable';
+                    this.el('selected-hash-label').textContent = result.read_only
+                        ? 'SKILL.md identity'
+                        : 'Package identity';
                     this.el('selected-description').textContent = result.description;
-                    this.el('selected-hash').textContent = result.package_sha256;
+                    this.el('selected-hash').textContent = result.package_sha256 || result.sha256;
                     this.el('selected-state').textContent =
-                        'Actual disk read · ' +
+                        (result.read_only
+                            ? 'Read-only global SKILL.md · '
+                            : 'Actual disk read · ') +
                         result.files +
                         ' files · ' +
                         result.bytes +
                         ' bytes. Review and behavioral state are not inferred.';
                     this.el('source').value = result.text;
                     this.el('review').disabled = false;
-                    this.el('evolve').disabled = false;
+                    this.el('evolve').disabled = Boolean(result.read_only);
                     this.renderCatalog();
                 }
 
@@ -1233,12 +1303,24 @@
                             : 'What does Plan an evolution do?';
                     this.el('help-copy').textContent =
                         type === 'review'
-                            ? 'Prepare an editable inspection request bound to the actual package hash. No task is sent or executed automatically. A review can conclude that no edit is needed.'
+                            ? 'Prepare an editable inspection request bound to the actual package hash, or the entrypoint hash for a read-only global reference. No task is sent or executed automatically. A review can conclude that no edit is needed.'
                             : 'Start from the real entrypoint and supply a complete candidate with its rationale. Preview retains the original and candidate, computes their diff and runs local structural checks. Applying requires reviewing that exact proposal and explicitly approving it. Official conformance and behavioral checks are separate.';
                     this.openDialog('help-dialog');
                 }
 
                 draft() {
+                    if (this.selected?.read_only) {
+                        this.el('task-draft').value =
+                            'Review the read-only global skill ' +
+                            this.selected.name +
+                            ' (' +
+                            this.selected.skill +
+                            ') at SKILL.md SHA256 ' +
+                            this.selected.sha256 +
+                            '. Inspect its responsibility, self-sufficiency, examples and validation gaps. Report findings with evidence; this panel grants no global editing authority. No candidate or message has been sent automatically.';
+                        this.openDialog('draft-dialog');
+                        return;
+                    }
                     this.el('task-draft').value =
                         'Review ' +
                         this.selected.skill +
@@ -1250,6 +1332,7 @@
 
                 startEditor() {
                     if (this.unresolved) return this.showUnresolved();
+                    if (!this.selected || this.selected.read_only) return;
                     this.mode = 'apply';
                     this.proposal = null;
                     this.uncertain = false;
@@ -1274,6 +1357,7 @@
                     this.el('preview').disabled =
                         this.busy ||
                         !this.selected ||
+                        this.selected.read_only ||
                         this.el('candidate').value === this.selected.text ||
                         !this.el('rationale').value.trim();
                     this.actions();
@@ -1281,6 +1365,7 @@
 
                 async preview() {
                     if (this.unresolved) return this.showUnresolved();
+                    if (!this.selected || this.selected.read_only) return;
                     const result = await this.call('skill_panel_propose', {
                         skill: this.selected.skill,
                         base_sha256: this.selected.package_sha256,
@@ -1389,6 +1474,7 @@
                         this.busy ||
                         blocked ||
                         !this.selected ||
+                        this.selected.read_only ||
                         this.el('candidate').value === this.selected.text ||
                         !this.el('rationale').value.trim();
                     this.el('inspect-proposal').disabled = this.busy || !proposal;
