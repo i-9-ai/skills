@@ -59,6 +59,12 @@ test('the shared stdio protocol carries real catalog, retained candidate, approv
     input.write(JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }) + '\n');
     const tools = (await rpc('tools/list')).result.tools;
     assert.equal(tools.length, 9);
+    for (const tool of tools)
+        assert.equal(
+            tool.inputSchema.type,
+            'object',
+            `${tool.name} must advertise the MCP object input schema`,
+        );
     const opening = tools.find((tool) => tool.name === 'skill_panel_open');
     assert.equal(opening.icons?.length, 2);
     assert.deepEqual(

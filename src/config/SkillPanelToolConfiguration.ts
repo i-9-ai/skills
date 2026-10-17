@@ -89,6 +89,7 @@ export class SkillPanelToolConfiguration {
             description:
                 'Retain an explicit panel review/change request at the live source identity. The app sends its instructions through the host only after the user clicks; this operation never starts a model or changes skill files.',
             inputSchema: {
+                type: 'object',
                 oneOf: [
                     object({
                         skill: { type: 'string', maxLength: 71 },
