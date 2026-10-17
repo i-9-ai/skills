@@ -1381,6 +1381,7 @@
                 catalog = [];
                 lastFocus = null;
                 incoming = null;
+                incomingResult = null;
                 workspace = 'overview';
                 editing = false;
                 hostCapabilities = {};
@@ -1536,11 +1537,13 @@
                             return;
                         }
                         if (
-                            result?.request?.skill === this.selected?.skill &&
-                            this.connected &&
-                            !this.busy
-                        )
-                            this.run(() => this.loadActivity(true));
+                            result?.request?.skill &&
+                            (!this.selected || result.request.skill === this.selected.skill)
+                        ) {
+                            this.incomingResult = result;
+                            if (this.connected && !this.busy)
+                                this.run(() => this.showCompleted(result));
+                        }
                     }
                 }
 
@@ -1595,6 +1598,7 @@
                         this.el('resume').disabled = false;
                         await this.loadCatalog();
                         if (this.incoming) await this.acceptIncoming(this.incoming);
+                        else if (this.incomingResult) await this.showCompleted(this.incomingResult);
                     } catch (error) {
                         this.el('connection').textContent =
                             error.message +
@@ -1910,6 +1914,13 @@
                         this.pollRemaining = 30;
                         this.scheduleActivity();
                     }
+                }
+
+                async showCompleted(incoming) {
+                    if (this.unresolved) return this.showUnresolved();
+                    if (!this.selected) return this.inspect(incoming.request.skill);
+                    if (this.selected.skill === incoming.request.skill)
+                        await this.loadActivity(true);
                 }
 
                 renderActivity(activity) {

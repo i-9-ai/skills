@@ -700,3 +700,23 @@ test('global skills can ask for a review but never request candidates', async ()
     assert.equal(panel.el('evolve').disabled, true);
     assert.equal(panel.el('manual-candidate').disabled, true);
 });
+
+test('a completed tool result opens its real skill in a fresh panel without trusting its summary', async () => {
+    const panel = workflowView();
+    panel.selected = null;
+    panel.proposal = null;
+    let inspected = null;
+    panel.inspect = async (skill) => {
+        inspected = skill;
+    };
+    await panel.showCompleted({
+        request: { skill: 'example-skill' },
+        result: { summary: 'An untrusted notification summary.' },
+    });
+    assert.equal(inspected, 'example-skill');
+    assert.doesNotMatch(panel.el('request-status').textContent, /untrusted notification/);
+    panel.selected = { skill: 'another-skill' };
+    inspected = null;
+    await panel.showCompleted({ request: { skill: 'example-skill' } });
+    assert.equal(inspected, null, 'A different current selection is not replaced');
+});
