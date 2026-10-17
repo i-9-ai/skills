@@ -39,6 +39,9 @@ flowchart LR
     Review -->|recorded outcome| Activity[Saved reviews and proposals]
     Activity -->|selected proposal| Proposal
     Panel -->|supplied candidate| Proposal[Retained preimage, exact diff and local checks]
+    Globals[Explicit global collection] -->|read only by default| Panel
+    Panel -->|optional global write capability| GlobalGuard[Confined ordinary package and source-root identity]
+    GlobalGuard --> Proposal
     Proposal -->|explicit exact approval| Apply[Guarded SKILL.md apply or recovery]
     Catalog --> Read
     Read --> Work[Portable meta-skill workflow]
@@ -69,6 +72,12 @@ local structural validation. Apply/recovery require operator approval of exact
 source and candidate identities. The backend does not generate text, execute
 candidate scripts or certify official/behavioral validation. Public skills-only
 plugins and ordinary MCP startup do not enable this optional pilot.
+An explicit `--panel-global-write` capability extends the same retained proposal
+and approval engine to eligible ordinary packages inside a selected global root.
+Discovery alone and external aliases grant no writes. Unsupported globals retain
+read-only inspection with a reason; old read-only reports remain distinct from
+new complete-package requests. Each global diff identifies its real target,
+requires fresh exact approval and retains the original for separate recovery.
 
 The explicit [native pilot operator](https://github.com/i-9-ai/skills/wiki/Native-Plugin-Pilot)
 uses the same CLI and statically bundled observation parser. Selected collector

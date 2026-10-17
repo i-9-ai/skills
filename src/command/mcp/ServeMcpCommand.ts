@@ -9,6 +9,7 @@ export default class ServeMcpCommand extends Command {
         '<%= config.bin %> mcp serve --db /absolute/local-data/skill-usage.db',
         '<%= config.bin %> mcp serve --panel-collection /absolute/pilot/skills --panel-state /absolute/pilot/proposals',
         '<%= config.bin %> mcp serve --panel-collection /absolute/pilot/skills --panel-state /absolute/pilot/proposals --panel-global-collection /absolute/global/skills',
+        '<%= config.bin %> mcp serve --panel-collection /absolute/pilot/skills --panel-state /absolute/pilot/proposals --panel-global-collection /absolute/global/skills --panel-global-write',
     ];
     static description =
         'Serve the installed catalog and optional explicit read metrics through one stdio MCP.';
@@ -16,7 +17,12 @@ export default class ServeMcpCommand extends Command {
     static flags = {
         'panel-global-collection': Flags.string({
             description:
-                'Additional read-only global skill collection; requires both panel paths. No automatic home discovery.',
+                'Additional global skill collection, read only by default; requires both panel paths. No automatic home discovery.',
+        }),
+        'panel-global-write': Flags.boolean({
+            description:
+                'Allow eligible ordinary global packages to retain proposals and accept exact approved apply/recovery; requires --panel-global-collection and both panel paths. Never approves a change.',
+            default: false,
         }),
         'panel-collection': Flags.string({
             description:
@@ -44,6 +50,10 @@ export default class ServeMcpCommand extends Command {
             flags['panel-collection'] === undefined
         )
             this.error('Global panel discovery requires both panel paths.');
+        if (flags['panel-global-write'] && flags['panel-global-collection'] === undefined)
+            this.error(
+                'Global panel evolution requires --panel-global-collection and both panel paths.',
+            );
 
         await new SkillMcpService({
             database: flags.db === undefined ? undefined : resolve(flags.db),
@@ -54,6 +64,7 @@ export default class ServeMcpCommand extends Command {
                           collection: flags['panel-collection'],
                           state: flags['panel-state']!,
                           globalCollection: flags['panel-global-collection'],
+                          globalWrite: flags['panel-global-write'],
                       },
         }).serve();
     }

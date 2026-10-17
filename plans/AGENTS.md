@@ -22,6 +22,8 @@ Verify every requirement has an implementation and a check or an explicit limit.
 
 ## Child DOX index
 
+- [Approved global skill evolution](2026-10-17-22-26-00-approved-global-skill-evolution.md): explicit global capability, retained source-bound proposals and exact approved single-entrypoint apply/recover; default discovery, external aliases and unsupported packages remain read only.
+
 - [Guided panel agent workflow](2026-10-17-04-04-59-guided-panel-agent-workflow.md): user-clicked host handoff, retained review outcomes and selectable proposals; no automatic application, global mutation or provider-execution claim.
 
 - [Panel library and comparison workspace](2026-10-17-01-32-15-panel-library-comparison.md): approved compact library and real candidate comparison in the existing pilot; read-only globals, exact approval and retained write identity remain intact.

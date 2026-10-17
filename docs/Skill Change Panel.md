@@ -61,7 +61,7 @@ Missing optional branding falls back to its generic icon without disabling the
 panel. The public listing/site cube logo is unchanged; plugin listing `logo` and
 `composerIcon` describe separate presentation surfaces.
 
-## Include read-only global skills
+## Include global skills
 
 Add an explicitly selected global collection without copying its packages:
 
@@ -84,7 +84,8 @@ names alone cannot redirect inspection to another package.
 
 An alias of a package already in the selected private collection deduplicates to
 that selected entry and preserves its existing editing authority. Other global
-references remain read-only. Before creating proposal state or acquiring a write
+references remain read-only unless global evolution is explicitly enabled below.
+Before creating proposal state or acquiring a write
 lock, the backend compares physical global roots and filesystem reference paths
 with the selected collection and state destination, including an existing
 destination's actual case. This check is independent of metadata validity:
@@ -98,7 +99,7 @@ incompletely checked boundaries. Available read-only references remain visible
 with a warning. Correct the selected paths or reference coverage before writing;
 there is no fallback that disables this protection automatically.
 
-Use **All skills**, **Selected copies** or **Global · read only**, then
+Use **All skills**, **Selected copies** or **Global skills**, then
 search by human name or description. **Refresh catalog** reloads available
 pages from actual source metadata. The MCP tool accepts optional integer `offset`
 and `limit` (1–128, default 128), returning `total` and `next_offset`. Plain clients
@@ -108,19 +109,67 @@ catalog descriptions are shortened to 256 code points for display.
 The UI checks `catalog_revision` between pages and requests a fresh load when
 source metadata changes during pagination.
 
-Selecting a global reference reads only its bounded UTF-8 `SKILL.md` (128 KiB),
+Without write opt-in, selecting a global reference reads only its bounded UTF-8 `SKILL.md` (128 KiB),
 with its entrypoint hash, rather than asserting a complete package fingerprint.
 Returned text preserves exact UTF-8 bytes, including a leading BOM; parsing
 normalizes only a separate metadata view.
 **Review with agent** can request a read-only assessment in the current
 conversation. **Describe a change** and manual candidate editing are
-disabled for these references, and the backend rejects global IDs for candidate
+disabled for these references, and the backend rejects global candidate
 writes. The existing selected-package workflow below retains its explicit approval
 and recovery rules. A global reference does not need this repository's icon or
 license layout to appear. Its text is source material, never permission to run a
 script, modify a package or broaden access. The current-result card explains
 that these reviews have no candidate diff; disabled comparison is not a pending
 approval step. No global catalog or usage state is written.
+
+## Enable approved global evolution
+
+For an owned global collection, explicitly add `--panel-global-write`:
+
+```sh
+node bin/index.mjs mcp serve \
+  --panel-collection /absolute/local-pilot/skills \
+  --panel-state /absolute/local-pilot/proposals \
+  --panel-global-collection "$HOME/.agents/skills" \
+  --panel-global-write
+```
+
+The plugin entrypoint accepts the same final switch after both panel paths and
+the global collection. The switch requires all three selected paths. It enables
+the capability to prepare and approve a global proposal; it never approves an
+individual change. Opening or installing the panel does not edit any skill.
+
+Eligible ordinary packages physically inside the configured global root display
+**Global · editable**. Their complete package revision is frozen before the
+request and candidate, using the same bounded retained original/candidate,
+local-check, intent, stale-source and recovery workflow as selected copies.
+The saved global identity includes its source-qualified ID and configured global
+root identity. It cannot be redirected to another same-name package or root.
+The diff and approval explicitly identify the real global target, rather than a
+private copy. Only its `SKILL.md` is replaced, after exact approval.
+
+Global eligibility requires the existing safely preservable package profile,
+including supported portable frontmatter, matching directory/name, retained
+license/resources, ordinary files and the package bounds below. Unsupported
+formats, packages outside the global root through aliases, reserved `.system`
+entries, hardlinks and unsafe trees never gain mutation authority. Inspection
+falls back to the read-only entrypoint with a visible reason. Metadata discovery
+or a path alias alone cannot authorize a global write. No scripts execute.
+
+Choose **Describe a change**, let the host agent record its proposal, then click
+**View proposed diff**. Inspect both versions and checks, acknowledge the exact
+global change and choose **Approve & apply**. The server verifies the current
+package and retained bytes again. A changed sibling resource or source revision
+requires a new proposal, not reuse of the old approval. **Keep proposal** changes
+nothing. Recovery requires reviewing and approving the separate reverse diff.
+
+Existing selected-copy proposals and old read-only global review records are
+preserved. Enabling global evolution does not reinterpret a prior findings-only
+review as an editable request or fabricate its missing candidate. Start a new
+review/change request for the complete global package revision.
+Removing the switch disables new global mutation; preserve all retained state.
+No global catalog, telemetry or public plugin configuration is synchronized.
 
 ## Review a real candidate
 
@@ -267,7 +316,8 @@ At most 16 retained proposal directories are accepted per state directory;
 at most 32 immutable review requests are retained, with no automatic pruning.
 History reads bounded integrity-checked summaries; opening a proposal rechecks
 its full original/candidate bytes and live state before any decision. Completion
-must match the request skill and base, and global requests cannot link a proposal.
+must match the request skill and base. Read-only requests cannot link a proposal;
+an enabled eligible global request can link only its matching source/root/base.
 An exact completion retry is idempotent; conflicting results are rejected.
 Retention and removal remain manual. Scripts are inspected inertly and never
 executed for candidate validation. Full source copies can contain local/private

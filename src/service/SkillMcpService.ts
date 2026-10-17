@@ -20,7 +20,12 @@ export type SkillMcpOptions = {
     host?: 'codex' | 'claude' | 'copilot';
     environment?: NodeJS.ProcessEnv;
     callerRoot?: string;
-    panel?: { collection: string; state: string; globalCollection?: string };
+    panel?: {
+        collection: string;
+        state: string;
+        globalCollection?: string;
+        globalWrite?: boolean;
+    };
 };
 
 /** Shares catalog operations and acquires usage storage only for explicit usage calls. */
@@ -47,6 +52,7 @@ export class SkillMcpService {
                     options.panel.collection,
                     options.panel.state,
                     options.panel.globalCollection,
+                    options.panel.globalWrite,
                 ),
             );
     }

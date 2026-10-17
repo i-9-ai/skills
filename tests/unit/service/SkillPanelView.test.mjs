@@ -739,13 +739,102 @@ test('a global findings result explains the unavailable diff next to the current
         proposals: [],
     });
     assert.equal(panel.el('review-outcome').textContent, 'Review findings');
-    assert.match(panel.el('diff-status').textContent, /No diff: global skills are review-only/);
+    assert.match(panel.el('diff-status').textContent, /This global skill is read only/);
     assert.equal(panel.el('view-diff').disabled, true);
     assert.equal(panel.el('evolve').disabled, true);
     assert.equal(panel.el('current-result-details').hidden, false);
     assert.equal(panel.el('result-full').textContent, summary);
     assert.equal(panel.el('result-full').children.length, 0, 'Report text never becomes markup');
     assert(panel.el('result-summary').textContent.length < summary.length);
+});
+
+test('an editable global retains its source identity and requires scoped exact approval', async () => {
+    const panel = workflowView();
+    const skill = 'global:' + 'a'.repeat(64);
+    panel.selected = {
+        ...panel.selected,
+        skill,
+        name: 'personal-reference',
+        source: 'global',
+        read_only: false,
+    };
+    panel.proposal = { ...panel.proposal, skill };
+    panel.renderSelection(panel.selected);
+    panel.renderProposal(panel.proposal);
+    panel.currentDiff = panel.proposal.proposal_id;
+    panel.actions();
+
+    assert.equal(panel.el('selected-origin').textContent, 'Global collection · editable');
+    assert.equal(panel.el('evolve').disabled, false);
+    assert.equal(panel.el('view-diff').disabled, false);
+    assert.match(panel.el('write-scope').textContent, /actual global SKILL.md, not a private copy/);
+    assert.match(panel.el('approval-label').textContent, /Target: global skill personal-reference/);
+    assert.equal(panel.el('approval').checked, false);
+    assert.equal(panel.el('apply').disabled, true);
+
+    const received = [];
+    panel.call = async (name, args) => {
+        received.push([name, args]);
+        if (name === 'skill_panel_apply') return { ...panel.proposal, status: 'applied' };
+        assert.equal(name, 'skill_panel_inspect');
+        assert.equal(args.skill, skill);
+        return { ...panel.selected, text: 'candidate', package_sha256: 'candidate' };
+    };
+    await panel.commit();
+    assert.equal(received.length, 0, 'Opening a real global diff grants no approval');
+    panel.el('approval').checked = true;
+    panel.actions();
+    assert.equal(panel.el('apply').disabled, false);
+    await panel.commit();
+    assert.equal(received[0][0], 'skill_panel_apply');
+    assert.equal(received[0][1].approved, true);
+    assert.equal(received[0][1].base_sha256, 'base');
+    assert.equal(received[0][1].candidate_sha256, 'candidate');
+    assert.equal(panel.el('approval').checked, false);
+});
+
+test('ineligible globals show their read-only reason and never enable approval', () => {
+    const panel = workflowView();
+    panel.selected = {
+        ...panel.selected,
+        source: 'global',
+        read_only: true,
+        read_only_reason: 'The package resolves outside the configured global root.',
+    };
+    panel.renderSelection(panel.selected);
+    panel.renderProposal(panel.proposal);
+    panel.el('approval').checked = true;
+    panel.actions();
+    assert.match(panel.el('selected-state').textContent, /resolves outside/);
+    assert.match(panel.diffExplanation(null, null), /resolves outside/);
+    assert.equal(panel.el('approval').disabled, true);
+    assert.equal(panel.el('apply').disabled, true);
+    assert.equal(panel.el('evolve').disabled, true);
+});
+
+test('global catalog badges distinguish editability without claiming a selected copy', () => {
+    const panel = view();
+    panel.catalog = [
+        {
+            skill: 'global:' + 'a'.repeat(64),
+            source: 'global',
+            name: 'editable',
+            read_only: false,
+            description: '',
+        },
+        {
+            skill: 'global:' + 'b'.repeat(64),
+            source: 'global',
+            name: 'reference',
+            read_only: true,
+            description: '',
+        },
+    ];
+    Panel.prototype.renderCatalog.call(panel);
+    const cards = panel.el('results').children;
+    assert.match(cards[0].attributes['aria-label'], /Global · editable/);
+    assert.match(cards[1].attributes['aria-label'], /Global · read only/);
+    assert.doesNotMatch(cards[0].attributes['aria-label'], /Selected collection/);
 });
 
 test('the current proposal has a direct diff action that still reloads the authoritative proposal', async () => {

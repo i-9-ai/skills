@@ -96,7 +96,7 @@ export class SkillPanelValidator {
     candidate(value: unknown) {
         const data = this.object(value, ['skill', 'base_sha256', 'after', 'rationale']);
         return {
-            skill: this.name(data.skill),
+            skill: this.inspection({ skill: data.skill }),
             base_sha256: this.hash(data.base_sha256),
             after: this.text(data.after),
             rationale: this.text(data.rationale, 2000),
@@ -107,7 +107,6 @@ export class SkillPanelValidator {
         const data = this.object(value, ['skill', 'kind', 'focus']);
         const skill = this.inspection({ skill: data.skill });
         if (!['review', 'proposal'].includes(data.kind as string)) this.invalid();
-        if (skill.startsWith('global:') && data.kind !== 'review') this.invalid();
         return {
             skill,
             kind: data.kind as PanelRequest['kind'],

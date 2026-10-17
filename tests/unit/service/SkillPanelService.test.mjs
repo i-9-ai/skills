@@ -26,6 +26,7 @@ test('live catalog and actual inspection never initialize proposal state', (t) =
             description: 'Review one synthetic input and produce an evidenced result.',
             source: 'selected',
             read_only: false,
+            read_only_reason: null,
         },
     ]);
     const observed = f.inspect();

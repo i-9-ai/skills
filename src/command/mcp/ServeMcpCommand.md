@@ -12,8 +12,15 @@ Add `--panel-global-collection /absolute/global/skills` to include a live read-o
 global catalog alongside those selected editable packages. The same flag is
 supported by the dependency-free plugin entrypoint. Names at different package
 paths retain distinct identities; the panel loads paged results, filters by source
-and permits global entrypoint inspection and unsent review drafts only. Global
-discovery never creates state or grants global candidate/apply/recovery access.
+and permits read-only global inspection and host-assisted review by default.
+Global discovery never creates state or grants global mutation authority.
+Explicitly add `--panel-global-write` after the global collection to enable
+eligible ordinary packages inside that root for retained proposals and exact
+approved apply/recovery. The CLI and plugin entrypoint require all panel paths;
+the switch never approves a change. The panel labels global targets and keeps
+unsafe, external-linked or unsupported packages read only with an explanation.
+The same preimage, current-package, exact-hash and recovery guards apply. Old
+read-only reviews remain read only; request a new review for an editable revision.
 
 `skill_bump_report` returns a bounded evidence-based comparison;
 `skill_onboarding` returns an inert versioned guide and complete synthetic examples.

@@ -7,10 +7,18 @@ export class PluginMcpServer {
         const [flag, host, ...extra] = process.argv.slice(2);
         const panel =
             (extra.length === 4 ||
-                (extra.length === 6 && extra[4] === '--panel-global-collection')) &&
+                (extra.length === 6 && extra[4] === '--panel-global-collection') ||
+                (extra.length === 7 &&
+                    extra[4] === '--panel-global-collection' &&
+                    extra[6] === '--panel-global-write')) &&
             extra[0] === '--panel-collection' &&
             extra[2] === '--panel-state'
-                ? { collection: extra[1], state: extra[3], globalCollection: extra[5] }
+                ? {
+                      collection: extra[1],
+                      state: extra[3],
+                      globalCollection: extra[5],
+                      globalWrite: extra.length === 7,
+                  }
                 : undefined;
         if (
             flag !== '--host' ||

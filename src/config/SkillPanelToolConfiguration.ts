@@ -7,7 +7,12 @@ const object = (properties: Record<string, unknown>) => ({
     required: Object.keys(properties),
     additionalProperties: false,
 });
-const skill = { type: 'string', maxLength: 64, pattern: '^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$' };
+const skill = {
+    anyOf: [
+        { type: 'string', maxLength: 64, pattern: '^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$' },
+        { type: 'string', pattern: '^global:[a-f0-9]{64}$', maxLength: 71 },
+    ],
+};
 const hash = { type: 'string', pattern: '^[a-f0-9]{64}$' };
 const proposalId = { type: 'string', format: 'uuid', maxLength: 36 };
 const approval = (action: string) =>
@@ -31,7 +36,7 @@ export class SkillPanelToolConfiguration {
             name: 'skill_panel_open',
             title: 'I-9 Skills',
             description:
-                'Open the optional local skill-change pilot and page its explicitly selected live catalog and optional global read-only references. Use next_offset to retrieve subsequent pages. No state, hooks or telemetry are created.',
+                'Open the optional local skill-change pilot and page its explicitly selected live catalog and optional globals. Global evolution requires explicit runtime opt-in and package eligibility; inspect read_only and its reason. Use next_offset to retrieve subsequent pages. No state, hooks or telemetry are created.',
             inputSchema: {
                 ...object({
                     offset: { type: 'integer', minimum: 0, maximum: 1024 },
@@ -48,21 +53,14 @@ export class SkillPanelToolConfiguration {
         {
             name: 'skill_panel_inspect',
             description:
-                'Read a selected editable package or a discovered source-qualified global reference. Global inspection reads SKILL.md only; no scripts execute or state is written.',
-            inputSchema: object({
-                skill: {
-                    anyOf: [
-                        skill,
-                        { type: 'string', pattern: '^global:[a-f0-9]{64}$', maxLength: 71 },
-                    ],
-                },
-            }),
+                'Read a selected package or source-qualified global skill. Eligible opted-in globals include the full package identity; other globals return SKILL.md and a read-only reason. No scripts execute or state is written.',
+            inputSchema: object({ skill }),
             annotations: { readOnlyHint: true, openWorldHint: false },
         },
         {
             name: 'skill_panel_propose',
             description:
-                'Retain supplied SKILL.md candidate text, original package and local structural checks for review. Does not generate, approve or apply a change.',
+                'Retain supplied SKILL.md candidate text, original package and local structural checks for a selected or explicitly enabled eligible global skill. Use its inspected source-qualified ID and exact package base. Does not generate, approve or apply a change.',
             inputSchema: object({
                 skill,
                 base_sha256: hash,

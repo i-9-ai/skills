@@ -28,8 +28,9 @@ Run `npm run check` and inspect the required official workflow result for the ex
 ## Child DOX index
 
 - [Local skill-change panel](../docs/Skill%20Change%20Panel.md): user-clicked host review, retained outcomes and selectable candidate diffs through the shared MCP, with guarded operator-approved entrypoint apply/recover; no backend model execution or readiness certification.
-- [Panel catalog](repository/SkillPanelCatalogRepository.ts): source-qualified selected/global discovery and read-only global entrypoint inspection; no global mutation or proposal-state access.
-- [Skill evolution filesystem](repository/SkillEvolutionRepository.ts): bounded source-bound review requests/results, private package preimages, stale-state rejection, write intents and guarded single-file recovery in a stable owned workspace; no global mutation or automatic cleanup.
+- [Panel catalog](repository/SkillPanelCatalogRepository.ts): source-qualified discovery, global edit eligibility and read-only fallback reasons; discovery never approves a mutation or opens proposal state.
+- [Panel package observation](repository/SkillPanelPackageRepository.ts): inert bounded package bytes, modes and portable metadata shared by eligibility and retained evolution; no scripts, proposal-state writes or approval inference.
+- [Skill evolution filesystem](repository/SkillEvolutionRepository.ts): bounded source-bound requests and retained package preimages for selected copies or explicitly enabled eligible globals, with exact approved single-file apply/recovery; no implicit global authority or automatic cleanup.
 
 - [Managed installation](../docs/Managed%20Installation.md): one scoped CLI lifecycle with owned package receipts and native host adapters; no implicit setup, release or real-profile mutation during tests.
 - [Native pilot preparation](service/NativePilotPreparationService.ts): verifies selected source/runtime inventories and an inert restore drill before creating a fresh private workspace; preparation never executes candidate code.

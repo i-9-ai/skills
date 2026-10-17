@@ -1,15 +1,16 @@
 // SPDX-License-Identifier: Apache-2.0
 import { createHash } from 'node:crypto';
 import { lstatSync, opendirSync, realpathSync } from 'node:fs';
-import { basename, dirname, join, sep } from 'node:path';
+import { basename, dirname, isAbsolute, join, relative, sep } from 'node:path';
 import { SafeRoot } from '../../.agents/skills/skill-authoring/scripts/lib/filesystem.mjs';
 import { SkillPanelConfiguration } from '../config/SkillPanelConfiguration.ts';
 import { SkillOperationError } from '../validator/SkillOperationError.ts';
 import { YamlFrontmatterValidator } from '../validator/YamlFrontmatterValidator.ts';
 import { PortableFrontmatterValidator } from '../validator/PortableFrontmatterValidator.ts';
 import { SkillDiscoveryRepository, type SkillSummary } from './SkillDiscoveryRepository.ts';
+import { SkillPanelPackageRepository } from './SkillPanelPackageRepository.ts';
 
-/** Live metadata and read-only global entrypoints; never retains candidates or opens state. */
+/** Live metadata and bounded global edit eligibility; never retains candidates or opens state. */
 export class SkillPanelCatalogRepository {
     private readonly configuration: SkillPanelConfiguration;
 
@@ -27,6 +28,7 @@ export class SkillPanelCatalogRepository {
             },
         ];
         const warnings: string[] = [];
+        let globalBoundaryAvailable = true;
         if (this.configuration.globalCollection) {
             try {
                 sources.push({
@@ -41,6 +43,7 @@ export class SkillPanelCatalogRepository {
             try {
                 this.assertWritableTargets(this.configuration.collection, this.configuration.state);
             } catch {
+                globalBoundaryAvailable = false;
                 warnings.push(
                     'global: write boundary unavailable or overlapping; writes are disabled.',
                 );
@@ -88,6 +91,10 @@ export class SkillPanelCatalogRepository {
             )
             .map((entry) => {
                 const source = entry.sources.includes('selected') ? 'selected' : 'global';
+                const readOnlyReason =
+                    source === 'global'
+                        ? this.readOnlyReason(entry, globalBoundaryAvailable)
+                        : null;
                 return {
                     skill:
                         source === 'selected'
@@ -99,7 +106,8 @@ export class SkillPanelCatalogRepository {
                         [...entry.description].slice(0, 256).join('') +
                         ([...entry.description].length > 256 ? '…' : ''),
                     source,
-                    read_only: source === 'global',
+                    read_only: readOnlyReason !== null,
+                    read_only_reason: readOnlyReason,
                     canonicalPath: entry.canonicalPath,
                 };
             });
@@ -107,8 +115,22 @@ export class SkillPanelCatalogRepository {
     }
 
     inspect(reference: string) {
-        const entry = this.read().skills.find((item) => item.skill === reference && item.read_only);
+        const entry = this.read().skills.find(
+            (item) => item.skill === reference && item.source === 'global',
+        );
         if (!entry) throw new SkillOperationError('invalid_input');
+        if (!entry.read_only) {
+            const target = this.confinedTarget(entry.canonicalPath, entry.name);
+            return {
+                ...new SkillPanelPackageRepository().inspect(target.path),
+                skill: entry.skill,
+                name: entry.name,
+                source: 'global',
+                read_only: false,
+                read_only_reason: null,
+                inspection_scope: 'Complete package',
+            };
+        }
         const root = new SafeRoot(entry.canonicalPath);
         try {
             const bytes = root.readBytes('SKILL.md', 131_072);
@@ -122,6 +144,7 @@ export class SkillPanelCatalogRepository {
                 name: entry.name,
                 source: 'global',
                 read_only: true,
+                read_only_reason: entry.read_only_reason,
                 text,
                 description: entry.description,
                 sha256: createHash('sha256').update(bytes).digest('hex'),
@@ -132,6 +155,68 @@ export class SkillPanelCatalogRepository {
             };
         } finally {
             root.close();
+        }
+    }
+
+    /** Resolve a source-qualified target afresh; the opt-in is checked again for writes. */
+    target(reference: string, write = false) {
+        const entry = this.read().skills.find(
+            (item) => item.skill === reference && item.source === 'global',
+        );
+        if (!entry || (write && entry.read_only)) throw new SkillOperationError('invalid_input');
+        const target = this.confinedTarget(entry.canonicalPath, entry.name);
+        new SkillPanelPackageRepository().inspect(target.path);
+        return { ...target, skill: entry.skill, name: entry.name };
+    }
+
+    private readOnlyReason(entry: SkillSummary, boundaryAvailable: boolean): string | null {
+        if (!this.configuration.globalWrite) return 'Global editing is not enabled.';
+        if (!boundaryAvailable)
+            return 'Global filesystem boundary coverage is incomplete; writes are disabled.';
+        try {
+            const target = this.confinedTarget(entry.canonicalPath, entry.name);
+            new SkillPanelPackageRepository().inspect(target.path);
+            return null;
+        } catch {
+            return 'This package is external, linked, unsafe, oversized, or unsupported for full-package editing; SKILL.md inspection remains read only.';
+        }
+    }
+
+    private confinedTarget(path: string, name: string) {
+        const root = this.globalRoot();
+        const part = relative(root, path);
+        if (
+            !part ||
+            isAbsolute(part) ||
+            part === '..' ||
+            part.startsWith(`..${sep}`) ||
+            part.split(sep).some((component) => component.startsWith('.')) ||
+            basename(path) !== name
+        )
+            throw new SkillOperationError('invalid_input');
+        const directory = new SafeRoot(root);
+        try {
+            const selected = directory.inspect(part.split(sep).join('/'));
+            if (!selected.info?.isDirectory()) throw new SkillOperationError('invalid_input');
+            directory.verifySnapshot(selected);
+            const info = lstatSync(root);
+            return {
+                root,
+                path: selected.absolute,
+                relative: part.split(sep).join('/'),
+                global_collection_sha256: createHash('sha256')
+                    .update(
+                        JSON.stringify({
+                            configured: this.configuration.globalCollection,
+                            physical: root,
+                            dev: info.dev,
+                            ino: info.ino,
+                        }),
+                    )
+                    .digest('hex'),
+            };
+        } finally {
+            directory.close();
         }
     }
 
@@ -181,6 +266,9 @@ export class SkillPanelCatalogRepository {
     }
 
     private globalRoot(): string {
+        const selected = lstatSync(this.configuration.globalCollection!);
+        if (!selected.isDirectory() || selected.isSymbolicLink())
+            throw new Error('Select an ordinary global reference root.');
         const root = realpathSync.native(this.configuration.globalCollection!);
         if (root === sep || root.split(sep).includes('.system') || !lstatSync(root).isDirectory()) {
             throw new Error('Select an ordinary global reference root.');

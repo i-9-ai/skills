@@ -15,7 +15,7 @@ import {
     type PanelRequest,
     type PanelCompletion,
 } from '../validator/SkillPanelValidator.ts';
-import { SkillPackageRevisionRepository } from './SkillPackageRevisionRepository.ts';
+import { SkillPanelPackageRepository } from './SkillPanelPackageRepository.ts';
 import { SkillPanelCatalogRepository } from './SkillPanelCatalogRepository.ts';
 
 const hash = (bytes: string | Buffer) => createHash('sha256').update(bytes).digest('hex');
@@ -25,7 +25,10 @@ type Validation = {
     behavioral: 'not_run';
 };
 export type PanelProposal = {
-    schema_version: 1;
+    schema_version: 1 | 2;
+    source?: 'global';
+    name?: string;
+    global_collection_sha256?: string;
     proposal_id: string;
     collection_sha256: string;
     skill: string;
@@ -38,7 +41,9 @@ export type PanelProposal = {
     validation: Validation;
 };
 type ReviewRequest = PanelRequest & {
-    schema_version: 1;
+    schema_version: 1 | 2;
+    source?: 'global';
+    global_collection_sha256?: string;
     request_id: string;
     collection_sha256: string;
     name: string;
@@ -50,7 +55,7 @@ type ReviewRequest = PanelRequest & {
 /** Retains exact package preimages and guarded single-file changes in a stable owned workspace. */
 export class SkillEvolutionRepository {
     private readonly validator = new SkillPanelValidator();
-    private readonly revisions = new SkillPackageRevisionRepository();
+    private readonly packages = new SkillPanelPackageRepository();
     private readonly configuration: SkillPanelConfiguration;
 
     constructor(configuration: SkillPanelConfiguration) {
@@ -58,10 +63,10 @@ export class SkillEvolutionRepository {
     }
 
     inspect(skill: string) {
-        this.validator.name(skill);
-        const collection = new SafeRoot(this.configuration.collection);
+        const target = this.target(skill);
+        const collection = new SafeRoot(target.root);
         try {
-            const selected = collection.inspect(skill);
+            const selected = collection.inspect(target.relative);
             if (!selected.info?.isDirectory()) throw new SkillOperationError('invalid_input');
             const observed = this.observePackage(selected.absolute);
             collection.verifySnapshot(selected);
@@ -72,12 +77,13 @@ export class SkillEvolutionRepository {
     }
 
     prepare(input: { skill: string; base_sha256: string; after: string; rationale: string }) {
+        const target = this.target(input.skill, true);
         return this.withState(true, (state, collection) => {
             const before = this.inspect(input.skill);
             if (before.package_sha256 !== input.base_sha256 || before.text === input.after)
                 this.conflict();
             const metadata = this.parseMetadata(input.after);
-            if (metadata.name !== input.skill) throw new SkillOperationError('invalid_input');
+            if (metadata.name !== target.name) throw new SkillOperationError('invalid_input');
             const count = fs
                 .readdirSync(state.path)
                 .filter((name) => /^[a-f0-9-]{36}$/.test(name)).length;
@@ -88,13 +94,13 @@ export class SkillEvolutionRepository {
             for (const stage of ['before', 'candidate']) {
                 fs.mkdirSync(join(state.path, id, stage), { mode: 0o700 });
                 this.copyPackage(
-                    join(collection.path, input.skill),
-                    join(state.path, id, stage, input.skill),
+                    target.path,
+                    join(state.path, id, stage, target.name),
                     stage === 'candidate' ? input.after : undefined,
                 );
             }
-            const original = this.observePackage(join(state.path, id, 'before', input.skill));
-            const candidate = this.observePackage(join(state.path, id, 'candidate', input.skill));
+            const original = this.observePackage(join(state.path, id, 'before', target.name));
+            const candidate = this.observePackage(join(state.path, id, 'candidate', target.name));
             if (
                 original.package_sha256 !== before.package_sha256 ||
                 this.inspect(input.skill).package_sha256 !== before.package_sha256
@@ -102,10 +108,17 @@ export class SkillEvolutionRepository {
                 this.conflict();
 
             const validation = this.validateCandidate(
-                join(state.path, id, 'candidate', input.skill),
+                join(state.path, id, 'candidate', target.name),
             );
             const receipt: PanelProposal = {
-                schema_version: 1,
+                schema_version: target.global_collection_sha256 ? 2 : 1,
+                ...(target.global_collection_sha256
+                    ? {
+                          source: 'global' as const,
+                          name: target.name,
+                          global_collection_sha256: target.global_collection_sha256,
+                      }
+                    : {}),
                 proposal_id: id,
                 collection_sha256: hash(collection.path),
                 skill: input.skill,
@@ -117,6 +130,7 @@ export class SkillEvolutionRepository {
                 created_at: new Date().toISOString(),
                 validation,
             };
+            this.targetForProposal(receipt, true);
             this.writeRecord(state, `${id}/proposal.json`, receipt);
             return this.readProposal(state, collection, id);
         });
@@ -139,11 +153,17 @@ export class SkillEvolutionRepository {
 
     /** Explicit user intent is retained before the host message; this never runs a model. */
     request(input: PanelRequest) {
+        if (input.skill.startsWith('global:') && input.kind === 'proposal')
+            this.target(input.skill, true);
         return this.withState(true, (state, collection) => {
             const global = input.skill.startsWith('global:');
             const observed = global
                 ? new SkillPanelCatalogRepository(this.configuration).inspect(input.skill)
                 : this.inspect(input.skill);
+            const readOnly = global && Boolean((observed as { read_only: boolean }).read_only);
+            if (readOnly && input.kind === 'proposal')
+                throw new SkillOperationError('invalid_input');
+            const target = global && !readOnly ? this.target(input.skill, true) : null;
             const directory = state.inspect('request', { allowMissingLeaf: true });
             if (directory.info === null) {
                 state.verifySnapshot(directory, { includeLeaf: false });
@@ -153,11 +173,17 @@ export class SkillEvolutionRepository {
             if (requests.length >= 32) throw new SkillOperationError('panel_storage_unavailable');
             const request: ReviewRequest = {
                 ...input,
-                schema_version: 1,
+                schema_version: target ? 2 : 1,
+                ...(target
+                    ? {
+                          source: 'global' as const,
+                          global_collection_sha256: target.global_collection_sha256,
+                      }
+                    : {}),
                 request_id: randomUUID(),
                 collection_sha256: hash(collection.path),
                 name: global ? String((observed as { name: string }).name) : input.skill,
-                read_only: global,
+                read_only: readOnly,
                 base_sha256: observed.package_sha256 || observed.sha256,
                 created_at: new Date().toISOString(),
             };
@@ -251,6 +277,7 @@ export class SkillEvolutionRepository {
     private readRequest(state: SafeRoot, collection: SafeRoot, id: string): ReviewRequest {
         this.validator.id(id);
         const value = this.readRecord(state, `request/${id}/request.json`);
+        const version = (value as { schema_version?: unknown } | null)?.schema_version;
         const data = this.validator.object(value, [
             'skill',
             'kind',
@@ -262,19 +289,34 @@ export class SkillEvolutionRepository {
             'read_only',
             'base_sha256',
             'created_at',
+            ...(version === 2 ? ['source', 'global_collection_sha256'] : []),
         ]);
         this.validator.workflowRequest({ skill: data.skill, kind: data.kind, focus: data.focus });
         this.validator.name(data.name);
         this.validator.hash(data.base_sha256);
         this.date(data.created_at);
         if (
-            data.schema_version !== 1 ||
+            (data.schema_version !== 1 && data.schema_version !== 2) ||
             data.request_id !== id ||
             data.collection_sha256 !== hash(collection.path) ||
-            data.read_only !== String(data.skill).startsWith('global:') ||
-            (!data.read_only && data.name !== data.skill)
+            (version === 1 && data.read_only !== String(data.skill).startsWith('global:')) ||
+            (version === 1 && !data.read_only && data.name !== data.skill) ||
+            (version === 1 && data.read_only && data.kind !== 'review') ||
+            (version === 2 &&
+                (data.source !== 'global' ||
+                    !String(data.skill).startsWith('global:') ||
+                    data.read_only !== false))
         )
             this.conflict();
+        if (version === 2) {
+            this.validator.hash(data.global_collection_sha256);
+            const target = this.target(String(data.skill));
+            if (
+                target.name !== data.name ||
+                target.global_collection_sha256 !== data.global_collection_sha256
+            )
+                this.conflict();
+        }
         return data as ReviewRequest;
     }
 
@@ -309,6 +351,7 @@ export class SkillEvolutionRepository {
         return this.withState(true, (state, collection) => {
             const proposal = this.readProposal(state, collection, approval.proposal_id);
             this.assertApproval(proposal, approval, 'apply');
+            this.targetForProposal(proposal, true);
             if (proposal.status === 'recovered') this.conflict();
             const current = this.inspect(proposal.skill);
             if (proposal.status === 'applied') {
@@ -318,7 +361,7 @@ export class SkillEvolutionRepository {
             if (proposal.validation.local.status !== 'passed')
                 throw new SkillOperationError('panel_validation_failed');
             const validation = this.validateCandidate(
-                join(state.path, proposal.proposal_id, 'candidate', proposal.skill),
+                join(state.path, proposal.proposal_id, 'candidate', this.packageName(proposal)),
             );
             if (validation.local.status !== 'passed')
                 throw new SkillOperationError('panel_validation_failed');
@@ -333,7 +376,7 @@ export class SkillEvolutionRepository {
             }
             if (current.package_sha256 !== proposal.base_sha256) this.conflict();
             if (!hadIntent) this.writeRecord(state, intent, this.outcome(proposal, 'applying'));
-            this.replace(proposal.skill, proposal.before_sha256, proposal.after);
+            this.replace(proposal, proposal.before_sha256, proposal.after);
             if (this.inspect(proposal.skill).package_sha256 !== proposal.candidate_sha256)
                 throw new SkillOperationError('panel_recovery_required');
             this.recordOutcome(state, proposal, 'applied');
@@ -345,6 +388,7 @@ export class SkillEvolutionRepository {
         return this.withState(true, (state, collection) => {
             const proposal = this.readProposal(state, collection, approval.proposal_id);
             this.assertApproval(proposal, approval, 'recover');
+            this.targetForProposal(proposal, true);
             const current = this.inspect(proposal.skill);
             if (proposal.status === 'recovered') {
                 if (current.package_sha256 !== proposal.base_sha256) this.conflict();
@@ -370,7 +414,7 @@ export class SkillEvolutionRepository {
             }
             if (current.package_sha256 !== proposal.candidate_sha256) this.conflict();
             if (!hadIntent) this.writeRecord(state, intent, this.outcome(proposal, 'recovering'));
-            this.replace(proposal.skill, proposal.after_sha256, proposal.before);
+            this.replace(proposal, proposal.after_sha256, proposal.before);
             if (this.inspect(proposal.skill).package_sha256 !== proposal.base_sha256)
                 throw new SkillOperationError('panel_recovery_required');
             this.recordOutcome(state, proposal, 'recovered');
@@ -393,44 +437,7 @@ export class SkillEvolutionRepository {
     }
 
     private observePackage(directory: string) {
-        const root = new SafeRoot(directory);
-        try {
-            const inventory = root.inventory() as [string, fs.Stats][];
-            if (
-                inventory.length > 512 ||
-                inventory.reduce((total, [, info]) => total + (info.isFile() ? info.size : 0), 0) >
-                    8_388_608
-            )
-                throw new SkillOperationError('invalid_input');
-            const revision = this.revisions.inspect(directory);
-            const bytes = root.readBytes('SKILL.md', PANEL_TEXT_BYTES);
-            const text = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(bytes);
-            const metadata = this.parseMetadata(text);
-            if (metadata.name !== basename(directory))
-                throw new SkillOperationError('invalid_input');
-            const modes = inventory
-                .map(([name, info]) => [name, info.mode & 0o777])
-                .sort((a, b) => String(a[0]).localeCompare(String(b[0]), 'en'));
-            const package_sha256 = hash(
-                JSON.stringify({
-                    content: revision.package_sha256,
-                    root_mode: fs.statSync(root.path).mode & 0o777,
-                    modes,
-                }),
-            );
-            if (this.revisions.inspect(directory).package_sha256 !== revision.package_sha256)
-                this.conflict();
-            return {
-                text,
-                sha256: hash(bytes),
-                package_sha256,
-                description: String(metadata.description),
-                files: revision.files,
-                bytes: revision.bytes,
-            };
-        } finally {
-            root.close();
-        }
+        return this.packages.inspect(directory);
     }
 
     private parseMetadata(text: string): Record<string, unknown> {
@@ -505,8 +512,9 @@ export class SkillEvolutionRepository {
             'rationale',
             'created_at',
             'validation',
+            ...(receipt.schema_version === 2 ? ['source', 'name', 'global_collection_sha256'] : []),
         ]);
-        this.validator.name(receipt.skill);
+        this.validator.inspection({ skill: receipt.skill });
         this.validator.text(receipt.rationale, 2000);
         this.date(receipt.created_at);
         for (const key of [
@@ -517,18 +525,27 @@ export class SkillEvolutionRepository {
         ] as const)
             this.validator.hash(receipt[key]);
         if (
-            receipt.schema_version !== 1 ||
+            (receipt.schema_version !== 1 && receipt.schema_version !== 2) ||
             receipt.proposal_id !== id ||
-            receipt.collection_sha256 !== hash(collection.path)
+            receipt.collection_sha256 !== hash(collection.path) ||
+            (receipt.schema_version === 1 && receipt.skill.startsWith('global:'))
         )
             this.conflict();
+        if (receipt.schema_version === 2) {
+            if (receipt.source !== 'global' || !receipt.skill.startsWith('global:'))
+                this.conflict();
+            this.validator.name(receipt.name);
+            this.validator.hash(receipt.global_collection_sha256);
+            this.targetForProposal(receipt);
+        }
         return receipt;
     }
 
     private readProposal(state: SafeRoot, collection: SafeRoot, id: string) {
         const receipt = this.readProposalReceipt(state, collection, id);
-        const original = this.observePackage(join(state.path, id, 'before', receipt.skill));
-        const candidate = this.observePackage(join(state.path, id, 'candidate', receipt.skill));
+        const name = this.packageName(receipt);
+        const original = this.observePackage(join(state.path, id, 'before', name));
+        const candidate = this.observePackage(join(state.path, id, 'candidate', name));
         if (
             original.package_sha256 !== receipt.base_sha256 ||
             original.sha256 !== receipt.before_sha256 ||
@@ -536,7 +553,7 @@ export class SkillEvolutionRepository {
             candidate.sha256 !== receipt.after_sha256
         )
             this.conflict();
-        const validation = this.validateCandidate(join(state.path, id, 'candidate', receipt.skill));
+        const validation = this.validateCandidate(join(state.path, id, 'candidate', name));
         if (JSON.stringify(validation) !== JSON.stringify(receipt.validation)) this.conflict();
         const recovered = this.hasRecord(state, `${id}/recovered.json`, receipt, 'recovered');
         const applied = this.hasRecord(state, `${id}/applied.json`, receipt, 'applied');
@@ -678,14 +695,59 @@ export class SkillEvolutionRepository {
         }
     }
 
-    private replace(skill: string, expected: string, text: string): void {
+    private target(
+        skill: string,
+        write = false,
+    ): {
+        root: string;
+        relative: string;
+        path: string;
+        name: string;
+        global_collection_sha256?: string;
+    } {
+        this.validator.inspection({ skill });
+        if (skill.startsWith('global:'))
+            return new SkillPanelCatalogRepository(this.configuration).target(skill, write);
         const collection = new SafeRoot(this.configuration.collection);
+        try {
+            const selected = collection.inspect(skill);
+            if (!selected.info?.isDirectory()) this.conflict();
+            collection.verifySnapshot(selected);
+            return {
+                root: collection.path,
+                relative: skill,
+                path: selected.absolute,
+                name: skill,
+            };
+        } finally {
+            collection.close();
+        }
+    }
+
+    private packageName(proposal: PanelProposal): string {
+        return proposal.schema_version === 2 ? this.validator.name(proposal.name) : proposal.skill;
+    }
+
+    private targetForProposal(proposal: PanelProposal, write = false) {
+        const target = this.target(proposal.skill, write);
+        if (
+            proposal.schema_version === 2 &&
+            (target.name !== proposal.name ||
+                target.global_collection_sha256 !== proposal.global_collection_sha256)
+        )
+            this.conflict();
+        return target;
+    }
+
+    private replace(proposal: PanelProposal, expected: string, text: string): void {
+        const target = this.targetForProposal(proposal, true);
+        const collection = new SafeRoot(target.root);
         let root: SafeRoot | undefined;
         let temporary: string | undefined;
         let descriptor: number | undefined;
         let identity: fs.Stats | undefined;
         try {
-            const selected = collection.inspect(skill);
+            const selected = collection.inspect(target.relative);
             root = new SafeRoot(selected.absolute);
             const before = root.inspect('SKILL.md');
             if (!before.info?.isFile()) this.conflict();

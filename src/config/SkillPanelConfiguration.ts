@@ -6,9 +6,14 @@ export class SkillPanelConfiguration {
     readonly collection: string;
     readonly state: string;
     readonly globalCollection?: string;
+    readonly globalWrite: boolean;
     static readonly resourceUri = 'ui://i9-skills/skill-panel/v1.html';
 
-    constructor(collection: string, state: string, globalCollection?: string) {
+    constructor(collection: string, state: string, globalCollection?: string, globalWrite = false) {
+        if (typeof globalWrite !== 'boolean' || (globalWrite && !globalCollection)) {
+            throw new Error('Global editing requires an explicitly selected global collection.');
+        }
+        this.globalWrite = globalWrite;
         for (const value of [collection, state, ...(globalCollection ? [globalCollection] : [])]) {
             if (!isAbsolute(value) || !value.isWellFormed() || value.includes('\0')) {
                 throw new Error('Panel paths must be explicit absolute directories.');

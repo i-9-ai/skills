@@ -997,8 +997,8 @@
                     <div class="pilot-note">
                         <div class="eyebrow">Local functional pilot</div>
                         <p>
-                            Selected copies + optional read-only globals.<br />Changes apply only
-                            after explicit approval.
+                            Selected copies + optional global skills.<br />Changes apply only after
+                            explicit approval.
                         </p>
                     </div>
                     <button id="theme" class="theme-button" type="button">Use light theme</button>
@@ -1020,8 +1020,8 @@
                 <aside class="catalog-pane" aria-labelledby="library-title">
                     <h1 id="library-title">Library</h1>
                     <p class="catalog-intro">
-                        Browse selected copies and global read-only references. Read the actual
-                        SKILL.md to understand each skill.
+                        Browse selected copies and global skills. Read the actual SKILL.md to
+                        understand each skill.
                     </p>
                     <label for="search" class="search-label">Find a skill</label>
                     <input id="search" type="search" placeholder="Search name or responsibility…" />
@@ -1034,7 +1034,7 @@
                             Selected copies
                         </button>
                         <button id="filter-global" type="button" aria-pressed="false">
-                            Global · read only
+                            Global skills
                         </button>
                     </div>
                     <p id="result-note" class="result-note" role="status">
@@ -1172,15 +1172,15 @@
                                     <h3>02 / Read the result</h3>
                                     <p>
                                         The current result appears above. A proposed change enables
-                                        View proposed diff. Findings alone and read-only global
-                                        reviews have no diff.
+                                        View proposed diff. Findings alone and read-only reviews
+                                        have no diff.
                                     </p>
                                 </div>
                                 <div>
                                     <h3>03 / Decide explicitly</h3>
                                     <p>
-                                        Only selected copies can change. Global references stay read
-                                        only. Applying and recovering each require approval.
+                                        Eligible globals can change only when explicitly enabled.
+                                        Applying and recovering each require exact approval.
                                     </p>
                                 </div>
                             </div>
@@ -1337,9 +1337,8 @@
                                     <button id="apply" type="button" class="primary" disabled>
                                         Approve &amp; apply
                                     </button>
-                                    <p class="footnote">
-                                        Only SKILL.md in the selected copy changes. Global
-                                        references stay read only.
+                                    <p id="write-scope" class="footnote">
+                                        Only the selected SKILL.md changes, after exact approval.
                                     </p>
                                 </div>
                                 <div class="apply-action keep-action">
@@ -1726,7 +1725,7 @@
                         result.collection +
                         '"' +
                         (catalog.some((item) => item.source === 'global')
-                            ? ' and global read-only references'
+                            ? ' and global skills (editability is shown per package)'
                             : '') +
                         '. Live reads; no telemetry is enabled. ' +
                         [...warnings].join(' ');
@@ -1755,9 +1754,13 @@
                         button.type = 'button';
                         button.className = 'package-card';
                         const name = item.name || item.skill;
-                        const origin = item.read_only
-                            ? 'Global · read only · ' + item.skill.slice(7, 15)
-                            : 'Selected collection · editable';
+                        const origin =
+                            item.source === 'global'
+                                ? 'Global · ' +
+                                  (item.read_only ? 'read only' : 'editable') +
+                                  ' · ' +
+                                  item.skill.slice(7, 15)
+                                : 'Selected collection · editable';
                         button.setAttribute('aria-label', 'Inspect ' + name + ' · ' + origin);
                         button.setAttribute(
                             'aria-pressed',
@@ -1821,11 +1824,13 @@
 
                 renderSelection(result) {
                     this.el('selected-title').textContent = result.name || result.skill;
-                    this.el('selected-origin').textContent = result.read_only
-                        ? 'Global collection · read only'
-                        : 'Selected local collection · editable';
+                    this.el('selected-origin').textContent =
+                        (result.source === 'global'
+                            ? 'Global collection'
+                            : 'Selected local collection') +
+                        (result.read_only ? ' · read only' : ' · editable');
                     this.el('action-caption').textContent = result.read_only
-                        ? 'Review only · no global changes.'
+                        ? 'Review only · global evolution is unavailable for this package.'
                         : 'Review → diff → explicit approval.';
                     this.el('selected-hash-label').textContent = result.read_only
                         ? 'SKILL.md identity'
@@ -1839,7 +1844,8 @@
                         result.files +
                         ' files · ' +
                         result.bytes +
-                        ' bytes. Review and behavioral state are not inferred.';
+                        ' bytes. Review and behavioral state are not inferred.' +
+                        (result.read_only_reason ? ' ' + result.read_only_reason : '');
                     this.el('source').value = result.text;
                     this.el('review').disabled = false;
                     this.el('evolve').disabled = Boolean(result.read_only);
@@ -1911,7 +1917,7 @@
                             : 'What does Describe a change do?';
                     this.el('help-copy').textContent =
                         type === 'review'
-                            ? 'Your click saves a request at the live source identity and asks the host agent to review it in this conversation. The agent records its result here: no changes, findings, a retained proposal, or a blocker. A sent message is not proof the agent is running. Check for results or explicitly continue a pending review; the panel never resends by itself. Global skills remain read only.'
+                            ? 'Your click saves a request at the live source identity and asks the host agent to review it in this conversation. The agent records its result here: no changes, findings, a retained proposal, or a blocker. A sent message is not proof the agent is running. Check for results or explicitly continue a pending review; the panel never resends by itself. Global evolution requires explicit runtime opt-in and an eligible package; it never implies approval.'
                             : 'Describe your intended improvement in plain language. The host agent reads the skill and, if justified, supplies a complete candidate. Its retained diff appears in Reviews and proposals. Compare it, review the checks and explicitly approve to apply. You do not need to copy text or IDs. Official conformance and behavioral checks are separate.';
                     this.openDialog('help-dialog');
                 }
@@ -2125,7 +2131,11 @@
 
                 diffExplanation(latest, linked) {
                     if (this.selected.read_only)
-                        return 'No diff: global skills are review-only in this pilot. Describe a change and application are available for selected editable copies.';
+                        return (
+                            'This global skill is read only. ' +
+                            (this.selected.read_only_reason ||
+                                'Global evolution requires explicit runtime opt-in and an eligible ordinary package.')
+                        );
                     if (this.currentDiff)
                         return linked
                             ? 'Next: view the saved diff and current state. Application or recovery requires a separate exact approval.'
@@ -2163,7 +2173,8 @@
                     this.proposal = null;
                     this.editing = true;
                     this.uncertain = false;
-                    this.el('workflow-title').textContent = 'Evolve ' + this.selected.skill;
+                    this.el('workflow-title').textContent =
+                        'Evolve ' + (this.selected.name || this.selected.skill);
                     this.el('workflow-base').textContent =
                         'Selected package SHA256: ' + this.selected.package_sha256;
                     this.el('candidate').value = this.selected.text;
@@ -2290,6 +2301,15 @@
                     this.el('approval-label').textContent = recovery
                         ? 'I reviewed this exact reverse diff and approve restoring the preserved version.'
                         : 'I reviewed this exact diff and the validation limits and approve applying this change.';
+                    const global = this.selected?.source === 'global';
+                    if (global)
+                        this.el('approval-label').textContent +=
+                            ' Target: global skill ' +
+                            (this.selected.name || this.selected.skill) +
+                            '.';
+                    this.el('write-scope').textContent = global
+                        ? 'This changes the actual global SKILL.md, not a private copy. Its original package is retained for separately approved recovery.'
+                        : 'Only SKILL.md in the selected copy changes. Its original package remains retained.';
                     this.el('apply').textContent = recovery
                         ? 'Restore approved version'
                         : 'Approve & apply';
@@ -2423,7 +2443,10 @@
                             (proposal.source_state === 'original' &&
                                 proposal.write_intent === 'recover'));
                     const allowed =
-                        proposal && !blocked && (this.mode === 'recover' ? canRecover : canApply);
+                        proposal &&
+                        !this.selected?.read_only &&
+                        !blocked &&
+                        (this.mode === 'recover' ? canRecover : canApply);
                     this.el('apply').disabled =
                         this.busy || !allowed || !this.el('approval').checked;
                     this.el('approval').disabled = this.busy || !allowed;
@@ -2520,7 +2543,8 @@
                     }
                     this.mode = 'apply';
                     this.uncertain = false;
-                    this.el('workflow-title').textContent = 'Review ' + result.skill;
+                    this.el('workflow-title').textContent =
+                        'Review ' + (this.selected.name || result.skill);
                     this.el('workflow-base').textContent =
                         'Exact proposal source: ' + result.base_sha256;
                     this.el('candidate').value = result.after;
@@ -2534,6 +2558,7 @@
                 async commit() {
                     if (
                         !this.proposal ||
+                        this.selected?.read_only ||
                         !this.el('approval').checked ||
                         this.uncertain ||
                         this.unresolved
