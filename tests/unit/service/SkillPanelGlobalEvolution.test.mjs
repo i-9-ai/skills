@@ -6,6 +6,8 @@ import { join } from 'node:path';
 import test from 'node:test';
 import { SkillPanelConfiguration } from '../../../src/config/SkillPanelConfiguration.ts';
 import { SkillPanelService } from '../../../src/service/SkillPanelService.ts';
+import { SkillPanelCatalogRepository } from '../../../src/repository/SkillPanelCatalogRepository.ts';
+import { SkillPanelPackageRepository } from '../../../src/repository/SkillPanelPackageRepository.ts';
 import { skillPanelFixture } from '../fixture/SkillPanelFixture.mjs';
 
 function fixture(t) {
@@ -44,6 +46,51 @@ const finish = (request, proposal) => ({
     outcome: 'proposal',
     summary: 'Clarified inputs while preserving the skill responsibility.',
     proposal_id: proposal.proposal_id,
+});
+
+test('single-target inspection and history resolution do not inventory unrelated global packages', (t) => {
+    const f = fixture(t);
+    for (let index = 0; index < 12; index++) {
+        const name = `companion-skill-${index}`;
+        const directory = join(f.global, name);
+        fs.cpSync(f.packagePath, directory, { recursive: true });
+        fs.writeFileSync(join(directory, 'SKILL.md'), f.before.replaceAll('example-skill', name));
+    }
+    const inspected = [];
+    const original = SkillPanelPackageRepository.prototype.inspect;
+    t.mock.method(SkillPanelPackageRepository.prototype, 'inspect', function (directory) {
+        inspected.push(directory);
+        return original.call(this, directory);
+    });
+    const catalog = new SkillPanelCatalogRepository(f.configuration);
+    const all = catalog.read();
+    assert.equal(
+        all.skills.filter((entry) => entry.source === 'global' && !entry.read_only).length,
+        13,
+    );
+    assert.equal(new Set(inspected).size, 13);
+    for (const operation of [() => catalog.inspect(f.skill), () => catalog.target(f.skill, true)]) {
+        inspected.length = 0;
+        operation();
+        assert(inspected.length > 0);
+        assert.deepEqual([...new Set(inspected)], [f.packagePath]);
+    }
+    const disabled = new SkillPanelCatalogRepository(
+        new SkillPanelConfiguration(f.collection, f.state, f.global),
+    );
+    inspected.length = 0;
+    assert.equal(disabled.target(f.skill).path, f.packagePath);
+    assert.deepEqual([...new Set(inspected)], [f.packagePath]);
+    assert.throws(() => disabled.target(f.skill, true), { code: 'invalid_input' });
+
+    // Narrowing package bytes must not narrow physical boundary coverage.
+    fs.symlinkSync(join(f.root, 'absent'), join(f.global, 'broken-boundary'));
+    inspected.length = 0;
+    assert.throws(() => catalog.target(f.skill, true), { code: 'invalid_input' });
+    const readonly = catalog.inspect(f.skill);
+    assert.equal(readonly.read_only, true);
+    assert.match(readonly.read_only_reason, /boundary coverage is incomplete/);
+    assert.deepEqual(inspected, []);
 });
 
 test('explicit global evolution retains a real diff, rejects missing approval and applies/reverses only the exact global entrypoint', (t) => {

@@ -19,6 +19,11 @@ export class SkillPanelCatalogRepository {
     }
 
     read() {
+        return this.discover();
+    }
+
+    /** Lookup narrows package-byte inspection, never metadata or boundary coverage. */
+    private discover(reference?: string) {
         const sources = [
             {
                 directory: this.configuration.collection,
@@ -86,8 +91,9 @@ export class SkillPanelCatalogRepository {
             .slice(0, 1024)
             .filter(
                 (entry) =>
-                    !entry.sources.includes('selected') ||
-                    basename(entry.canonicalPath) === entry.name,
+                    (!entry.sources.includes('selected') ||
+                        basename(entry.canonicalPath) === entry.name) &&
+                    (reference === undefined || this.reference(entry) === reference),
             )
             .map((entry) => {
                 const source = entry.sources.includes('selected') ? 'selected' : 'global';
@@ -96,11 +102,7 @@ export class SkillPanelCatalogRepository {
                         ? this.readOnlyReason(entry, globalBoundaryAvailable)
                         : null;
                 return {
-                    skill:
-                        source === 'selected'
-                            ? entry.name
-                            : 'global:' +
-                              createHash('sha256').update(entry.canonicalPath).digest('hex'),
+                    skill: this.reference(entry),
                     name: entry.name,
                     description:
                         [...entry.description].slice(0, 256).join('') +
@@ -115,7 +117,7 @@ export class SkillPanelCatalogRepository {
     }
 
     inspect(reference: string) {
-        const entry = this.read().skills.find(
+        const entry = this.discover(reference).skills.find(
             (item) => item.skill === reference && item.source === 'global',
         );
         if (!entry) throw new SkillOperationError('invalid_input');
@@ -160,13 +162,18 @@ export class SkillPanelCatalogRepository {
 
     /** Resolve a source-qualified target afresh; the opt-in is checked again for writes. */
     target(reference: string, write = false) {
-        const entry = this.read().skills.find(
+        const entry = this.discover(reference).skills.find(
             (item) => item.skill === reference && item.source === 'global',
         );
         if (!entry || (write && entry.read_only)) throw new SkillOperationError('invalid_input');
         const target = this.confinedTarget(entry.canonicalPath, entry.name);
         new SkillPanelPackageRepository().inspect(target.path);
         return { ...target, skill: entry.skill, name: entry.name };
+    }
+
+    private reference(entry: SkillSummary): string {
+        if (entry.sources.includes('selected')) return entry.name;
+        return 'global:' + createHash('sha256').update(entry.canonicalPath).digest('hex');
     }
 
     private readOnlyReason(entry: SkillSummary, boundaryAvailable: boolean): string | null {
