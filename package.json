@@ -19,7 +19,7 @@
   "scripts": {
     "validate": "node bin/index.mjs repo validate --project .",
     "test": "node --test \"tests/**/*.test.mjs\" \".agents/skills/*/tests/*.test.mjs\"",
-    "check": "npm run format:check && npm run typecheck && npm run release:verify && npm run validate && npm test",
+    "check": "npm run format:check && npm run typecheck && npm run validate && npm test",
     "format": "prettier --write \"src/**/*.ts\" \"bin/*.mjs\" \"tests/unit/**/*.mjs\" \"tests/integration/cli/**/*.mjs\" \"tests/packaging/*.mjs\" \"website/**/*.mjs\" \"tests/integration/website/*.mjs\" \"website/**/*.css\"",
     "format:check": "prettier --check \"src/**/*.ts\" \"bin/*.mjs\" \"tests/unit/**/*.mjs\" \"tests/integration/cli/**/*.mjs\" \"tests/packaging/*.mjs\" \"website/**/*.mjs\" \"tests/integration/website/*.mjs\" \"website/**/*.css\"",
     "typecheck": "tsc --noEmit",
@@ -27,8 +27,7 @@
     "ci:official": "node bin/index.mjs repo validate-official",
     "changeset": "changeset",
     "changeset:status": "changeset status",
-    "release:prepare": "node bin/index.mjs repo prepare-version --project .",
-    "release:verify": "node bin/index.mjs repo verify-release --project .",
+    "version:packages": "changeset version && npm install --package-lock-only --ignore-scripts && node --input-type=module -e \"import { readFileSync, writeFileSync } from 'node:fs'; const { version } = JSON.parse(readFileSync('package.json', 'utf8')); for (const file of ['.codex-plugin/plugin.json', '.claude-plugin/plugin.json', '.github/plugin/plugin.json']) { const plugin = JSON.parse(readFileSync(file, 'utf8')); writeFileSync(file, JSON.stringify({ ...plugin, version }, null, 2) + '\\n'); }\"",
     "build": "npm run typecheck && node -e \"require('node:fs').rmSync('dist', {recursive: true, force: true})\" && tsc --project tsconfig.build.json && node dist/transport/BuildSourceReceiptRunner.js",
     "package:check": "npm run build && node --test tests/packaging/cli-package.mjs tests/packaging/git-source-receipt.mjs",
     "prepare": "npm run build",

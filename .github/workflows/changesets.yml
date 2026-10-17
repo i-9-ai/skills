@@ -26,13 +26,15 @@ jobs:
           node-version: '24'
           cache: npm
       - name: Install locked dependencies
-        run: npm ci
-      - name: Validate pending notes or a complete prepared version
+        run: npm ci --ignore-scripts
+      - name: Validate Changesets
+        if: github.head_ref != 'changeset-release/main'
+        run: npm run changeset:status -- --since=origin/main
+      - name: Select Changesets mode
+        id: mode
+        uses: changesets/action/select-mode@ae32849d5ba541f9ae29e40e22a623bc13562f51 # v2.1.2
+      - name: Rehearse versioning in the disposable checkout
+        if: steps.mode.outputs.mode == 'version'
         env:
-          CHANGESET_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
-        run: |
-          if npm run changeset:status -- --since="$CHANGESET_BASE"; then
-            exit 0
-          fi
-
-          npm run release:verify -- --base "$CHANGESET_BASE"
+          GITHUB_TOKEN: ${{ github.token }}
+        run: npm run version:packages

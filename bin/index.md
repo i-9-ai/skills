@@ -38,7 +38,6 @@ optional; no editor settings or extensions are installed by the CLI.
 node bin/index.mjs --help
 node bin/index.mjs repo validate --project .
 node bin/index.mjs repo validate-official --project .
-node bin/index.mjs repo verify-release --project .
 node bin/index.mjs collection audit --collection ./example-skills --layout repository
 node bin/index.mjs skills onboarding
 node bin/index.mjs skills observe --snapshot ./snapshots/before --subject ./subject.json
@@ -107,38 +106,12 @@ request, selected-state boundaries and recovery.
 
 ## Version preparation
 
-For an authorized version-preparation task in a trusted source checkout:
-
-```sh
-node bin/index.mjs repo prepare-version --project .
-node bin/index.mjs repo verify-release --project .
-```
-
-`repo prepare-version` invokes the pinned development Changesets CLI, consumes
-pending notes and updates `package.json`, `CHANGELOG.md`, root lockfile version
-fields and the three root plugin manifests. It prints JSON with `version`,
-`changed` and consumed `notes`; no notes returns a successful no-op. It requires
-the supported single-package Changesets configuration and aligned input versions.
-The GitHub generator resolves public references during explicit preparation and
-includes `.changeset/github-references.json` in the version PR; local preparation
-requires existing GitHub API authentication through `GITHUB_TOKEN`.
-Failure restores the captured release files. It never installs dependencies,
-commits, pushes or publishes.
-
-`repo verify-release` checks version alignment without writing to the selected
-checkout. After committing the prepared files, add `--base <full-base-commit-sha>`
-to verify an exclusive generated-release diff and recompute the expected version
-from that base's notes in a disposable fixture. This mode needs Git history, a
-clean tracked worktree and the development Changesets dependency; unrelated
-changes or fabricated version evidence fail. Neither release command implicitly
-downloads the dependency if it is absent.
-For GitHub-generated notes, verification replays the committed reference receipt
-without network or credentials and preserves the complete historical changelog.
-
-The npm equivalents are `npm run release:prepare` and `npm run release:verify`.
-Read [release management](../docs/Release%20Management.md) for the manual draft-PR
-workflow, bot-run approval, review and recovery. These commands support repository
-maintenance, not consumer installation or automatic publication.
+Version preparation belongs to the automated Changesets workflow. Its
+`npm run version:packages` script generates the changelog, refreshes the lockfile
+and aligns the three plugin manifests. The consumer CLI has no release
+preparation or verification commands. Read
+[release management](../docs/Release%20Management.md) for the generated version PR,
+protected checks and npm OIDC publication.
 
 ## Skill observations and change reports
 

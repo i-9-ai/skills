@@ -31,9 +31,7 @@ import PluginPrepareCommand from '../command/plugin/PluginPrepareCommand.ts';
 import NativePilotRunCommand from '../command/plugin/NativePilotRunCommand.ts';
 import PluginSubmissionCommand from '../command/plugin/PluginSubmissionCommand.ts';
 import OfficialSkillsValidateCommand from '../command/repo/OfficialSkillsValidateCommand.ts';
-import PrepareVersionCommand from '../command/repo/PrepareVersionCommand.ts';
 import RepositoryValidateCommand from '../command/repo/RepositoryValidateCommand.ts';
-import VerifyReleaseCommand from '../command/repo/VerifyReleaseCommand.ts';
 import TelemetryRankingsCommand from '../command/telemetry/TelemetryRankingsCommand.ts';
 import TelemetryRecordCommand from '../command/telemetry/TelemetryRecordCommand.ts';
 import TelemetryTrendsCommand from '../command/telemetry/TelemetryTrendsCommand.ts';
@@ -104,8 +102,6 @@ export class CommandConfiguration {
         'plugin:submission': PluginSubmissionCommand,
         'repo:validate-official': OfficialSkillsValidateCommand,
         'repo:validate': RepositoryValidateCommand,
-        'repo:prepare-version': PrepareVersionCommand,
-        'repo:verify-release': VerifyReleaseCommand,
         'telemetry:lifecycle': TelemetryLifecycleCommand,
         'telemetry:overlap': TelemetryOverlapCommand,
         'telemetry:inactivity': TelemetryInactivityCommand,

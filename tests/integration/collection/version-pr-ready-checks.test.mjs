@@ -38,5 +38,10 @@ for (const expected of protectedWorkflows) {
         assert.equal(checkout.with['fetch-depth'], 0);
         assert.doesNotMatch(JSON.stringify(definition),
             /pull_request_target|secrets\.|id-token|GH_TOKEN|NPM_TOKEN|NODE_AUTH_TOKEN|continue-on-error/u);
+        if (expected.file === 'changesets') {
+            const rehearsal = job.steps.at(-1);
+            assert.equal(rehearsal.if, "steps.mode.outputs.mode == 'version'");
+            assert.deepEqual(rehearsal.env, { GITHUB_TOKEN: '${{ github.token }}' });
+        }
     });
 }

@@ -107,7 +107,7 @@ Source includes five workflows. Validation and Changesets are read-only. The
 version PR and publishes its reviewed protected-branch merge through npm OIDC,
 creating tags and GitHub releases. The npm publisher must be bound to this
 repository and `release.yml`; local tests do not establish provider readiness.
-The explicit historical 0.1.0 backfill creates only the original tag/release.
+The historical 0.1.0 backfill entrypoint has been retired.
 
 The Wiki workflow selects main, verifies Wiki enablement and mirrors docs with
 GITHUB_TOKEN after matching merges or an explicit dispatch. It excludes agent

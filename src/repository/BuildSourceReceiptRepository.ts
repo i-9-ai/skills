@@ -5,7 +5,7 @@ import { closeSync, constants, opendirSync, openSync, realpathSync, writeFileSyn
 import { SafeRoot } from '../../.agents/skills/skill-authoring/scripts/lib/filesystem.mjs';
 import { strictJson } from '../../.agents/skills/skill-authoring/scripts/lib/contracts.mjs';
 import { InstalledCollectionConfiguration } from '../config/InstalledCollectionConfiguration.ts';
-import { ReleaseVersionValidator } from '../validator/ReleaseVersionValidator.ts';
+import { PackageVersionValidator } from '../validator/PackageVersionValidator.ts';
 import { BuildSourceReceiptValidator } from '../validator/BuildSourceReceiptValidator.ts';
 import type {
     BuildSourceReceipt,
@@ -39,7 +39,7 @@ export class BuildSourceReceiptRepository {
         const root = new SafeRoot(this.configuration.root());
         try {
             const manifest = strictJson(root.readBytes('package.json', 65_536));
-            const versions = new ReleaseVersionValidator();
+            const versions = new PackageVersionValidator();
             const packageVersion = versions.version(versions.document(manifest));
             const repository = versions.document(manifest.repository);
             if (

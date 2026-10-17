@@ -52,6 +52,4 @@ Run command integration tests under `tests/integration/cli/`, strict type checki
 - [Native plugin pilot](plugin/NativePilotRunCommand.ts): explicit execution of a reviewed disposable host matrix; retained local evidence does not imply consumer installation or provider approval.
 - [Public plugin submission](plugin/PluginSubmissionCommand.ts): preview or create a skills-only directory submission ZIP; provider identity, review and upload remain separate.
 - [Official skills validation](repo/OfficialSkillsValidateCommand.ts): pinned Agent Skills conformance through `repo validate-official` in prepared CI.
-- [Version preparation](repo/PrepareVersionCommand.ts): `repo prepare-version` writes local release artifacts and returns a no-note no-op; never commits or publishes.
-- [Release verification](repo/VerifyReleaseCommand.ts): `repo verify-release` checks version alignment and optional base-commit release evidence without changing the selected checkout.
-- [Release operator guide](../../docs/Release%20Management.md): manual draft-PR and local preparation paths, required review, recovery and separate publication boundaries.
+- [Release operator guide](../../docs/Release%20Management.md): official automated version PRs, package/plugin alignment and npm OIDC publication after protected merge; no consumer release commands.
