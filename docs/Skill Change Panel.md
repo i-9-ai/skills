@@ -49,9 +49,12 @@ separate checks when investigating a host's “could not display” message.
 The opening tool advertises a distinct I-9 monogram through standard MCP `icons`
 metadata. Its bounded SVG data URLs share one transparent, path-based I-9 mark
 over stacked skill cards, retaining a small hyphen. Explicit light/dark variants
-resolve every fill and outline; no external image request, font or local absolute
-path is needed. A supporting host can use it for the native entry, including
-monochrome presentation. Actual display and caching depend on that host.
+resolve every fill and outline to pure black or white. Neutral endpoints preserve
+uniform raster colors at antialiased edges, avoiding a near-white SVG becoming
+almost transparent in a host's monochrome luminance mask. No external image
+request, font or local absolute path is needed. A supporting host can use it for
+the native entry, including monochrome presentation. Actual display and caching
+depend on that host.
 Missing optional branding falls back to its generic icon without disabling the
 panel. The public listing/site cube logo is unchanged; plugin listing `logo` and
 `composerIcon` describe separate presentation surfaces.

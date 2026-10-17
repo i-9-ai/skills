@@ -12,9 +12,11 @@ export class SkillPanelResourceRepository {
             if (bytes.length === 0 || bytes.length > 8192) return [];
             const source = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
             if (!source.includes('fill="currentColor"')) return [];
+            // Pure neutral endpoints preserve a uniform raster color at antialiased
+            // edges, so monochrome hosts can retain the transparent alpha mask.
             return [
-                { theme: 'light', color: '#14231A' },
-                { theme: 'dark', color: '#F5F7EF' },
+                { theme: 'light', color: '#000000' },
+                { theme: 'dark', color: '#FFFFFF' },
             ].map(({ theme, color }) => ({
                 src:
                     'data:image/svg+xml;base64,' +

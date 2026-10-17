@@ -261,7 +261,7 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
     );
     const mark = readFileSync(join(installed, 'assets/skill-panel-icon.svg'), 'utf8');
     assert.doesNotMatch(mark, /<(?:rect|script|text|image|foreignObject)\b|(?:href|onload)=/i);
-    for (const [index, color] of ['#14231A', '#F5F7EF'].entries()) {
+    for (const [index, color] of ['#000000', '#FFFFFF'].entries()) {
         const icon = opening.icons[index];
         assert.equal(icon.mimeType, 'image/svg+xml');
         assert.equal(icon.src.split(',')[0], 'data:image/svg+xml;base64');

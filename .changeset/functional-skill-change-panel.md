@@ -10,7 +10,7 @@ The shared server remains unchanged unless both pilot paths are selected. The pi
 
 The entry uses the human-readable title “I-9 Skills”. Fixed UI resource retrieval accepts reserved client request metadata, and resource-template discovery returns an empty list; other resource URIs and unrelated arguments remain rejected.
 
-The optional opening tool advertises a transparent I-9 monogram over stacked skill cards, preserving the small brand hyphen, as bounded SVG data URLs with light/dark variants through standard MCP icon metadata. Both fills and outlines resolve the selected theme color without external image or font requests. Actual native display remains host-dependent, including monochrome presentation, and missing optional branding preserves the panel's generic-icon fallback. The public listing/site cube logo is unchanged.
+The optional opening tool advertises a transparent I-9 monogram over stacked skill cards, preserving the small brand hyphen, as bounded SVG data URLs with light/dark variants through standard MCP icon metadata. Fills and outlines use pure black/white endpoints, preserving the opaque alpha mask in monochrome hosts instead of making the dark-theme mark nearly transparent. No external image or font requests are needed. Actual native display remains host-dependent, including monochrome presentation, and missing optional branding preserves the panel's generic-icon fallback. The public listing/site cube logo is unchanged.
 
 Include operator documentation, a local design preview with action explanations and current/proposed diffs, and aligned English, Portuguese and Spanish candidate-availability website copy. The illustrative preview is separate from the explicitly configured functional workflow.
 

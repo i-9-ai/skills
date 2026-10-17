@@ -71,7 +71,9 @@ test('the shared stdio protocol carries real catalog, retained candidate, approv
     );
     assert.match(mark, /<title>I-9 Skills<\/title>/);
     assert.doesNotMatch(mark, /<(?:rect|script|text|image|foreignObject)\b|(?:href|onload)=/i);
-    for (const [index, color] of ['#14231A', '#F5F7EF'].entries()) {
+    // Near-white RGB can be classified as a luminance mask after SVG rasterization.
+    // Neutral black/white keeps both themed images opaque in monochrome hosts.
+    for (const [index, color] of ['#000000', '#FFFFFF'].entries()) {
         const icon = opening.icons[index];
         assert.equal(icon.mimeType, 'image/svg+xml');
         assert.equal(icon.src.split(',')[0], 'data:image/svg+xml;base64');
