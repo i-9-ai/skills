@@ -118,7 +118,8 @@ script, modify a package or broaden access. No global catalog or usage state is 
 
 The compact library stays beside one skill workspace on desktop and stacks above
 it at narrow widths. **Overview** explains the source boundary and exposes the
-inspected identity. **SKILL.md** shows the current read-only entrypoint.
+inspected identity. **SKILL.md** shows the last inspected read-only entrypoint;
+it does not claim to observe later disk changes automatically.
 **Compare candidate** becomes available after starting an evolution or opening a
 retained proposal. Arrow keys, Home and End move through available workspace
 tabs. Source filters and search operate on the loaded real catalog, without
@@ -183,7 +184,11 @@ instead of overwriting newer work. Repeating a completed operation verifies the
 expected current bytes and returns a no-op rather than repeating a write.
 
 If a response times out, the write result is unknown. Use **Refresh proposal
-state** before another write. Closing the workflow, selecting another skill or
+state** before another write. Both comparison columns are labeled retained
+versions until that inspection confirms the source again; the detail view marks
+previous status and intent as earlier observations. Reopening an incoming tool
+result reloads its proposal by ID instead of trusting the earlier result's state.
+Closing the workflow, selecting another skill or
 receiving another proposal cannot discard the pending operation; **Inspect
 unresolved write** reopens it. Inspection compares actual source bytes with the
 retained original/candidate and reports `source_state`, `source_sha256` and

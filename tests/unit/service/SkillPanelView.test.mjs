@@ -18,6 +18,7 @@ const element = () => ({
     text: '',
     children: [],
     attributes: {},
+    listeners: {},
     get textContent() {
         return this.text + this.children.map((child) => child.textContent).join('');
     },
@@ -35,7 +36,9 @@ const element = () => ({
     setAttribute(name, value) {
         this.attributes[name] = value;
     },
-    addEventListener() {},
+    addEventListener(type, handler) {
+        (this.listeners[type] ??= []).push(handler);
+    },
     focus() {
         this.focused = true;
     },
@@ -49,10 +52,22 @@ const element = () => ({
     },
     close() {
         this.open = false;
+        const listeners = [...(this.listeners.close || [])];
+        if (listeners.length) setTimeout(() => listeners.forEach((listener) => listener()), 0);
     },
 });
+const constructorElements = new Map();
+const standaloneWindow = { addEventListener() {} };
+standaloneWindow.parent = standaloneWindow;
 const Panel = vm.runInNewContext(script.replace('new SkillChangePanel();', 'SkillChangePanel;'), {
-    document: { createElement: element },
+    document: {
+        createElement: element,
+        getElementById(id) {
+            if (!constructorElements.has(id)) constructorElements.set(id, element());
+            return constructorElements.get(id);
+        },
+    },
+    window: standaloneWindow,
 });
 
 function view() {
@@ -204,6 +219,89 @@ test('proposal checks remain explicit and a refreshed exact comparison clears ap
     assert.match(panel.el('after-title').textContent, /^Current/);
     assert.equal(panel.el('apply').disabled, true);
 });
+
+test('a delayed close from the old comparison cannot hide a newly opened proposal', async () => {
+    constructorElements.clear();
+    const panel = new Panel();
+    const fixture = view();
+    panel.selected = fixture.selected;
+    panel.proposal = fixture.proposal;
+    panel.renderCatalog = () => {};
+    panel.setWorkspace('compare');
+    const incoming = {
+        ...fixture.proposal,
+        proposal_id: 'new-retained-identity',
+        source_sha256: 'base',
+    };
+    panel.call = async (name) =>
+        name === 'skill_panel_proposal'
+            ? incoming
+            : { ...fixture.selected, description: 'Selected fixture.', files: 1, bytes: 8 };
+    await panel.acceptIncoming(incoming);
+    assert.equal(panel.workspace, 'compare');
+    assert.equal(panel.el('workflow-dialog').open, true);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    assert.equal(
+        panel.workspace,
+        'compare',
+        'The earlier close event must not override the new view',
+    );
+    assert.equal(panel.el('workflow-dialog').open, true);
+    assert.equal(panel.proposal.proposal_id, incoming.proposal_id);
+    panel.el('workflow-dialog').close();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    assert.equal(panel.workspace, 'overview', 'An intentional close must still work');
+    assert.equal(panel.el('workflow-dialog').open, false);
+});
+
+for (const sourceChangesDuringInspection of [false, true]) {
+    test(
+        'incoming proposal state is re-read instead of trusting an older tool result' +
+            (sourceChangesDuringInspection ? ' when the source changes between reads' : ''),
+        async () => {
+            const panel = view();
+            const old = panel.proposal;
+            const current = {
+                ...old,
+                status: 'applied',
+                source_state: 'candidate',
+                source_sha256: 'candidate',
+            };
+            let lookups = 0;
+            panel.el('approval').checked = true;
+            panel.call = async (name, args) => {
+                if (name === 'skill_panel_proposal') {
+                    assert.equal(args.proposal_id, old.proposal_id);
+                    lookups++;
+                    if (sourceChangesDuringInspection && lookups === 1)
+                        return { ...old, source_sha256: 'base' };
+                    return current;
+                }
+                assert.equal(name, 'skill_panel_inspect');
+                assert.equal(args.skill, old.skill);
+                return {
+                    skill: old.skill,
+                    name: old.skill,
+                    text: 'candidate',
+                    package_sha256: 'candidate',
+                    read_only: false,
+                    description: 'An inspected current candidate.',
+                    files: 1,
+                    bytes: 9,
+                };
+            };
+            await panel.acceptIncoming({ ...old, after: 'obsolete notification text' });
+            assert.equal(lookups, sourceChangesDuringInspection ? 2 : 1);
+            assert.equal(panel.proposal, current);
+            assert.equal(panel.el('candidate').value, 'candidate');
+            assert.equal(panel.el('source').value, 'candidate');
+            assert.match(panel.el('before-title').textContent, /^Retained/);
+            assert.match(panel.el('after-title').textContent, /^Current/);
+            assert.equal(panel.el('approval').checked, false);
+            assert.equal(panel.el('apply').disabled, true);
+        },
+    );
+}
 
 test('the panel loads every catalog page and searches human names within a source filter', async () => {
     const panel = view();
@@ -366,6 +464,12 @@ for (const action of ['apply', 'recover']) {
             assert.equal(panel.el('apply').disabled, true);
             assert.equal(panel.el('edit').disabled, true);
             assert.equal(panel.el('preview').disabled, true);
+            assert.match(panel.el('before-title').textContent, /^Retained/);
+            assert.match(panel.el('after-title').textContent, /^Retained/);
+            assert.match(
+                panel.el('proposal-id').textContent,
+                /source: unknown; previous observation:/,
+            );
             panel.el('workflow-dialog').close();
             panel.startEditor();
             assert.equal(panel.el('workflow-dialog').open, true);
@@ -406,6 +510,8 @@ for (const action of ['apply', 'recover']) {
             assert.equal(panel.unresolved, null);
             assert.equal(panel.uncertain, false);
             assert.equal(panel.proposal, reconciled);
+            assert.match(panel.el('after-title').textContent, /^Current/);
+            assert.doesNotMatch(panel.el('proposal-id').textContent, /source: unknown/);
             assert.equal(panel.el('approval').checked, false);
             assert.equal(panel.el('apply').disabled, true, 'Reconciliation never reuses consent');
             panel.el('approval').checked = true;

@@ -943,7 +943,7 @@
                     <div class="pilot-note">
                         <div class="eyebrow">Local functional pilot</div>
                         <p>
-                            Selected copies + global read-only references.<br />Changes apply only
+                            Selected copies + optional read-only globals.<br />Changes apply only
                             after explicit approval.
                         </p>
                     </div>
@@ -1127,7 +1127,9 @@
                         aria-labelledby="tab-source"
                         hidden
                     >
-                        <label for="source">Current SKILL.md · actual bytes · read only</label>
+                        <label for="source"
+                            >Last inspected SKILL.md · actual bytes · read only</label
+                        >
                         <textarea
                             id="source"
                             class="source-text"
@@ -1354,6 +1356,7 @@
                         this.el(button).addEventListener('click', () => this.el(dialog).close());
                         this.el(dialog).addEventListener('close', () => {
                             if (dialog === 'workflow-dialog') {
+                                if (this.el(dialog).open) return;
                                 if (this.workspace === 'compare') {
                                     this.setWorkspace('overview');
                                     this.el('tab-overview').focus();
@@ -1797,11 +1800,14 @@
                     this.el('proposal-id').textContent =
                         'Proposal ' +
                         proposal.proposal_id +
-                        ' · state: ' +
+                        ' · last observed state: ' +
                         proposal.status +
-                        ' · current source: ' +
+                        ' · source: ' +
+                        (this.uncertain || this.unresolved
+                            ? 'unknown; previous observation: '
+                            : '') +
                         proposal.source_state +
-                        ' · pending intent: ' +
+                        ' · last observed intent: ' +
                         (proposal.write_intent || 'none') +
                         ' · base: ' +
                         proposal.base_sha256 +
@@ -1815,12 +1821,16 @@
                         proposal.source_state === (recovery ? 'candidate' : 'original');
                     const afterCurrent =
                         proposal.source_state === (recovery ? 'original' : 'candidate');
-                    this.el('before-title').textContent =
-                        (beforeCurrent ? 'Current · ' : 'Retained · ') +
-                        (recovery ? 'candidate' : 'preserved original');
-                    this.el('after-title').textContent =
-                        (afterCurrent ? 'Current · ' : recovery ? 'Restore · ' : 'Proposed · ') +
-                        (recovery ? 'preserved original' : 'retained candidate');
+                    this.el('before-title').textContent = this.versionLabel(
+                        recovery ? 'candidate' : 'preserved original',
+                        beforeCurrent,
+                        'Retained',
+                    );
+                    this.el('after-title').textContent = this.versionLabel(
+                        recovery ? 'preserved original' : 'candidate',
+                        afterCurrent,
+                        recovery ? 'Restore' : 'Proposed',
+                    );
                     this.el('before').setAttribute(
                         'aria-label',
                         this.el('before-title').textContent + ' SKILL.md',
@@ -1883,6 +1893,12 @@
                     );
                     const offset = Math.min(maximum, Math.max(0, changed.offsetTop - 64));
                     for (const code of codes) code.scrollTop = offset;
+                }
+
+                versionLabel(version, current, next) {
+                    if (this.uncertain || this.unresolved) return 'Retained · ' + version;
+                    if (current) return 'Current · ' + version;
+                    return next + ' · ' + version;
                 }
 
                 renderComparison(before, after) {
@@ -2043,9 +2059,19 @@
                         '. No source write requested. Any next write requires fresh approval.';
                 }
 
-                async acceptIncoming(result) {
+                async acceptIncoming(incoming) {
                     if (this.unresolved) return this.showUnresolved();
+                    this.el('approval').checked = false;
+                    this.actions();
+                    let result = await this.call('skill_panel_proposal', {
+                        proposal_id: incoming.proposal_id,
+                    });
                     await this.inspect(result.skill);
+                    if (this.selected.package_sha256 !== result.source_sha256) {
+                        result = await this.call('skill_panel_proposal', {
+                            proposal_id: result.proposal_id,
+                        });
+                    }
                     this.mode = 'apply';
                     this.uncertain = false;
                     this.el('workflow-title').textContent = 'Review ' + result.skill;

@@ -100,7 +100,7 @@ test('the shared stdio protocol carries real catalog, retained candidate, approv
     assert.equal(resources.length, 1);
     assert.equal((await rpc('resources/read', { uri: 'file:///not-selected' })).error.code, -32602);
     const ui = await rpc('resources/read', { uri: resources[0].uri });
-    assert.match(ui.result.contents[0].text, /Selected copies \+ global read-only references/);
+    assert.match(ui.result.contents[0].text, /Selected copies \+ optional read-only globals/);
     assert.match(ui.result.contents[0].text, /Compare candidate/);
     const clientUi = await rpc('resources/read', {
         uri: resources[0].uri,
