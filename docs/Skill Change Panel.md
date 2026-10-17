@@ -81,6 +81,9 @@ directory. Global discovery follows package links and ordinary namespaces,
 excludes hidden system directories, and deduplicates real package paths. Equal
 names at different paths remain separate, with stable opaque `global:` IDs;
 names alone cannot redirect inspection to another package.
+An alias of the configured global root remains usable for read-only discovery
+and inspection. Enabling global writes does not grant mutation through that
+root alias; select its actual ordinary root explicitly for eligible editing.
 
 An alias of a package already in the selected private collection deduplicates to
 that selected entry and preserves its existing editing authority. Other global
@@ -168,6 +171,10 @@ Existing selected-copy proposals and old read-only global review records are
 preserved. Enabling global evolution does not reinterpret a prior findings-only
 review as an editable request or fabricate its missing candidate. Start a new
 review/change request for the complete global package revision.
+Retained global records bind their relative identity and root without requiring
+the live package merely to list history or record a blocked review. A removed
+or unsafe global cannot disable another skill's history, and still cannot be
+opened as a writable proposal, linked as a candidate or applied/recovered.
 Removing the switch disables new global mutation; preserve all retained state.
 No global catalog, telemetry or public plugin configuration is synchronized.
 

@@ -246,6 +246,182 @@ test('a replaced or differently selected global root cannot reuse retained globa
     assert.throws(() => other.proposal({ proposal_id: proposal.proposal_id }));
 });
 
+for (const retainedProposal of [false, true]) {
+    for (const changedSource of ['deleted', 'unsafe']) {
+        test(`a ${changedSource} global with ${retainedProposal ? 'a proposal' : 'a request'} preserves unrelated history and can record a blocked result`, (t) => {
+            const f = fixture(t);
+            const selected = f.service.propose({
+                skill: 'example-skill',
+                base_sha256: f.service.inspect({ skill: 'example-skill' }).package_sha256,
+                after: f.after,
+                rationale: 'Keep independent selected-copy history accessible.',
+            });
+            const otherPath = join(f.global, 'another-skill');
+            fs.cpSync(f.packagePath, otherPath, { recursive: true });
+            fs.writeFileSync(
+                join(otherPath, 'SKILL.md'),
+                f.before.replaceAll('example-skill', 'another-skill'),
+            );
+            const otherSkill = f.service
+                .open({})
+                .skills.find(
+                    (entry) => entry.source === 'global' && entry.name === 'another-skill',
+                ).skill;
+            const { request: otherRequest } = f.service.request({
+                skill: otherSkill,
+                kind: 'review',
+                focus: null,
+            });
+            const otherProposal = f.service.propose({
+                skill: otherSkill,
+                base_sha256: f.service.inspect({ skill: otherSkill }).package_sha256,
+                after: f.after.replaceAll('example-skill', 'another-skill'),
+                rationale: 'An independently retained global candidate.',
+            });
+            f.service.complete(finish(otherRequest, otherProposal));
+            const { request } = f.service.request({
+                skill: f.skill,
+                kind: 'proposal',
+                focus: null,
+            });
+            const proposal = retainedProposal ? f.propose() : null;
+            if (changedSource === 'deleted') fs.rmSync(f.packagePath, { recursive: true });
+            if (changedSource === 'unsafe')
+                fs.linkSync(join(f.packagePath, 'LICENSE'), join(f.packagePath, 'linked-license'));
+            assert.equal(
+                f.service.activity({ skill: 'example-skill' }).proposals[0].proposal_id,
+                selected.proposal_id,
+            );
+            const otherHistory = f.service.activity({ skill: otherSkill });
+            assert.equal(otherHistory.requests[0].request_id, otherRequest.request_id);
+            assert.equal(otherHistory.proposals[0].proposal_id, otherProposal.proposal_id);
+            assert.equal(
+                f.service.proposal({ proposal_id: selected.proposal_id }).skill,
+                'example-skill',
+            );
+            assert.equal(
+                f.service.request({ request_id: request.request_id }).request.skill,
+                f.skill,
+            );
+            const history = f.service.activity({ skill: f.skill });
+            assert.equal(history.requests[0].request_id, request.request_id);
+            assert.equal(history.proposals.length, retainedProposal ? 1 : 0);
+            if (proposal) {
+                assert.throws(() => f.service.complete(finish(request, proposal)));
+                assert.throws(() => f.service.proposal({ proposal_id: proposal.proposal_id }));
+                assert.throws(() => f.service.apply(f.approval(proposal)));
+                assert.throws(() => f.service.recover(f.approval(proposal, 'recover')));
+                assert.equal(
+                    fs.existsSync(join(f.state, proposal.proposal_id, 'applying.json')),
+                    false,
+                );
+            }
+            assert.throws(() =>
+                f.service.propose({
+                    skill: f.skill,
+                    base_sha256: request.base_sha256,
+                    after: f.after,
+                    rationale: 'The missing or unsafe source must not be recreated.',
+                }),
+            );
+            const blocked = f.service.complete({
+                request_id: request.request_id,
+                outcome: 'blocked',
+                summary: 'The original global package is no longer safely available.',
+                proposal_id: null,
+            });
+            assert.equal(blocked.result.outcome, 'blocked');
+            assert.equal(
+                f.service.activity({ skill: f.skill }).requests[0].result.outcome,
+                'blocked',
+            );
+            assert.equal(fs.readFileSync(f.entrypoint, 'utf8'), f.before);
+            if (changedSource === 'deleted') assert.equal(fs.existsSync(f.packagePath), false);
+            if (changedSource === 'unsafe')
+                assert.equal(fs.readFileSync(f.globalEntrypoint, 'utf8'), f.before);
+        });
+    }
+}
+
+test('retained global history verifies lexical identity without trusting a changed relative target', (t) => {
+    const f = fixture(t);
+    const { request } = f.service.request({ skill: f.skill, kind: 'proposal', focus: null });
+    const path = join(f.state, 'request', request.request_id, 'request.json');
+    const original = fs.readFileSync(path);
+    const envelope = JSON.parse(original);
+    for (const relative of [
+        '../example-skill',
+        '.system/example-skill',
+        'different/example-skill',
+    ]) {
+        envelope.payload.global_relative = relative;
+        envelope.sha256 = createHash('sha256')
+            .update(JSON.stringify(envelope.payload))
+            .digest('hex');
+        fs.writeFileSync(path, JSON.stringify(envelope));
+        assert.throws(() => f.service.request({ request_id: request.request_id }), {
+            code: 'panel_conflict',
+        });
+        assert.throws(
+            () =>
+                f.service.complete({
+                    request_id: request.request_id,
+                    outcome: 'blocked',
+                    summary: 'Tampered target identity remains invalid.',
+                    proposal_id: null,
+                }),
+            { code: 'panel_conflict' },
+        );
+    }
+    fs.writeFileSync(path, original);
+    assert.equal(
+        f.service.request({ request_id: request.request_id }).request.global_relative,
+        'namespace/example-skill',
+    );
+});
+
+test('a configured global-root alias preserves read-only discovery and selected history without granting global writes', (t) => {
+    const f = fixture(t);
+    const alias = join(f.root, 'global-root-alias');
+    fs.symlinkSync(f.global, alias);
+    for (const globalWrite of [false, true]) {
+        const service = new SkillPanelService(
+            new SkillPanelConfiguration(f.collection, f.state, alias, globalWrite),
+        );
+        const catalog = service.open({});
+        const row = catalog.skills.find((entry) => entry.source === 'global');
+        assert.equal(row.skill, f.skill);
+        assert.equal(row.read_only, true);
+        assert.equal(catalog.warnings.length, 0);
+        if (globalWrite) assert.match(row.read_only_reason, /root is an alias/);
+        assert.equal(service.inspect({ skill: f.skill }).text, f.before);
+        const request = service.request({ skill: f.skill, kind: 'review', focus: null }).request;
+        assert.equal(request.read_only, true);
+        assert.throws(() =>
+            service.propose({
+                skill: f.skill,
+                base_sha256: f.inspect().package_sha256,
+                after: f.after,
+                rationale: 'An aliased global root grants no write authority.',
+            }),
+        );
+        const selected = service.propose({
+            skill: 'example-skill',
+            base_sha256: service.inspect({ skill: 'example-skill' }).package_sha256,
+            after: f.after,
+            rationale: 'Independent selected-copy authority remains available.',
+        });
+        assert(
+            service
+                .activity({ skill: 'example-skill' })
+                .proposals.some((entry) => entry.proposal_id === selected.proposal_id),
+        );
+        assert.equal(service.apply(f.approval(selected)).changed, true);
+        assert.equal(service.recover(f.approval(selected, 'recover')).changed, true);
+        assert.equal(fs.readFileSync(f.globalEntrypoint, 'utf8'), f.before);
+    }
+});
+
 for (const unsafe of [
     'external-link',
     'package-symlink',

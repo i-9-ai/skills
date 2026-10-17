@@ -29,6 +29,7 @@ export type PanelProposal = {
     source?: 'global';
     name?: string;
     global_collection_sha256?: string;
+    global_relative?: string;
     proposal_id: string;
     collection_sha256: string;
     skill: string;
@@ -44,6 +45,7 @@ type ReviewRequest = PanelRequest & {
     schema_version: 1 | 2;
     source?: 'global';
     global_collection_sha256?: string;
+    global_relative?: string;
     request_id: string;
     collection_sha256: string;
     name: string;
@@ -117,6 +119,7 @@ export class SkillEvolutionRepository {
                           source: 'global' as const,
                           name: target.name,
                           global_collection_sha256: target.global_collection_sha256,
+                          global_relative: target.relative,
                       }
                     : {}),
                 proposal_id: id,
@@ -178,6 +181,7 @@ export class SkillEvolutionRepository {
                     ? {
                           source: 'global' as const,
                           global_collection_sha256: target.global_collection_sha256,
+                          global_relative: target.relative,
                       }
                     : {}),
                 request_id: randomUUID(),
@@ -226,8 +230,8 @@ export class SkillEvolutionRepository {
             false,
             (state, collection) => {
                 const requests = this.requestIds(state)
+                    .filter((id) => this.recordHasSkill(state, `request/${id}/request.json`, skill))
                     .map((id) => this.readRequest(state, collection, id))
-                    .filter((request) => request.skill === skill)
                     .map((request) => ({ ...request, result: this.readCompletion(state, request) }))
                     .sort((a, b) => b.created_at.localeCompare(a.created_at));
                 const ids = fs
@@ -235,8 +239,8 @@ export class SkillEvolutionRepository {
                     .filter((name) => /^[a-f0-9-]{36}$/.test(name));
                 if (ids.length > 16) throw new SkillOperationError('panel_storage_unavailable');
                 const proposals = ids
+                    .filter((id) => this.recordHasSkill(state, `${id}/proposal.json`, skill))
                     .map((id) => this.readProposalReceipt(state, collection, this.validator.id(id)))
-                    .filter((proposal) => proposal.skill === skill)
                     .map(
                         ({
                             proposal_id,
@@ -274,6 +278,11 @@ export class SkillEvolutionRepository {
         return ids;
     }
 
+    private recordHasSkill(state: SafeRoot, filename: string, skill: string): boolean {
+        const record = this.readRecord(state, filename) as Record<string, unknown> | null;
+        return this.validator.inspection({ skill: record?.skill }) === skill;
+    }
+
     private readRequest(state: SafeRoot, collection: SafeRoot, id: string): ReviewRequest {
         this.validator.id(id);
         const value = this.readRecord(state, `request/${id}/request.json`);
@@ -289,7 +298,7 @@ export class SkillEvolutionRepository {
             'read_only',
             'base_sha256',
             'created_at',
-            ...(version === 2 ? ['source', 'global_collection_sha256'] : []),
+            ...(version === 2 ? ['source', 'global_collection_sha256', 'global_relative'] : []),
         ]);
         this.validator.workflowRequest({ skill: data.skill, kind: data.kind, focus: data.focus });
         this.validator.name(data.name);
@@ -310,12 +319,12 @@ export class SkillEvolutionRepository {
             this.conflict();
         if (version === 2) {
             this.validator.hash(data.global_collection_sha256);
-            const target = this.target(String(data.skill));
-            if (
-                target.name !== data.name ||
-                target.global_collection_sha256 !== data.global_collection_sha256
-            )
-                this.conflict();
+            new SkillPanelCatalogRepository(this.configuration).assertRetainedTarget(
+                String(data.skill),
+                String(data.name),
+                data.global_relative,
+                String(data.global_collection_sha256),
+            );
         }
         return data as ReviewRequest;
     }
@@ -512,7 +521,9 @@ export class SkillEvolutionRepository {
             'rationale',
             'created_at',
             'validation',
-            ...(receipt.schema_version === 2 ? ['source', 'name', 'global_collection_sha256'] : []),
+            ...(receipt.schema_version === 2
+                ? ['source', 'name', 'global_collection_sha256', 'global_relative']
+                : []),
         ]);
         this.validator.inspection({ skill: receipt.skill });
         this.validator.text(receipt.rationale, 2000);
@@ -536,7 +547,12 @@ export class SkillEvolutionRepository {
                 this.conflict();
             this.validator.name(receipt.name);
             this.validator.hash(receipt.global_collection_sha256);
-            this.targetForProposal(receipt);
+            new SkillPanelCatalogRepository(this.configuration).assertRetainedTarget(
+                receipt.skill,
+                receipt.name!,
+                receipt.global_relative,
+                receipt.global_collection_sha256!,
+            );
         }
         return receipt;
     }
@@ -733,6 +749,7 @@ export class SkillEvolutionRepository {
         if (
             proposal.schema_version === 2 &&
             (target.name !== proposal.name ||
+                target.relative !== proposal.global_relative ||
                 target.global_collection_sha256 !== proposal.global_collection_sha256)
         )
             this.conflict();

@@ -176,10 +176,37 @@ export class SkillPanelCatalogRepository {
         return 'global:' + createHash('sha256').update(entry.canonicalPath).digest('hex');
     }
 
+    /** Retained history binds a root and lexical identity, not a still-existing package. */
+    assertRetainedTarget(
+        reference: string,
+        name: string,
+        part: unknown,
+        expectedRoot: string,
+    ): void {
+        if (
+            typeof part !== 'string' ||
+            !part.isWellFormed() ||
+            Buffer.byteLength(part) > 4096 ||
+            /[\\\x00-\x1f\x7f]/.test(part) ||
+            part.split('/').some((component) => !component || component.startsWith('.'))
+        )
+            throw new SkillOperationError('panel_conflict');
+        const root = this.globalRoot();
+        const path = join(root, ...part.split('/'));
+        if (
+            basename(path) !== name ||
+            reference !== 'global:' + createHash('sha256').update(path).digest('hex') ||
+            expectedRoot !== this.globalIdentity(root)
+        )
+            throw new SkillOperationError('panel_conflict');
+    }
+
     private readOnlyReason(entry: SkillSummary, boundaryAvailable: boolean): string | null {
         if (!this.configuration.globalWrite) return 'Global editing is not enabled.';
         if (!boundaryAvailable)
             return 'Global filesystem boundary coverage is incomplete; writes are disabled.';
+        if (lstatSync(this.configuration.globalCollection!).isSymbolicLink())
+            return 'The configured global root is an alias; global editing requires an ordinary directory.';
         try {
             const target = this.confinedTarget(entry.canonicalPath, entry.name);
             new SkillPanelPackageRepository().inspect(target.path);
@@ -206,25 +233,29 @@ export class SkillPanelCatalogRepository {
             const selected = directory.inspect(part.split(sep).join('/'));
             if (!selected.info?.isDirectory()) throw new SkillOperationError('invalid_input');
             directory.verifySnapshot(selected);
-            const info = lstatSync(root);
             return {
                 root,
                 path: selected.absolute,
                 relative: part.split(sep).join('/'),
-                global_collection_sha256: createHash('sha256')
-                    .update(
-                        JSON.stringify({
-                            configured: this.configuration.globalCollection,
-                            physical: root,
-                            dev: info.dev,
-                            ino: info.ino,
-                        }),
-                    )
-                    .digest('hex'),
+                global_collection_sha256: this.globalIdentity(root),
             };
         } finally {
             directory.close();
         }
+    }
+
+    private globalIdentity(root: string): string {
+        const info = lstatSync(root);
+        return createHash('sha256')
+            .update(
+                JSON.stringify({
+                    configured: this.configuration.globalCollection,
+                    physical: root,
+                    dev: info.dev,
+                    ino: info.ino,
+                }),
+            )
+            .digest('hex');
     }
 
     /** Called before state creation or mutation, including direct repository callers. */
@@ -274,7 +305,7 @@ export class SkillPanelCatalogRepository {
 
     private globalRoot(): string {
         const selected = lstatSync(this.configuration.globalCollection!);
-        if (!selected.isDirectory() || selected.isSymbolicLink())
+        if (!selected.isDirectory() && !selected.isSymbolicLink())
             throw new Error('Select an ordinary global reference root.');
         const root = realpathSync.native(this.configuration.globalCollection!);
         if (root === sep || root.split(sep).includes('.system') || !lstatSync(root).isDirectory()) {
