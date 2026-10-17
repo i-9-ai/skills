@@ -12,16 +12,40 @@ const element = () => ({
     disabled: false,
     hidden: false,
     open: false,
-    textContent: '',
-    replaceChildren() {},
-    append() {},
-    setAttribute() {},
+    clientHeight: 0,
+    scrollHeight: 0,
+    offsetTop: 0,
+    text: '',
+    children: [],
+    attributes: {},
+    get textContent() {
+        return this.text + this.children.map((child) => child.textContent).join('');
+    },
+    set textContent(value) {
+        this.text = value;
+        this.children = [];
+    },
+    replaceChildren() {
+        this.children = [];
+        this.text = '';
+    },
+    append(...children) {
+        this.children.push(...children);
+    },
+    setAttribute(name, value) {
+        this.attributes[name] = value;
+    },
     addEventListener() {},
     focus() {
         this.focused = true;
     },
     showModal() {
         this.open = true;
+        this.modal = true;
+    },
+    show() {
+        this.open = true;
+        this.modal = false;
     },
     close() {
         this.open = false;
@@ -62,9 +86,124 @@ function view() {
     panel.busy = false;
     panel.uncertain = false;
     panel.unresolved = null;
+    panel.editing = false;
+    panel.workspace = 'overview';
     panel.renderCatalog = () => {};
     return panel;
 }
+
+test('workspace navigation preserves a candidate but resets approval when leaving comparison', () => {
+    const panel = view();
+    panel.el('approval').checked = true;
+    panel.setWorkspace('compare');
+    assert.equal(panel.el('workflow-dialog').open, true);
+    assert.equal(
+        panel.el('workflow-dialog').modal,
+        false,
+        'The library stays available beside the comparison',
+    );
+    assert.equal(panel.el('tab-compare').attributes['aria-selected'], 'true');
+    assert.equal(panel.el('source-view').hidden, true);
+    panel.setWorkspace('source');
+    assert.equal(panel.el('workflow-dialog').open, false);
+    assert.equal(panel.el('source-view').hidden, false);
+    assert.equal(panel.el('approval').checked, false);
+    assert.equal(panel.el('apply').disabled, true);
+    assert.equal(panel.proposal.proposal_id, 'retained-identity');
+    panel.setWorkspace('compare');
+    assert.equal(panel.el('workflow-dialog').open, true);
+    assert.equal(panel.el('approval').checked, false);
+});
+
+test('workspace keyboard navigation skips unavailable comparison and exposes one tab stop', () => {
+    const panel = view();
+    panel.proposal = null;
+    panel.actions();
+    assert.equal(panel.el('tab-compare').disabled, true);
+    let prevented = false;
+    panel.navigateTabs(
+        {
+            key: 'End',
+            preventDefault() {
+                prevented = true;
+            },
+        },
+        'overview',
+    );
+    assert.equal(prevented, true);
+    assert.equal(panel.workspace, 'source');
+    assert.equal(panel.el('tab-source').focused, true);
+    assert.equal(panel.el('tab-source').attributes.tabindex, '0');
+    assert.equal(panel.el('tab-overview').attributes.tabindex, '-1');
+    panel.navigateTabs({ key: 'ArrowRight', preventDefault() {} }, 'source');
+    assert.equal(panel.workspace, 'overview');
+});
+
+test('comparison preserves untrusted text, line endings and highlights EOF-only edits', () => {
+    const panel = view();
+    const before = '<script>not executable</script>\r\nshared\r\nlast';
+    const after = '<script>not executable</script>\r\nshared\r\nlast\r\n';
+    panel.renderComparison(before, after);
+    assert.equal(panel.el('before').textContent, before);
+    assert.equal(panel.el('after').textContent, after);
+    assert.equal(panel.el('before').children.length, 3);
+    assert.equal(panel.el('before').children[0].className, 'code-line');
+    assert.equal(panel.el('before').children[2].className, 'code-line removed');
+    assert.equal(panel.el('after').children[2].className, 'code-line added');
+    assert.equal(panel.el('after').children[2].attributes['data-line'], '3');
+    assert.match(panel.el('before-ending').textContent, /CRLF.*No final newline/);
+    assert.match(panel.el('after-ending').textContent, /CRLF.*Final newline/);
+    panel.renderComparison('', 'one\n');
+    assert.equal(panel.el('before').children.length, 0);
+    assert.match(panel.el('before-ending').textContent, /^0 lines/);
+    assert.equal(panel.el('after').children[0].className, 'code-line added');
+});
+
+test('large comparisons retain full text without an unbounded row-node expansion', () => {
+    const panel = view();
+    const before = 'a\n'.repeat(5000);
+    const after = before + 'b\n';
+    panel.renderComparison(before, after);
+    assert.equal(panel.el('before').textContent, before);
+    assert.equal(panel.el('after').textContent, after);
+    assert.equal(panel.el('before').children.length, 0);
+    assert.match(panel.el('before-ending').textContent, /Full plain text/);
+});
+
+test('proposal checks remain explicit and a refreshed exact comparison clears approval', () => {
+    const panel = view();
+    panel.el('approval').checked = true;
+    panel.renderProposal(panel.proposal);
+    assert.equal(panel.el('approval').checked, false);
+    assert.match(panel.el('checks').textContent, /Local structure only · passed/);
+    assert.match(panel.el('checks').textContent, /Official validation · not run/);
+    assert.match(panel.el('checks').textContent, /Behavioral evaluation · not run/);
+    assert.equal(
+        panel
+            .el('diff')
+            .children.map((row) => row.textContent)
+            .join('\n'),
+        panel.proposal.diff,
+    );
+    panel.mode = 'recover';
+    panel.renderProposal(panel.proposal);
+    assert.equal(panel.el('before').textContent, panel.proposal.after);
+    assert.equal(panel.el('after').textContent, panel.proposal.before);
+    assert.match(panel.el('apply').textContent, /Restore approved/);
+    panel.mode = 'apply';
+    panel.proposal.source_state = 'candidate';
+    panel.proposal.status = 'applied';
+    panel.renderProposal(panel.proposal);
+    assert.match(panel.el('before-title').textContent, /^Retained/);
+    assert.match(panel.el('after-title').textContent, /^Current/);
+    panel.mode = 'recover';
+    panel.proposal.source_state = 'original';
+    panel.proposal.status = 'recovered';
+    panel.renderProposal(panel.proposal);
+    assert.match(panel.el('before-title').textContent, /^Retained/);
+    assert.match(panel.el('after-title').textContent, /^Current/);
+    assert.equal(panel.el('apply').disabled, true);
+});
 
 test('the panel loads every catalog page and searches human names within a source filter', async () => {
     const panel = view();
@@ -105,10 +244,10 @@ test('the panel loads every catalog page and searches human names within a sourc
     panel.el('source-filter').value = 'global';
     panel.el('search').value = 'personal-reference';
     Panel.prototype.renderCatalog.call(panel);
-    assert.match(panel.el('result-note').textContent, /^1 real package/);
+    assert.match(panel.el('result-note').textContent, /^1 skill shown/);
     panel.el('source-filter').value = 'selected';
     Panel.prototype.renderCatalog.call(panel);
-    assert.match(panel.el('result-note').textContent, /^0 real package/);
+    assert.match(panel.el('result-note').textContent, /^0 skills shown/);
 });
 
 test('global inspection prepares a read-only review and cannot start a mutation workflow', async () => {

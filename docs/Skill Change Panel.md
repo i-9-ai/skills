@@ -93,8 +93,8 @@ incompletely checked boundaries. Available read-only references remain visible
 with a warning. Correct the selected paths or reference coverage before writing;
 there is no fallback that disables this protection automatically.
 
-Use **All sources**, **Selected collection** or **Global · read only**, then
-search by human name or description. **Refresh live catalog** reloads available
+Use **All skills**, **Selected copies** or **Global · read only**, then
+search by human name or description. **Refresh catalog** reloads available
 pages from actual source metadata. The MCP tool accepts optional integer `offset`
 and `limit` (1–128, default 128), returning `total` and `next_offset`. Plain clients
 must follow `next_offset` until null. The combined catalog is bounded at 1,024
@@ -116,26 +116,42 @@ script, modify a package or broaden access. No global catalog or usage state is 
 
 ## Review a real candidate
 
+The compact library stays beside one skill workspace on desktop and stacks above
+it at narrow widths. **Overview** explains the source boundary and exposes the
+inspected identity. **SKILL.md** shows the current read-only entrypoint.
+**Compare candidate** becomes available after starting an evolution or opening a
+retained proposal. Arrow keys, Home and End move through available workspace
+tabs. Source filters and search operate on the loaded real catalog, without
+inventing categories, quality scores or related-skill recommendations.
+
 1. Select a skill. The panel reads actual `SKILL.md` content, file count, byte
    count and an exact package fingerprint including ordinary file modes.
 2. **Prepare a review** produces an editable task bound to that source. It does
    not send a message or run an agent. A review can conclude no edit is needed.
-3. **Plan an evolution** opens the real entrypoint. Supply complete candidate
+3. **Plan an evolution** opens an editor in the same workspace. Supply complete candidate
    text and a rationale, or ask the authoring agent to use `skill_panel_propose`
    with the exact inspected package `base_sha256`. The backend does not generate
    text or call a model. Only `SKILL.md` can change; preserve the package name.
 4. **Preview and validate** retains the original and candidate packages in the
    private state directory and returns their before/after content, unified diff
    and local package-helper validation. It does not edit the selected source.
-5. Inspect the diff and actual checks. Official Agent Skills conformance and
+5. Inspect the side-by-side retained versions, numbered lines, changed ranges
+   and actual checks. The comparison initially scrolls toward the change;
+   scroll either pane to inspect the full text. The detail disclosure retains
+   exact proposal hashes, local validation detail and the complete unified diff,
+   including EOF-only changes. Large files use full plain text to bound rendered
+   row nodes. Official Agent Skills conformance and
    behavioral evaluation are explicitly `not_run` by this pilot; a local
    structural pass cannot establish semantic quality or release readiness.
    A failed local check disables application. Run required official and task
    validation separately before accepting a package for distribution.
-6. Acknowledge the exact diff and limits, then choose **Apply approved change**.
+6. Acknowledge the exact diff and limits, then choose **Approve & apply**.
    The backend verifies the entire package, retained artifacts and approval
    hashes again before replacing the entrypoint. Editing the candidate or
-   changing selection clears UI consent. No approval is inferred from a task
+   changing selection, leaving the comparison or refreshing its proposal clears
+   UI consent. **Keep proposal** returns to the overview without applying; the
+   comparison remains accessible and the server retains its ID and artifacts.
+   No approval is inferred from a task
    draft, model output or earlier proposal.
 
 The agent may prepare a candidate; applying and restoring are advertised as

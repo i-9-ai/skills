@@ -22,6 +22,8 @@ Verify every requirement has an implementation and a check or an explicit limit.
 
 ## Child DOX index
 
+- [Panel library and comparison workspace](2026-10-17-01-32-15-panel-library-comparison.md): approved compact library and real candidate comparison in the existing pilot; read-only globals, exact approval and retained write identity remain intact.
+
 - [Panel monogram and release intent](2026-10-17-00-10-58-panel-monogram.md): distinct transparent I-9 theme variants and one package-bound minor release note; no wider rebranding or new authority.
 
 - [Panel entrypoint icon](2026-10-16-23-54-57-panel-entrypoint-icon.md): bundled icon metadata for the optional opening tool; no external asset requests or automatic native-rendering claim.
