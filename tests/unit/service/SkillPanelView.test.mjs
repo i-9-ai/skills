@@ -777,7 +777,6 @@ test('the current proposal has a direct diff action that still reloads the autho
     assert.equal(received, 'matching-proposal');
     assert.equal(panel.el('workflow-status').focused, true);
     assert.equal(panel.el('approval').checked, false);
-    panel.proposal = null;
     received = null;
     await panel.chooseWorkspace('compare');
     assert.equal(
@@ -785,6 +784,65 @@ test('the current proposal has a direct diff action that still reloads the autho
         'matching-proposal',
         'The diff tab must open the same authoritative proposal',
     );
+});
+
+for (const announced of ['new-result-proposal', 'retained-identity']) {
+    test('the diff tab reloads current retained state for ' + announced, async () => {
+        const panel = workflowView();
+        const current = {
+            ...panel.proposal,
+            proposal_id: announced,
+            source_sha256: 'candidate',
+            source_state: 'candidate',
+            status: 'applied',
+        };
+        panel.currentDiff = announced;
+        panel.el('approval').checked = true;
+        const reads = [];
+        panel.call = async (name, args) => {
+            reads.push(name);
+            if (name === 'skill_panel_proposal') {
+                assert.equal(args.proposal_id, announced);
+                return current;
+            }
+            assert.equal(name, 'skill_panel_inspect');
+            assert.equal(args.skill, current.skill);
+            return {
+                ...panel.selected,
+                text: 'candidate',
+                package_sha256: 'candidate',
+                description: 'The actual current candidate.',
+                files: 1,
+                bytes: 9,
+            };
+        };
+
+        await panel.chooseWorkspace('compare');
+
+        assert.deepEqual(reads, ['skill_panel_proposal', 'skill_panel_inspect']);
+        assert.equal(panel.proposal, current, 'Never reopen the previous cached observation');
+        assert.equal(panel.el('source').value, 'candidate');
+        assert.equal(panel.el('workflow-dialog').open, true);
+        assert.equal(panel.el('approval').checked, false);
+        assert.equal(panel.el('apply').disabled, true);
+    });
+}
+
+test('the diff tab preserves an unfinished manual candidate', async () => {
+    const panel = workflowView();
+    panel.startEditor();
+    panel.el('candidate').value = 'An unfinished manual change';
+    panel.el('rationale').value = 'A draft rationale';
+    panel.currentDiff = 'saved-proposal';
+    panel.setWorkspace('overview');
+    panel.call = async () => assert.fail('Do not replace an unfinished manual candidate');
+
+    await panel.chooseWorkspace('compare');
+
+    assert.equal(panel.editing, true);
+    assert.equal(panel.el('candidate').value, 'An unfinished manual change');
+    assert.equal(panel.el('rationale').value, 'A draft rationale');
+    assert.equal(panel.el('workflow-dialog').open, true);
 });
 
 test('no-candidate reviews and saved older proposals are distinguished without fabricating a diff', () => {
@@ -807,13 +865,14 @@ test('no-candidate reviews and saved older proposals are distinguished without f
     assert.match(panel.el('diff-status').textContent, /retained proposal/);
 });
 
-test('the direct diff action cannot bypass an unresolved write', async () => {
+test('neither diff entrypoint can bypass an unresolved write', async () => {
     const panel = workflowView();
     const retained = panel.proposal;
     panel.currentDiff = 'another-proposal';
     panel.unresolved = { proposal: retained, action: 'apply' };
     panel.acceptIncoming = async () => assert.fail('Do not replace unresolved write identity');
     await panel.openCurrentDiff();
+    await panel.chooseWorkspace('compare');
     assert.equal(panel.proposal, retained);
     assert.equal(panel.uncertain, true);
     assert.equal(panel.el('view-diff').disabled, true);

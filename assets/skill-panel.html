@@ -1895,7 +1895,11 @@
                 }
 
                 chooseWorkspace(view) {
-                    if (view === 'compare' && !this.proposal && !this.editing && this.currentDiff)
+                    if (
+                        view === 'compare' &&
+                        !this.editing &&
+                        (this.currentDiff || this.proposal?.proposal_id)
+                    )
                         return this.run(() => this.openCurrentDiff());
                     this.setWorkspace(view);
                 }
@@ -2133,8 +2137,11 @@
 
                 async openCurrentDiff() {
                     if (this.unresolved) return this.showUnresolved();
-                    if (!this.currentDiff || this.selected?.read_only) return;
-                    await this.acceptIncoming({ proposal_id: this.currentDiff });
+                    if (this.selected?.read_only) return;
+                    const proposalId = this.currentDiff || this.proposal?.proposal_id;
+                    if (!proposalId) return;
+
+                    await this.acceptIncoming({ proposal_id: proposalId });
                     this.el('workflow-status').focus({ preventScroll: true });
                 }
 
