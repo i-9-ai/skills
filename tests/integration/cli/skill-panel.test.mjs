@@ -78,7 +78,11 @@ test('the shared stdio protocol carries real catalog, retained candidate, approv
         assert.deepEqual(icon.sizes, ['any']);
         assert.equal(
             Buffer.from(icon.src.split(',')[1], 'base64').toString('utf8'),
-            mark.replace('currentColor', color),
+            mark.replaceAll('currentColor', color),
+        );
+        assert.doesNotMatch(
+            Buffer.from(icon.src.split(',')[1], 'base64').toString('utf8'),
+            /currentColor/,
         );
     }
     assert.equal(

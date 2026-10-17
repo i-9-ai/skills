@@ -18,7 +18,7 @@ export class SkillPanelResourceRepository {
             ].map(({ theme, color }) => ({
                 src:
                     'data:image/svg+xml;base64,' +
-                    Buffer.from(source.replace('currentColor', color)).toString('base64'),
+                    Buffer.from(source.replaceAll('currentColor', color)).toString('base64'),
                 mimeType: 'image/svg+xml',
                 sizes: ['any'],
                 theme,

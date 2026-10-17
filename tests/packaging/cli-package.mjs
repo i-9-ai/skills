@@ -267,7 +267,11 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
         assert.equal(icon.src.split(',')[0], 'data:image/svg+xml;base64');
         assert.equal(
             Buffer.from(icon.src.split(',')[1], 'base64').toString('utf8'),
-            mark.replace('currentColor', color),
+            mark.replaceAll('currentColor', color),
+        );
+        assert.doesNotMatch(
+            Buffer.from(icon.src.split(',')[1], 'base64').toString('utf8'),
+            /currentColor/,
         );
     }
     assert.equal(

@@ -47,8 +47,9 @@ separate checks when investigating a host's “could not display” message.
 ## Native entry icon
 
 The opening tool advertises a distinct I-9 monogram through standard MCP `icons`
-metadata. Its bounded SVG data URLs share one path-based, transparent mark with
-explicit light/dark variants; no external image request, font or local absolute
+metadata. Its bounded SVG data URLs share one transparent, path-based I-9 mark
+over stacked skill cards, retaining a small hyphen. Explicit light/dark variants
+resolve every fill and outline; no external image request, font or local absolute
 path is needed. A supporting host can use it for the native entry, including
 monochrome presentation. Actual display and caching depend on that host.
 Missing optional branding falls back to its generic icon without disabling the
