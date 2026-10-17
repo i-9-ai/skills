@@ -96,6 +96,7 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
         '.codex-plugin/plugin.json',
         'assets/plugin-icon.png',
         'assets/skill-panel.html',
+        'assets/skill-panel-icon.svg',
         'assets/native-pilot',
         'tsconfig.json',
         'tsconfig.build.json',
@@ -132,7 +133,7 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
         assert.ok(!name.startsWith('/') && !name.split('/').includes('..'), name);
         assert.match(
             name,
-            /^(?:bin\/index\.(?:mjs|md)|dist\/(?:.*\.js|source-receipt\.json)|\.codex-plugin\/plugin\.json$|assets\/(?:plugin-icon\.png$|skill-panel\.html$|native-pilot\/)|\.agents\/skills\/|skills-catalog\.json|docs\/|package\.json|README\.md|LICENSE|NOTICE)/,
+            /^(?:bin\/index\.(?:mjs|md)|dist\/(?:.*\.js|source-receipt\.json)|\.codex-plugin\/plugin\.json$|assets\/(?:plugin-icon\.png$|skill-panel\.html$|skill-panel-icon\.svg$|native-pilot\/)|\.agents\/skills\/|skills-catalog\.json|docs\/|package\.json|README\.md|LICENSE|NOTICE)/,
         );
         assert.doesNotMatch(name, /^(?:src|tests|\.work|tmp|\.codex|\.github|node_modules)\//);
         assert.ok(!name.endsWith('.ts'), name);
@@ -167,6 +168,7 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
     assert.ok(names.includes('assets/native-pilot/codex/schemas/NOTICE'));
     assert.ok(names.includes('NOTICE'));
     assert.ok(names.includes('assets/skill-panel.html'));
+    assert.ok(names.includes('assets/skill-panel-icon.svg'));
     const panel = skillPanelFixture(t);
     const globalPanel = join(panel.root, 'global references');
     mkdirSync(join(globalPanel, 'global-example'), { recursive: true });
@@ -252,13 +254,22 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
         .find((reply) => reply.id === 2)
         .result.tools.find((tool) => tool.name === 'skill_panel_open');
     assert.equal(opening.title, 'I-9 Skills');
-    assert.equal(opening.icons?.length, 1);
-    assert.equal(opening.icons[0].mimeType, 'image/png');
-    assert.equal(opening.icons[0].src.split(',')[0], 'data:image/png;base64');
+    assert.equal(opening.icons?.length, 2);
     assert.deepEqual(
-        Buffer.from(opening.icons[0].src.split(',')[1], 'base64'),
-        readFileSync(join(installed, 'assets/plugin-icon.png')),
+        opening.icons.map((icon) => icon.theme),
+        ['light', 'dark'],
     );
+    const mark = readFileSync(join(installed, 'assets/skill-panel-icon.svg'), 'utf8');
+    assert.doesNotMatch(mark, /<(?:rect|script|text|image|foreignObject)\b|(?:href|onload)=/i);
+    for (const [index, color] of ['#14231A', '#F5F7EF'].entries()) {
+        const icon = opening.icons[index];
+        assert.equal(icon.mimeType, 'image/svg+xml');
+        assert.equal(icon.src.split(',')[0], 'data:image/svg+xml;base64');
+        assert.equal(
+            Buffer.from(icon.src.split(',')[1], 'base64').toString('utf8'),
+            mark.replace('currentColor', color),
+        );
+    }
     assert.equal(
         panelReplies.find((reply) => reply.id === 3).result.contents[0].text,
         readFileSync(join(installed, 'assets/skill-panel.html'), 'utf8'),

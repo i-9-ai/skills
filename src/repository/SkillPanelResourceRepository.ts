@@ -6,20 +6,23 @@ import { SkillPanelConfiguration } from '../config/SkillPanelConfiguration.ts';
 export class SkillPanelResourceRepository {
     icons() {
         try {
-            const bytes = readFileSync(new URL('../../assets/plugin-icon.png', import.meta.url));
-            if (bytes.length < 24 || bytes.length > 65_536) return [];
-            const signature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
-            if (!bytes.subarray(0, 8).equals(signature)) return [];
-            const width = bytes.readUInt32BE(16);
-            const height = bytes.readUInt32BE(20);
-            if (width !== height || width < 48 || width > 4096) return [];
+            const bytes = readFileSync(
+                new URL('../../assets/skill-panel-icon.svg', import.meta.url),
+            );
+            if (bytes.length === 0 || bytes.length > 8192) return [];
+            const source = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+            if (!source.includes('fill="currentColor"')) return [];
             return [
-                {
-                    src: 'data:image/png;base64,' + bytes.toString('base64'),
-                    mimeType: 'image/png',
-                    sizes: [`${width}x${height}`],
-                },
-            ];
+                { theme: 'light', color: '#14231A' },
+                { theme: 'dark', color: '#F5F7EF' },
+            ].map(({ theme, color }) => ({
+                src:
+                    'data:image/svg+xml;base64,' +
+                    Buffer.from(source.replace('currentColor', color)).toString('base64'),
+                mimeType: 'image/svg+xml',
+                sizes: ['any'],
+                theme,
+            }));
         } catch {
             // Optional branding must not make the actual panel unavailable.
             return [];

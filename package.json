@@ -123,6 +123,7 @@
   "files": [
     ".codex-plugin/plugin.json",
     "assets/plugin-icon.png",
+    "assets/skill-panel-icon.svg",
     "assets/skill-panel.html",
     "assets/native-pilot/**",
     "bin/index.mjs",

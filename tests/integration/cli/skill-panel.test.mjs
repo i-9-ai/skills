@@ -60,14 +60,27 @@ test('the shared stdio protocol carries real catalog, retained candidate, approv
     const tools = (await rpc('tools/list')).result.tools;
     assert.equal(tools.length, 6);
     const opening = tools.find((tool) => tool.name === 'skill_panel_open');
-    assert.equal(opening.icons?.length, 1);
-    assert.equal(opening.icons[0].mimeType, 'image/png');
-    assert.equal(opening.icons[0].src.split(',')[0], 'data:image/png;base64');
+    assert.equal(opening.icons?.length, 2);
     assert.deepEqual(
-        Buffer.from(opening.icons[0].src.split(',')[1], 'base64'),
-        fs.readFileSync(new URL('../../../assets/plugin-icon.png', import.meta.url)),
+        opening.icons.map((icon) => icon.theme),
+        ['light', 'dark'],
     );
-    assert.deepEqual(opening.icons[0].sizes, ['512x512']);
+    const mark = fs.readFileSync(
+        new URL('../../../assets/skill-panel-icon.svg', import.meta.url),
+        'utf8',
+    );
+    assert.match(mark, /<title>I-9 Skills<\/title>/);
+    assert.doesNotMatch(mark, /<(?:rect|script|text|image|foreignObject)\b|(?:href|onload)=/i);
+    for (const [index, color] of ['#14231A', '#F5F7EF'].entries()) {
+        const icon = opening.icons[index];
+        assert.equal(icon.mimeType, 'image/svg+xml');
+        assert.equal(icon.src.split(',')[0], 'data:image/svg+xml;base64');
+        assert.deepEqual(icon.sizes, ['any']);
+        assert.equal(
+            Buffer.from(icon.src.split(',')[1], 'base64').toString('utf8'),
+            mark.replace('currentColor', color),
+        );
+    }
     assert.equal(
         tools.some((tool) => tool.name === 'skill_read_record'),
         false,
