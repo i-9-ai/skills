@@ -58,7 +58,7 @@ test('the shared stdio protocol carries real catalog, retained candidate, approv
     assert.deepEqual(init.result.capabilities.resources, {});
     input.write(JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }) + '\n');
     const tools = (await rpc('tools/list')).result.tools;
-    assert.equal(tools.length, 6);
+    assert.equal(tools.length, 9);
     const opening = tools.find((tool) => tool.name === 'skill_panel_open');
     assert.equal(opening.icons?.length, 2);
     assert.deepEqual(
@@ -132,6 +132,10 @@ test('the shared stdio protocol carries real catalog, retained candidate, approv
         .structuredContent;
     assert.equal(inspection.text, f.before);
     assert.equal(fs.existsSync(f.state), false);
+    const requested = (
+        await call('skill_panel_request', { skill: 'example-skill', kind: 'review', focus: null })
+    ).structuredContent;
+    assert.match(requested.instructions, /skill_panel_complete/);
     const proposal = (
         await call('skill_panel_propose', {
             skill: 'example-skill',
@@ -141,6 +145,17 @@ test('the shared stdio protocol carries real catalog, retained candidate, approv
         })
     ).structuredContent;
     assert.equal(proposal.validation.local.status, 'passed');
+    const completed = await call('skill_panel_complete', {
+        request_id: requested.request.request_id,
+        outcome: 'proposal',
+        summary: 'Clarified required inputs.',
+        proposal_id: proposal.proposal_id,
+    });
+    assert.equal(completed.structuredContent.result.outcome, 'proposal');
+    const activity = (await call('skill_panel_activity', { skill: 'example-skill' }))
+        .structuredContent;
+    assert.equal(activity.requests[0].result.proposal_id, proposal.proposal_id);
+    assert.equal(activity.proposals[0].proposal_id, proposal.proposal_id);
     const refused = await call('skill_panel_apply', { ...f.approval(proposal), approved: false });
     assert.equal(refused.isError, true);
     assert.equal(fs.readFileSync(f.entrypoint, 'utf8'), f.before);

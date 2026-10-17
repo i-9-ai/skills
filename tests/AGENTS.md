@@ -22,6 +22,7 @@ Run `npm test` from the repository root. Tests make no network requests and leav
 ## Child DOX index
 
 - [Local skill-change workflow](unit/service/SkillPanelService.test.mjs): actual disposable package inspection, exact proposals, approval, guarded application/recovery, interruption and linked/tampered/stale refusal; no user package or native host is modified.
+- [Panel review workflow](unit/service/SkillPanelWorkflow.test.mjs): bounded retained requests, idempotent outcomes and matching proposal history; synthetic host-message tests remain separate from native agent execution.
 - [Panel MCP protocol](integration/cli/skill-panel.test.mjs): optional resource/tool advertisement and the complete shared stdio workflow with explicit selections; protocol tests do not establish native UI support.
 
 - [Managed collection installation](unit/service/SkillInstallationService.test.mjs): ownership, bounds, local conflicts and resumable transaction recovery in disposable fixtures.

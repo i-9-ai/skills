@@ -8,8 +8,9 @@ Recording evidence requires a separate explicit call with evidence from its emit
 
 An optional [local skill-change panel](https://github.com/i-9-ai/skills/wiki/Skill-Change-Panel)
 in candidate source extends this same server only when `--panel-collection` and
-`--panel-state` are explicitly selected. It supplies live inspection, retained
-candidate diffs and operator-approved apply/recover. It does not generate text,
+`--panel-state` are explicitly selected. It supplies live inspection, user-clicked
+host-agent handoff, recorded review outcomes, selectable retained candidate diffs
+and operator-approved apply/recover. The backend does not generate text,
 run official/behavioral validation or enable telemetry. Published 0.3.4 and the
 public skills-only plugin do not provide that pilot.
 

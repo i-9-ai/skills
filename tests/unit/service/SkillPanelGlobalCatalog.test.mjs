@@ -101,6 +101,53 @@ test('catalog pagination covers collections larger than the former 64-package li
     }
 });
 
+test('global reviews retain outcomes without granting proposal or write authority', (t) => {
+    const f = fixture(t);
+    const directory = f.add('reference-skill');
+    const entry = join(directory, 'SKILL.md');
+    const bytes = fs.readFileSync(entry);
+    const row = f.service.open({}).skills.find((item) => item.source === 'global');
+    assert.deepEqual(f.service.activity({ skill: row.skill }).requests, []);
+    assert.equal(fs.existsSync(f.state), false);
+    const { request, instructions } = f.service.request({
+        skill: row.skill,
+        kind: 'review',
+        focus: null,
+    });
+    assert.equal(request.read_only, true);
+    assert.equal(request.base_sha256, f.service.inspect({ skill: row.skill }).sha256);
+    assert.match(instructions, /do not edit it or create a candidate/);
+    assert.throws(() => f.service.request({ skill: row.skill, kind: 'proposal', focus: null }), {
+        code: 'invalid_input',
+    });
+    const proposal = f.service.propose({
+        skill: 'example-skill',
+        base_sha256: f.inspect().package_sha256,
+        after: f.after,
+        rationale: 'A selected copy proposal.',
+    });
+    assert.throws(
+        () =>
+            f.service.complete({
+                request_id: request.request_id,
+                outcome: 'proposal',
+                summary: 'An unrelated candidate.',
+                proposal_id: proposal.proposal_id,
+            }),
+        { code: 'panel_conflict' },
+    );
+    f.service.complete({
+        request_id: request.request_id,
+        outcome: 'findings',
+        summary: 'The reference would benefit from a complete example.',
+        proposal_id: null,
+    });
+    const activity = f.service.activity({ skill: row.skill });
+    assert.equal(activity.requests[0].result.outcome, 'findings');
+    assert.deepEqual(activity.proposals, []);
+    assert.deepEqual(fs.readFileSync(entry), bytes);
+});
+
 test('global coverage failures do not hide selected skills or enable arbitrary file reads', (t) => {
     const f = fixture(t);
     const path = f.add('unreadable-skill');
@@ -119,7 +166,7 @@ test('global coverage failures do not hide selected skills or enable arbitrary f
 });
 
 for (const location of ['global-root', 'linked-package', 'invalid-linked-package']) {
-    for (const action of ['prepare', 'apply', 'recover']) {
+    for (const action of ['prepare', 'apply', 'recover', 'request', 'complete']) {
         test(`${action} refuses physically global proposal state through ${location} before any write`, (t) => {
             const f = fixture(t);
             let protectedRoot = f.global;
@@ -146,8 +193,18 @@ for (const location of ['global-root', 'linked-package', 'invalid-linked-package
             const panel = new SkillPanelService(configuration);
             const repository = new SkillEvolutionRepository(configuration);
             assert(panel.open({}).warnings.some((warning) => /overlap/.test(warning)));
+            const inputs = {
+                request: { skill: 'example-skill', kind: 'review', focus: null },
+                complete: {
+                    request_id: '11111111-1111-4111-8111-111111111111',
+                    outcome: 'blocked',
+                    summary: 'No write here.',
+                    proposal_id: null,
+                },
+            };
             const input =
-                action === 'prepare'
+                inputs[action] ||
+                (action === 'prepare'
                     ? {
                           skill: 'example-skill',
                           base_sha256: f.inspect().package_sha256,
@@ -160,7 +217,7 @@ for (const location of ['global-root', 'linked-package', 'invalid-linked-package
                           proposal_id: '11111111-1111-4111-8111-111111111111',
                           base_sha256: '0'.repeat(64),
                           candidate_sha256: '1'.repeat(64),
-                      };
+                      });
             assert.throws(() => repository[action](input), { code: 'panel_storage_unavailable' });
             assert.equal(fs.existsSync(state), false);
             assert.equal(fs.readFileSync(f.entrypoint, 'utf8'), f.before);

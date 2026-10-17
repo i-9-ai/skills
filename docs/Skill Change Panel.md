@@ -13,7 +13,8 @@ first exercise, copy one real skill into a private development collection while
 preserving its license and resources. Do not point a first test at installed
 global packages or the canonical source. Keep state outside the collection and
 ensure its parent already exists. The backend creates private state only when a
-candidate is explicitly retained, not when the panel opens.
+review request or candidate is explicitly retained, not when the panel opens or
+absent history is read.
 
 With Node 24+ and explicit `npm ci`, configure the existing local stdio MCP:
 
@@ -27,14 +28,15 @@ Both flags are required together. The dependency-free local plugin entrypoint
 accepts the same selections after `--host codex`, `--host claude` or
 `--host copilot`. This is an explicit configuration choice; existing manifests
 do not silently turn the panel or its write operations on. The explicitly selected
-pilot mode exposes only its six panel tools; unrelated evidence/database writes
+pilot mode exposes only its nine panel tools; unrelated evidence/database writes
 are unavailable. Without these flags, the normal catalog and telemetry MCP keeps
 its existing tools and contracts.
 
 Open `skill_panel_open` in an MCP Apps-capable host. A plain MCP client can read
 its structured result and the fixed `ui://i9-skills/skill-panel/v1.html` resource.
 Opening the panel does not enable hooks, record usage or create a database.
-No remote assets, model call or network service are required by the panel.
+Inspection needs no remote assets, model call or hosted panel service.
+User-clicked reviews use the host agent's existing connectivity and permissions.
 
 The sidebar entry is titled **I-9 Skills**; `skill_panel_open` remains its stable
 technical tool name. Fixed-resource reads accept standard client request metadata
@@ -110,7 +112,8 @@ Selecting a global reference reads only its bounded UTF-8 `SKILL.md` (128 KiB),
 with its entrypoint hash, rather than asserting a complete package fingerprint.
 Returned text preserves exact UTF-8 bytes, including a leading BOM; parsing
 normalizes only a separate metadata view.
-**Prepare a review** drafts an unsent read-only request. **Plan an evolution** is
+**Review with agent** can request a read-only assessment in the current
+conversation. **Describe a change** and manual candidate editing are
 disabled for these references, and the backend rejects global IDs for candidate
 writes. The existing selected-package workflow below retains its explicit approval
 and recovery rules. A global reference does not need this repository's icon or
@@ -123,22 +126,33 @@ The compact library stays beside one skill workspace on desktop and stacks above
 it at narrow widths. **Overview** explains the source boundary and exposes the
 inspected identity. **SKILL.md** shows the last inspected read-only entrypoint;
 it does not claim to observe later disk changes automatically.
-**Compare candidate** becomes available after starting an evolution or opening a
-retained proposal. Arrow keys, Home and End move through available workspace
+**Compare candidate** becomes available after opening a retained proposal or the
+advanced manual editor. A normal review does not require filling in a complete
+file. Arrow keys, Home and End move through available workspace
 tabs. Source filters and search operate on the loaded real catalog, without
 inventing categories, quality scores or related-skill recommendations.
 
 1. Select a skill. The panel reads actual `SKILL.md` content, file count, byte
    count and an exact package fingerprint including ordinary file modes.
-2. **Prepare a review** produces an editable task bound to that source. It does
-   not send a message or run an agent. A review can conclude no edit is needed.
-3. **Plan an evolution** opens an editor in the same workspace. Supply complete candidate
-   text and a rationale, or ask the authoring agent to use `skill_panel_propose`
-   with the exact inspected package `base_sha256`. The backend does not generate
-   text or call a model. Only `SKILL.md` can change; preserve the package name.
-4. **Preview and validate** retains the original and candidate packages in the
-   private state directory and returns their before/after content, unified diff
-   and local package-helper validation. It does not edit the selected source.
+2. Click **Review with agent**, or **Describe a change** to supply an optional
+   natural-language focus. The panel saves a request at the live source identity
+   and asks the host to send it to this conversation through `ui/message`, only
+   when the host advertises text messaging. A message acknowledgement does not
+   prove that an agent is running. Unsupported hosts show an explicit unsent
+   manual fallback; no hidden server-side model call is made.
+3. The agent reads the actual source. If a focused improvement is justified, it
+   authors complete candidate text and calls `skill_panel_propose` with the frozen
+   package `base_sha256`. This retains both packages, the exact diff and local
+   structural checks, without editing the selected skill. Only `SKILL.md` can
+   change; preserve the package name.
+4. The agent calls `skill_panel_complete` to record **no changes**, **findings**,
+   a matching **proposal**, or a **blocker**. **Reviews and proposals** shows that
+   result. Click **Compare proposal** to open its verified retained diff; no
+   proposal ID or pasted candidate is required. Check for results manually or
+   leave the panel visible for bounded polling (up to 30 checks, four seconds
+   apart). Closing the chat does not imply completion. **Continue review** is an
+   explicit user action that reuses the saved request; messages are never retried
+   automatically. An uncertain delivery remains unconfirmed until inspected.
 5. Inspect the side-by-side retained versions, numbered lines, changed ranges
    and actual checks. The comparison initially scrolls toward the change;
    scroll either pane to inspect the full text. The detail disclosure retains
@@ -154,9 +168,28 @@ inventing categories, quality scores or related-skill recommendations.
    hashes again before replacing the entrypoint. Editing the candidate or
    changing selection, leaving the comparison or refreshing its proposal clears
    UI consent. **Keep proposal** returns to the overview without applying; the
-   comparison remains accessible and the server retains its ID and artifacts.
+   comparison remains selectable under **Reviews and proposals** after reopening
+   the panel, and the server retains its ID and artifacts.
    No approval is inferred from a task
-   draft, model output or earlier proposal.
+   request, model output or earlier proposal.
+
+Reading a skill alone creates neither a review result nor a diff. A no-change
+result is displayed explicitly and has no fabricated comparison. Recorded agent
+reports are assertions, not quality certification; a request at a different source
+revision is labeled accordingly. Pending requests remain pending when an agent
+stops without recording an outcome. A host refusal or message timeout never
+authorizes a resend, application or broader access.
+
+The normal flow is host-assisted, not autonomous. The server does not generate
+text or call a provider. The panel uses the advertised standard text-message
+capability and, when available, the OpenAI active-conversation message extension.
+See the [official extension contract](https://github.com/openai/mcp-extensions/blob/main/docs/spec.md).
+Actual message delivery, model execution and return-tool use must be exercised
+in the selected native host separately from browser fixtures.
+
+**Advanced: supply candidate text yourself** remains available for a prepared
+complete file and rationale. Its **Preview and validate** runs the same retained
+proposal workflow; it is not the expected first step for an agent review.
 
 The agent may prepare a candidate; applying and restoring are advertised as
 app-only tools and belong to an explicit operator action. `ui.visibility` is
@@ -166,7 +199,8 @@ workspace. Do not expose its stdio input as an unauthenticated remote service.
 
 ## Recovery and interruption
 
-The result contains a proposal UUID. Retain the entire private state directory:
+The result contains a proposal UUID. Review requests/results live alongside those
+proposals in the same private selected state. Retain the entire directory:
 
 ```text
 proposals/<proposal-id>/
@@ -177,9 +211,13 @@ proposals/<proposal-id>/
   applied.json          completed application, when observed
   recovering.json       recovery intent, when requested
   recovered.json        completed recovery, when observed
+proposals/request/<request-id>/
+  request.json          source-bound user intent, kind and optional focus
+  result.json           immutable agent report, when recorded
 ```
 
-Use **Open retained proposal** with that UUID after reopening the panel. After
+After reopening, select the skill and choose **Compare proposal** from its saved
+work. **Advanced: open by ID** is only a fallback for a known UUID. After
 application, **Review recovery** shows the reverse diff. Restoring needs a new
 explicit acknowledgement and **Restore approved version**. Recovery restores
 only `SKILL.md` and refuses intervening package edits, preserving the original
@@ -211,7 +249,12 @@ The editable pilot supports direct packages only, 512 package
 entries, 8 MiB per package and 32 KiB UTF-8 entrypoint/candidate text. It rejects
 package links, hardlinks, special entries and unsafe or overlapping state.
 At most 16 retained proposal directories are accepted per state directory;
-retention and removal remain manual. Scripts are inspected inertly and never
+at most 32 immutable review requests are retained, with no automatic pruning.
+History reads bounded integrity-checked summaries; opening a proposal rechecks
+its full original/candidate bytes and live state before any decision. Completion
+must match the request skill and base, and global requests cannot link a proposal.
+An exact completion retry is idempotent; conflicting results are rejected.
+Retention and removal remain manual. Scripts are inspected inertly and never
 executed for candidate validation. Full source copies can contain local/private
 material: keep the state directory local and outside publication or discovery.
 

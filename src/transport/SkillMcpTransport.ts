@@ -208,6 +208,11 @@ export class SkillMcpTransport {
                               skill_panel_propose: (value: unknown) => store.panel!.propose(value),
                               skill_panel_proposal: (value: unknown) =>
                                   store.panel!.proposal(value),
+                              skill_panel_request: (value: unknown) => store.panel!.request(value),
+                              skill_panel_complete: (value: unknown) =>
+                                  store.panel!.complete(value),
+                              skill_panel_activity: (value: unknown) =>
+                                  store.panel!.activity(value),
                               skill_panel_apply: (value: unknown) => store.panel!.apply(value),
                               skill_panel_recover: (value: unknown) => store.panel!.recover(value),
                           }

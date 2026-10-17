@@ -35,6 +35,9 @@ flowchart LR
     Quality --> Evidence
     MCP -->|catalog tools| Catalog
     MCP -->|explicit panel collection and state| Panel[Optional local change panel]
+    Panel -->|user-clicked host message| Review[Host agent review]
+    Review -->|recorded outcome| Activity[Saved reviews and proposals]
+    Activity -->|selected proposal| Proposal
     Panel -->|supplied candidate| Proposal[Retained preimage, exact diff and local checks]
     Proposal -->|explicit exact approval| Apply[Guarded SKILL.md apply or recovery]
     Catalog --> Read
@@ -58,7 +61,10 @@ the [interactive entry-path map](https://i-9-ai.github.io/skills/skill-managemen
 
 The candidate-source [local change panel](https://github.com/i-9-ai/skills/wiki/Skill-Change-Panel)
 uses this same MCP with explicit collection and proposal-state selections.
-It inspects actual files and retains supplied candidate text with its diff and
+It inspects actual files and can hand a user-clicked request to an advertised
+host agent, retaining no-change/findings/blocked outcomes or matching proposals.
+Saved work is selectable after reopening; message acceptance alone does not
+establish execution. Supplied candidate text is retained with its diff and
 local structural validation. Apply/recovery require operator approval of exact
 source and candidate identities. The backend does not generate text, execute
 candidate scripts or certify official/behavioral validation. Public skills-only

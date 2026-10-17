@@ -30,6 +30,9 @@ const element = () => ({
         this.children = [];
         this.text = '';
     },
+    querySelectorAll() {
+        return this.children.flatMap((child) => [child, ...child.querySelectorAll()]);
+    },
     append(...children) {
         this.children.push(...children);
     },
@@ -61,6 +64,7 @@ const standaloneWindow = { addEventListener() {} };
 standaloneWindow.parent = standaloneWindow;
 const Panel = vm.runInNewContext(script.replace('new SkillChangePanel();', 'SkillChangePanel;'), {
     document: {
+        addEventListener() {},
         createElement: element,
         getElementById(id) {
             if (!constructorElements.has(id)) constructorElements.set(id, element());
@@ -68,6 +72,8 @@ const Panel = vm.runInNewContext(script.replace('new SkillChangePanel();', 'Skil
         },
     },
     window: standaloneWindow,
+    setTimeout,
+    clearTimeout,
 });
 
 function view() {
@@ -104,6 +110,9 @@ function view() {
     panel.editing = false;
     panel.workspace = 'overview';
     panel.renderCatalog = () => {};
+    panel.loadActivity = async () => {};
+    panel.hostCapabilities = {};
+    panel.activityVersion = 0;
     return panel;
 }
 
@@ -227,6 +236,7 @@ test('a delayed close from the old comparison cannot hide a newly opened proposa
     panel.selected = fixture.selected;
     panel.proposal = fixture.proposal;
     panel.renderCatalog = () => {};
+    panel.loadActivity = async () => {};
     panel.setWorkspace('compare');
     const incoming = {
         ...fixture.proposal,
@@ -348,7 +358,7 @@ test('the panel loads every catalog page and searches human names within a sourc
     assert.match(panel.el('result-note').textContent, /^0 skills shown/);
 });
 
-test('global inspection prepares a read-only review and cannot start a mutation workflow', async () => {
+test('global inspection keeps manual candidate and mutation workflows disabled', async () => {
     const panel = view();
     let calls = 0;
     panel.call = async () => {
@@ -375,9 +385,6 @@ test('global inspection prepares a read-only review and cannot start a mutation 
     panel.actions();
     assert.equal(panel.el('preview').disabled, true);
     assert.match(panel.el('selected-state').textContent, /read.only/i);
-    panel.draft();
-    assert.match(panel.el('task-draft').value, /read.only/i);
-    assert.doesNotMatch(panel.el('task-draft').value, /use skill_panel_propose/);
     panel.startEditor();
     await panel.preview();
     assert.equal(panel.el('workflow-dialog').open, false);
@@ -536,4 +543,160 @@ test('inspection of changed source keeps both write directions disabled', async 
     panel.mode = 'recover';
     panel.actions();
     assert.equal(panel.el('apply').disabled, true);
+});
+
+function workflowView() {
+    const panel = view();
+    panel.scheduleActivity = () => {};
+    panel.hostCapabilities = { message: { text: {} }, experimental: { 'openai/message': {} } };
+    panel.selected.name = panel.selected.skill;
+    return panel;
+}
+
+test('one user action retains a request and sends it through the advertised host without applying', async () => {
+    const panel = workflowView();
+    const calls = [];
+    panel.call = async (name, args) => {
+        calls.push([name, args]);
+        assert.equal(name, 'skill_panel_request');
+        return {
+            request: { skill: panel.selected.skill },
+            instructions: 'A source-bound review instruction.',
+        };
+    };
+    panel.request = async (method, params) => {
+        calls.push([method, params]);
+        return {};
+    };
+    await panel.askAgent('review');
+    assert.equal(calls.length, 2);
+    assert.equal(calls[1][0], 'ui/message');
+    assert.equal(calls[1][1].role, 'user');
+    assert.equal(calls[1][1].content[0].text, 'A source-bound review instruction.');
+    assert.equal(calls[1][1]._meta['openai/message'].send, true);
+    assert.equal(calls[1][1]._meta['openai/message'].target, 'active');
+    assert.match(panel.el('request-status').textContent, /Awaiting a recorded/);
+    assert.equal(panel.el('approval').checked, false);
+});
+
+test('unsupported hosts show the manual fallback and never silently send or apply', async () => {
+    const panel = workflowView();
+    panel.hostCapabilities = {};
+    panel.call = async () => ({
+        request: { skill: panel.selected.skill },
+        instructions: 'Retained request instructions.',
+    });
+    panel.request = async () => assert.fail('No advertised messaging capability');
+    await panel.askAgent('review');
+    assert.equal(panel.el('draft-dialog').open, true);
+    assert.equal(panel.el('task-draft').value, 'Retained request instructions.');
+    assert.match(panel.el('request-status').textContent, /not sent/);
+});
+
+test('a standard messaging host receives no unsupported OpenAI extension', async () => {
+    const panel = workflowView();
+    panel.hostCapabilities = { message: { text: {} } };
+    panel.call = async () => ({
+        request: { skill: panel.selected.skill },
+        instructions: 'Standard request.',
+    });
+    panel.request = async (method, params) => {
+        assert.equal(method, 'ui/message');
+        assert.equal(Object.hasOwn(params, '_meta'), false);
+        return {};
+    };
+    await panel.askAgent('review');
+});
+
+test('uncertain message delivery never retries and an explicit continuation reuses the retained ID', async () => {
+    const panel = workflowView();
+    const inputs = [];
+    panel.call = async (_name, input) => {
+        inputs.push(input);
+        return {
+            request: { skill: panel.selected.skill },
+            instructions: 'The same retained request.',
+        };
+    };
+    let sends = 0;
+    panel.request = async () => {
+        sends++;
+        throw new Error('Fixture timeout.');
+    };
+    await panel.askAgent('review');
+    assert.equal(sends, 1);
+    assert.match(panel.el('request-status').textContent, /delivery is unconfirmed/);
+    await panel.askAgent('review', 'the-retained-id');
+    assert.equal(sends, 2, 'Only the second explicit action may send again');
+    assert.equal(inputs[1].request_id, 'the-retained-id');
+    assert.equal(Object.keys(inputs[1]).length, 1);
+});
+
+test('activity gives no-change results and clickable comparisons without interpreting report text as HTML', () => {
+    const panel = workflowView();
+    const activity = {
+        requests: [
+            {
+                request_id: 'review-id',
+                base_sha256: 'base',
+                created_at: '2026-10-17T00:00:00.000Z',
+                result: {
+                    outcome: 'no_changes',
+                    summary: '<script>A report, not markup.</script>',
+                    proposal_id: null,
+                },
+            },
+        ],
+        proposals: [{ proposal_id: 'retained-id', rationale: 'A supplied improvement.' }],
+    };
+    panel.renderActivity(activity);
+    assert.match(panel.el('request-status').textContent, /No changes proposed/);
+    assert.match(panel.el('activity-list').textContent, /<script>A report, not markup.<\/script>/);
+    const buttons = panel
+        .el('activity-list')
+        .querySelectorAll('button')
+        .filter((node) => node.textContent === 'Compare proposal');
+    assert.equal(buttons.length, 1);
+    assert.equal(
+        panel.proposal.proposal_id,
+        'retained-identity',
+        'A summary never replaces the verified proposal',
+    );
+    assert.equal(panel.el('approval').checked, false);
+});
+
+test('activity responses for a previous skill cannot replace the current selection or summary', async () => {
+    const panel = workflowView();
+    let resolve;
+    panel.call = () =>
+        new Promise((done) => {
+            resolve = done;
+        });
+    const loading = Panel.prototype.loadActivity.call(panel);
+    panel.selected = { ...panel.selected, skill: 'another-skill' };
+    resolve({ requests: [], proposals: [] });
+    await loading;
+    assert.equal(panel.activity, undefined);
+    assert.equal(panel.selected.skill, 'another-skill');
+});
+
+test('global skills can ask for a review but never request candidates', async () => {
+    const panel = workflowView();
+    panel.selected = { skill: 'global:' + 'a'.repeat(64), read_only: true };
+    panel.call = async (_name, input) => {
+        assert.equal(input.kind, 'review');
+        return { request: { skill: panel.selected.skill }, instructions: 'Read-only review.' };
+    };
+    let sends = 0;
+    panel.request = async () => {
+        sends++;
+        return {};
+    };
+    await panel.askAgent('proposal');
+    assert.equal(sends, 0);
+    await panel.askAgent('review');
+    assert.equal(sends, 1);
+    panel.actions();
+    assert.equal(panel.el('evolve').disabled, true);
+    assert.equal(panel.el('manual-candidate').disabled, true);
 });

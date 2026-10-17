@@ -15,7 +15,7 @@ preparing distribution, and evolving focused agent skills.
 - [Skill quality](https://github.com/i-9-ai/skills/wiki/Skill-Quality): explicitly record exact-revision caller assertions or verified retained benchmark metadata through CLI/MCP, then inspect bounded receipts without inferring execution or general effectiveness.
 - [Collection maintenance](https://github.com/i-9-ai/skills/wiki/Collection-Maintenance): audit, reviewable plans and explicit catalog synchronization with verified recovery.
 - [Skill change reports](https://github.com/i-9-ai/skills/wiki/Skill-Change-Reports): pinned observations, evidence-based bump reports and a runnable installed onboarding guide.
-- [Local skill-change panel](https://github.com/i-9-ai/skills/wiki/Skill-Change-Panel): candidate-source MCP Apps pilot with real package inspection, supplied candidate diffs and explicit guarded apply/recover; separate from official validation and public plugin availability.
+- [Local skill-change panel](https://github.com/i-9-ai/skills/wiki/Skill-Change-Panel): candidate-source MCP Apps pilot with real package inspection, host-assisted review requests, saved outcomes, selectable diffs and explicit guarded apply/recover; separate from official validation and public plugin availability.
 - [Release management](https://github.com/i-9-ai/skills/wiki/Release-Management): version preparation and Changesets.
 - [Lifecycle policy](https://github.com/i-9-ai/skills/wiki/Lifecycle-Policy): portable maturity evidence and promotion decisions.
 - [Entry-path map](https://i-9-ai.github.io/skills/skill-management-entry-paths.html): native skills, the explicit CLI/MCP, and repository-root plugin hooks.

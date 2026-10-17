@@ -589,6 +589,27 @@
                 overflow: hidden;
                 background: var(--surface);
             }
+            .activity-list {
+                display: grid;
+                gap: 12px;
+                margin: 16px 0 24px;
+            }
+            .saved-work {
+                padding: 16px;
+            }
+            .saved-work p {
+                margin: 8px 0;
+                font-size: 13px;
+                overflow-wrap: anywhere;
+            }
+            .saved-work small {
+                display: block;
+                color: var(--muted);
+                font-size: 11px;
+            }
+            .saved-work button {
+                margin-top: 12px;
+            }
             .file-heading {
                 display: flex;
                 align-items: center;
@@ -686,9 +707,6 @@
                 padding: 18px 0 14px;
                 border-top: 1px solid var(--line);
                 background: var(--background);
-                position: sticky;
-                bottom: -26px;
-                z-index: 1;
             }
             .approval-choice {
                 display: flex;
@@ -956,7 +974,7 @@
                 </p>
                 <div class="utility-actions">
                     <button id="refresh" type="button" disabled>Refresh catalog</button>
-                    <button id="resume" type="button" disabled>Open retained proposal</button>
+                    <button id="resume" type="button" disabled>Advanced: open by ID</button>
                     <button id="unresolved-write" type="button" hidden>
                         Inspect unresolved write
                     </button>
@@ -997,12 +1015,12 @@
                         <div class="selection-actions">
                             <div class="action-row">
                                 <button id="review" type="button" class="primary" disabled>
-                                    Prepare a review
+                                    Review with agent
                                 </button>
                                 <button
                                     class="help-button"
                                     id="review-help"
-                                    aria-label="Explain Prepare a review"
+                                    aria-label="Explain Review with agent"
                                     type="button"
                                 >
                                     ?
@@ -1010,18 +1028,18 @@
                             </div>
                             <div class="action-row">
                                 <button id="evolve" type="button" disabled>
-                                    Plan an evolution
+                                    Describe a change
                                 </button>
                                 <button
                                     class="help-button"
                                     id="evolve-help"
-                                    aria-label="Explain Plan an evolution"
+                                    aria-label="Explain Describe a change"
                                     type="button"
                                 >
                                     ?
                                 </button>
                             </div>
-                            <p class="action-caption">Draft a request. No files are changed.</p>
+                            <p class="action-caption">Ask → compare → approve. You decide.</p>
                         </div>
                     </div>
                     <p id="selected-description">
@@ -1031,6 +1049,10 @@
                     <div id="selected-state" class="snapshot-status">
                         No package has been inspected.
                     </div>
+                    <p id="request-status" class="snapshot-status" role="status" aria-live="polite">
+                        Select a skill, then ask the agent for a review. Reading alone creates no
+                        diff.
+                    </p>
                     <nav class="workspace-tabs" role="tablist" aria-label="Skill workspace">
                         <button
                             id="tab-overview"
@@ -1072,22 +1094,23 @@
                     >
                         <p class="overview-lead">Understand first.<br />Change with intent.</p>
                         <p class="overview-copy">
-                            Inspect what is actually on disk, prepare a focused review, then compare
-                            a supplied candidate before approving any change.
+                            Ask the agent to review the actual skill. Its result returns here;
+                            compare any suggested change and approve only what you want to apply.
                         </p>
                         <div class="workflow-steps">
                             <div>
-                                <h3>01 / Read the source</h3>
+                                <h3>01 / Ask for a review</h3>
                                 <p>
-                                    SKILL.md shows the current entrypoint. Its identity belongs to
-                                    the inspected bytes, not an inferred quality score.
+                                    Select a skill and click Review with agent. Describe a change
+                                    adds your focus. The host sends your request to this
+                                    conversation.
                                 </p>
                             </div>
                             <div>
-                                <h3>02 / Prepare the change</h3>
+                                <h3>02 / Read the result</h3>
                                 <p>
-                                    A review is an unsent request. An evolution starts with text you
-                                    supply and retains an exact comparison.
+                                    Reviews and proposals below retain the outcome. No change is a
+                                    valid result. Click Compare proposal to see a retained diff.
                                 </p>
                             </div>
                             <div>
@@ -1098,6 +1121,32 @@
                                 </p>
                             </div>
                         </div>
+                        <section aria-labelledby="activity-title">
+                            <div class="file-heading">
+                                <h3 id="activity-title">Reviews and proposals</h3>
+                                <button id="activity-refresh" type="button" disabled>
+                                    Check for results
+                                </button>
+                            </div>
+                            <p id="activity-note" class="footnote">
+                                Select a skill to see its saved work.
+                            </p>
+                            <div
+                                id="activity-list"
+                                class="activity-list"
+                                aria-label="Saved skill work"
+                            ></div>
+                        </section>
+                        <details class="identity-details">
+                            <summary>Advanced: supply candidate text yourself</summary>
+                            <p class="footnote">
+                                Use this when you already have complete SKILL.md text. The agent
+                                flow above does not require copying text or proposal IDs.
+                            </p>
+                            <button id="manual-candidate" type="button" disabled>
+                                Edit a candidate manually
+                            </button>
+                        </details>
                         <details class="identity-details">
                             <summary>Inspected identity and evidence limits</summary>
                             <dl class="facts">
@@ -1115,9 +1164,10 @@
                             </dl>
                         </details>
                         <p class="footnote">
-                            The backend does not generate a candidate or call a model. Supply
-                            reviewed text here or prepare it with your authoring agent. Opening this
-                            panel does not enable telemetry.
+                            The host agent prepares suggestions after your click; the backend only
+                            retains requests, results and supplied candidates. An unanswered request
+                            stays pending. Opening the panel never starts a review or enables
+                            telemetry.
                         </p>
                     </section>
                     <section
@@ -1279,16 +1329,32 @@
         </dialog>
         <dialog id="draft-dialog" aria-labelledby="draft-title">
             <button id="draft-close" type="button">Close task draft</button>
-            <h2 id="draft-title">Review task · not executed</h2>
+            <h2 id="draft-title">Manual host fallback · not sent</h2>
             <p>
-                Copy this request to your authoring agent. No message or model call is sent
-                automatically.
+                This host has not advertised text messaging. Copy this request to the agent in this
+                conversation. Its recorded result will still appear in Reviews and proposals.
             </p>
             <textarea
                 id="task-draft"
                 class="candidate-text"
                 aria-label="Review task draft"
             ></textarea>
+        </dialog>
+        <dialog id="request-dialog" aria-labelledby="request-title">
+            <button id="request-close" type="button">Cancel change request</button>
+            <h2 id="request-title">What should improve?</h2>
+            <p>
+                Describe the result you want. The agent reads the skill and returns findings or a
+                proposal here. Nothing is applied automatically.
+            </p>
+            <label for="request-focus">Optional focus</label>
+            <textarea
+                id="request-focus"
+                class="rationale-text"
+                maxlength="2000"
+                placeholder="For example: clarify the inputs and add a complete invocation example."
+            ></textarea>
+            <button id="request-send" type="button" class="primary">Send change request</button>
         </dialog>
         <dialog id="resume-dialog" aria-labelledby="resume-title">
             <button id="resume-close" type="button">Close retained proposal lookup</button>
@@ -1317,6 +1383,11 @@
                 incoming = null;
                 workspace = 'overview';
                 editing = false;
+                hostCapabilities = {};
+                activityVersion = 0;
+                activity = null;
+                pollTimer = null;
+                pollRemaining = 0;
 
                 constructor() {
                     this.el = (id) => document.getElementById(id);
@@ -1351,6 +1422,7 @@
                         ['help-close', 'help-dialog'],
                         ['draft-close', 'draft-dialog'],
                         ['resume-close', 'resume-dialog'],
+                        ['request-close', 'request-dialog'],
                         ['workflow-close', 'workflow-dialog'],
                     ]) {
                         this.el(button).addEventListener('click', () => this.el(dialog).close());
@@ -1369,8 +1441,24 @@
                     this.el('keep-proposal').addEventListener('click', () =>
                         this.setWorkspace('overview'),
                     );
-                    this.el('review').addEventListener('click', () => this.draft());
-                    this.el('evolve').addEventListener('click', () => this.startEditor());
+                    this.el('review').addEventListener('click', () =>
+                        this.run(() => this.askAgent('review')),
+                    );
+                    this.el('evolve').addEventListener('click', () => {
+                        this.el('request-focus').value = '';
+                        this.openDialog('request-dialog');
+                    });
+                    this.el('request-send').addEventListener('click', () =>
+                        this.run(() => this.askAgent('proposal')),
+                    );
+                    this.el('manual-candidate').addEventListener('click', () => this.startEditor());
+                    this.el('activity-refresh').addEventListener('click', () =>
+                        this.run(() => this.loadActivity(true)),
+                    );
+                    document.addEventListener('visibilitychange', () => {
+                        if (document.hidden) this.stopPolling();
+                    });
+                    window.addEventListener('pagehide', () => this.stopPolling());
                     for (const id of ['candidate', 'rationale'])
                         this.el(id).addEventListener('input', () => this.invalidate());
                     this.el('preview').addEventListener('click', () =>
@@ -1436,13 +1524,23 @@
                         else request.resolve(message.result);
                         return;
                     }
-                    if (
-                        message.method === 'ui/notifications/tool-result' &&
-                        message.params?.structuredContent?.proposal_id
-                    ) {
-                        this.incoming = message.params.structuredContent;
-                        if (this.connected && !this.busy)
-                            this.run(() => this.acceptIncoming(this.incoming));
+                    if (message.method === 'ui/notifications/tool-result') {
+                        const result = message.params?.structuredContent;
+                        if (
+                            result?.proposal_id &&
+                            (!this.selected || result.skill === this.selected.skill)
+                        ) {
+                            this.incoming = result;
+                            if (this.connected && !this.busy)
+                                this.run(() => this.acceptIncoming(result));
+                            return;
+                        }
+                        if (
+                            result?.request?.skill === this.selected?.skill &&
+                            this.connected &&
+                            !this.busy
+                        )
+                            this.run(() => this.loadActivity(true));
                     }
                 }
 
@@ -1453,7 +1551,7 @@
                             this.pending.delete(id);
                             reject(
                                 new Error(
-                                    'No host response within 8 seconds. If a write was requested, its result is unknown: refresh the retained proposal before retrying.',
+                                    'No host response within 8 seconds. The result is unknown: check saved reviews and proposals, and inspect any unresolved write before retrying.',
                                 ),
                             );
                         }, 8000);
@@ -1482,11 +1580,12 @@
                         return;
                     }
                     try {
-                        await this.request('ui/initialize', {
+                        const host = await this.request('ui/initialize', {
                             appInfo: { name: 'i9-skills-local-panel', version: '1.0.0' },
                             appCapabilities: {},
                             protocolVersion: '2026-01-26',
                         });
+                        this.hostCapabilities = host?.hostCapabilities || {};
                         window.parent.postMessage(
                             { jsonrpc: '2.0', method: 'ui/notifications/initialized', params: {} },
                             '*',
@@ -1618,8 +1717,14 @@
 
                 async inspect(skill) {
                     if (this.unresolved) return this.showUnresolved();
+                    this.stopPolling();
+                    this.activityVersion++;
                     const result = await this.call('skill_panel_inspect', { skill });
                     this.selected = result;
+                    this.activity = null;
+                    this.el('activity-list').replaceChildren();
+                    this.el('activity-note').textContent = 'Loading saved work for this skill…';
+                    this.el('request-status').textContent = 'Loading saved reviews and proposals…';
                     this.proposal = null;
                     this.editing = false;
                     this.uncertain = false;
@@ -1629,6 +1734,7 @@
                     this.setWorkspace('overview');
                     this.renderCatalog();
                     this.actions();
+                    await this.loadActivity(true);
                 }
 
                 renderSelection(result) {
@@ -1677,7 +1783,7 @@
                     if (view === 'compare') {
                         if (!workflow.open) workflow.show();
                         this.scrollComparison();
-                        this.el('workspace-pane').scrollTop = 0;
+                        this.scrollToComparison();
                         return;
                     }
                     this.el('approval').checked = false;
@@ -1706,35 +1812,192 @@
                 help(type) {
                     this.el('help-title').textContent =
                         type === 'review'
-                            ? 'What does Prepare a review do?'
-                            : 'What does Plan an evolution do?';
+                            ? 'What does Review with agent do?'
+                            : 'What does Describe a change do?';
                     this.el('help-copy').textContent =
                         type === 'review'
-                            ? 'Prepare an editable inspection request bound to the actual package hash, or the entrypoint hash for a read-only global reference. No task is sent or executed automatically. A review can conclude that no edit is needed.'
-                            : 'Start from the real entrypoint and supply a complete candidate with its rationale. Preview retains the original and candidate, computes their diff and runs local structural checks. Applying requires reviewing that exact proposal and explicitly approving it. Official conformance and behavioral checks are separate.';
+                            ? 'Your click saves a request at the live source identity and asks the host agent to review it in this conversation. The agent records its result here: no changes, findings, a retained proposal, or a blocker. A sent message is not proof the agent is running. Check for results or explicitly continue a pending review; the panel never resends by itself. Global skills remain read only.'
+                            : 'Describe your intended improvement in plain language. The host agent reads the skill and, if justified, supplies a complete candidate. Its retained diff appears in Reviews and proposals. Compare it, review the checks and explicitly approve to apply. You do not need to copy text or IDs. Official conformance and behavioral checks are separate.';
                     this.openDialog('help-dialog');
                 }
 
-                draft() {
-                    if (this.selected?.read_only) {
-                        this.el('task-draft').value =
-                            'Review the read-only global skill ' +
-                            this.selected.name +
-                            ' (' +
-                            this.selected.skill +
-                            ') at SKILL.md SHA256 ' +
-                            this.selected.sha256 +
-                            '. Inspect its responsibility, self-sufficiency, examples and validation gaps. Report findings with evidence; this panel grants no global editing authority. No candidate or message has been sent automatically.';
+                async askAgent(kind, requestId = null) {
+                    if (this.unresolved) return this.showUnresolved();
+                    if (!this.selected || (kind === 'proposal' && this.selected.read_only)) return;
+                    const skill = this.selected.skill;
+                    this.el('request-dialog').close();
+                    const result = await this.call(
+                        'skill_panel_request',
+                        requestId
+                            ? { request_id: requestId }
+                            : {
+                                  skill,
+                                  kind,
+                                  focus:
+                                      kind === 'proposal'
+                                          ? this.el('request-focus').value.trim() || null
+                                          : null,
+                              },
+                    );
+                    if (this.selected?.skill !== skill || result.request.skill !== skill) return;
+                    this.el('task-draft').value = result.instructions;
+                    await this.loadActivity(false);
+                    this.setWorkspace('overview');
+                    if (!this.hostCapabilities?.message?.text) {
+                        this.el('request-status').textContent =
+                            'Request saved, not sent. This host has not advertised text messaging. Use the manual fallback, then Check for results.';
                         this.openDialog('draft-dialog');
                         return;
                     }
-                    this.el('task-draft').value =
-                        'Review ' +
-                        this.selected.skill +
-                        ' at package SHA256 ' +
-                        this.selected.package_sha256 +
-                        '. Inspect the actual source and its responsibility, self-sufficiency, examples and validation gaps. Report findings with evidence. If an evolution is justified, author complete candidate SKILL.md text, preserve the name and use skill_panel_propose with this exact base_sha256. Show the retained diff and performed checks. Wait for the operator to approve in the panel; never call apply or recover on their behalf.';
-                    this.openDialog('draft-dialog');
+                    this.el('request-status').textContent =
+                        'Request saved. Asking the host to send it to this conversation…';
+                    try {
+                        const params = {
+                            role: 'user',
+                            content: [{ type: 'text', text: result.instructions }],
+                        };
+                        if (this.hostCapabilities.experimental?.['openai/message'])
+                            params._meta = { 'openai/message': { target: 'active', send: true } };
+                        const response = await this.request('ui/message', params);
+                        if (response?.isError)
+                            throw new Error('The host did not accept this message.');
+                        this.el('request-status').textContent =
+                            'Request sent to this conversation. Awaiting a recorded agent result below; the message alone does not confirm execution.';
+                    } catch (error) {
+                        this.el('request-status').textContent =
+                            'Message delivery is unconfirmed. Check this conversation and saved results before explicitly choosing Continue review. Nothing will be resent automatically. ' +
+                            error.message;
+                    }
+                    this.pollRemaining = 30;
+                    this.scheduleActivity();
+                }
+
+                stopPolling() {
+                    if (this.pollTimer) clearTimeout(this.pollTimer);
+                    this.pollTimer = null;
+                }
+
+                scheduleActivity() {
+                    this.stopPolling();
+                    if (document.hidden || !this.selected || this.pollRemaining <= 0) return;
+                    this.pollTimer = setTimeout(async () => {
+                        this.pollTimer = null;
+                        this.pollRemaining--;
+                        if (!this.busy && !document.hidden) {
+                            try {
+                                await this.loadActivity(false);
+                            } catch {
+                                this.el('activity-note').textContent =
+                                    'Results could not be refreshed. Existing work is retained; use Check for results.';
+                            }
+                        }
+                        if (this.activity?.requests.some((item) => !item.result))
+                            this.scheduleActivity();
+                    }, 4000);
+                }
+
+                async loadActivity(watch = false) {
+                    if (!this.selected) return;
+                    const skill = this.selected.skill;
+                    const version = ++this.activityVersion;
+                    const result = await this.call('skill_panel_activity', { skill });
+                    if (this.selected?.skill !== skill || this.activityVersion !== version) return;
+                    if (JSON.stringify(this.activity) !== JSON.stringify(result)) {
+                        this.activity = result;
+                        this.renderActivity(result);
+                    }
+                    if (watch && result.requests.some((item) => !item.result)) {
+                        this.pollRemaining = 30;
+                        this.scheduleActivity();
+                    }
+                }
+
+                renderActivity(activity) {
+                    this.el('activity-list').replaceChildren();
+                    const labels = {
+                        no_changes: 'No changes proposed',
+                        findings: 'Review findings',
+                        proposal: 'Proposal ready to compare',
+                        blocked: 'Review blocked',
+                    };
+                    const currentHash = this.selected.package_sha256 || this.selected.sha256;
+                    const latest = activity.requests[0];
+                    this.el('activity-note').textContent =
+                        activity.requests.length +
+                        ' reviews · ' +
+                        activity.proposals.length +
+                        ' proposals retained. Results are agent reports; open a proposal to verify its current bytes.';
+                    this.el('request-status').textContent = latest
+                        ? (latest.result
+                              ? labels[latest.result.outcome] + ': ' + latest.result.summary
+                              : 'Awaiting a recorded result. If the agent stopped, choose Continue review below.') +
+                          (latest.base_sha256 !== currentHash
+                              ? ' This request belongs to a different source revision.'
+                              : '')
+                        : 'No saved review yet. Review with agent starts the flow; inspection alone creates no diff.';
+                    for (const request of activity.requests) {
+                        const card = document.createElement('article');
+                        card.className = 'workflow-card saved-work';
+                        const title = document.createElement('h4');
+                        title.textContent = request.result
+                            ? labels[request.result.outcome]
+                            : 'Awaiting recorded result';
+                        const summary = document.createElement('p');
+                        summary.textContent =
+                            request.result?.summary ||
+                            'A request is saved; this does not establish that an agent is running.';
+                        const time = document.createElement('small');
+                        time.textContent =
+                            new Date(request.created_at).toLocaleString() +
+                            (request.base_sha256 !== currentHash
+                                ? ' · different source revision'
+                                : ' · inspected source revision');
+                        card.append(title, summary, time);
+                        if (!request.result) {
+                            const button = document.createElement('button');
+                            button.type = 'button';
+                            button.textContent = 'Continue review';
+                            button.disabled = this.busy || Boolean(this.unresolved);
+                            button.addEventListener('click', () =>
+                                this.run(() => this.askAgent(request.kind, request.request_id)),
+                            );
+                            card.append(button);
+                        }
+                        if (request.result?.proposal_id)
+                            this.proposalButton(card, request.result.proposal_id);
+                        this.el('activity-list').append(card);
+                    }
+                    for (const proposal of activity.proposals) {
+                        if (
+                            activity.requests.some(
+                                (request) => request.result?.proposal_id === proposal.proposal_id,
+                            )
+                        )
+                            continue;
+                        const card = document.createElement('article');
+                        card.className = 'workflow-card saved-work';
+                        const title = document.createElement('h4');
+                        title.textContent = 'Retained proposal';
+                        const rationale = document.createElement('p');
+                        rationale.textContent = proposal.rationale;
+                        const note = document.createElement('small');
+                        note.textContent =
+                            'Open to verify source, validation and application state.';
+                        card.append(title, rationale, note);
+                        this.proposalButton(card, proposal.proposal_id);
+                        this.el('activity-list').append(card);
+                    }
+                }
+
+                proposalButton(card, id) {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.textContent = 'Compare proposal';
+                    button.disabled = this.busy || Boolean(this.unresolved);
+                    button.addEventListener('click', () =>
+                        this.run(() => this.acceptIncoming({ proposal_id: id })),
+                    );
+                    card.append(button);
                 }
 
                 startEditor() {
@@ -1795,7 +2058,7 @@
                     this.editing = false;
                     const recovery = this.mode === 'recover';
                     this.el('candidate-editor').hidden = true;
-                    this.el('workflow-header').hidden = true;
+                    this.el('workflow-header').hidden = false;
                     this.el('proposal-view').hidden = false;
                     this.el('proposal-id').textContent =
                         'Proposal ' +
@@ -1877,7 +2140,7 @@
                     this.actions();
                     if (this.workspace === 'compare') {
                         this.scrollComparison();
-                        this.el('workspace-pane').scrollTop = 0;
+                        this.scrollToComparison();
                     }
                 }
 
@@ -1893,6 +2156,14 @@
                     );
                     const offset = Math.min(maximum, Math.max(0, changed.offsetTop - 64));
                     for (const code of codes) code.scrollTop = offset;
+                }
+
+                scrollToComparison() {
+                    const pane = this.el('workspace-pane');
+                    pane.scrollTop = Math.max(
+                        0,
+                        this.el('workflow-dialog').offsetTop - pane.offsetTop - 16,
+                    );
                 }
 
                 versionLabel(version, current, next) {
@@ -2022,6 +2293,14 @@
                     this.el('unresolved-write').disabled = this.busy;
                     this.el('tab-source').disabled = !this.selected;
                     this.el('tab-compare').disabled = !proposal && !this.editing;
+                    this.el('review').disabled = this.busy || blocked || !this.selected;
+                    this.el('evolve').disabled =
+                        this.busy || blocked || !this.selected || this.selected.read_only;
+                    this.el('manual-candidate').disabled = this.el('evolve').disabled;
+                    this.el('request-send').disabled = this.el('evolve').disabled;
+                    this.el('activity-refresh').disabled = this.busy || !this.selected;
+                    for (const button of this.el('activity-list').querySelectorAll('button'))
+                        button.disabled = this.busy || blocked;
                 }
 
                 showUnresolved(detail = '') {

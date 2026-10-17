@@ -12,6 +12,8 @@ import {
     PANEL_TEXT_BYTES,
     SkillPanelValidator,
     type PanelApproval,
+    type PanelRequest,
+    type PanelCompletion,
 } from '../validator/SkillPanelValidator.ts';
 import { SkillPackageRevisionRepository } from './SkillPackageRevisionRepository.ts';
 import { SkillPanelCatalogRepository } from './SkillPanelCatalogRepository.ts';
@@ -34,6 +36,15 @@ export type PanelProposal = {
     rationale: string;
     created_at: string;
     validation: Validation;
+};
+type ReviewRequest = PanelRequest & {
+    schema_version: 1;
+    request_id: string;
+    collection_sha256: string;
+    name: string;
+    read_only: boolean;
+    base_sha256: string;
+    created_at: string;
 };
 
 /** Retains exact package preimages and guarded single-file changes in a stable owned workspace. */
@@ -116,6 +127,182 @@ export class SkillEvolutionRepository {
         return this.withState(false, (state, collection) =>
             this.readProposal(state, collection, id),
         );
+    }
+
+    /** Read a saved request for an explicit continuation; never replay or mutate it. */
+    reviewRequest(id: string) {
+        this.validator.id(id);
+        return this.withState(false, (state, collection) =>
+            this.readRequest(state, collection, id),
+        );
+    }
+
+    /** Explicit user intent is retained before the host message; this never runs a model. */
+    request(input: PanelRequest) {
+        return this.withState(true, (state, collection) => {
+            const global = input.skill.startsWith('global:');
+            const observed = global
+                ? new SkillPanelCatalogRepository(this.configuration).inspect(input.skill)
+                : this.inspect(input.skill);
+            const directory = state.inspect('request', { allowMissingLeaf: true });
+            if (directory.info === null) {
+                state.verifySnapshot(directory, { includeLeaf: false });
+                fs.mkdirSync(directory.absolute, { mode: 0o700 });
+            }
+            const requests = this.requestIds(state);
+            if (requests.length >= 32) throw new SkillOperationError('panel_storage_unavailable');
+            const request: ReviewRequest = {
+                ...input,
+                schema_version: 1,
+                request_id: randomUUID(),
+                collection_sha256: hash(collection.path),
+                name: global ? String((observed as { name: string }).name) : input.skill,
+                read_only: global,
+                base_sha256: observed.package_sha256 || observed.sha256,
+                created_at: new Date().toISOString(),
+            };
+            fs.mkdirSync(join(state.path, 'request', request.request_id), { mode: 0o700 });
+            this.writeRecord(state, `request/${request.request_id}/request.json`, request);
+            return request;
+        });
+    }
+
+    /** Completion is a bounded agent assertion, not proof of quality or permission to apply. */
+    complete(input: PanelCompletion) {
+        return this.withState(true, (state, collection) => {
+            const request = this.readRequest(state, collection, input.request_id);
+            if (input.proposal_id) {
+                if (request.read_only) this.conflict();
+                const proposal = this.readProposal(state, collection, input.proposal_id);
+                if (
+                    proposal.skill !== request.skill ||
+                    proposal.base_sha256 !== request.base_sha256
+                )
+                    this.conflict();
+            }
+            const filename = `request/${input.request_id}/result.json`;
+            if (state.inspect(filename, { allowMissingLeaf: true }).info !== null) {
+                const existing = this.readCompletion(state, request);
+                const { completed_at: _time, ...identity } = existing!;
+                if (JSON.stringify(identity) !== JSON.stringify(input)) this.conflict();
+                return { request, result: existing };
+            }
+            const result = { ...input, completed_at: new Date().toISOString() };
+            this.writeRecord(state, filename, result);
+            return { request, result };
+        });
+    }
+
+    /** Recorded summaries are selectable; opening a proposal still verifies all retained bytes. */
+    activity(skill: string) {
+        const empty = () => ({ skill, requests: [] as unknown[], proposals: [] as unknown[] });
+        return this.withState(
+            false,
+            (state, collection) => {
+                const requests = this.requestIds(state)
+                    .map((id) => this.readRequest(state, collection, id))
+                    .filter((request) => request.skill === skill)
+                    .map((request) => ({ ...request, result: this.readCompletion(state, request) }))
+                    .sort((a, b) => b.created_at.localeCompare(a.created_at));
+                const ids = fs
+                    .readdirSync(state.path)
+                    .filter((name) => /^[a-f0-9-]{36}$/.test(name));
+                if (ids.length > 16) throw new SkillOperationError('panel_storage_unavailable');
+                const proposals = ids
+                    .map((id) => this.readProposalReceipt(state, collection, this.validator.id(id)))
+                    .filter((proposal) => proposal.skill === skill)
+                    .map(
+                        ({
+                            proposal_id,
+                            base_sha256,
+                            candidate_sha256,
+                            rationale,
+                            created_at,
+                        }) => ({
+                            proposal_id,
+                            base_sha256,
+                            candidate_sha256,
+                            rationale,
+                            created_at,
+                            verification: 'inspect_before_deciding',
+                        }),
+                    )
+                    .sort((a, b) => b.created_at.localeCompare(a.created_at));
+                return { skill, requests, proposals };
+            },
+            empty,
+        );
+    }
+
+    private requestIds(state: SafeRoot): string[] {
+        const directory = state.inspect('request', { allowMissingLeaf: true });
+        if (directory.info === null) return [];
+        if (!directory.info.isDirectory()) this.conflict();
+        const ids = fs.readdirSync(directory.absolute);
+        if (ids.length > 32) throw new SkillOperationError('panel_storage_unavailable');
+        for (const id of ids) {
+            this.validator.id(id);
+            if (!state.inspect(`request/${id}`).info?.isDirectory()) this.conflict();
+        }
+        state.verifySnapshot(directory);
+        return ids;
+    }
+
+    private readRequest(state: SafeRoot, collection: SafeRoot, id: string): ReviewRequest {
+        this.validator.id(id);
+        const value = this.readRecord(state, `request/${id}/request.json`);
+        const data = this.validator.object(value, [
+            'skill',
+            'kind',
+            'focus',
+            'schema_version',
+            'request_id',
+            'collection_sha256',
+            'name',
+            'read_only',
+            'base_sha256',
+            'created_at',
+        ]);
+        this.validator.workflowRequest({ skill: data.skill, kind: data.kind, focus: data.focus });
+        this.validator.name(data.name);
+        this.validator.hash(data.base_sha256);
+        this.date(data.created_at);
+        if (
+            data.schema_version !== 1 ||
+            data.request_id !== id ||
+            data.collection_sha256 !== hash(collection.path) ||
+            data.read_only !== String(data.skill).startsWith('global:') ||
+            (!data.read_only && data.name !== data.skill)
+        )
+            this.conflict();
+        return data as ReviewRequest;
+    }
+
+    private readCompletion(state: SafeRoot, request: ReviewRequest) {
+        const filename = `request/${request.request_id}/result.json`;
+        if (state.inspect(filename, { allowMissingLeaf: true }).info === null) return null;
+        const data = this.validator.object(this.readRecord(state, filename), [
+            'request_id',
+            'outcome',
+            'summary',
+            'proposal_id',
+            'completed_at',
+        ]);
+        const { completed_at, ...input } = data;
+        const result = this.validator.completion(input);
+        this.date(completed_at);
+        if (result.request_id !== request.request_id || (request.read_only && result.proposal_id))
+            this.conflict();
+        return { ...result, completed_at: completed_at as string };
+    }
+
+    private date(value: unknown) {
+        if (
+            typeof value !== 'string' ||
+            !/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/.test(value) ||
+            !Number.isFinite(Date.parse(value))
+        )
+            this.conflict();
     }
 
     apply(approval: PanelApproval) {
@@ -304,7 +491,7 @@ export class SkillEvolutionRepository {
         }
     }
 
-    private readProposal(state: SafeRoot, collection: SafeRoot, id: string) {
+    private readProposalReceipt(state: SafeRoot, collection: SafeRoot, id: string) {
         const receipt = this.readRecord(state, `${id}/proposal.json`) as PanelProposal;
         this.validator.object(receipt, [
             'schema_version',
@@ -321,6 +508,7 @@ export class SkillEvolutionRepository {
         ]);
         this.validator.name(receipt.skill);
         this.validator.text(receipt.rationale, 2000);
+        this.date(receipt.created_at);
         for (const key of [
             'base_sha256',
             'candidate_sha256',
@@ -334,6 +522,11 @@ export class SkillEvolutionRepository {
             receipt.collection_sha256 !== hash(collection.path)
         )
             this.conflict();
+        return receipt;
+    }
+
+    private readProposal(state: SafeRoot, collection: SafeRoot, id: string) {
+        const receipt = this.readProposalReceipt(state, collection, id);
         const original = this.observePackage(join(state.path, id, 'before', receipt.skill));
         const candidate = this.observePackage(join(state.path, id, 'candidate', receipt.skill));
         if (
@@ -422,6 +615,7 @@ export class SkillEvolutionRepository {
     private withState<T>(
         write: boolean,
         operation: (state: SafeRoot, collection: SafeRoot) => T,
+        missing?: () => T,
     ): T {
         const collection = new SafeRoot(this.configuration.collection);
         const parent = new SafeRoot(dirname(this.configuration.state));
@@ -438,6 +632,7 @@ export class SkillEvolutionRepository {
                 target.absolute,
             );
             if (target.info === null) {
+                if (!write && missing) return missing();
                 if (!write) throw new SkillOperationError('panel_storage_unavailable');
                 parent.verifySnapshot(target, { includeLeaf: false });
                 fs.mkdirSync(target.absolute, { mode: 0o700 });

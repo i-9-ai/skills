@@ -9,6 +9,17 @@ export type PanelApproval = {
     candidate_sha256: string;
     approved: true;
 };
+export type PanelRequest = {
+    skill: string;
+    kind: 'review' | 'proposal';
+    focus: string | null;
+};
+export type PanelCompletion = {
+    request_id: string;
+    outcome: 'no_changes' | 'findings' | 'proposal' | 'blocked';
+    summary: string;
+    proposal_id: string | null;
+};
 
 /** Closed, bounded inputs for one entrypoint change in an explicitly selected collection. */
 export class SkillPanelValidator {
@@ -89,6 +100,31 @@ export class SkillPanelValidator {
             base_sha256: this.hash(data.base_sha256),
             after: this.text(data.after),
             rationale: this.text(data.rationale, 2000),
+        };
+    }
+
+    workflowRequest(value: unknown): PanelRequest {
+        const data = this.object(value, ['skill', 'kind', 'focus']);
+        const skill = this.inspection({ skill: data.skill });
+        if (!['review', 'proposal'].includes(data.kind as string)) this.invalid();
+        if (skill.startsWith('global:') && data.kind !== 'review') this.invalid();
+        return {
+            skill,
+            kind: data.kind as PanelRequest['kind'],
+            focus: data.focus === null ? null : this.text(data.focus, 2000),
+        };
+    }
+
+    completion(value: unknown): PanelCompletion {
+        const data = this.object(value, ['request_id', 'outcome', 'summary', 'proposal_id']);
+        if (!['no_changes', 'findings', 'proposal', 'blocked'].includes(data.outcome as string))
+            this.invalid();
+        if ((data.outcome === 'proposal') !== (data.proposal_id !== null)) this.invalid();
+        return {
+            request_id: this.id(data.request_id),
+            outcome: data.outcome as PanelCompletion['outcome'],
+            summary: this.text(data.summary, 2000),
+            proposal_id: data.proposal_id === null ? null : this.id(data.proposal_id),
         };
     }
 

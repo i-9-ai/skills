@@ -85,6 +85,48 @@ export class SkillPanelToolConfiguration {
             annotations: { readOnlyHint: true, openWorldHint: false },
         },
         {
+            name: 'skill_panel_request',
+            description:
+                'Retain an explicit panel review/change request at the live source identity. The app sends its instructions through the host only after the user clicks; this operation never starts a model or changes skill files.',
+            inputSchema: {
+                oneOf: [
+                    object({
+                        skill: { type: 'string', maxLength: 71 },
+                        kind: { enum: ['review', 'proposal'] },
+                        focus: { anyOf: [{ type: 'string', maxLength: 2000 }, { type: 'null' }] },
+                    }),
+                    object({ request_id: proposalId }),
+                ],
+            },
+            annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
+            _meta: { ui: { visibility: ['app'] } },
+        },
+        {
+            name: 'skill_panel_complete',
+            description:
+                'Record the result of a panel-requested review: no_changes, findings, proposal or blocked. A proposal must match the request skill and frozen base; other outcomes use proposal_id null. This is an agent assertion, not approval or quality certification. Exact retries are idempotent.',
+            inputSchema: object({
+                request_id: proposalId,
+                outcome: { enum: ['no_changes', 'findings', 'proposal', 'blocked'] },
+                summary: { type: 'string', maxLength: 2000 },
+                proposal_id: { anyOf: [proposalId, { type: 'null' }] },
+            }),
+            annotations: {
+                readOnlyHint: false,
+                destructiveHint: false,
+                idempotentHint: true,
+                openWorldHint: false,
+            },
+            _meta: { ui: { resourceUri: SkillPanelConfiguration.resourceUri } },
+        },
+        {
+            name: 'skill_panel_activity',
+            description:
+                'List recorded review outcomes and selectable proposal summaries for one skill. No state is created. Summaries are not readiness checks: open a proposal to verify its current source, retained bytes and exact diff.',
+            inputSchema: object({ skill: { type: 'string', maxLength: 71 } }),
+            annotations: { readOnlyHint: true, openWorldHint: false },
+        },
+        {
             name: 'skill_panel_apply',
             description:
                 'Apply only after explicit UI approval of the exact reviewed proposal; reject stale source, failed checks or modified retained bytes. The trusted host owns human consent.',

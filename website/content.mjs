@@ -167,7 +167,7 @@ export const messages = {
                 },
             ],
             link: 'Read compatibility and evidence',
-            panel: 'Candidate-source local panel pilot: a compact library and source filters sit beside an overview, the actual SKILL.md and a numbered candidate comparison. Browse selected copies and optional read-only global references. The entry supplies a transparent I-9 skill-card monogram for light, dark and monochrome hosts. Review supplied changes and structural checks, keep a proposal or explicitly approve apply or recovery for selected copies. Not enabled in the current npm release or public plugin.',
+            panel: 'Candidate-source local panel pilot: browse selected copies and optional read-only global references, then ask the host agent for a review or describe an improvement. Saved outcomes and proposals return to the skill workspace; open a numbered diff without copying IDs, then explicitly approve apply or recovery for selected copies. Unsupported messaging hosts keep a manual fallback. The I-9 skill-card entry supports light, dark and monochrome hosts. Agent execution and official/behavioral validation remain separate. Not enabled in the current npm release or public plugin.',
             panelLink: 'Understand the local panel pilot',
             providers:
                 'Codex and Claude plugin pilots exercise selected native paths. Copilot CLI evidence covers ephemeral legacy-plugin MCP discovery and direct calls, without a model turn or persistent installation. Icons and hooks remain host-dependent.',
@@ -299,7 +299,7 @@ export const messages = {
                 },
             ],
             link: 'Ler compatibilidade e evidências',
-            panel: 'Piloto local no código candidato: uma biblioteca compacta e filtros por origem ficam ao lado da visão geral, do SKILL.md real e da comparação numerada de uma proposta. Consulte cópias selecionadas e referências globais opcionais em modo de leitura. A entrada fornece um monograma I-9 sobre cartões de skills, transparente, para hosts claros, escuros e monocromáticos. Revise as mudanças fornecidas e verificações estruturais, guarde a proposta ou aprove explicitamente a aplicação ou recuperação nas cópias selecionadas. Não está ativado na versão npm atual nem no plugin público.',
+            panel: 'Piloto local no código candidato: consulte cópias selecionadas e referências globais opcionais em modo de leitura, depois peça uma revisão ao agente do host ou descreva uma melhoria. Resultados e propostas salvos voltam ao espaço da skill; abra um diff numerado sem copiar IDs e aprove explicitamente a aplicação ou recuperação nas cópias selecionadas. Hosts sem envio de mensagens mantêm uma alternativa manual. A entrada I-9 com cartões funciona em hosts claros, escuros e monocromáticos. Execução do agente e validação oficial ou comportamental são verificações separadas. Não está ativado na versão npm atual nem no plugin público.',
             panelLink: 'Entenda o piloto local do painel',
             providers:
                 'Os pilotos de plugin do Codex e Claude exercitam caminhos nativos específicos. A evidência do Copilot CLI cobre descoberta MCP e chamadas diretas de plugin legado efêmero, sem turno de modelo nem instalação persistente. Ícones e hooks dependem do host.',
@@ -433,7 +433,7 @@ export const messages = {
                 },
             ],
             link: 'Leer compatibilidad y evidencia',
-            panel: 'Piloto local en el código candidato: una biblioteca compacta y filtros de origen acompañan al resumen, al SKILL.md real y a la comparación numerada de una propuesta. Consulte copias seleccionadas y referencias globales opcionales de solo lectura. La entrada proporciona un monograma I-9 sobre tarjetas de skills, transparente, para hosts claros, oscuros y monocromáticos. Revise cambios suministrados y comprobaciones estructurales, conserve la propuesta o apruebe explícitamente su aplicación o recuperación en copias seleccionadas. No está activado en la versión npm actual ni en el plugin público.',
+            panel: 'Piloto local en el código candidato: consulte copias seleccionadas y referencias globales opcionales de solo lectura y solicite una revisión al agente del host o describa una mejora. Los resultados y propuestas guardados vuelven al espacio de la skill; abra un diff numerado sin copiar IDs y apruebe explícitamente la aplicación o recuperación en copias seleccionadas. Los hosts sin mensajería conservan una alternativa manual. La entrada I-9 con tarjetas admite hosts claros, oscuros y monocromáticos. La ejecución del agente y la validación oficial o de comportamiento son verificaciones separadas. No está activado en la versión npm actual ni en el plugin público.',
             panelLink: 'Conozca el piloto local del panel',
             providers:
                 'Los pilotos de plugins de Codex y Claude prueban rutas nativas específicas. La evidencia de Copilot CLI cubre descubrimiento MCP y llamadas directas de un plugin legado efímero, sin turno de modelo ni instalación persistente. Los iconos y hooks dependen del host.',
