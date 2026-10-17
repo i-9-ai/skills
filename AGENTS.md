@@ -20,6 +20,7 @@ Repository maintainers own the collection. The current user request defines scop
 ## Local contracts
 
 - Write all tracked content, skill instructions, examples, commit messages, and pull requests in English.
+- Keep executable JavaScript out of `package.json` script strings. npm scripts invoke documented tools, CLI commands or small repository scripts; use no inline `node -e` programs.
 - Document capabilities for the accompanying source revision. Do not label versions or implemented interfaces as candidates, or tie usage guidance to the npm version published at writing time. Keep stable prerequisites and distribution boundaries explicit; dated historical release evidence may retain exact versions.
 - Keep skill cores agent agnostic: describe capabilities, files, and observable outputs without requiring a provider, proprietary tool name, home directory, plugin, or subagent API.
 - Keep packages self-contained after installation in another project or globally. Resolve resources from the installed package and outputs from the caller's workspace; do not depend on this checkout's catalog, commands, root instructions, or CI. Keep collection maintenance guidance outside distributed packages. Optional integrations must declare a portable fallback. Locate companion skills through actual available packages and verify their identity; a name collision or shared parent directory is not a trusted dependency. A skill must make its ordinary workflow understandable without requiring external documentation: include the relevant decisions, procedure, defaults, likely failures, and examples. Code-facing skills require a bundled, complete generic implementation reference with file layout, code, inputs or options, configuration or state location, invocation, and verification; CLI skills must show representative command calls. External documentation is only for confirmation, uncommon cases, or version-sensitive detail.
@@ -64,3 +65,5 @@ Run `npm run check` and `git diff --check` with Node.js 24+ after explicit `npm 
 - [tests/AGENTS.md](tests/AGENTS.md): synthetic regression and workflow tests.
 - [README.md](README.md): catalog, usage, and contributor entrypoint.
 - [SECURITY.md](SECURITY.md): trust boundaries and safe disclosure.
+- [Version preparation script](.github/scripts/version-packages.md): repository-only Changesets invocation and package/lock/plugin version synchronization; no consumer command or publication.
+- [Build script](.github/scripts/build.md): type-check, clean generated output, compile and append source provenance; no publication or consumer installation.

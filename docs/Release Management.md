@@ -24,7 +24,9 @@ runs on pushes to `main`. Official Changesets actions select versioning,
 publication or no work. They are pinned to `v2.1.2`; the CLI is pinned to `3.0.2`.
 
 1. Pending Changesets create or update a draft version PR.
-2. `npm run version:packages` runs `changeset version`, refreshes the npm lockfile
+2. `npm run version:packages` invokes the small repository script
+   [version-packages.mjs](https://github.com/i-9-ai/skills/blob/main/.github/scripts/version-packages.mjs),
+   which runs `changeset version`, refreshes the npm lockfile
    without lifecycle scripts, and synchronizes the Codex, Claude and Copilot
    plugin manifests with the package version.
 3. Review the generated PR and mark it ready to run the protected checks.
@@ -79,3 +81,26 @@ Versioning runs only in automation or a disposable rehearsal checkout. The
 consumer CLI no longer provides `repo prepare-version` or `repo verify-release`;
 the npm aliases `release:prepare` and `release:verify` are removed. Local checks
 and rehearsals do not publish, merge, install or prove a hosted release.
+
+## Validation boundaries
+
+The offline Changesets automation regression runs the same repository version
+script in a disposable package. It checks package/lock and all three root plugin
+versions, consumed notes, retained changelog history and the Codex manifest inside
+the npm tarball. Packed-distribution tests separately exercise the real source
+build and compiled installed CLI. `package.json` only invokes these procedures;
+their JavaScript lives in the documented build and version scripts.
+
+A local `act` rehearsal on 2026-10-17 executed the unmodified official
+`select-mode`, `version`, `pack` and `publish` bundles at revision
+`ae32849d5ba541f9ae29e40e22a623bc13562f51` with CLI `3.0.2` and Node `24.19.0`.
+It verified the version action's commit payload for all three plugin manifests,
+artifact-ID handoff and matching transferred bytes, package/Codex tarball versions,
+publication outputs, tag target, release notes, availability integrity and the
+already-published no-op.
+
+GitHub, artifact storage and npm were local synthetic services. The artifact
+service replaced `act`'s older backend, which rejected the SDK's `mime_type`
+field. A local version commit represented the subsequent reviewed merge before
+publication. This exercises action behavior and package contents, not hosted job
+scheduling, real GitHub writes, npm OIDC authentication or public propagation.

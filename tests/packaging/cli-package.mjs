@@ -97,6 +97,7 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
         'assets/native-pilot',
         'tsconfig.json',
         'tsconfig.build.json',
+        '.github/scripts/build.mjs',
         'src',
         'bin',
         '.agents/skills',

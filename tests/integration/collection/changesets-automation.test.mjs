@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import test from 'node:test';
@@ -13,13 +13,15 @@ const plugins = ['.codex-plugin/plugin.json', '.claude-plugin/plugin.json', '.gi
 
 test('official Changesets versioning synchronizes lock and all plugin versions in a disposable package', t => {
     const root = mkdtempSync(join(tmpdir(), 'i9-changesets-automation-'));
-    t.after(() => rmSync(root, { recursive: true, force: true }));
+    t.after(() => rmSync(root, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 }));
     function write(file, value) {
         mkdirSync(dirname(join(root, file)), { recursive: true });
         writeFileSync(join(root, file), typeof value === 'string' ? value : JSON.stringify(value, null, 2) + '\n');
     }
     const identity = { name: '@example/fixture', version: '1.0.0', private: true };
-    write('package.json', { ...identity, scripts: { 'version:packages': pkg.scripts['version:packages'] } });
+    write('package.json', { ...identity, files: pkg.files, scripts: { 'version:packages': pkg.scripts['version:packages'] } });
+    write('.github/scripts/version-packages.mjs', readFileSync(join(repository, '.github/scripts/version-packages.mjs'), 'utf8'));
+    cpSync(join(repository, 'node_modules'), join(root, 'node_modules'), { recursive: true });
     write('package-lock.json', { ...identity, lockfileVersion: 3, packages: { '': identity } });
     write('.changeset/config.json', {
         changelog: '@changesets/cli/changelog', commit: false, format: false,
@@ -37,6 +39,7 @@ test('official Changesets versioning synchronizes lock and all plugin versions i
         npm_config_offline: 'true', npm_config_cache: join(root, 'cache'),
         npm_config_userconfig: join(root, 'npmrc'), npm_config_globalconfig: join(root, 'global-npmrc'),
         npm_config_audit: 'false', npm_config_fund: 'false',
+        npm_config_update_notifier: 'false',
         GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: '/dev/null',
     };
     for (const args of [['init', '-q', '--initial-branch=main'], ['add', '.'],
@@ -67,6 +70,19 @@ test('official Changesets versioning synchronizes lock and all plugin versions i
     const validation = parse(readFileSync(join(repository, '.github/workflows/changesets.yml'), 'utf8'));
     const noteCheck = validation.jobs.changesets.steps.find(step => step.name === 'Validate Changesets');
     assert.equal(noteCheck.if, "github.head_ref != 'changeset-release/main'");
+    const pack = spawnSync('npm', ['pack', '--json', '--ignore-scripts'], {
+        cwd: root, env, encoding: 'utf8', timeout: 30000,
+    });
+    assert.equal(pack.status, 0, pack.stderr);
+    const packed = JSON.parse(pack.stdout);
+    const tarball = (Array.isArray(packed) ? packed[0] : packed[identity.name]).filename;
+    for (const file of ['package.json', '.codex-plugin/plugin.json']) {
+        const unpack = spawnSync('tar', ['-xOf', tarball, `package/${file}`], {
+            cwd: root, env, encoding: 'utf8', timeout: 5000,
+        });
+        assert.equal(unpack.status, 0, unpack.stderr);
+        assert.equal(JSON.parse(unpack.stdout).version, '1.1.0');
+    }
 });
 
 test('version and publish paths use official actions and the existing npm publisher identity', () => {

@@ -22,6 +22,8 @@ Verify every requirement has an implementation and a check or an explicit limit.
 
 ## Child DOX index
 
+- [Changesets action rehearsal](2026-10-17-23-35-19-changesets-action-rehearsal.md): disposable action-by-action release evidence and plugin/artifact alignment; registry and GitHub publication remain unexercised unless explicitly represented by synthetic adapters.
+
 - [Simplified Changesets automation](2026-10-17-23-50-00-simplify-changesets.md): official action-driven versioning and publication with package/plugin synchronization; retires manual release commands and replay without changing external publisher settings.
 
 - [Managed skill installation](2026-10-07-20-40-51-managed-skill-installation.md): preview-first collection lifecycle, owned package receipts and recoverable transactions, with explicit host routing and no real-profile installation during development.

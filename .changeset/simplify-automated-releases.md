@@ -17,3 +17,7 @@ Document managed installation, behavioral benchmark and skill-quality interfaces
 for the accompanying revision without candidate-only labels or frozen npm-version
 availability claims. Keep Node.js requirements, source/installed invocation and
 the external benchmark-suite requirement explicit.
+
+Keep executable JavaScript out of npm script strings: `version:packages` and
+`build` invoke small documented repository scripts, preserving plugin/lock
+alignment and clean compiled distribution/source-receipt preparation.
