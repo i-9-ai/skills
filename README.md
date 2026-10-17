@@ -73,10 +73,9 @@ The Skills CLI asks for a supported agent target when it cannot determine one. A
 
 ## Run the toolkit CLI
 
-The candidate [managed installation commands](docs/Managed%20Installation.md)
+The [managed installation commands](docs/Managed%20Installation.md)
 coordinate owned collection upgrades/removal and native plugin routing through
-this toolkit. They preview by default and require `--write`; use a candidate
-checkout until a release containing the interface is available.
+this toolkit. They preview by default and require `--write` for changes.
 
 Installing the skill packages and running this repository's toolkit are separate
 operations. Published builds require Node.js 24+ and npm, and run directly
@@ -107,14 +106,13 @@ through [Changesets](docs/Release%20Management.md).
 See the [command mapping](docs/Distribution%20Readiness.md#consumer-command-mapping)
 for project discovery, collection maintenance and MCP examples.
 
-## Behavioral benchmark candidate
+## Behavioral benchmark
 
 The [behavioral benchmark guide](docs/Behavioral%20Benchmark.md) documents
 `benchmark prepare`, `benchmark import-run`, and `benchmark compare`: frozen
 synthetic cases, exact package/artifact digests, immutable receipts, and declared
-baseline/treatment evidence. Use the reviewed candidate checkout or a prepared
-candidate CLI; published npm `0.3.4` does not include these routes. The commands
-do not execute a model or certify skill readiness.
+baseline/treatment evidence. The commands require Node.js 24+ and do not execute
+a model or certify skill readiness.
 
 The source-only [demonstration corpus and retained public pilot](benchmarks/behavioral/suite.json)
 live outside `docs/`, so experiment inputs, generated workproducts and run logs
@@ -340,10 +338,10 @@ git diff --check
 The [validation contract](docs/Validation.md) explains the layered checks. Every package must also pass the official `skills-ref validate` tool identified by the [Agent Skills specification](https://agentskills.io/specification#validation). GitHub Actions installs the pinned external Python validator in an isolated environment and validates every canonical package at the exact PR revision.
 
 Pending user-visible changes use [Changesets](docs/Release%20Management.md) for
-version intent and future release notes. A manual workflow can prepare a draft
-version PR with an aligned package, lockfile and plugin manifests. Normal PR
-checks still apply; preparation does not publish packages, create tags or create
-releases. The release guide also covers local preparation and no-note retries.
+version intent and release notes. The automated workflow prepares a draft
+version PR with aligned package, lockfile and plugin manifests. Its protected
+merge runs package checks and npm/GitHub publication. The release guide describes
+the automated path and required publisher settings.
 
 Catalog maintenance is automated:
 

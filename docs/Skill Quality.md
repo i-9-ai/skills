@@ -5,10 +5,8 @@ skill revision. `skills quality inspect` reads the recorded receipts from the
 existing evidence database. The equivalent MCP tools are `skill_quality_record`
 and `skill_quality_inspect`. They share the same validation and storage behavior.
 
-Use Node.js 24+ and a reviewed checkout or prepared installed CLI containing these
-commands. Replace `i9-skills` with `node bin/index.mjs` in a prepared source checkout.
-Published npm version `0.3.4` does not include these commands or the observation
-flags below; use the reviewed candidate until a separately authorized release.
+Use Node.js 24+ with the installed CLI or a prepared source checkout.
+Replace `i9-skills` with `node bin/index.mjs` in the source checkout.
 Neither quality command executes a skill, benchmark case, evaluator or official validator,
 installs an integration, changes a package or publishes a result.
 

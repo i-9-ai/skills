@@ -156,11 +156,10 @@ inert inputs, benchmark request generation, filters/cursors, privacy, coverage a
 migration recovery. A successful record can contain a negative result; stored
 hashes verify bytes, not executor authenticity, grading or causal effectiveness.
 
-## Behavioral benchmark candidate
+## Behavioral benchmark
 
-These routes require the reviewed candidate checkout or an explicitly prepared
-installed candidate. Published npm `@i-9.ai/skills@0.3.4` does not include them.
-From the candidate checkout:
+Use `i9-skills benchmark` with an installed CLI, or the following equivalent
+commands from a prepared source checkout with Node.js 24+:
 
 ```sh
 node bin/index.mjs benchmark prepare --suite benchmarks/behavioral/suite.json --output ../skill-lifecycle-synthetic-v1 --skills-root .agents/skills
@@ -178,7 +177,7 @@ latency. All commands print JSON and invalid input exits nonzero. They execute n
 model/case scripts, installation, hooks or telemetry database operations.
 
 The demonstration corpus and retained public pilot live in `benchmarks/behavioral/`
-in the source checkout, outside the npm package's files. An installed candidate
+in the source checkout, outside the npm package's files. An installed CLI
 must select an external suite explicitly. Read
 the [behavioral benchmark guide](../docs/Behavioral%20Benchmark.md) for external
 execution/grading, schema, bounded inputs and failure recovery.
