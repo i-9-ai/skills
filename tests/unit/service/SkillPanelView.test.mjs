@@ -39,6 +39,7 @@ const element = () => ({
     setAttribute(name, value) {
         this.attributes[name] = value;
     },
+    scrollIntoView() {},
     addEventListener(type, handler) {
         (this.listeners[type] ??= []).push(handler);
     },
@@ -380,6 +381,7 @@ test('global inspection keeps manual candidate and mutation workflows disabled',
     assert.equal(panel.el('selected-title').textContent, 'personal-reference');
     assert.equal(panel.el('selected-hash').textContent, 'entrypoint-hash');
     assert.equal(panel.el('evolve').disabled, true);
+    assert.match(panel.el('action-caption').textContent, /Review only/);
     panel.el('candidate').value = 'A previous draft';
     panel.el('rationale').value = 'A previous rationale';
     panel.actions();
@@ -650,7 +652,7 @@ test('activity gives no-change results and clickable comparisons without interpr
         proposals: [{ proposal_id: 'retained-id', rationale: 'A supplied improvement.' }],
     };
     panel.renderActivity(activity);
-    assert.match(panel.el('request-status').textContent, /No changes proposed/);
+    assert.match(panel.el('review-outcome').textContent, /No changes proposed/);
     assert.match(panel.el('activity-list').textContent, /<script>A report, not markup.<\/script>/);
     const buttons = panel
         .el('activity-list')
@@ -719,4 +721,100 @@ test('a completed tool result opens its real skill in a fresh panel without trus
     inspected = null;
     await panel.showCompleted({ request: { skill: 'example-skill' } });
     assert.equal(inspected, null, 'A different current selection is not replaced');
+});
+
+test('a global findings result explains the unavailable diff next to the current result', () => {
+    const panel = workflowView();
+    panel.selected.read_only = true;
+    const summary = 'A complete review finding. '.repeat(30) + '<script>inert</script>';
+    panel.renderActivity({
+        requests: [
+            {
+                request_id: 'global-review',
+                created_at: '2026-10-17T00:00:00.000Z',
+                base_sha256: 'base',
+                result: { outcome: 'findings', summary, proposal_id: null },
+            },
+        ],
+        proposals: [],
+    });
+    assert.equal(panel.el('review-outcome').textContent, 'Review findings');
+    assert.match(panel.el('diff-status').textContent, /No diff: global skills are review-only/);
+    assert.equal(panel.el('view-diff').disabled, true);
+    assert.equal(panel.el('evolve').disabled, true);
+    assert.equal(panel.el('current-result-details').hidden, false);
+    assert.equal(panel.el('result-full').textContent, summary);
+    assert.equal(panel.el('result-full').children.length, 0, 'Report text never becomes markup');
+    assert(panel.el('result-summary').textContent.length < summary.length);
+});
+
+test('the current proposal has a direct diff action that still reloads the authoritative proposal', async () => {
+    const panel = workflowView();
+    panel.renderActivity({
+        requests: [
+            {
+                request_id: 'review',
+                created_at: '2026-10-17T00:00:00.000Z',
+                base_sha256: 'base',
+                result: {
+                    outcome: 'proposal',
+                    summary: 'A focused candidate.',
+                    proposal_id: 'matching-proposal',
+                },
+            },
+        ],
+        proposals: [{ proposal_id: 'matching-proposal' }],
+    });
+    assert.equal(panel.el('view-diff').disabled, false);
+    assert.equal(panel.el('view-diff').textContent, 'View proposed diff');
+    assert.equal(panel.el('tab-compare').disabled, false);
+    assert.match(panel.el('diff-status').textContent, /separate exact approval/);
+    let received;
+    panel.acceptIncoming = async (value) => {
+        received = value.proposal_id;
+    };
+    await panel.openCurrentDiff();
+    assert.equal(received, 'matching-proposal');
+    assert.equal(panel.el('workflow-status').focused, true);
+    assert.equal(panel.el('approval').checked, false);
+    panel.proposal = null;
+    received = null;
+    await panel.chooseWorkspace('compare');
+    assert.equal(
+        received,
+        'matching-proposal',
+        'The diff tab must open the same authoritative proposal',
+    );
+});
+
+test('no-candidate reviews and saved older proposals are distinguished without fabricating a diff', () => {
+    const panel = workflowView();
+    const requests = [
+        {
+            request_id: 'review',
+            created_at: '2026-10-17T00:00:00.000Z',
+            base_sha256: 'base',
+            result: { outcome: 'no_changes', summary: 'No justified change.', proposal_id: null },
+        },
+    ];
+    panel.renderActivity({ requests, proposals: [] });
+    assert.equal(panel.el('view-diff').disabled, true);
+    assert.match(panel.el('diff-status').textContent, /returned no candidate/);
+    panel.renderActivity({ requests, proposals: [{ proposal_id: 'saved-proposal' }] });
+    assert.equal(panel.el('review-outcome').textContent, 'No changes proposed');
+    assert.equal(panel.el('view-diff').disabled, false);
+    assert.equal(panel.el('view-diff').textContent, 'Open saved diff');
+    assert.match(panel.el('diff-status').textContent, /retained proposal/);
+});
+
+test('the direct diff action cannot bypass an unresolved write', async () => {
+    const panel = workflowView();
+    const retained = panel.proposal;
+    panel.currentDiff = 'another-proposal';
+    panel.unresolved = { proposal: retained, action: 'apply' };
+    panel.acceptIncoming = async () => assert.fail('Do not replace unresolved write identity');
+    await panel.openCurrentDiff();
+    assert.equal(panel.proposal, retained);
+    assert.equal(panel.uncertain, true);
+    assert.equal(panel.el('view-diff').disabled, true);
 });

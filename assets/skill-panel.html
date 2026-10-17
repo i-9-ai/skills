@@ -594,6 +594,42 @@
                 gap: 12px;
                 margin: 16px 0 24px;
             }
+            .review-result {
+                margin: 20px 0;
+                padding: 16px;
+                border: 1px solid var(--line);
+                border-radius: 4px;
+                background: var(--raised);
+            }
+            .result-heading,
+            .result-actions {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                justify-content: space-between;
+                gap: 10px;
+            }
+            .result-heading h3 {
+                margin: 0;
+                font-size: 15px;
+            }
+            .result-heading button {
+                min-height: 30px;
+                padding: 4px 9px;
+                font-size: 11px;
+            }
+            .review-result p {
+                margin: 10px 0;
+                overflow-wrap: anywhere;
+            }
+            .result-summary {
+                font-size: 13px;
+                line-height: 1.6;
+            }
+            .result-actions {
+                justify-content: flex-start;
+                margin-top: 14px;
+            }
             .saved-work {
                 padding: 16px;
             }
@@ -1039,9 +1075,42 @@
                                     ?
                                 </button>
                             </div>
-                            <p class="action-caption">Ask → compare → approve. You decide.</p>
+                            <p id="action-caption" class="action-caption">
+                                Review → diff → explicit approval.
+                            </p>
                         </div>
                     </div>
+                    <section
+                        id="review-result"
+                        class="review-result"
+                        aria-labelledby="review-outcome"
+                    >
+                        <div class="result-heading">
+                            <h3 id="review-outcome">Current review</h3>
+                            <button id="activity-refresh" type="button" disabled>
+                                Check for results
+                            </button>
+                        </div>
+                        <p id="request-status" class="footnote" role="status" aria-live="polite">
+                            Select a skill, then ask the agent for a review.
+                        </p>
+                        <p id="result-summary" class="result-summary"></p>
+                        <p id="diff-status" class="footnote">
+                            A diff becomes available when a proposed change is saved.
+                        </p>
+                        <div class="result-actions">
+                            <button id="view-diff" type="button" class="primary" disabled>
+                                View diff
+                            </button>
+                            <button id="continue-current" type="button" hidden>
+                                Continue review
+                            </button>
+                        </div>
+                        <details id="current-result-details" class="identity-details" hidden>
+                            <summary>Read full review result</summary>
+                            <p id="result-full" class="result-summary"></p>
+                        </details>
+                    </section>
                     <p id="selected-description">
                         Choose a skill from the library to inspect its purpose, source and current
                         text.
@@ -1049,10 +1118,6 @@
                     <div id="selected-state" class="snapshot-status">
                         No package has been inspected.
                     </div>
-                    <p id="request-status" class="snapshot-status" role="status" aria-live="polite">
-                        Select a skill, then ask the agent for a review. Reading alone creates no
-                        diff.
-                    </p>
                     <nav class="workspace-tabs" role="tablist" aria-label="Skill workspace">
                         <button
                             id="tab-overview"
@@ -1083,7 +1148,7 @@
                             tabindex="-1"
                             disabled
                         >
-                            Compare candidate
+                            Diff &amp; approval
                         </button>
                     </nav>
                     <section
@@ -1092,42 +1157,38 @@
                         role="tabpanel"
                         aria-labelledby="tab-overview"
                     >
-                        <p class="overview-lead">Understand first.<br />Change with intent.</p>
-                        <p class="overview-copy">
-                            Ask the agent to review the actual skill. Its result returns here;
-                            compare any suggested change and approve only what you want to apply.
-                        </p>
-                        <div class="workflow-steps">
-                            <div>
-                                <h3>01 / Ask for a review</h3>
-                                <p>
-                                    Select a skill and click Review with agent. Describe a change
-                                    adds your focus. The host sends your request to this
-                                    conversation.
-                                </p>
+                        <details class="identity-details">
+                            <summary>How review and diff approval work</summary>
+                            <div class="workflow-steps">
+                                <div>
+                                    <h3>01 / Ask for a review</h3>
+                                    <p>
+                                        Select a skill and click Review with agent. Describe a
+                                        change adds your focus. The host sends your request to this
+                                        conversation.
+                                    </p>
+                                </div>
+                                <div>
+                                    <h3>02 / Read the result</h3>
+                                    <p>
+                                        The current result appears above. A proposed change enables
+                                        View proposed diff. Findings alone and read-only global
+                                        reviews have no diff.
+                                    </p>
+                                </div>
+                                <div>
+                                    <h3>03 / Decide explicitly</h3>
+                                    <p>
+                                        Only selected copies can change. Global references stay read
+                                        only. Applying and recovering each require approval.
+                                    </p>
+                                </div>
                             </div>
-                            <div>
-                                <h3>02 / Read the result</h3>
-                                <p>
-                                    Reviews and proposals below retain the outcome. No change is a
-                                    valid result. Click Compare proposal to see a retained diff.
-                                </p>
-                            </div>
-                            <div>
-                                <h3>03 / Decide explicitly</h3>
-                                <p>
-                                    Only selected copies can change. Global references stay read
-                                    only. Applying and recovering each require approval.
-                                </p>
-                            </div>
-                        </div>
-                        <section aria-labelledby="activity-title">
-                            <div class="file-heading">
-                                <h3 id="activity-title">Reviews and proposals</h3>
-                                <button id="activity-refresh" type="button" disabled>
-                                    Check for results
-                                </button>
-                            </div>
+                        </details>
+                        <details class="identity-details">
+                            <summary id="activity-title">
+                                Review history and saved proposals
+                            </summary>
                             <p id="activity-note" class="footnote">
                                 Select a skill to see its saved work.
                             </p>
@@ -1136,7 +1197,7 @@
                                 class="activity-list"
                                 aria-label="Saved skill work"
                             ></div>
-                        </section>
+                        </details>
                         <details class="identity-details">
                             <summary>Advanced: supply candidate text yourself</summary>
                             <p class="footnote">
@@ -1387,6 +1448,8 @@
                 hostCapabilities = {};
                 activityVersion = 0;
                 activity = null;
+                currentReview = null;
+                currentDiff = null;
                 pollTimer = null;
                 pollRemaining = 0;
 
@@ -1405,7 +1468,7 @@
                     }
                     for (const view of ['overview', 'source', 'compare']) {
                         this.el('tab-' + view).addEventListener('click', () =>
-                            this.setWorkspace(view),
+                            this.chooseWorkspace(view),
                         );
                         this.el('tab-' + view).addEventListener('keydown', (event) =>
                             this.navigateTabs(event, view),
@@ -1456,6 +1519,14 @@
                     this.el('activity-refresh').addEventListener('click', () =>
                         this.run(() => this.loadActivity(true)),
                     );
+                    this.el('view-diff').addEventListener('click', () =>
+                        this.run(() => this.openCurrentDiff()),
+                    );
+                    this.el('continue-current').addEventListener('click', () => {
+                        const request = this.currentReview;
+                        if (request && !request.result)
+                            this.run(() => this.askAgent(request.kind, request.request_id));
+                    });
                     document.addEventListener('visibilitychange', () => {
                         if (document.hidden) this.stopPolling();
                     });
@@ -1726,6 +1797,13 @@
                     const result = await this.call('skill_panel_inspect', { skill });
                     this.selected = result;
                     this.activity = null;
+                    this.currentReview = null;
+                    this.currentDiff = null;
+                    this.el('review-outcome').textContent = 'Loading saved work';
+                    this.el('result-summary').textContent = '';
+                    this.el('diff-status').textContent = 'Checking whether a retained diff exists…';
+                    this.el('current-result-details').hidden = true;
+                    this.el('continue-current').hidden = true;
                     this.el('activity-list').replaceChildren();
                     this.el('activity-note').textContent = 'Loading saved work for this skill…';
                     this.el('request-status').textContent = 'Loading saved reviews and proposals…';
@@ -1746,6 +1824,9 @@
                     this.el('selected-origin').textContent = result.read_only
                         ? 'Global collection · read only'
                         : 'Selected local collection · editable';
+                    this.el('action-caption').textContent = result.read_only
+                        ? 'Review only · no global changes.'
+                        : 'Review → diff → explicit approval.';
                     this.el('selected-hash-label').textContent = result.read_only
                         ? 'SKILL.md identity'
                         : 'Package identity';
@@ -1809,8 +1890,14 @@
                     if (event.key === 'Home') next = 0;
                     if (event.key === 'End') next = available.length - 1;
                     event.preventDefault();
-                    this.setWorkspace(available[next]);
+                    this.chooseWorkspace(available[next]);
                     this.el('tab-' + available[next]).focus();
+                }
+
+                chooseWorkspace(view) {
+                    if (view === 'compare' && !this.proposal && !this.editing && this.currentDiff)
+                        return this.run(() => this.openCurrentDiff());
+                    this.setWorkspace(view);
                 }
 
                 help(type) {
@@ -1866,7 +1953,7 @@
                         if (response?.isError)
                             throw new Error('The host did not accept this message.');
                         this.el('request-status').textContent =
-                            'Request sent to this conversation. Awaiting a recorded agent result below; the message alone does not confirm execution.';
+                            'Request sent to this conversation. Awaiting a recorded agent result here; the message alone does not confirm execution.';
                     } catch (error) {
                         this.el('request-status').textContent =
                             'Message delivery is unconfirmed. Check this conversation and saved results before explicitly choosing Continue review. Nothing will be resent automatically. ' +
@@ -1909,6 +1996,8 @@
                     if (JSON.stringify(this.activity) !== JSON.stringify(result)) {
                         this.activity = result;
                         this.renderActivity(result);
+                        if (watch && this.workspace === 'overview')
+                            this.el('review-result').scrollIntoView({ block: 'nearest' });
                     }
                     if (watch && result.requests.some((item) => !item.result)) {
                         this.pollRemaining = 30;
@@ -1932,20 +2021,12 @@
                         blocked: 'Review blocked',
                     };
                     const currentHash = this.selected.package_sha256 || this.selected.sha256;
-                    const latest = activity.requests[0];
+                    this.renderCurrentResult(activity, labels);
                     this.el('activity-note').textContent =
                         activity.requests.length +
                         ' reviews · ' +
                         activity.proposals.length +
                         ' proposals retained. Results are agent reports; open a proposal to verify its current bytes.';
-                    this.el('request-status').textContent = latest
-                        ? (latest.result
-                              ? labels[latest.result.outcome] + ': ' + latest.result.summary
-                              : 'Awaiting a recorded result. If the agent stopped, choose Continue review below.') +
-                          (latest.base_sha256 !== currentHash
-                              ? ' This request belongs to a different source revision.'
-                              : '')
-                        : 'No saved review yet. Review with agent starts the flow; inspection alone creates no diff.';
                     for (const request of activity.requests) {
                         const card = document.createElement('article');
                         card.className = 'workflow-card saved-work';
@@ -1998,6 +2079,63 @@
                         this.proposalButton(card, proposal.proposal_id);
                         this.el('activity-list').append(card);
                     }
+                }
+
+                renderCurrentResult(activity, labels) {
+                    const latest = activity.requests[0] || null;
+                    this.currentReview = latest;
+                    const linked = latest?.result?.proposal_id;
+                    this.currentDiff = this.selected.read_only
+                        ? null
+                        : linked || activity.proposals[0]?.proposal_id || null;
+                    this.el('review-outcome').textContent = latest
+                        ? latest.result
+                            ? labels[latest.result.outcome]
+                            : 'Awaiting recorded result'
+                        : this.currentDiff
+                          ? 'Saved proposal available'
+                          : 'No review yet';
+                    const currentHash = this.selected.package_sha256 || this.selected.sha256;
+                    this.el('request-status').textContent = latest
+                        ? (latest.result
+                              ? 'Agent result saved.'
+                              : 'The request is saved; the agent has not recorded a result yet.') +
+                          (latest.base_sha256 !== currentHash ? ' Different source revision.' : '')
+                        : 'Review with agent starts a review; inspecting the skill alone creates no diff.';
+                    const summary = latest?.result?.summary || '';
+                    const points = [...summary];
+                    this.el('result-summary').textContent =
+                        points.length > 240 ? points.slice(0, 240).join('') + '…' : summary;
+                    this.el('result-full').textContent = summary;
+                    this.el('current-result-details').hidden = points.length <= 240;
+                    this.el('current-result-details').open = false;
+                    this.el('continue-current').hidden = !latest || Boolean(latest.result);
+                    this.el('view-diff').textContent = this.currentDiff
+                        ? linked
+                            ? 'View proposed diff'
+                            : 'Open saved diff'
+                        : 'View diff';
+                    this.el('diff-status').textContent = this.diffExplanation(latest, linked);
+                    this.actions();
+                }
+
+                diffExplanation(latest, linked) {
+                    if (this.selected.read_only)
+                        return 'No diff: global skills are review-only in this pilot. Describe a change and application are available for selected editable copies.';
+                    if (this.currentDiff)
+                        return linked
+                            ? 'Next: view the saved diff and current state. Application or recovery requires a separate exact approval.'
+                            : 'A retained proposal has a saved diff. Open it to inspect its current application and validation state.';
+                    if (latest?.result)
+                        return 'This review returned no candidate. Use Describe a change to request a proposal; then review its diff before approving.';
+                    return 'No diff yet. A diff appears after the agent saves a proposed SKILL.md change.';
+                }
+
+                async openCurrentDiff() {
+                    if (this.unresolved) return this.showUnresolved();
+                    if (!this.currentDiff || this.selected?.read_only) return;
+                    await this.acceptIncoming({ proposal_id: this.currentDiff });
+                    this.el('workflow-status').focus({ preventScroll: true });
                 }
 
                 proposalButton(card, id) {
@@ -2303,13 +2441,24 @@
                     this.el('unresolved-write').hidden = !this.unresolved;
                     this.el('unresolved-write').disabled = this.busy;
                     this.el('tab-source').disabled = !this.selected;
-                    this.el('tab-compare').disabled = !proposal && !this.editing;
+                    this.el('tab-compare').disabled =
+                        !proposal && !this.editing && !this.currentDiff;
                     this.el('review').disabled = this.busy || blocked || !this.selected;
                     this.el('evolve').disabled =
                         this.busy || blocked || !this.selected || this.selected.read_only;
                     this.el('manual-candidate').disabled = this.el('evolve').disabled;
                     this.el('request-send').disabled = this.el('evolve').disabled;
                     this.el('activity-refresh').disabled = this.busy || !this.selected;
+                    this.el('view-diff').disabled =
+                        this.busy ||
+                        blocked ||
+                        !this.currentDiff ||
+                        Boolean(this.selected?.read_only);
+                    this.el('continue-current').disabled =
+                        this.busy ||
+                        blocked ||
+                        !this.currentReview ||
+                        Boolean(this.currentReview.result);
                     for (const button of this.el('activity-list').querySelectorAll('button'))
                         button.disabled = this.busy || blocked;
                 }

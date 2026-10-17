@@ -118,7 +118,9 @@ disabled for these references, and the backend rejects global IDs for candidate
 writes. The existing selected-package workflow below retains its explicit approval
 and recovery rules. A global reference does not need this repository's icon or
 license layout to appear. Its text is source material, never permission to run a
-script, modify a package or broaden access. No global catalog or usage state is written.
+script, modify a package or broaden access. The current-result card explains
+that these reviews have no candidate diff; disabled comparison is not a pending
+approval step. No global catalog or usage state is written.
 
 ## Review a real candidate
 
@@ -126,8 +128,19 @@ The compact library stays beside one skill workspace on desktop and stacks above
 it at narrow widths. **Overview** explains the source boundary and exposes the
 inspected identity. **SKILL.md** shows the last inspected read-only entrypoint;
 it does not claim to observe later disk changes automatically.
-**Compare candidate** becomes available after opening a retained proposal or the
-advanced manual editor. A normal review does not require filling in a complete
+The **current result** sits immediately below the selected skill title, before
+its description, evidence detail and workspace tabs. It shows a bounded report
+excerpt, a **Read full review result** disclosure for long reports, and the reason
+a diff is or is not available. The full report uses normal document flow rather
+than a separately scrolling text box. Older work and generic instructions live
+under collapsed **Review history and saved proposals** and **How review and diff
+approval work** disclosures.
+
+**View proposed diff** and the **Diff & approval** tab become available as soon
+as a retained proposal is listed. Either action reloads its authoritative state
+before showing the comparison; metadata alone does not establish readiness.
+**Open saved diff** distinguishes a retained proposal from a newer review that
+returned no candidate. A normal review does not require filling in a complete
 file. Arrow keys, Home and End move through available workspace
 tabs. Source filters and search operate on the loaded real catalog, without
 inventing categories, quality scores or related-skill recommendations.
@@ -146,8 +159,9 @@ inventing categories, quality scores or related-skill recommendations.
    structural checks, without editing the selected skill. Only `SKILL.md` can
    change; preserve the package name.
 4. The agent calls `skill_panel_complete` to record **no changes**, **findings**,
-   a matching **proposal**, or a **blocker**. **Reviews and proposals** shows that
-   result. Click **Compare proposal** to open its verified retained diff; no
+   a matching **proposal**, or a **blocker**. The current-result card shows that
+   outcome near the skill title. Click **View proposed diff** to open its verified
+   retained comparison; no
    proposal ID or pasted candidate is required. Check for results manually or
    leave the panel visible for bounded polling (up to 30 checks, four seconds
    apart). Closing the chat does not imply completion. **Continue review** is an
@@ -168,7 +182,7 @@ inventing categories, quality scores or related-skill recommendations.
    hashes again before replacing the entrypoint. Editing the candidate or
    changing selection, leaving the comparison or refreshing its proposal clears
    UI consent. **Keep proposal** returns to the overview without applying; the
-   comparison remains selectable under **Reviews and proposals** after reopening
+   comparison remains selectable under **Review history and saved proposals** after reopening
    the panel, and the server retains its ID and artifacts.
    No approval is inferred from a task
    request, model output or earlier proposal.
@@ -216,8 +230,9 @@ proposals/request/<request-id>/
   result.json           immutable agent report, when recorded
 ```
 
-After reopening, select the skill and choose **Compare proposal** from its saved
-work. **Advanced: open by ID** is only a fallback for a known UUID. After
+After reopening, select the skill and choose **View proposed diff**, **Open saved
+diff**, or **Compare proposal** in its history. **Advanced: open by ID** is only a
+fallback for a known UUID. After
 application, **Review recovery** shows the reverse diff. Restoring needs a new
 explicit acknowledgement and **Restore approved version**. Recovery restores
 only `SKILL.md` and refuses intervening package edits, preserving the original
