@@ -317,7 +317,7 @@ at most 32 immutable review requests are retained, with no automatic pruning.
 History reads bounded integrity-checked summaries; opening a proposal rechecks
 its full original/candidate bytes and live state before any decision. Completion
 must match the request skill and base. Read-only requests cannot link a proposal;
-an enabled eligible global request can link only its matching source/root/base.
+an enabled eligible global request can link only its matching source, root and base.
 An exact completion retry is idempotent; conflicting results are rejected.
 Retention and removal remain manual. Scripts are inspected inertly and never
 executed for candidate validation. Full source copies can contain local/private
