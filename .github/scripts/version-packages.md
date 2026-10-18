@@ -11,6 +11,12 @@ version into the Codex, Claude and Copilot root plugin manifests. Other plugin
 fields remain unchanged. The GitHub changelog generator uses the action's
 existing `GITHUB_TOKEN`; the script does not acquire credentials.
 
+After generation, strip whitespace-only blank continuation lines from the new
+release entries so generated version PRs pass `git diff --check`. Preserve the
+existing preamble and published history byte for byte, including historical
+whitespace. Keep indentation on nonblank lines and fail if Changesets rewrites
+the retained history.
+
 ```sh
 npm run version:packages
 ```

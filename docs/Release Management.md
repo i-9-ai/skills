@@ -87,7 +87,10 @@ and rehearsals do not publish, merge, install or prove a hosted release.
 The offline Changesets automation regression runs the same repository version
 script in a disposable package. It checks package/lock and all three root plugin
 versions, consumed notes, retained changelog history and the Codex manifest inside
-the npm tarball. Packed-distribution tests separately exercise the real source
+the npm tarball. It uses the pinned GitHub changelog generator with synthetic
+reference responses and a multi-paragraph note, and runs `git diff --check` on
+the generated diff. Blank-line normalization applies only to new entries;
+published history stays byte-identical. Packed-distribution tests separately exercise the real source
 build and compiled installed CLI. `package.json` only invokes these procedures;
 their JavaScript lives in the documented build and version scripts.
 

@@ -21,3 +21,7 @@ the external benchmark-suite requirement explicit.
 Keep executable JavaScript out of npm script strings: `version:packages` and
 `build` invoke small documented repository scripts, preserving plugin/lock
 alignment and clean compiled distribution/source-receipt preparation.
+
+Preserve whitespace-only blank-line normalization for newly generated changelog
+entries so multi-paragraph GitHub release notes pass the protected whitespace
+check without rewriting published history or nonblank code indentation.
