@@ -34,14 +34,15 @@ function fixture(t) {
     write('node_modules/yaml/package.json', JSON.stringify({ name: 'yaml', version: '2.9.1' }));
     write('node_modules/yaml/LICENSE', 'Synthetic license sentinel');
     const config = new ProjectConfiguration({ root });
+    const packages = [
+        { path: 'skills/example/SKILL.md', bytes: Buffer.from('fixture'), mode: 0o644 },
+    ];
+    new PluginPanelRuntimeRepository().capture(config, packages);
     return {
         root,
         config,
         write,
-        read: () =>
-            new PluginPanelRuntimeRepository().read(config, [
-                { path: 'skills/example/SKILL.md', bytes: Buffer.from('fixture'), mode: 0o644 },
-            ]),
+        read: () => new PluginPanelRuntimeRepository().read(config, packages),
     };
 }
 
@@ -59,11 +60,43 @@ test('panel runtime retains compiled resources, portable helpers and pinned depe
     assert(files.every((file) => !file.path.includes(f.root)));
 });
 
+test('removed imported modules and stale source or assets invalidate the successful build inventory', (t) => {
+    const f = fixture(t);
+    const receipt = join(f.root, 'dist/panel-runtime-receipt.json');
+    f.write('dist/service/SkillPanelService.js', 'export const service = true;');
+    f.write('dist/transport/PluginMcpServer.js', 'import "../service/SkillPanelService.js";');
+    f.write('src/transport/PluginMcpServer.ts', 'import "../service/SkillPanelService.ts";');
+    fs.rmSync(receipt);
+    new PluginPanelRuntimeRepository().capture(f.config, [
+        { path: 'skills/example/SKILL.md', bytes: Buffer.from('fixture'), mode: 0o644 },
+    ]);
+    assert(f.read().length > 0);
+    fs.rmSync(join(f.root, 'dist/service/SkillPanelService.js'));
+    assert.throws(f.read, /incomplete or stale/);
+    f.write('dist/service/SkillPanelService.js', 'export const service = true;');
+    f.write('src/transport/PluginMcpServer.ts', 'export const changed = true;');
+    assert.throws(f.read, /incomplete or stale/);
+    f.write('src/transport/PluginMcpServer.ts', 'import "../service/SkillPanelService.ts";');
+    f.write('assets/skill-panel.html', '<!doctype html><title>Changed</title>');
+    assert.throws(f.read, /incomplete or stale/);
+});
+
+test('missing build receipt and incomplete pinned YAML cannot become retained runtimes', (t) => {
+    const f = fixture(t);
+    const license = join(f.root, 'node_modules/yaml/LICENSE');
+    fs.rmSync(license);
+    assert.throws(f.read, /incomplete or stale/);
+    f.write('node_modules/yaml/LICENSE', 'Synthetic license sentinel');
+    fs.rmSync(join(f.root, 'dist/panel-runtime-receipt.json'));
+    assert.throws(f.read);
+});
+
 test('missing compiled entrypoint and mismatched or transitive YAML fail before emission', (t) => {
     const f = fixture(t);
+    const entry = fs.readFileSync(join(f.root, 'dist/transport/PluginMcpServer.js'));
     fs.rmSync(join(f.root, 'dist/transport/PluginMcpServer.js'));
     assert.throws(f.read, /Build the compiled panel runtime/);
-    f.write('dist/transport/PluginMcpServer.js', '// fixture');
+    f.write('dist/transport/PluginMcpServer.js', entry);
     for (const manifest of [
         { name: 'yaml', version: '2.0.0' },
         { name: 'yaml', version: '2.9.1', dependencies: { unexpected: '1.0.0' } },

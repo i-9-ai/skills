@@ -77,6 +77,14 @@ already be available. `${PLUGIN_ROOT}` binds server and working-directory paths
 to the installed artifact, so moving it or switching development branches does
 not remove its code. Ordinary skills-only preparation is unchanged.
 
+Preparation verifies the successful build's retained inventory against every
+compiled module, helper, catalog and UI asset, and against TypeScript/configuration
+bytes when source is present. Missing modules, changed assets and stale source
+require a fresh explicit build; neither preview nor write repairs them. This is
+integrity evidence, not publisher authentication. Output boundaries are checked
+physically as well as lexically, including aliases into protected data roots and
+external global references, before derivation and immediately before emission.
+
 Register/install that directory through the host's supported local marketplace
 flow, preserve its selected state on upgrade, and verify a fresh MCP process.
 If a host still displays an older component, close/reopen the panel first; do not

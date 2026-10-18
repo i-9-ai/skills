@@ -8,7 +8,6 @@ import { relativeParts } from '../../.agents/skills/skill-authoring/scripts/skil
 import { PluginListingValidator } from '../validator/PluginListingValidator.ts';
 import { SkillPanelConfiguration } from '../config/SkillPanelConfiguration.ts';
 import { PluginPanelRuntimeRepository } from '../repository/PluginPanelRuntimeRepository.ts';
-import { resolve } from 'node:path';
 
 const jsonFile = (path: string, value: unknown): PluginFile => ({
     path,
@@ -31,15 +30,10 @@ export class PluginPreparationService {
         write = false,
         panel?: SkillPanelConfiguration,
     ) {
-        if (panel) {
-            for (const path of [
-                panel.collection,
-                panel.state,
-                ...(panel.globalCollection ? [panel.globalCollection] : []),
-            ])
-                panel.assertSeparate(path, resolve(output));
-        }
+        const runtime = new PluginPanelRuntimeRepository();
+        if (panel) runtime.assertDestination(panel, output);
         const { files, file_count, ...artifact } = this.derive(configuration, [], panel);
+        if (panel) runtime.assertDestination(panel, output);
         const destination = this.repository.emit(output, files, write);
         return {
             written: write,

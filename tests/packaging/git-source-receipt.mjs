@@ -74,6 +74,7 @@ test('clean synthetic Git preparation retains its SHA through npm packing and co
         'package-lock.json',
         '.codex-plugin/plugin.json',
         'assets/plugin-icon.png',
+        'assets/skill-panel.html',
         'assets/skill-panel-icon.svg',
         'tsconfig.json',
         'tsconfig.build.json',

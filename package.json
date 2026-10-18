@@ -129,6 +129,7 @@
     "bin/index.md",
     "dist/**/*.js",
     "dist/source-receipt.json",
+    "dist/panel-runtime-receipt.json",
     ".agents/skills/**",
     "skills-catalog.json",
     "docs/**",
