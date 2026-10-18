@@ -20,11 +20,10 @@ useful deliveries and failed plans with their limits. Private source captures
 and unsanitized runs are not published, so the summary cannot independently
 replay those cases or establish a general advantage from supplying meta-skills.
 
-This is a candidate interface. The published npm package `@i-9.ai/skills@0.3.4`
-does not contain these commands. Use a reviewed candidate checkout with Node.js
-24+ and its locked dependencies already present, or a separately prepared
-installed CLI containing the same candidate. The examples below run from that
-candidate checkout. They are not instructions to install the latest npm release.
+Use Node.js 24+ with the installed CLI, or a prepared source checkout with its
+locked dependencies already present. The examples below use the source checkout
+to access the demonstration corpus. With an installed CLI, replace
+`node bin/index.mjs` with `i9-skills` and select an external suite explicitly.
 
 ## Prepare the closed freeze
 
@@ -48,7 +47,7 @@ criteria stay outside the executor handoff.
 evidence in the source checkout. They stay outside `docs/`, the Wiki mirror,
 the website's copied assets and the npm package allowlist. This guide and its
 concise results remain public documentation; repository links expose the
-separately retained evidence. A prepared installed candidate needs an explicitly
+separately retained evidence. An installed CLI needs an explicitly
 selected suite source because the corpus is not bundled with the CLI.
 
 The nested fixture `SKILL.md` files are synthetic task inputs, not collection

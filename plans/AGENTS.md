@@ -22,6 +22,10 @@ Verify every requirement has an implementation and a check or an explicit limit.
 
 ## Child DOX index
 
+- [Changesets action rehearsal](2026-10-17-23-35-19-changesets-action-rehearsal.md): disposable action-by-action release evidence and plugin/artifact alignment; registry and GitHub publication remain unexercised unless explicitly represented by synthetic adapters.
+
+- [Simplified Changesets automation](2026-10-17-23-50-00-simplify-changesets.md): official action-driven versioning and publication with package/plugin synchronization; retires manual release commands and replay without changing external publisher settings.
+
 - [Managed skill installation](2026-10-07-20-40-51-managed-skill-installation.md): preview-first collection lifecycle, owned package receipts and recoverable transactions, with explicit host routing and no real-profile installation during development.
 - [Native pilot template layout](2026-10-06-00-00-31-native-pilot-template-layout.md): explicitly resolve source or compiled runtime layout in the bundled draft, with real tarball compatibility tests and unchanged native authority.
 - [Native pilot review contracts](2026-10-05-22-52-40-native-pilot-review-contracts.md): reject unsupported architectures before preparation and reconcile measured isolation and bounded retention across the pilot pipeline; native acceptance and prior failures remain separate.

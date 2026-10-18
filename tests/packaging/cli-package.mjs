@@ -97,6 +97,7 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
         'assets/native-pilot',
         'tsconfig.json',
         'tsconfig.build.json',
+        '.github/scripts/build.mjs',
         'src',
         'bin',
         '.agents/skills',
@@ -718,60 +719,6 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
     assert.equal(existsSync(unusedDatabase), false);
     assert.deepEqual(treeBytes(installed), installedBefore);
     assert.deepEqual(treeBytes(home), homeBefore);
-
-    const releaseRoot = join(root, 'release-fixture');
-    const releasePackage = { name: '@example/release-fixture', version: '1.0.0', private: true };
-    const releaseFiles = {
-        'package.json': releasePackage,
-        'package-lock.json': {
-            ...releasePackage,
-            lockfileVersion: 3,
-            packages: { '': releasePackage },
-        },
-        '.codex-plugin/plugin.json': { name: 'synthetic-plugin', version: '1.0.0' },
-        '.claude-plugin/plugin.json': { name: 'synthetic-plugin', version: '1.0.0' },
-        '.github/plugin/plugin.json': { name: 'synthetic-plugin', version: '1.0.0' },
-        '.changeset/config.json': {
-            commit: false,
-            changelog: '@changesets/cli/changelog',
-            format: false,
-        },
-    };
-    const releaseBytes = new Map();
-    for (const [file, document] of Object.entries(releaseFiles)) {
-        const content = JSON.stringify(document, null, 2) + '\n';
-        mkdirSync(dirname(join(releaseRoot, file)), { recursive: true });
-        writeFileSync(join(releaseRoot, file), content);
-        releaseBytes.set(file, content);
-    }
-    const releaseNote = '---\n"@example/release-fixture": patch\n---\n\nSynthetic fix.\n';
-    writeFileSync(join(releaseRoot, '.changeset/synthetic.md'), releaseNote);
-    releaseBytes.set('.changeset/synthetic.md', releaseNote);
-    assert.equal(existsSync(join(modules, '@changesets/cli')), false);
-    assert.equal(
-        JSON.parse(
-            run(
-                process.execPath,
-                [launcher, 'repo', 'verify-release', '--project', releaseRoot],
-                root,
-            ),
-        ).aligned,
-        true,
-    );
-    const missingDevelopmentDependencies = spawnSync(
-        process.execPath,
-        [launcher, 'repo', 'prepare-version', '--project', releaseRoot],
-        { cwd: root, env: environment, encoding: 'utf8', timeout: 30000 },
-    );
-    assert.notEqual(missingDevelopmentDependencies.status, 0);
-    assert.match(
-        missingDevelopmentDependencies.stderr,
-        /requires the pinned development dependencies/u,
-    );
-    for (const [file, content] of releaseBytes) {
-        assert.equal(readFileSync(join(releaseRoot, file), 'utf8'), content);
-    }
-    assert.equal(existsSync(join(releaseRoot, 'CHANGELOG.md')), false);
 
     const plugin = join(root, 'i9-skills');
     const preparation = JSON.parse(
