@@ -35,6 +35,7 @@ flowchart LR
     Quality --> Evidence
     MCP -->|catalog tools| Catalog
     MCP -->|explicit panel collection and state| Panel[Optional local change panel]
+    Prepared[Prepared plugin with retained compiled runtime] -->|installed local MCP| Panel
     Panel -->|user-clicked host message| Review[Host agent review]
     Review -->|recorded outcome| Activity[Saved reviews and proposals]
     Activity -->|selected proposal| Proposal
@@ -62,7 +63,7 @@ evidence tools. See [CLI distribution](https://github.com/i-9-ai/skills/wiki/Dis
 [plugin preparation](https://github.com/i-9-ai/skills/wiki/Plugin-Preparation) and
 the [interactive entry-path map](https://i-9-ai.github.io/skills/skill-management-entry-paths.html).
 
-The candidate-source [local change panel](https://github.com/i-9-ai/skills/wiki/Skill-Change-Panel)
+The [local change panel](https://github.com/i-9-ai/skills/wiki/Skill-Change-Panel)
 uses this same MCP with explicit collection and proposal-state selections.
 It inspects actual files and can hand a user-clicked request to an advertised
 host agent, retaining no-change/findings/blocked outcomes or matching proposals.

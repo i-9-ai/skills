@@ -12,6 +12,7 @@ import {
     readFileSync,
     readdirSync,
     realpathSync,
+    renameSync,
     rmSync,
     symlinkSync,
     writeFileSync,
@@ -100,6 +101,7 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
         'assets/native-pilot',
         'tsconfig.json',
         'tsconfig.build.json',
+        '.github/scripts/build.mjs',
         'src',
         'bin',
         '.agents/skills',
@@ -171,10 +173,11 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
     assert.ok(names.includes('assets/skill-panel-icon.svg'));
     const panel = skillPanelFixture(t);
     const globalPanel = join(panel.root, 'global references');
-    mkdirSync(join(globalPanel, 'global-example'), { recursive: true });
+    mkdirSync(globalPanel, { recursive: true });
+    cpSync(panel.skill, join(globalPanel, 'global-example'), { recursive: true });
     writeFileSync(
         join(globalPanel, 'global-example', 'SKILL.md'),
-        '---\nname: global-example\ndescription: Read one global reference.\n---\n\n# Global reference\n',
+        panel.before.replace('name: example-skill', 'name: global-example'),
     );
     const panelProgram = `
         import { SkillPanelService } from ${JSON.stringify(pathToFileURL(join(installed, 'dist/service/SkillPanelService.js')).href)};
@@ -841,60 +844,6 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
     assert.deepEqual(treeBytes(installed), installedBefore);
     assert.deepEqual(treeBytes(home), homeBefore);
 
-    const releaseRoot = join(root, 'release-fixture');
-    const releasePackage = { name: '@example/release-fixture', version: '1.0.0', private: true };
-    const releaseFiles = {
-        'package.json': releasePackage,
-        'package-lock.json': {
-            ...releasePackage,
-            lockfileVersion: 3,
-            packages: { '': releasePackage },
-        },
-        '.codex-plugin/plugin.json': { name: 'synthetic-plugin', version: '1.0.0' },
-        '.claude-plugin/plugin.json': { name: 'synthetic-plugin', version: '1.0.0' },
-        '.github/plugin/plugin.json': { name: 'synthetic-plugin', version: '1.0.0' },
-        '.changeset/config.json': {
-            commit: false,
-            changelog: '@changesets/cli/changelog',
-            format: false,
-        },
-    };
-    const releaseBytes = new Map();
-    for (const [file, document] of Object.entries(releaseFiles)) {
-        const content = JSON.stringify(document, null, 2) + '\n';
-        mkdirSync(dirname(join(releaseRoot, file)), { recursive: true });
-        writeFileSync(join(releaseRoot, file), content);
-        releaseBytes.set(file, content);
-    }
-    const releaseNote = '---\n"@example/release-fixture": patch\n---\n\nSynthetic fix.\n';
-    writeFileSync(join(releaseRoot, '.changeset/synthetic.md'), releaseNote);
-    releaseBytes.set('.changeset/synthetic.md', releaseNote);
-    assert.equal(existsSync(join(modules, '@changesets/cli')), false);
-    assert.equal(
-        JSON.parse(
-            run(
-                process.execPath,
-                [launcher, 'repo', 'verify-release', '--project', releaseRoot],
-                root,
-            ),
-        ).aligned,
-        true,
-    );
-    const missingDevelopmentDependencies = spawnSync(
-        process.execPath,
-        [launcher, 'repo', 'prepare-version', '--project', releaseRoot],
-        { cwd: root, env: environment, encoding: 'utf8', timeout: 30000 },
-    );
-    assert.notEqual(missingDevelopmentDependencies.status, 0);
-    assert.match(
-        missingDevelopmentDependencies.stderr,
-        /requires the pinned development dependencies/u,
-    );
-    for (const [file, content] of releaseBytes) {
-        assert.equal(readFileSync(join(releaseRoot, file), 'utf8'), content);
-    }
-    assert.equal(existsSync(join(releaseRoot, 'CHANGELOG.md')), false);
-
     const plugin = join(root, 'i9-skills');
     const preparation = JSON.parse(
         run(process.execPath, [launcher, 'plugin', 'prepare', '--output', plugin, '--write'], root),
@@ -911,6 +860,103 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
     assert.equal(existsSync(join(plugin, 'src')), false);
     assert.equal(existsSync(join(plugin, '.agents')), false);
     assert.equal(existsSync(join(root, '.agents/plugins/marketplace.json')), false);
+
+    // A retained panel plugin must survive moving the artifact and losing the
+    // source npm installation. No checkout path or hoisted YAML may be needed.
+    const panelParent = join(root, 'panel staging');
+    mkdirSync(panelParent);
+    const panelOutput = join(panelParent, 'i9-skills');
+    const retainedPanel = join(root, 'relocated panel');
+    const preparedPanel = JSON.parse(
+        run(
+            process.execPath,
+            [
+                launcher,
+                'plugin',
+                'prepare',
+                '--output',
+                panelOutput,
+                '--panel-collection',
+                panel.collection,
+                '--panel-state',
+                panel.state,
+                '--panel-global-collection',
+                globalPanel,
+                '--panel-global-write',
+                '--write',
+            ],
+            root,
+        ),
+    );
+    assert.equal(preparedPanel.profile, 'local-panel');
+    assert.equal(preparedPanel.submission_eligibility, 'organization_allowlisting_unverified');
+    const localManifest = JSON.parse(readFileSync(join(panelOutput, 'plugin.json')));
+    assert.equal(localManifest.extensions['com.openai'].requires_local_executor, true);
+    const localCompatibility = JSON.parse(
+        readFileSync(join(panelOutput, '.codex-plugin/plugin.json')),
+    );
+    assert.equal(localCompatibility.mcpServers, './mcp.json');
+    const retainedConfig = JSON.parse(readFileSync(join(panelOutput, 'mcp.json'))).mcpServers[
+        'i9-skills'
+    ];
+    assert(!JSON.stringify(retainedConfig).includes(installed));
+    assert(retainedConfig.args.includes('--panel-global-write'));
+    assert.equal(existsSync(join(panelOutput, 'runtime/node_modules/yaml/LICENSE')), true);
+    assert.equal(existsSync(join(panelOutput, 'runtime/src')), false);
+    renameSync(panelOutput, retainedPanel);
+    const parkedInstallation = installed + '-unavailable';
+    renameSync(installed, parkedInstallation);
+    try {
+        const expanded = retainedConfig.args.map((value) =>
+            value.replaceAll('${PLUGIN_ROOT}', retainedPanel),
+        );
+        const response = spawnSync(process.execPath, expanded, {
+            cwd: retainedPanel,
+            env: environment,
+            encoding: 'utf8',
+            timeout: 10000,
+            input: panelFrames.map(JSON.stringify).join('\n') + '\n',
+        });
+        assert.equal(response.status, 0, response.stderr);
+        const replies = response.stdout.trim().split('\n').map(JSON.parse);
+        assert.equal(replies.find((reply) => reply.id === 2).result.tools.length, 9);
+        assert.equal(
+            replies.find((reply) => reply.id === 3).result.contents[0].text,
+            readFileSync(join(retainedPanel, 'runtime/assets/skill-panel.html'), 'utf8'),
+        );
+        const eligible = replies
+            .find((reply) => reply.id === 5)
+            .result.structuredContent.skills.find((row) => row.source === 'global');
+        assert.equal(eligible.read_only, false);
+        const exercise = `
+            import assert from 'node:assert/strict';
+            import fs from 'node:fs';
+            import { SkillPanelConfiguration } from ${JSON.stringify(pathToFileURL(join(retainedPanel, 'runtime/dist/config/SkillPanelConfiguration.js')).href)};
+            import { SkillPanelService } from ${JSON.stringify(pathToFileURL(join(retainedPanel, 'runtime/dist/service/SkillPanelService.js')).href)};
+            const service = new SkillPanelService(new SkillPanelConfiguration(${JSON.stringify(panel.collection)},${JSON.stringify(panel.state)},${JSON.stringify(globalPanel)},true));
+            const target = service.open({}).skills.find(row => row.source === 'global');
+            const before = service.inspect({skill:target.skill});
+            const after = before.text + '\\nPreserve evidence for the selected input.\\n';
+            const proposal = service.propose({skill:target.skill,base_sha256:before.package_sha256,after,rationale:'Improve the synthetic global workflow.'});
+            const approval = {action:'apply',proposal_id:proposal.proposal_id,base_sha256:proposal.base_sha256,candidate_sha256:proposal.candidate_sha256,approved:true};
+            assert.throws(() => service.apply({...approval,approved:false}));
+            assert.equal(service.inspect({skill:target.skill}).text,before.text);
+            const applied = service.apply(approval);
+            assert.equal(service.inspect({skill:target.skill}).text,after);
+            assert.throws(() => service.recover({...approval,action:'recover',approved:false}));
+            const recovered = service.recover({...approval,action:'recover'});
+            assert.equal(service.inspect({skill:target.skill}).package_sha256,before.package_sha256);
+            console.log(JSON.stringify({applied:applied.status,recovered:recovered.status,restored:true}));
+        `;
+        assert.deepEqual(
+            JSON.parse(
+                run(process.execPath, ['--input-type=module', '-e', exercise], retainedPanel),
+            ),
+            { applied: 'applied', recovered: 'recovered', restored: true },
+        );
+    } finally {
+        renameSync(parkedInstallation, installed);
+    }
 
     // npx/node_modules remain valid MCP consumers, but persistent observers need
     // a separately selected, read-only runtime with its own dependency closure.

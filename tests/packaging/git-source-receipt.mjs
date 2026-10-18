@@ -77,6 +77,7 @@ test('clean synthetic Git preparation retains its SHA through npm packing and co
         'assets/skill-panel-icon.svg',
         'tsconfig.json',
         'tsconfig.build.json',
+        '.github/scripts/build.mjs',
         'src',
         'bin',
         '.agents/skills',

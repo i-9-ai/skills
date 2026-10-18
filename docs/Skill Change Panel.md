@@ -1,7 +1,6 @@
 # Local skill-change panel
 
-Availability: experimental candidate source. The published 0.3.4 npm package and
-public skills-only plugin do not include this workflow. This is a local MCP Apps
+This is an explicitly configured local MCP Apps
 resource, not a hosted service or a generally accepted marketplace extension.
 Native rendering depends on the selected host; protocol and browser-test results
 do not certify persistent global sidebar support.
@@ -45,6 +44,51 @@ resource or grants access. After updating a local lab, verify which version the
 host actually loaded; an already open component may retain its prior process.
 Tool discovery, successful HTML retrieval and visible native rendering are
 separate checks when investigating a host's “could not display” message.
+
+## Retain an independent plugin runtime
+
+Opening `assets/skill-panel.html` directly is a standalone preview. It cannot
+connect to the native bridge or load real skills. Open **I-9 Skills** in the
+configured host sidebar, or ask that plugin to call `skill_panel_open`.
+
+For a persistent local installation, prepare a self-contained artifact instead
+of pointing an installed plugin at `src/` in a branch-changing checkout. After
+explicit `npm ci` and `npm run build`, use a new neutral staging parent:
+
+```sh
+mkdir -p .work/retained-panel
+node bin/index.mjs plugin prepare \
+  --output .work/retained-panel/i9-skills \
+  --panel-collection /absolute/local-pilot/skills \
+  --panel-state /absolute/local-pilot/proposals \
+  --panel-global-collection "$HOME/.agents/skills"
+```
+
+Preview writes nothing. Repeat with `--write` to create the artifact. Add
+`--panel-global-write` only to explicitly enable eligible global evolution;
+this does not approve an individual change. The output must be outside all
+selected skill and proposal paths. Data stays in those selected directories;
+no existing skill or proposal is copied into the plugin as mutable state.
+
+The local profile includes root `mcp.json`, a compiled `runtime/dist/` entrypoint,
+bundled helpers/catalog/UI and the already-installed pinned YAML dependency with
+its license. It never installs packages or downloads runtime code. Node24+ must
+already be available. `${PLUGIN_ROOT}` binds server and working-directory paths
+to the installed artifact, so moving it or switching development branches does
+not remove its code. Ordinary skills-only preparation is unchanged.
+
+Register/install that directory through the host's supported local marketplace
+flow, preserve its selected state on upgrade, and verify a fresh MCP process.
+If a host still displays an older component, close/reopen the panel first; do not
+assume a metadata update reloaded a running server. Inspect runtime startup,
+tools and the fixed UI resource separately from native rendering.
+
+This profile contains explicit machine-local path selections. Keep it private;
+it is not a universally configured public upload. OpenAI's
+[desktop-only submission route](https://developers.openai.com/plugins/deploy/desktop-only)
+requires approved-partner organization allowlisting for local MCP submissions.
+Do not use the skills-only submission command and claim it includes this panel.
+Preparation reports that submission eligibility remains unverified.
 
 ## Native entry icon
 

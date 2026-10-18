@@ -161,6 +161,31 @@ function fixture(t) {
     return { root, source, skill, cli, manifest };
 }
 
+test('partial panel configuration and overlapping output fail without creating state or output', (t) => {
+    const { root, cli } = fixture(t);
+    const output = join(root, 'i9-skills');
+    const state = join(root, 'proposals');
+    for (const args of [
+        ['--panel-collection', join(root, 'selected')],
+        ['--panel-state', state],
+        ['--panel-global-collection', join(root, 'global')],
+        ['--panel-global-write'],
+        [
+            '--panel-collection',
+            join(root, 'selected'),
+            '--panel-state',
+            state,
+            '--panel-global-write',
+        ],
+        ['--panel-collection', root, '--panel-state', state + '-outside', '--write'],
+    ]) {
+        const result = cli(['--output', output, ...args]);
+        assert.notEqual(result.status, 0);
+        assert.equal(fs.existsSync(output), false);
+        assert.equal(fs.existsSync(state), false);
+    }
+});
+
 test('plugin preview is inert and explicit artifacts preserve package bytes and reproducible manifests', (t) => {
     const { root, source, skill, cli, manifest } = fixture(t);
     fs.mkdirSync(join(skill, 'scripts'));

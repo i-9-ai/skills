@@ -1649,7 +1649,7 @@
                 async initialize() {
                     if (window.parent === window) {
                         this.el('connection').textContent =
-                            'Standalone view only. Open this resource through the explicitly configured MCP panel to read real skills. No data is loaded.';
+                            'This HTML file is a standalone preview, not the installed panel. In Codex, open I-9 Skills from the sidebar or ask the configured plugin to call skill_panel_open. If that entry is missing, verify the plugin MCP runtime and reopen the panel. No skills are loaded or changed here.';
                         return;
                     }
                     try {

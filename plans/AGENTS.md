@@ -22,6 +22,8 @@ Verify every requirement has an implementation and a check or an explicit limit.
 
 ## Child DOX index
 
+- [Self-contained panel delivery](2026-10-18-02-35-00-self-contained-panel-delivery.md): compiled local plugin runtime and isolated launch verification independent of the development branch; real skills/state, public approval and publishing stay separately controlled.
+
 - [Approved global skill evolution](2026-10-17-22-26-00-approved-global-skill-evolution.md): explicit global capability, retained source-bound proposals and exact approved single-entrypoint apply/recover; default discovery, external aliases and unsupported packages remain read only.
 
 - [Guided panel agent workflow](2026-10-17-04-04-59-guided-panel-agent-workflow.md): user-clicked host handoff, retained review outcomes and selectable proposals; no automatic application, global mutation or provider-execution claim.
@@ -43,6 +45,9 @@ Verify every requirement has an implementation and a check or an explicit limit.
 - [Local sidebar feasibility](2026-10-16-19-35-25-local-sidebar-feasibility.md): reversible read-only MCP Apps lab and native installation checks; visible Codex sidebar acceptance remains a separate observation.
 
 - [Optional sidebar panel proposal](2026-10-10-11-03-38-skills-sidebar-panel-proposal.md): proposed MCP App entry, local read-only catalog/evidence views and disposable visual preview; native registration, implementation and public delivery remain unverified.
+- [Changesets action rehearsal](2026-10-17-23-35-19-changesets-action-rehearsal.md): disposable action-by-action release evidence and plugin/artifact alignment; registry and GitHub publication remain unexercised unless explicitly represented by synthetic adapters.
+
+- [Simplified Changesets automation](2026-10-17-23-50-00-simplify-changesets.md): official action-driven versioning and publication with package/plugin synchronization; retires manual release commands and replay without changing external publisher settings.
 
 - [Managed skill installation](2026-10-07-20-40-51-managed-skill-installation.md): preview-first collection lifecycle, owned package receipts and recoverable transactions, with explicit host routing and no real-profile installation during development.
 - [Native pilot template layout](2026-10-06-00-00-31-native-pilot-template-layout.md): explicitly resolve source or compiled runtime layout in the bundled draft, with real tarball compatibility tests and unchanged native authority.

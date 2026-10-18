@@ -6,7 +6,6 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { parse } from 'yaml';
 import { LIMITS, main, scanRepository } from '../../../.github/scripts/secret-scan.mjs';
-import { verifyTrustedPublish } from '../../../.github/scripts/trusted-publish-check.mjs';
 
 const repository = process.cwd();
 
@@ -132,57 +131,6 @@ test('a large event range fails while an explicit history audit reports its boun
     assert.equal(result.bounded_history, true);
 });
 
-function publisherInput() {
-    return {
-        pkg: {
-            name: '@i-9.ai/skills', private: false,
-            repository: { url: 'git+https://github.com/i-9-ai/skills.git' },
-            publishConfig: { registry: 'https://registry.npmjs.org/', access: 'public' },
-        },
-        env: {
-            GITHUB_ACTIONS: 'true', GITHUB_REPOSITORY: 'i-9-ai/skills',
-            GITHUB_REF: 'refs/heads/main',
-            GITHUB_WORKFLOW_REF: 'i-9-ai/skills/.github/workflows/release.yml@refs/heads/main',
-            ACTIONS_ID_TOKEN_REQUEST_URL: 'https://example.invalid/oidc',
-            ACTIONS_ID_TOKEN_REQUEST_TOKEN: 'synthetic-presence-marker',
-        },
-        nodeVersion: '24.21.0', npmVersion: '11.19.0',
-    };
-}
-
-test('OIDC prerequisite verification reports presence without asserting server binding or printing credentials', () => {
-    const input = publisherInput();
-    const result = verifyTrustedPublish(input);
-    assert.equal(result.oidc_environment, true);
-    assert.equal(result.server_binding_verified, false);
-    assert.ok(!JSON.stringify(result).includes(input.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN));
-    assert.equal(verifyTrustedPublish({ ...input, npmVersion: '11.5.1' }).npm, '11.5.1');
-    for (const npmVersion of ['11.5.0', '10.9.0', 'latest', '11.5.1-preview']) {
-        assert.throws(() => verifyTrustedPublish({ ...input, npmVersion }), /npm 11\.5\.1/u);
-    }
-    assert.throws(() => verifyTrustedPublish({ ...input, nodeVersion: '22.14.0' }), /Node 24/u);
-});
-
-test('OIDC prerequisites reject mismatched identity, missing permission and stored token fallback', () => {
-    const input = publisherInput();
-    for (const [key, value] of [
-        ['GITHUB_REPOSITORY', 'example/fork'], ['GITHUB_REF', 'refs/heads/feature'],
-        ['GITHUB_WORKFLOW_REF', 'i-9-ai/skills/.github/workflows/other.yml@refs/heads/main'],
-        ['ACTIONS_ID_TOKEN_REQUEST_TOKEN', ''], ['ACTIONS_ID_TOKEN_REQUEST_URL', ''],
-        ['NPM_TOKEN', 'synthetic-token'], ['NODE_AUTH_TOKEN', 'synthetic-token'],
-    ]) {
-        assert.throws(() => verifyTrustedPublish({ ...input, env: { ...input.env, [key]: value } }), error => {
-            assert.ok(!error.message.includes(value) || value === '');
-            return true;
-        });
-    }
-    for (const pkg of [
-        { ...input.pkg, private: true },
-        { ...input.pkg, repository: { url: 'git+https://github.com/example/fork.git' } },
-        { ...input.pkg, publishConfig: { registry: 'https://example.invalid/', access: 'public' } },
-    ]) assert.throws(() => verifyTrustedPublish({ ...input, pkg }), /manifest does not match/u);
-});
-
 function workflow(name) {
     return parse(readFileSync(join(repository, '.github/workflows', `${name}.yml`), 'utf8'));
 }
@@ -208,7 +156,7 @@ test('credential scanning has read-only event-head checks and a checksum-pinned 
     assert.equal(scan.env.SCAN_HEAD_SHA, '${{ github.event.pull_request.head.sha || github.sha }}');
 });
 
-test('updated official action pins preserve current-head validation and scoped OIDC preflight', () => {
+test('official action pins preserve current-head validation and publish-only OIDC permission', () => {
     const pins = {
         'actions/checkout': '3d3c42e5aac5ba805825da76410c181273ba90b1',
         'actions/setup-node': '820762786026740c76f36085b0efc47a31fe5020',
@@ -227,8 +175,9 @@ test('updated official action pins preserve current-head validation and scoped O
     const validate = workflow('validate').jobs.validate;
     assert.match(validate.steps.find(step => step.name.includes('canonical skill')).run, /npm run ci:official/u);
     const publish = workflow('release').jobs.publish;
-    const preflight = publish.steps.findIndex(step => step.run === 'node .github/scripts/trusted-publish-check.mjs');
-    const upload = publish.steps.findIndex(step => step.uses?.startsWith('changesets/action/publish@'));
-    assert.ok(preflight >= 0 && preflight < upload);
+    assert.ok(publish.steps.some(step => step.uses?.startsWith('changesets/action/publish@')));
     assert.deepEqual(publish.permissions, { contents: 'write', 'id-token': 'write' });
+    for (const [name, job] of Object.entries(workflow('release').jobs)) {
+        if (name !== 'publish') assert.equal(job.permissions['id-token'], undefined);
+    }
 });

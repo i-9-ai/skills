@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import { SafeRoot } from '../../.agents/skills/skill-authoring/scripts/lib/filesystem.mjs';
 import { strictJson } from '../../.agents/skills/skills-catalog/scripts/catalog_tools.mjs';
 import { InstalledCollectionConfiguration } from '../config/InstalledCollectionConfiguration.ts';
-import { ReleaseVersionValidator } from '../validator/ReleaseVersionValidator.ts';
+import { PackageVersionValidator } from '../validator/PackageVersionValidator.ts';
 import { SkillCatalogQueryValidator } from '../validator/SkillCatalogQueryValidator.ts';
 import { SkillOperationError } from '../validator/SkillOperationError.ts';
 import { CollectionCatalogRepository } from './CollectionCatalogRepository.ts';
@@ -118,7 +118,7 @@ export class InstalledSkillRepository {
     }
 
     private packageVersion(root: SafeRoot): string {
-        const versions = new ReleaseVersionValidator();
+        const versions = new PackageVersionValidator();
         const manifest = versions.document(strictJson(root.readBytes('package.json', 65_536)));
         const repository = versions.document(manifest.repository);
         if (
