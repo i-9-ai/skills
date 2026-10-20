@@ -56,9 +56,13 @@ export class SkillPanelDiffService {
                     );
             }
         }
+        const plain =
+            left.length > 4096 ||
+            right.length > 4096 ||
+            Buffer.byteLength(JSON.stringify({ left, right })) > 262_144;
         return {
-            left: left.length > 4096 ? null : left,
-            right: right.length > 4096 ? null : right,
+            left: plain ? null : left,
+            right: plain ? null : right,
             added: right.filter((row) => row.changed).length,
             removed: left.filter((row) => row.changed).length,
             limited: this.limited,

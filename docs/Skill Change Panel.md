@@ -266,6 +266,9 @@ inventing categories, quality scores or related-skill recommendations.
    inertly with `skill_panel_inspect` using `skill`, `resource` (package-relative
    path) and the frozen package `base_sha256`. Reads are limited to 128 KiB per
    resource; binary, linked, oversized, external or changed resources are refused.
+   Paths must be ordinary non-hidden relative paths of at most 200 UTF-8 bytes;
+   unsupported names are counted in `resource_omitted`, not silently credited as
+   readable or reviewed. Their bytes still participate in package integrity.
    Other read-only globals still expose only `SKILL.md` and an explicit reason.
    Inventory and preserved package bytes do not establish analysis coverage.
    If a focused improvement is justified, the agent
@@ -284,7 +287,8 @@ inventing categories, quality scores or related-skill recommendations.
    explicit user action that reuses the saved request; messages are never retried
    automatically. An uncertain delivery remains unconfirmed until inspected.
    New completions should include `reviewed_files`, the unique package-relative
-   paths actually read (up to 128). These are revision-bound agent assertions,
+   paths actually read (up to 128 and 2 KiB serialized JSON in total). Report any
+   partial coverage in the summary. These are revision-bound agent assertions,
    not proof of understanding. Older outcomes without the field have unknown
    coverage; they are not retroactively credited with reading the inventory.
 5. Inspect the side-by-side retained versions, numbered lines, changed words

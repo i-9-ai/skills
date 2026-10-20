@@ -83,7 +83,10 @@ export class SkillPanelValidator {
 
     resource(value: unknown): string {
         const path = this.text(value, 200);
-        if (path.includes('\\') || path.split('/').some((part) => !part || part.startsWith('.')))
+        if (
+            /[\\\x00-\x1f\x7f]/.test(path) ||
+            path.split('/').some((part) => !part || part.startsWith('.'))
+        )
             this.invalid();
         return path;
     }
@@ -138,6 +141,7 @@ export class SkillPanelValidator {
                 this.invalid();
             reviewed_files = data.reviewed_files.map((path) => this.resource(path));
             if (new Set(reviewed_files).size !== reviewed_files.length) this.invalid();
+            if (Buffer.byteLength(JSON.stringify(reviewed_files)) > 2048) this.invalid();
         }
         if (!['no_changes', 'findings', 'proposal', 'blocked'].includes(data.outcome as string))
             this.invalid();

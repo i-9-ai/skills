@@ -83,6 +83,33 @@ test('optional reading coverage is bounded source-bound agent testimony and surv
     );
 });
 
+test('coverage cannot poison retained history with an oversized result and unsupported paths are explicit', (t) => {
+    const f = skillPanelFixture(t);
+    const names = Array.from(
+        { length: 128 },
+        (_, index) => String(index).padStart(3, '0') + 'x'.repeat(197),
+    );
+    for (const name of names) fs.writeFileSync(join(f.skill, name), 'synthetic\n');
+    fs.writeFileSync(join(f.skill, 'references', 'a'.repeat(200)), 'long path\n');
+    const observation = f.inspect();
+    assert.equal(observation.resource_omitted, 1);
+    const { request } = start(f);
+    assert.throws(() => f.service.complete(finish(request, { reviewed_files: names })), {
+        code: 'invalid_input',
+    });
+    assert.equal(f.service.activity({ skill: 'example-skill' }).requests[0].result, null);
+    const input = finish(request, {
+        reviewed_files: ['SKILL.md', ...names.slice(0, 9)],
+        summary: '\\"'.repeat(1000),
+    });
+    const result = f.service.complete(input);
+    assert.deepEqual(f.service.complete(input), result);
+    assert.equal(
+        f.service.activity({ skill: 'example-skill' }).requests[0].result.reviewed_files.length,
+        10,
+    );
+});
+
 test('opening workflow history is read only and a completed no-change review survives a new service instance', (t) => {
     const f = skillPanelFixture(t);
     assert.deepEqual(f.service.activity({ skill: 'example-skill' }), {

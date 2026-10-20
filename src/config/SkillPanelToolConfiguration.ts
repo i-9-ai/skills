@@ -122,6 +122,8 @@ export class SkillPanelToolConfiguration {
                     proposal_id: { anyOf: [proposalId, { type: 'null' }] },
                     reviewed_files: {
                         type: 'array',
+                        description:
+                            'Agent-reported package-relative paths actually read; at most 2 KiB of serialized JSON in total. Explain partial coverage in the summary.',
                         maxItems: 128,
                         uniqueItems: true,
                         items: { type: 'string', maxLength: 200 },

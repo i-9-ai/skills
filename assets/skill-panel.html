@@ -2041,6 +2041,7 @@
                 }
 
                 renderActivity(activity) {
+                    if (this.proposal) this.renderCoverage(this.proposal);
                     this.el('activity-list').replaceChildren();
                     const labels = {
                         no_changes: 'No changes proposed',
@@ -2377,6 +2378,8 @@
                     this.el('review-coverage').textContent = reported
                         ? 'Agent-reported reading: ' + reported.length + ' files. This is a report, not proof of comprehension. Files not listed were not reported as reviewed.'
                         : 'Review coverage was not recorded for this proposal. Preserving or inventorying a file does not mean the agent analyzed it.';
+                    if (proposal.resource_omitted)
+                        this.el('review-coverage').textContent += ' ' + proposal.resource_omitted + ' file paths exceed the text inspection path profile and are omitted from this list; their bytes remain covered by package integrity.';
                     this.el('proposal-files').replaceChildren();
                     for (const file of proposal.resources || [{ path: 'SKILL.md' }]) {
                         const item = document.createElement('li');

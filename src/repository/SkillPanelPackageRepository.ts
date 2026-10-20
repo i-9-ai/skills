@@ -5,7 +5,7 @@ import { basename } from 'node:path';
 import { SafeRoot } from '../../.agents/skills/skill-authoring/scripts/lib/filesystem.mjs';
 import { PortableFrontmatterValidator } from '../validator/PortableFrontmatterValidator.ts';
 import { SkillOperationError } from '../validator/SkillOperationError.ts';
-import { PANEL_TEXT_BYTES } from '../validator/SkillPanelValidator.ts';
+import { PANEL_TEXT_BYTES, SkillPanelValidator } from '../validator/SkillPanelValidator.ts';
 import { SkillPackageRevisionRepository } from './SkillPackageRevisionRepository.ts';
 
 /** Shared inert full-package observation for catalog eligibility and retained evolution. */
@@ -25,6 +25,14 @@ export class SkillPanelPackageRepository {
             const revision = this.revisions.inspect(directory);
             const resources = inventory
                 .filter(([, info]) => info.isFile())
+                .filter(([path]) => {
+                    try {
+                        new SkillPanelValidator().resource(path);
+                        return true;
+                    } catch {
+                        return false;
+                    }
+                })
                 .map(([path, info]) => ({
                     path,
                     bytes: info.size,
@@ -58,6 +66,7 @@ export class SkillPanelPackageRepository {
                 files: revision.files,
                 bytes: revision.bytes,
                 resources,
+                resource_omitted: revision.files - resources.length,
             };
         } finally {
             root.close();

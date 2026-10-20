@@ -70,4 +70,7 @@ test('work bounds disclose less precise highlighting without losing text or emit
     assert.equal(diff.limited, true);
     assert.equal(diff.left.map((row) => row.text).join(''), a);
     assert.equal(service.compare('a\n'.repeat(5000), 'b\n'.repeat(5000)).left, null);
+    const many = service.compare('x y\n'.repeat(4000), 'x z\n'.repeat(4000));
+    assert.equal(many.left, null, 'Serialized projection is bounded below the MCP response budget');
+    assert.equal(many.right, null);
 });

@@ -248,6 +248,26 @@ for (const globalEvolution of [false, true]) {
                 'recovered',
             );
             assert.equal(fs.readFileSync(f.entrypoint, 'utf8'), largeBefore);
+            const manyBefore = f.before + 'x y\n'.repeat(4000);
+            const manyAfter = f.before + 'x z\n'.repeat(4000);
+            fs.writeFileSync(f.entrypoint, manyBefore);
+            const manyResult = await rpc('tools/call', {
+                name: 'skill_panel_propose',
+                arguments: {
+                    skill: target,
+                    base_sha256: f.service.inspect({ skill: target }).package_sha256,
+                    after: manyAfter,
+                    rationale: 'Compare many short lines within the response budget.',
+                },
+            });
+            assert.equal(manyResult.error, undefined);
+            assert(Buffer.byteLength(JSON.stringify(manyResult)) < MAX_MCP_RESPONSE_BYTES);
+            const many = manyResult.result.structuredContent;
+            assert.equal(many.validation.local.status, 'passed');
+            assert.equal(many.comparison.left, null);
+            const reopened = await call('skill_panel_proposal', { proposal_id: many.proposal_id });
+            assert.equal(reopened.structuredContent.before, manyBefore);
+            assert.equal(reopened.structuredContent.after, manyAfter);
             if (globalEvolution)
                 assert.equal(fs.readFileSync(join(f.skill, 'SKILL.md'), 'utf8'), f.before);
         },

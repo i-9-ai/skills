@@ -222,15 +222,28 @@ test('word highlights leave shared text neutral and coverage never infers analys
         /references\/guide.md · unchanged; preserved for integrity · reading not reported/,
     );
     panel.activity = {
+        proposals: [],
         requests: [
             {
                 base_sha256: 'base',
-                result: { proposal_id: 'retained-identity', reviewed_files: ['SKILL.md'] },
+                created_at: '2026-10-20T01:48:06Z',
+                result: {
+                    outcome: 'proposal',
+                    summary: 'Read the entrypoint.',
+                    proposal_id: 'retained-identity',
+                    reviewed_files: ['SKILL.md'],
+                },
             },
         ],
     };
-    panel.renderCoverage(panel.proposal);
+    panel.el('approval').checked = true;
+    panel.renderActivity(panel.activity);
     assert.match(panel.el('review-coverage').textContent, /Agent-reported reading: 1/);
+    assert.equal(
+        panel.el('approval').checked,
+        true,
+        'Coverage refresh does not replace or approve the exact comparison',
+    );
     panel.activity.requests[0].base_sha256 = 'another-base';
     panel.renderCoverage(panel.proposal);
     assert.match(panel.el('review-coverage').textContent, /not recorded/);

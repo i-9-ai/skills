@@ -603,6 +603,7 @@ export class SkillEvolutionRepository {
             before: original.text,
             after: candidate.text,
             resources: original.resources,
+            resource_omitted: original.resource_omitted,
             status: recovered ? 'recovered' : applied ? 'applied' : 'proposed',
             source_sha256: source.package_sha256,
             source_state:
