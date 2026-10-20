@@ -15,6 +15,74 @@ const finish = (request, changes = {}) => ({
     ...changes,
 });
 
+test('supporting files are inventoried and read inertly at the frozen package identity', (t) => {
+    const f = skillPanelFixture(t);
+    const observed = f.inspect();
+    assert.equal(observed.resources.length, 4);
+    const read = (resource, base_sha256 = observed.package_sha256) =>
+        f.service.inspect({
+            skill: 'example-skill',
+            resource,
+            base_sha256,
+        });
+    assert.match(read('references/guide.md').resource.text, /synthetic evidence/);
+    assert.match(read('scripts/sentinel.mjs').resource.text, /must never run/);
+    assert.equal(fs.existsSync(f.state), false);
+    for (const path of [
+        '../LICENSE',
+        '/etc/passwd',
+        'references/../LICENSE',
+        '.hidden',
+        'references\\guide.md',
+    ])
+        assert.throws(() => read(path));
+    fs.writeFileSync(join(f.skill, 'references', 'binary'), Buffer.from([0, 1, 255]));
+    fs.writeFileSync(join(f.skill, 'references', 'large'), 'x'.repeat(131_073));
+    const base = f.inspect().package_sha256;
+    assert.throws(() => read('references/guide.md'), { code: 'panel_conflict' });
+    assert.throws(() => read('references/binary', base));
+    assert.throws(() => read('references/large', base));
+    fs.symlinkSync(join(f.root, 'outside'), join(f.skill, 'references', 'alias'));
+    assert.throws(() => read('references/alias', base));
+});
+
+test('optional reading coverage is bounded source-bound agent testimony and survives exact retries', (t) => {
+    const f = skillPanelFixture(t);
+    const { request, instructions } = start(f);
+    assert.match(instructions, /relevant linked references/);
+    assert.match(instructions, /only SKILL.md/);
+    const input = finish(request, { reviewed_files: ['SKILL.md', 'references/guide.md'] });
+    for (const reviewed_files of [
+        ['missing.md'],
+        ['../escape'],
+        ['SKILL.md', 'SKILL.md'],
+        Array(129).fill('LICENSE'),
+    ])
+        assert.throws(() => f.service.complete({ ...input, reviewed_files }));
+    const completed = f.service.complete(input);
+    assert.deepEqual(completed.result.reviewed_files, input.reviewed_files);
+    assert.deepEqual(f.service.complete(input), completed);
+    assert.deepEqual(
+        f.service.activity({ skill: 'example-skill' }).requests[0].result.reviewed_files,
+        input.reviewed_files,
+    );
+    fs.appendFileSync(f.entrypoint, '\nLater edit\n');
+    assert.deepEqual(
+        f.service.complete(input),
+        completed,
+        'Retained testimony remains historical after source edits',
+    );
+    const later = start(f).request;
+    fs.appendFileSync(f.entrypoint, '\nAnother edit\n');
+    assert.throws(() => f.service.complete(finish(later, { reviewed_files: ['SKILL.md'] })), {
+        code: 'panel_conflict',
+    });
+    assert.equal(
+        fs.readFileSync(join(f.skill, 'references', 'guide.md'), 'utf8'),
+        '# Reference\n\nUse synthetic evidence only.\n',
+    );
+});
+
 test('opening workflow history is read only and a completed no-change review survives a new service instance', (t) => {
     const f = skillPanelFixture(t);
     assert.deepEqual(f.service.activity({ skill: 'example-skill' }), {

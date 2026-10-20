@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
 import vm from 'node:vm';
+import { SkillPanelDiffService } from '../../../src/service/SkillPanelDiffService.ts';
 
 const html = fs.readFileSync(new URL('../../../assets/skill-panel.html', import.meta.url), 'utf8');
 const script = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)][0][1];
@@ -92,6 +93,7 @@ function view() {
         candidate_sha256: 'candidate',
         before: 'original',
         after: 'candidate',
+        comparison: new SkillPanelDiffService().compare('original', 'candidate'),
         diff: '-original\n+candidate\n',
         recovery_diff: '-candidate\n+original\n',
         status: 'proposed',
@@ -168,7 +170,7 @@ test('comparison preserves untrusted text, line endings and highlights EOF-only 
     const panel = view();
     const before = '<script>not executable</script>\r\nshared\r\nlast';
     const after = '<script>not executable</script>\r\nshared\r\nlast\r\n';
-    panel.renderComparison(before, after);
+    panel.renderComparison(before, after, new SkillPanelDiffService().compare(before, after));
     assert.equal(panel.el('before').textContent, before);
     assert.equal(panel.el('after').textContent, after);
     assert.equal(panel.el('before').children.length, 3);
@@ -178,7 +180,7 @@ test('comparison preserves untrusted text, line endings and highlights EOF-only 
     assert.equal(panel.el('after').children[2].attributes['data-line'], '3');
     assert.match(panel.el('before-ending').textContent, /CRLF.*No final newline/);
     assert.match(panel.el('after-ending').textContent, /CRLF.*Final newline/);
-    panel.renderComparison('', 'one\n');
+    panel.renderComparison('', 'one\n', new SkillPanelDiffService().compare('', 'one\n'));
     assert.equal(panel.el('before').children.length, 0);
     assert.match(panel.el('before-ending').textContent, /^0 lines/);
     assert.equal(panel.el('after').children[0].className, 'code-line added');
@@ -188,11 +190,50 @@ test('large comparisons retain full text without an unbounded row-node expansion
     const panel = view();
     const before = 'a\n'.repeat(5000);
     const after = before + 'b\n';
-    panel.renderComparison(before, after);
+    panel.renderComparison(before, after, new SkillPanelDiffService().compare(before, after));
     assert.equal(panel.el('before').textContent, before);
     assert.equal(panel.el('after').textContent, after);
     assert.equal(panel.el('before').children.length, 0);
     assert.match(panel.el('before-ending').textContent, /Full plain text/);
+});
+
+test('word highlights leave shared text neutral and coverage never infers analysis from inventory', () => {
+    const panel = view();
+    const before = 'Keep the old value and <unsafe> text.\nunchanged\n';
+    const after = before.replace('old', 'new');
+    panel.proposal.before = before;
+    panel.proposal.after = after;
+    panel.proposal.comparison = new SkillPanelDiffService().compare(before, after);
+    panel.proposal.resources = [{ path: 'SKILL.md' }, { path: 'references/guide.md' }];
+    panel.renderProposal(panel.proposal);
+    assert.equal(panel.el('before').textContent, before);
+    const row = panel.el('before').children[0];
+    assert.equal(
+        row.children
+            .filter((part) => part.className === 'word-change')
+            .map((part) => part.textContent)
+            .join(''),
+        'old',
+    );
+    assert.equal(panel.el('before').children[1].className, 'code-line');
+    assert.match(panel.el('review-coverage').textContent, /not recorded/);
+    assert.match(
+        panel.el('proposal-files').textContent,
+        /references\/guide.md · unchanged; preserved for integrity · reading not reported/,
+    );
+    panel.activity = {
+        requests: [
+            {
+                base_sha256: 'base',
+                result: { proposal_id: 'retained-identity', reviewed_files: ['SKILL.md'] },
+            },
+        ],
+    };
+    panel.renderCoverage(panel.proposal);
+    assert.match(panel.el('review-coverage').textContent, /Agent-reported reading: 1/);
+    panel.activity.requests[0].base_sha256 = 'another-base';
+    panel.renderCoverage(panel.proposal);
+    assert.match(panel.el('review-coverage').textContent, /not recorded/);
 });
 
 test('proposal checks remain explicit and a refreshed exact comparison clears approval', () => {

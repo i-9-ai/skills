@@ -710,6 +710,18 @@
                 background: var(--removed);
                 color: var(--removed-ink);
             }
+            .word-change {
+                border-radius: 2px;
+                font-weight: 700;
+                text-decoration: underline;
+                text-underline-offset: 3px;
+            }
+            .added .word-change {
+                background: color-mix(in srgb, var(--added) 65%, #18864b 35%);
+            }
+            .removed .word-change {
+                background: color-mix(in srgb, var(--removed) 65%, #c84b55 35%);
+            }
             .file-ending {
                 padding: 6px 12px;
                 border-top: 1px solid var(--line);
@@ -1294,6 +1306,12 @@
                         >
                             <h3 id="proposal-title" class="sr-only">Review the exact change</h3>
                             <p id="proposal-rationale"></p>
+                            <p id="comparison-summary" class="footnote"></p>
+                            <details class="proposal-details">
+                                <summary>Files and review coverage</summary>
+                                <p id="review-coverage"></p>
+                                <ul id="proposal-files"></ul>
+                            </details>
                             <div
                                 id="checks"
                                 class="panel-checks"
@@ -2272,7 +2290,11 @@
                     this.renderComparison(
                         recovery ? proposal.after : proposal.before,
                         recovery ? proposal.before : proposal.after,
+                        proposal.comparison && (recovery
+                            ? { ...proposal.comparison, left: proposal.comparison.right, right: proposal.comparison.left, added: proposal.comparison.removed, removed: proposal.comparison.added }
+                            : proposal.comparison),
                     );
+                    this.renderCoverage(proposal);
                     this.el('diff').replaceChildren();
                     const diff = recovery ? proposal.recovery_diff : proposal.diff;
                     const diffLines = diff.split('\n');
@@ -2348,41 +2370,49 @@
                     return next + ' · ' + version;
                 }
 
-                renderComparison(before, after) {
-                    // Use the same complete changed range as the server's exact diff.
-                    // Keep line terminators in comparisons so EOF-only edits remain visible.
-                    const left = before.match(/[^\n]*\n|[^\n]+$/g) || [];
-                    const right = after.match(/[^\n]*\n|[^\n]+$/g) || [];
-                    let start = 0;
-                    while (
-                        start < left.length &&
-                        start < right.length &&
-                        left[start] === right[start]
-                    )
-                        start++;
-                    let end = 0;
-                    while (
-                        end < left.length - start &&
-                        end < right.length - start &&
-                        left[left.length - 1 - end] === right[right.length - 1 - end]
-                    )
-                        end++;
-                    this.renderCode('before', before, left, start, left.length - end, 'removed');
-                    this.renderCode('after', after, right, start, right.length - end, 'added');
+                renderCoverage(proposal) {
+                    const review = this.activity?.requests.find((request) =>
+                        request.result?.proposal_id === proposal.proposal_id && request.base_sha256 === proposal.base_sha256);
+                    const reported = review?.result?.reviewed_files;
+                    this.el('review-coverage').textContent = reported
+                        ? 'Agent-reported reading: ' + reported.length + ' files. This is a report, not proof of comprehension. Files not listed were not reported as reviewed.'
+                        : 'Review coverage was not recorded for this proposal. Preserving or inventorying a file does not mean the agent analyzed it.';
+                    this.el('proposal-files').replaceChildren();
+                    for (const file of proposal.resources || [{ path: 'SKILL.md' }]) {
+                        const item = document.createElement('li');
+                        item.textContent = file.path + (file.path === 'SKILL.md'
+                            ? ' · proposed change'
+                            : ' · unchanged; preserved for integrity') + (reported?.includes(file.path) ? ' · agent reports reading' : ' · reading not reported');
+                        this.el('proposal-files').append(item);
+                    }
                 }
 
-                renderCode(id, text, lines, start, end, change) {
+                renderComparison(before, after, comparison) {
+                    this.renderCode('before', before, comparison?.left, 'removed');
+                    this.renderCode('after', after, comparison?.right, 'added');
+                    this.el('comparison-summary').textContent = comparison
+                        ? 'SKILL.md · +' + comparison.added + ' / −' + comparison.removed + ' lines. ' + (comparison.left && comparison.right ? 'Strong highlights mark changed words; neutral text is unchanged.' : 'Large file: full text without inline highlighting.') + (comparison.limited ? ' Detailed matching reached its work limit; some changed ranges use full-line highlighting. The complete text and exact diff remain available.' : '')
+                        : 'SKILL.md · Full text. Detailed comparison is unavailable; use the exact diff below.';
+                }
+
+                renderCode(id, text, rows, change) {
                     const container = this.el(id);
                     container.replaceChildren();
-                    const plain = lines.length > 4096;
+                    const lines = text.match(/[^\n]*\n|[^\n]+$/g) || [];
+                    const plain = !rows || rows.length > 4096;
                     if (plain) container.textContent = text;
                     else {
-                        lines.forEach((line, index) => {
+                        rows.forEach((line) => {
                             const row = document.createElement('span');
                             row.className =
-                                'code-line' + (index >= start && index < end ? ' ' + change : '');
-                            row.setAttribute('data-line', String(index + 1));
-                            row.textContent = line;
+                                'code-line' + (line.changed ? ' ' + change : '');
+                            row.setAttribute('data-line', String(line.line));
+                            for (const part of line.parts) {
+                                const token = document.createElement('span');
+                                token.textContent = part.text;
+                                if (part.changed) token.className = 'word-change';
+                                row.append(token);
+                            }
                             container.append(row);
                         });
                     }
@@ -2397,7 +2427,7 @@
                         endings +
                         ' · ' +
                         (text.endsWith('\n') ? 'Final newline' : 'No final newline') +
-                        (plain ? ' · Full plain text for large files' : '');
+                        (plain ? ' · Full plain text; no inline highlighting' : '');
                 }
 
                 renderChecks(validation) {

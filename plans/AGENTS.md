@@ -22,6 +22,8 @@ Verify every requirement has an implementation and a check or an explicit limit.
 
 ## Child DOX index
 
+- [Precise panel diffs and review coverage](2026-10-20-01-48-06-panel-diff-and-review-coverage.md): bounded word-level comparison, inert supporting-file reads and explicit agent-reported coverage; approval still changes only SKILL.md.
+
 - [Self-contained panel delivery](2026-10-18-02-35-00-self-contained-panel-delivery.md): compiled local plugin runtime and isolated launch verification independent of the development branch; real skills/state, public approval and publishing stay separately controlled.
 
 - [Approved global skill evolution](2026-10-17-22-26-00-approved-global-skill-evolution.md): explicit global capability, retained source-bound proposals and exact approved single-entrypoint apply/recover; default discovery, external aliases and unsupported packages remain read only.

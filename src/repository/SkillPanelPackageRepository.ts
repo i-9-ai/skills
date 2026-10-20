@@ -23,6 +23,12 @@ export class SkillPanelPackageRepository {
             )
                 throw new SkillOperationError('invalid_input');
             const revision = this.revisions.inspect(directory);
+            const resources = inventory
+                .filter(([, info]) => info.isFile())
+                .map(([path, info]) => ({
+                    path,
+                    bytes: info.size,
+                }));
             const bytes = root.readBytes('SKILL.md', PANEL_TEXT_BYTES);
             const text = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(bytes);
             const metadata = new PortableFrontmatterValidator().parse(
@@ -51,7 +57,30 @@ export class SkillPanelPackageRepository {
                 description: String(metadata.description),
                 files: revision.files,
                 bytes: revision.bytes,
+                resources,
             };
+        } finally {
+            root.close();
+        }
+    }
+
+    /** Read one ordinary package resource inertly; callers bind the observed package revision. */
+    resource(directory: string, path: string, expected: string) {
+        const before = this.inspect(directory);
+        if (
+            before.package_sha256 !== expected ||
+            !before.resources.some((entry) => entry.path === path)
+        )
+            throw new SkillOperationError('panel_conflict');
+        const root = new SafeRoot(directory);
+        try {
+            const bytes = root.readBytes(path, 131_072);
+            const text = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(bytes);
+            if (/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/.test(text))
+                throw new SkillOperationError('invalid_input');
+            if (this.inspect(directory).package_sha256 !== expected)
+                throw new SkillOperationError('panel_conflict');
+            return { path, text, sha256: createHash('sha256').update(bytes).digest('hex') };
         } finally {
             root.close();
         }

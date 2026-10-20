@@ -261,11 +261,19 @@ inventing categories, quality scores or related-skill recommendations.
    when the host advertises text messaging. A message acknowledgement does not
    prove that an agent is running. Unsupported hosts show an explicit unsent
    manual fallback; no hidden server-side model call is made.
-3. The agent reads the actual source. If a focused improvement is justified, it
+3. The agent reads the actual source and relevant supporting resources. Eligible
+   package inspection returns a `resources` inventory; read a listed UTF-8 file
+   inertly with `skill_panel_inspect` using `skill`, `resource` (package-relative
+   path) and the frozen package `base_sha256`. Reads are limited to 128 KiB per
+   resource; binary, linked, oversized, external or changed resources are refused.
+   Other read-only globals still expose only `SKILL.md` and an explicit reason.
+   Inventory and preserved package bytes do not establish analysis coverage.
+   If a focused improvement is justified, the agent
    authors complete candidate text and calls `skill_panel_propose` with the frozen
    package `base_sha256`. This retains both packages, the exact diff and local
    structural checks, without editing the selected skill. Only `SKILL.md` can
-   change; preserve the package name.
+   change; preserve the package name. If supporting files also need changes,
+   report findings or a blocker; do not imply those changes are in this proposal.
 4. The agent calls `skill_panel_complete` to record **no changes**, **findings**,
    a matching **proposal**, or a **blocker**. The current-result card shows that
    outcome near the skill title. Click **View proposed diff** to open its verified
@@ -275,16 +283,27 @@ inventing categories, quality scores or related-skill recommendations.
    apart). Closing the chat does not imply completion. **Continue review** is an
    explicit user action that reuses the saved request; messages are never retried
    automatically. An uncertain delivery remains unconfirmed until inspected.
-5. Inspect the side-by-side retained versions, numbered lines, changed ranges
+   New completions should include `reviewed_files`, the unique package-relative
+   paths actually read (up to 128). These are revision-bound agent assertions,
+   not proof of understanding. Older outcomes without the field have unknown
+   coverage; they are not retroactively credited with reading the inventory.
+5. Inspect the side-by-side retained versions, numbered lines, changed words
    and actual checks. The comparison initially scrolls toward the change;
    scroll either pane to inspect the full text. The detail disclosure retains
    exact proposal hashes, local validation detail and the complete unified diff,
-   including EOF-only changes. Large files use full plain text to bound rendered
+   including separate hunks and EOF-only changes. Changed lines use a light
+   background; stronger underlined spans identify the changed words, punctuation
+   or whitespace, while unchanged text remains neutral. Bounded matching may
+   fall back to whole changed ranges and discloses that limit. Large files use full plain text to bound rendered
    row nodes. Official Agent Skills conformance and
    behavioral evaluation are explicitly `not_run` by this pilot; a local
    structural pass cannot establish semantic quality or release readiness.
    A failed local check disables application. Run required official and task
    validation separately before accepting a package for distribution.
+   **Files and review coverage** lists the proposed `SKILL.md` change separately
+   from unchanged supporting files retained for integrity. It displays matching
+   agent-reported reading or explicitly unknown coverage. No supporting file is
+   silently edited by approval or recovery.
 6. Acknowledge the exact diff and limits, then choose **Approve & apply**.
    The backend verifies the entire package, retained artifacts and approval
    hashes again before replacing the entrypoint. Editing the candidate or

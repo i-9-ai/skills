@@ -78,6 +78,10 @@ export class SkillEvolutionRepository {
         }
     }
 
+    resource(skill: string, path: string, expected: string) {
+        return this.packages.resource(this.target(skill).path, path, expected);
+    }
+
     prepare(input: { skill: string; base_sha256: string; after: string; rationale: string }) {
         const target = this.target(input.skill, true);
         return this.withState(true, (state, collection) => {
@@ -217,6 +221,20 @@ export class SkillEvolutionRepository {
                 if (JSON.stringify(identity) !== JSON.stringify(input)) this.conflict();
                 return { request, result: existing };
             }
+            if (input.reviewed_files?.length) {
+                const observed = request.read_only
+                    ? new SkillPanelCatalogRepository(this.configuration).inspect(request.skill)
+                    : this.inspect(request.skill);
+                const resources =
+                    'resources' in observed ? observed.resources : [{ path: 'SKILL.md' }];
+                if (
+                    (observed.package_sha256 || observed.sha256) !== request.base_sha256 ||
+                    input.reviewed_files.some(
+                        (path) => !resources?.some((entry) => entry.path === path),
+                    )
+                )
+                    this.conflict();
+            }
             const result = { ...input, completed_at: new Date().toISOString() };
             this.writeRecord(state, filename, result);
             return { request, result };
@@ -332,12 +350,16 @@ export class SkillEvolutionRepository {
     private readCompletion(state: SafeRoot, request: ReviewRequest) {
         const filename = `request/${request.request_id}/result.json`;
         if (state.inspect(filename, { allowMissingLeaf: true }).info === null) return null;
-        const data = this.validator.object(this.readRecord(state, filename), [
+        const stored = this.readRecord(state, filename);
+        const data = this.validator.object(stored, [
             'request_id',
             'outcome',
             'summary',
             'proposal_id',
             'completed_at',
+            ...(stored && typeof stored === 'object' && Object.hasOwn(stored, 'reviewed_files')
+                ? ['reviewed_files']
+                : []),
         ]);
         const { completed_at, ...input } = data;
         const result = this.validator.completion(input);
@@ -580,6 +602,7 @@ export class SkillEvolutionRepository {
             ...receipt,
             before: original.text,
             after: candidate.text,
+            resources: original.resources,
             status: recovered ? 'recovered' : applied ? 'applied' : 'proposed',
             source_sha256: source.package_sha256,
             source_state:

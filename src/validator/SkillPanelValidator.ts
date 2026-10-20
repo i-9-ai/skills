@@ -19,6 +19,7 @@ export type PanelCompletion = {
     outcome: 'no_changes' | 'findings' | 'proposal' | 'blocked';
     summary: string;
     proposal_id: string | null;
+    reviewed_files?: string[];
 };
 
 /** Closed, bounded inputs for one entrypoint change in an explicitly selected collection. */
@@ -80,6 +81,13 @@ export class SkillPanelValidator {
         return this.name(skill);
     }
 
+    resource(value: unknown): string {
+        const path = this.text(value, 200);
+        if (path.includes('\\') || path.split('/').some((part) => !part || part.startsWith('.')))
+            this.invalid();
+        return path;
+    }
+
     catalog(value: unknown) {
         if (!value || typeof value !== 'object' || Array.isArray(value)) this.invalid();
         const query = value as Record<string, unknown>;
@@ -115,7 +123,22 @@ export class SkillPanelValidator {
     }
 
     completion(value: unknown): PanelCompletion {
-        const data = this.object(value, ['request_id', 'outcome', 'summary', 'proposal_id']);
+        const hasCoverage =
+            value && typeof value === 'object' && Object.hasOwn(value, 'reviewed_files');
+        const data = this.object(value, [
+            'request_id',
+            'outcome',
+            'summary',
+            'proposal_id',
+            ...(hasCoverage ? ['reviewed_files'] : []),
+        ]);
+        let reviewed_files: string[] | undefined;
+        if (hasCoverage) {
+            if (!Array.isArray(data.reviewed_files) || data.reviewed_files.length > 128)
+                this.invalid();
+            reviewed_files = data.reviewed_files.map((path) => this.resource(path));
+            if (new Set(reviewed_files).size !== reviewed_files.length) this.invalid();
+        }
         if (!['no_changes', 'findings', 'proposal', 'blocked'].includes(data.outcome as string))
             this.invalid();
         if ((data.outcome === 'proposal') !== (data.proposal_id !== null)) this.invalid();
@@ -124,6 +147,7 @@ export class SkillPanelValidator {
             outcome: data.outcome as PanelCompletion['outcome'],
             summary: this.text(data.summary, 2000),
             proposal_id: data.proposal_id === null ? null : this.id(data.proposal_id),
+            ...(reviewed_files ? { reviewed_files } : {}),
         };
     }
 

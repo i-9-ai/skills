@@ -53,8 +53,18 @@ export class SkillPanelToolConfiguration {
         {
             name: 'skill_panel_inspect',
             description:
-                'Read a selected package or source-qualified global skill. Eligible opted-in globals include the full package identity; other globals return SKILL.md and a read-only reason. No scripts execute or state is written.',
-            inputSchema: object({ skill }),
+                'Read a selected package or source-qualified global skill. Eligible packages include resource paths and full package identity. To read one supporting UTF-8 file inertly (up to 128 KiB), also supply resource and the inspected base_sha256. Other read-only globals expose only SKILL.md. Inventory is not analysis coverage; no scripts execute or state is written.',
+            inputSchema: {
+                type: 'object',
+                oneOf: [
+                    object({ skill }),
+                    object({
+                        skill,
+                        resource: { type: 'string', maxLength: 200 },
+                        base_sha256: hash,
+                    }),
+                ],
+            },
             annotations: { readOnlyHint: true, openWorldHint: false },
         },
         {
@@ -104,12 +114,21 @@ export class SkillPanelToolConfiguration {
             name: 'skill_panel_complete',
             description:
                 'Record the result of a panel-requested review: no_changes, findings, proposal or blocked. A proposal must match the request skill and frozen base; other outcomes use proposal_id null. This is an agent assertion, not approval or quality certification. Exact retries are idempotent.',
-            inputSchema: object({
-                request_id: proposalId,
-                outcome: { enum: ['no_changes', 'findings', 'proposal', 'blocked'] },
-                summary: { type: 'string', maxLength: 2000 },
-                proposal_id: { anyOf: [proposalId, { type: 'null' }] },
-            }),
+            inputSchema: {
+                ...object({
+                    request_id: proposalId,
+                    outcome: { enum: ['no_changes', 'findings', 'proposal', 'blocked'] },
+                    summary: { type: 'string', maxLength: 2000 },
+                    proposal_id: { anyOf: [proposalId, { type: 'null' }] },
+                    reviewed_files: {
+                        type: 'array',
+                        maxItems: 128,
+                        uniqueItems: true,
+                        items: { type: 'string', maxLength: 200 },
+                    },
+                }),
+                required: ['request_id', 'outcome', 'summary', 'proposal_id'],
+            },
             annotations: {
                 readOnlyHint: false,
                 destructiveHint: false,

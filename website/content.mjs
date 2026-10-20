@@ -168,6 +168,8 @@ export const messages = {
             ],
             link: 'Read compatibility and evidence',
             panel: 'Local skill-change panel: browse selected copies and global skills, ask the host agent for a review and open a real numbered diff without copying IDs. Explicit configuration enables eligible global evolution; unsupported packages remain read only with a reason. Applying or recovering requires separate exact approval. Prepare a self-contained local plugin with its compiled runtime and YAML dependency so switching development branches does not remove its code. Open it through the native MCP panel; a standalone HTML preview cannot load skills. Host messaging, native rendering and official/behavioral checks remain distinct. Public local-MCP submission requires provider organization eligibility; skills-only plugins do not include the panel.',
+            panelReview:
+                'See changed words inside each edited line and distinguish agent-reported reading of supporting files from the package inventory. Only SKILL.md is changed after exact approval.',
             panelLink: 'Understand the local panel pilot',
             providers:
                 'Codex and Claude plugin pilots exercise selected native paths. Copilot CLI evidence covers ephemeral legacy-plugin MCP discovery and direct calls, without a model turn or persistent installation. Icons and hooks remain host-dependent.',
@@ -300,6 +302,8 @@ export const messages = {
             ],
             link: 'Ler compatibilidade e evidências',
             panel: 'Painel local de evolução: consulte cópias selecionadas e skills globais, peça uma revisão ao agente e abra o diff real numerado sem copiar IDs. A configuração explícita habilita a evolução global elegível; pacotes incompatíveis permanecem somente para leitura, com o motivo indicado. Aplicar e recuperar exigem aprovações exatas separadas. Prepare um plugin local completo com runtime compilado e dependência YAML para que trocar a branch de desenvolvimento não remova seu código. Abra pelo painel MCP nativo; o HTML isolado não carrega skills. Mensagens do host, renderização nativa e validações oficial e comportamental são verificações distintas. A submissão pública de MCP local exige elegibilidade da organização no provedor; plugins somente de skills não incluem o painel.',
+            panelReview:
+                'Veja as palavras alteradas em cada linha e diferencie os arquivos de apoio que o agente declara ter lido do inventário do pacote. Apenas SKILL.md é alterado após aprovação exata.',
             panelLink: 'Entenda o piloto local do painel',
             providers:
                 'Os pilotos de plugin do Codex e Claude exercitam caminhos nativos específicos. A evidência do Copilot CLI cobre descoberta MCP e chamadas diretas de plugin legado efêmero, sem turno de modelo nem instalação persistente. Ícones e hooks dependem do host.',
@@ -434,6 +438,8 @@ export const messages = {
             ],
             link: 'Leer compatibilidad y evidencia',
             panel: 'Panel local de evolución: consulte copias seleccionadas y skills globales, solicite una revisión al agente y abra el diff real numerado sin copiar IDs. La configuración explícita habilita la evolución global elegible; los paquetes incompatibles siguen siendo de solo lectura con un motivo. Aplicar y recuperar requieren aprobaciones exactas separadas. Prepare un plugin local completo con runtime compilado y dependencia YAML para que cambiar la rama de desarrollo no elimine su código. Ábralo mediante el panel MCP nativo; el HTML aislado no carga skills. La mensajería del host, la visualización nativa y las validaciones oficial y de comportamiento son verificaciones distintas. La presentación pública de MCP local exige elegibilidad de la organización ante el proveedor; los plugins de solo skills no incluyen el panel.',
+            panelReview:
+                'Vea las palabras modificadas dentro de cada línea y distinga los archivos de apoyo que el agente declara haber leído del inventario del paquete. Solo SKILL.md cambia tras la aprobación exacta.',
             panelLink: 'Conozca el piloto local del panel',
             providers:
                 'Los pilotos de plugins de Codex y Claude prueban rutas nativas específicas. La evidencia de Copilot CLI cubre descubrimiento MCP y llamadas directas de un plugin legado efímero, sin turno de modelo ni instalación persistente. Los iconos y hooks dependen del host.',
