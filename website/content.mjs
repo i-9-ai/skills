@@ -84,7 +84,7 @@ export const messages = {
                 },
                 {
                     title: 'Bring the review back',
-                    body: 'Ask your host agent for a review. Its saved report and declared file coverage return to the dashboard, including findings with no proposed change.',
+                    body: 'Track the saved request, recorded result and opened proposal as separate stages. The host agent’s report and declared file coverage return here, including findings with no proposed change.',
                 },
                 {
                     title: 'Compare, then decide',
@@ -244,7 +244,7 @@ export const messages = {
                 },
                 {
                     title: 'Traga a revisão de volta',
-                    body: 'Peça uma revisão ao agente do seu host. O relatório salvo e a cobertura de arquivos declarada voltam ao painel, inclusive quando há apontamentos sem proposta de alteração.',
+                    body: 'Acompanhe pedido salvo, resultado registrado e proposta aberta como etapas distintas. O relatório do agente e a cobertura declarada voltam ao painel, inclusive quando há apontamentos sem proposta de alteração.',
                 },
                 {
                     title: 'Compare e decida',
@@ -407,7 +407,7 @@ export const messages = {
                 },
                 {
                     title: 'Traiga la revisión de vuelta',
-                    body: 'Solicite una revisión al agente de su host. El informe guardado y la cobertura declarada regresan al panel, incluso cuando hay hallazgos sin una propuesta de cambio.',
+                    body: 'Distinga la solicitud guardada, el resultado registrado y la propuesta abierta. El informe del agente y la cobertura declarada regresan al panel, incluso cuando hay hallazgos sin una propuesta de cambio.',
                 },
                 {
                     title: 'Compare y decida',

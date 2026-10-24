@@ -633,6 +633,25 @@
                 font-size: 13px;
                 line-height: 1.6;
             }
+            .review-progress {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+                gap: 12px;
+                padding: 12px 0;
+                margin: 12px 0;
+                list-style: none;
+                border-block: 1px solid var(--line);
+            }
+            .review-progress li {
+                min-width: 0;
+                font-size: 12px;
+                line-height: 1.5;
+                overflow-wrap: anywhere;
+            }
+            .review-progress strong {
+                display: block;
+                margin-bottom: 4px;
+            }
             .result-actions {
                 justify-content: flex-start;
                 margin-top: 14px;
@@ -1113,6 +1132,11 @@
                         <p id="request-status" class="footnote" role="status" aria-live="polite">
                             Select a skill, then ask the agent for a review.
                         </p>
+                        <ol id="review-progress" class="review-progress" aria-label="Last observed workflow stages" hidden>
+                            <li><strong>01 / Request</strong><span id="progress-request"></span></li>
+                            <li><strong>02 / Agent result</strong><span id="progress-result"></span></li>
+                            <li><strong>03 / Proposal &amp; decision</strong><span id="progress-decision"></span></li>
+                        </ol>
                         <p id="result-summary" class="result-summary"></p>
                         <p id="result-coverage" class="footnote"></p>
                         <p id="diff-status" class="footnote">
@@ -2585,6 +2609,7 @@
                 }
 
                 actions() {
+                    this.renderReviewProgress();
                     const proposal = this.proposal;
                     const blocked = this.uncertain || Boolean(this.unresolved);
                     const canApply =
@@ -2648,6 +2673,62 @@
                         Boolean(this.currentReview.result);
                     for (const button of this.el('activity-list').querySelectorAll('button'))
                         button.disabled = this.busy || blocked;
+                }
+
+                renderReviewProgress() {
+                    this.el('review-progress').hidden = !this.selected;
+                    if (!this.selected) return;
+                    const review = this.currentReview;
+                    const history = Boolean(this.activity);
+                    const hash = this.selected.package_sha256 || this.selected.sha256;
+                    this.el('progress-request').textContent = review
+                        ? 'Saved' + (review.base_sha256 !== hash ? ' · different inspected revision' : '')
+                        : history ? 'None recorded' : 'History not loaded';
+                    const outcomes = {
+                        no_changes: 'Recorded · no changes proposed',
+                        findings: 'Recorded · findings only',
+                        proposal: 'Recorded · candidate supplied',
+                        blocked: 'Recorded · blocked; read the report',
+                    };
+                    this.el('progress-result').textContent = review?.result
+                        ? outcomes[review.result.outcome] || 'Recorded · inspect full result'
+                        : review
+                            ? 'Awaiting a recorded result; agent execution is unverified'
+                            : history ? 'None recorded' : 'History not loaded';
+                    this.el('progress-decision').textContent = this.decisionProgress();
+                }
+
+                decisionProgress() {
+                    if (this.uncertain || this.unresolved)
+                        return 'Write outcome unconfirmed · refresh the retained proposal';
+                    if (this.selected.read_only)
+                        return 'Read only · no change can be approved';
+                    const proposal = this.proposal?.skill === this.selected.skill && !this.editing
+                        ? this.proposal : null;
+                    if (!proposal) {
+                        if (this.currentDiff) return 'Saved candidate · open its diff to inspect state';
+                        if (this.currentReview?.result) return 'No candidate · nothing to approve';
+                        return this.activity ? 'No candidate recorded' : 'Proposal state not inspected';
+                    }
+                    // This may be an older saved proposal, not the latest review's result.
+                    const prefix = 'Opened proposal · ';
+                    if (proposal.write_intent)
+                        return prefix + 'retained write intent; inspect before deciding';
+                    if (proposal.source_state === 'changed')
+                        return prefix + 'source changed; create a new proposal';
+                    if (proposal.status === 'applied' && proposal.source_state === 'candidate')
+                        return prefix + (this.mode === 'recover'
+                            ? 'reverse diff open; new exact approval required'
+                            : 'last inspected as applied; recovery needs separate approval');
+                    if (proposal.status === 'recovered' && proposal.source_state === 'original')
+                        return prefix + 'last inspected as recovered';
+                    if (proposal.validation.local.status !== 'passed')
+                        return prefix + 'local checks failed; application is disabled';
+                    if (this.mode === 'recover')
+                        return prefix + 'reverse diff; new exact approval required';
+                    if (proposal.status === 'proposed' && proposal.source_state === 'original')
+                        return prefix + 'diff available; exact approval required';
+                    return prefix + 'refresh its actual source state';
                 }
 
                 showUnresolved(detail = '') {

@@ -119,6 +119,87 @@ function view() {
     return panel;
 }
 
+test('saved workflow stages distinguish unknown history, recorded results and an uninspected candidate without inferring execution', () => {
+    const panel = view();
+    panel.proposal = null;
+    panel.call = () => assert.fail('Stage presentation must not call a tool');
+    panel.renderReviewProgress();
+    assert.match(panel.el('progress-request').textContent, /History not loaded/);
+    assert.match(panel.el('progress-decision').textContent, /not inspected/);
+    panel.activity = { requests: [], proposals: [] };
+    panel.renderReviewProgress();
+    assert.equal(panel.el('progress-request').textContent, 'None recorded');
+    panel.currentReview = { base_sha256: 'old-base', result: null };
+    panel.renderReviewProgress();
+    assert.match(panel.el('progress-request').textContent, /different inspected revision/);
+    assert.match(panel.el('progress-result').textContent, /Awaiting.*execution is unverified/);
+    for (const outcome of ['findings', 'no_changes', 'blocked']) {
+        panel.currentReview.result = { outcome };
+        panel.renderReviewProgress();
+        assert.match(panel.el('progress-result').textContent, /^Recorded/);
+        assert.equal(
+            panel.el('progress-decision').textContent,
+            'No candidate · nothing to approve',
+        );
+    }
+    panel.currentReview.result = { outcome: 'proposal' };
+    panel.currentDiff = 'retained-id';
+    panel.renderReviewProgress();
+    assert.match(panel.el('progress-decision').textContent, /open its diff to inspect state/);
+    assert.equal(panel.el('approval').checked, false);
+    panel.selected = null;
+    panel.renderReviewProgress();
+    assert.equal(panel.el('review-progress').hidden, true);
+});
+
+test('decision progress uses only the opened proposal and prioritizes unknown writes without changing approval guards', () => {
+    const panel = view();
+    panel.activity = { requests: [], proposals: [] };
+    panel.currentReview = { base_sha256: 'base', result: { outcome: 'no_changes' } };
+    panel.el('approval').checked = false;
+    panel.actions();
+    assert.match(panel.el('progress-result').textContent, /no changes proposed/);
+    assert.match(
+        panel.el('progress-decision').textContent,
+        /Opened proposal.*exact approval required/,
+    );
+    assert.equal(panel.el('apply').disabled, true);
+    panel.proposal.status = 'applied';
+    panel.proposal.source_state = 'candidate';
+    panel.actions();
+    assert.match(
+        panel.el('progress-decision').textContent,
+        /last inspected as applied.*separate approval/,
+    );
+    panel.mode = 'recover';
+    panel.actions();
+    assert.match(panel.el('progress-decision').textContent, /reverse diff open.*exact approval/);
+    assert.equal(panel.el('approval').checked, false);
+    panel.uncertain = true;
+    panel.actions();
+    assert.match(panel.el('progress-decision').textContent, /Write outcome unconfirmed/);
+    assert.equal(panel.el('approval').disabled, true);
+    panel.uncertain = false;
+    panel.proposal.write_intent = 'recover';
+    panel.actions();
+    assert.match(panel.el('progress-decision').textContent, /retained write intent/);
+    panel.proposal.write_intent = null;
+    panel.proposal.source_state = 'changed';
+    panel.actions();
+    assert.match(panel.el('progress-decision').textContent, /source changed/);
+    assert.equal(panel.el('apply').disabled, true);
+    panel.proposal.status = 'recovered';
+    panel.proposal.source_state = 'original';
+    panel.actions();
+    assert.match(panel.el('progress-decision').textContent, /last inspected as recovered/);
+    panel.proposal.skill = 'another-skill';
+    panel.actions();
+    assert.equal(panel.el('progress-decision').textContent, 'No candidate · nothing to approve');
+    panel.selected.read_only = true;
+    panel.renderReviewProgress();
+    assert.match(panel.el('progress-decision').textContent, /Read only.*no change can be approved/);
+});
+
 test('workspace navigation preserves a candidate but resets approval when leaving comparison', () => {
     const panel = view();
     panel.el('approval').checked = true;

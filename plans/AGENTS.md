@@ -22,6 +22,8 @@ Verify every requirement has an implementation and a check or an explicit limit.
 
 ## Child DOX index
 
+- [Recorded dashboard progress](2026-10-24-06-42-22-dashboard-recorded-progress-and-onboarding.md): saved workflow stages and complete private local onboarding; no inferred agent execution, consent or public/native acceptance.
+
 - [Dashboard change navigation](2026-10-24-05-49-40-dashboard-change-navigation.md): bounded changed-block navigation and resilient local history reads; consent, write boundaries and public/native acceptance remain separate.
 
 - [Dashboard resource workflow](2026-10-24-04-40-27-dashboard-resource-workflow.md): resilient retained history, revision-bound file previews and multilingual product explanation; real mutations and public distribution remain separately approved.

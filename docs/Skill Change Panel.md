@@ -85,8 +85,66 @@ integrity evidence, not publisher authentication. Output boundaries are checked
 physically as well as lexically, including aliases into protected data roots and
 external global references, before derivation and immediately before emission.
 
-Register/install that directory through the host's supported local marketplace
-flow, preserve its selected state on upgrade, and verify a fresh MCP process.
+### Register the retained artifact locally
+
+The output is a plugin folder, not a marketplace root. For Codex, create the
+following **new private** wrapper at
+`.work/retained-panel/.agents/plugins/marketplace.json`, beside the prepared
+`i9-skills/` folder. Do not replace an existing marketplace document.
+
+```json
+{
+  "name": "i9-skills-local",
+  "interface": { "displayName": "I-9 Skills local panel" },
+  "plugins": [{
+    "name": "i9-skills",
+    "source": { "source": "local", "path": "./i9-skills" },
+    "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL" },
+    "category": "Developer Tools"
+  }]
+}
+```
+
+The relative path starts at `.work/retained-panel`, not `.agents/plugins`.
+The distinct marketplace name avoids replacing the public marketplace source;
+the prepared plugin keeps its `i9-skills` identity. Select one active installation
+of this collection in a session to avoid duplicate skills/tools. Inspect any
+existing installation before deciding which one to enable.
+
+```sh
+codex plugin marketplace add .work/retained-panel
+codex plugin add i9-skills@i9-skills-local
+codex plugin list
+codex mcp list --json
+```
+
+These are explicit operator steps, not preparation side effects. Clients without
+the install command can choose this local marketplace in their Plugins Directory;
+workspace policy may restrict availability. The
+[official marketplace guide](https://developers.openai.com/plugins/build/plugins#add-a-marketplace-from-the-cli)
+defines registration and relative paths. Verify the loaded runtime and working
+directory resolve inside the retained/installed artifact; `skill_panel_open`
+must expose the selected library and fixed UI resource. A new consumer supplies
+their own collection/state/global paths when preparing the artifact. Never share
+the machine-configured wrapper/artifact as a universal public upload.
+
+For another MCP Apps-capable host, register the prepared `mcp.json` stdio command
+through its supported settings. Resolve `${PLUGIN_ROOT}` to that installed
+artifact only if the host does not expand it. Do not point it back at `src/`.
+Plain MCP clients can use structured panel tools without native rendering.
+
+For upgrades, build the reviewed source and prepare a **fresh** artifact while
+keeping the same external data selections. Point this wrapper at that fresh
+relative folder, then use the host's supported refresh/install flow. Verify the
+actually loaded bytes; an unchanged version may remain cached. Never repair a
+cache directly, delete proposal state or fabricate a published version to reload.
+To remove only this local installation, use
+`codex plugin remove i9-skills@i9-skills-local`, then optionally
+`codex plugin marketplace remove i9-skills-local`. These remove the selected
+registration/cache, not the external collection or recovery directory; preserve
+those paths and the original artifact independently.
+
+Preserve selected state on upgrade and verify a fresh MCP process.
 If a host still displays an older component, close/reopen the panel first; do not
 assume a metadata update reloaded a running server. Inspect runtime startup,
 tools and the fixed UI resource separately from native rendering.
@@ -235,6 +293,16 @@ Removing the switch disables new global mutation; preserve all retained state.
 No global catalog, telemetry or public plugin configuration is synchronized.
 
 ## Review a real candidate
+
+The three **Last observed workflow stages** near the selected title separate a
+saved request, an agent-recorded result and the opened proposal's decision state.
+Unloaded history is not called empty, and a pending result never implies an
+agent is running. Findings, no-change and blocked reports do not invent a diff.
+The proposal stage describes the last opened candidate, which may belong to an
+older review; a new no-change review does not erase that saved candidate. Applied
+or recovered labels describe the last inspected bytes, not a fresh disk watch.
+An unconfirmed write or changed source overrides apparent success. Refresh the
+proposal before deciding; this summary supplies no consent or extra tool calls.
 
 The compact library stays beside one skill workspace on desktop and stacks above
 it at narrow widths. **Overview** explains the source boundary and exposes the
