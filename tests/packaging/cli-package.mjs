@@ -12,17 +12,19 @@ import {
     readFileSync,
     readdirSync,
     realpathSync,
+    renameSync,
     rmSync,
     symlinkSync,
     writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve, sep } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import test from 'node:test';
 import { COMMANDS } from '../../src/index.ts';
 import { treeBytes } from '../unit/fixture/SkillBumpFixture.mjs';
 import { fixture as nativePilotFixture } from '../helpers/NativePilotFixture.mjs';
+import { skillPanelFixture } from '../unit/fixture/SkillPanelFixture.mjs';
 import {
     catalog as evidenceCatalog,
     follow,
@@ -94,6 +96,8 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
         'package-lock.json',
         '.codex-plugin/plugin.json',
         'assets/plugin-icon.png',
+        'assets/skill-panel.html',
+        'assets/skill-panel-icon.svg',
         'assets/native-pilot',
         'tsconfig.json',
         'tsconfig.build.json',
@@ -131,7 +135,7 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
         assert.ok(!name.startsWith('/') && !name.split('/').includes('..'), name);
         assert.match(
             name,
-            /^(?:bin\/index\.(?:mjs|md)|dist\/(?:.*\.js|source-receipt\.json)|\.codex-plugin\/plugin\.json$|assets\/(?:plugin-icon\.png$|native-pilot\/)|\.agents\/skills\/|skills-catalog\.json|docs\/|package\.json|README\.md|LICENSE|NOTICE)/,
+            /^(?:bin\/index\.(?:mjs|md)|dist\/(?:.*\.js|source-receipt\.json)|\.codex-plugin\/plugin\.json$|assets\/(?:plugin-icon\.png$|skill-panel\.html$|skill-panel-icon\.svg$|native-pilot\/)|\.agents\/skills\/|skills-catalog\.json|docs\/|package\.json|README\.md|LICENSE|NOTICE)/,
         );
         assert.doesNotMatch(name, /^(?:src|tests|\.work|tmp|\.codex|\.github|node_modules)\//);
         assert.ok(!name.endsWith('.ts'), name);
@@ -165,6 +169,126 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
     assert.ok(names.includes('assets/native-pilot/codex/schemas/LICENSE'));
     assert.ok(names.includes('assets/native-pilot/codex/schemas/NOTICE'));
     assert.ok(names.includes('NOTICE'));
+    assert.ok(names.includes('assets/skill-panel.html'));
+    assert.ok(names.includes('assets/skill-panel-icon.svg'));
+    const panel = skillPanelFixture(t);
+    const globalPanel = join(panel.root, 'global references');
+    mkdirSync(globalPanel, { recursive: true });
+    cpSync(panel.skill, join(globalPanel, 'global-example'), { recursive: true });
+    writeFileSync(
+        join(globalPanel, 'global-example', 'SKILL.md'),
+        panel.before.replace('name: example-skill', 'name: global-example'),
+    );
+    const panelProgram = `
+        import { SkillPanelService } from ${JSON.stringify(pathToFileURL(join(installed, 'dist/service/SkillPanelService.js')).href)};
+        import { SkillPanelConfiguration } from ${JSON.stringify(pathToFileURL(join(installed, 'dist/config/SkillPanelConfiguration.js')).href)};
+        const service = new SkillPanelService(new SkillPanelConfiguration(${JSON.stringify(panel.collection)}, ${JSON.stringify(panel.state)}));
+        const before = service.inspect({skill:'example-skill'});
+        const proposed = service.propose({skill:'example-skill',base_sha256:before.package_sha256,after:before.text.replace('2. Produce the reviewable result.','2. Produce the reviewable result with performed checks.'),rationale:'Verify the installed local change workflow.'});
+        const approval = {action:'apply',proposal_id:proposed.proposal_id,base_sha256:proposed.base_sha256,candidate_sha256:proposed.candidate_sha256,approved:true};
+        const applied = service.apply(approval);
+        const recovered = service.recover({...approval,action:'recover'});
+        console.log(JSON.stringify({resource:service.resource().mimeType,local:proposed.validation.local.status,applied:applied.status,recovered:recovered.status,restored:service.inspect({skill:'example-skill'}).package_sha256===before.package_sha256}));
+    `;
+    assert.deepEqual(
+        JSON.parse(run(process.execPath, ['--input-type=module', '-e', panelProgram], root)),
+        {
+            resource: 'text/html;profile=mcp-app',
+            local: 'passed',
+            applied: 'applied',
+            recovered: 'recovered',
+            restored: true,
+        },
+    );
+    const panelFrames = [
+        {
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'initialize',
+            params: {
+                protocolVersion: '2025-11-25',
+                capabilities: {},
+                clientInfo: { name: 'fixture-client', version: '1' },
+            },
+        },
+        { jsonrpc: '2.0', method: 'notifications/initialized' },
+        { jsonrpc: '2.0', id: 2, method: 'tools/list' },
+        {
+            jsonrpc: '2.0',
+            id: 3,
+            method: 'resources/read',
+            params: {
+                uri: 'ui://i9-skills/skill-panel/v1.html',
+                _meta: { progressToken: 'fixture-resource' },
+            },
+        },
+        { jsonrpc: '2.0', id: 4, method: 'resources/templates/list' },
+        {
+            jsonrpc: '2.0',
+            id: 5,
+            method: 'tools/call',
+            params: { name: 'skill_panel_open', arguments: {} },
+        },
+    ];
+    const panelClient = spawnSync(
+        process.execPath,
+        [
+            join(installed, 'dist/transport/PluginMcpServer.js'),
+            '--host',
+            'codex',
+            '--panel-collection',
+            panel.collection,
+            '--panel-state',
+            panel.state,
+            '--panel-global-collection',
+            globalPanel,
+        ],
+        {
+            cwd: root,
+            env: environment,
+            encoding: 'utf8',
+            timeout: 10000,
+            input: panelFrames.map(JSON.stringify).join('\n') + '\n',
+        },
+    );
+    assert.equal(panelClient.status, 0, panelClient.stderr);
+    const panelReplies = panelClient.stdout.trim().split('\n').map(JSON.parse);
+    const opening = panelReplies
+        .find((reply) => reply.id === 2)
+        .result.tools.find((tool) => tool.name === 'skill_panel_open');
+    assert.equal(opening.title, 'I-9 Skills');
+    assert.equal(opening.icons?.length, 2);
+    assert.deepEqual(
+        opening.icons.map((icon) => icon.theme),
+        ['light', 'dark'],
+    );
+    const mark = readFileSync(join(installed, 'assets/skill-panel-icon.svg'), 'utf8');
+    assert.doesNotMatch(mark, /<(?:rect|script|text|image|foreignObject)\b|(?:href|onload)=/i);
+    for (const [index, color] of ['#000000', '#FFFFFF'].entries()) {
+        const icon = opening.icons[index];
+        assert.equal(icon.mimeType, 'image/svg+xml');
+        assert.equal(icon.src.split(',')[0], 'data:image/svg+xml;base64');
+        assert.equal(
+            Buffer.from(icon.src.split(',')[1], 'base64').toString('utf8'),
+            mark.replaceAll('currentColor', color),
+        );
+        assert.doesNotMatch(
+            Buffer.from(icon.src.split(',')[1], 'base64').toString('utf8'),
+            /currentColor/,
+        );
+    }
+    assert.equal(
+        panelReplies.find((reply) => reply.id === 3).result.contents[0].text,
+        readFileSync(join(installed, 'assets/skill-panel.html'), 'utf8'),
+    );
+    assert.deepEqual(panelReplies.find((reply) => reply.id === 4).result, {
+        resourceTemplates: [],
+    });
+    const globalRow = panelReplies
+        .find((reply) => reply.id === 5)
+        .result.structuredContent.skills.find((row) => row.source === 'global');
+    assert.equal(globalRow.name, 'global-example');
+    assert.equal(globalRow.read_only, true);
     const pilotSelection = nativePilotFixture(t).contract;
     pilotSelection.runtime_layout = 'compiled-js';
     pilotSelection.observer.entrypoint = 'dist/transport/NativePilotNativeObserverRunner.js';
@@ -736,6 +860,103 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
     assert.equal(existsSync(join(plugin, 'src')), false);
     assert.equal(existsSync(join(plugin, '.agents')), false);
     assert.equal(existsSync(join(root, '.agents/plugins/marketplace.json')), false);
+
+    // A retained panel plugin must survive moving the artifact and losing the
+    // source npm installation. No checkout path or hoisted YAML may be needed.
+    const panelParent = join(root, 'panel staging');
+    mkdirSync(panelParent);
+    const panelOutput = join(panelParent, 'i9-skills');
+    const retainedPanel = join(root, 'relocated panel');
+    const preparedPanel = JSON.parse(
+        run(
+            process.execPath,
+            [
+                launcher,
+                'plugin',
+                'prepare',
+                '--output',
+                panelOutput,
+                '--panel-collection',
+                panel.collection,
+                '--panel-state',
+                panel.state,
+                '--panel-global-collection',
+                globalPanel,
+                '--panel-global-write',
+                '--write',
+            ],
+            root,
+        ),
+    );
+    assert.equal(preparedPanel.profile, 'local-panel');
+    assert.equal(preparedPanel.submission_eligibility, 'organization_allowlisting_unverified');
+    const localManifest = JSON.parse(readFileSync(join(panelOutput, 'plugin.json')));
+    assert.equal(localManifest.extensions['com.openai'].requires_local_executor, true);
+    const localCompatibility = JSON.parse(
+        readFileSync(join(panelOutput, '.codex-plugin/plugin.json')),
+    );
+    assert.equal(localCompatibility.mcpServers, './mcp.json');
+    const retainedConfig = JSON.parse(readFileSync(join(panelOutput, 'mcp.json'))).mcpServers[
+        'i9-skills'
+    ];
+    assert(!JSON.stringify(retainedConfig).includes(installed));
+    assert(retainedConfig.args.includes('--panel-global-write'));
+    assert.equal(existsSync(join(panelOutput, 'runtime/node_modules/yaml/LICENSE')), true);
+    assert.equal(existsSync(join(panelOutput, 'runtime/src')), false);
+    renameSync(panelOutput, retainedPanel);
+    const parkedInstallation = installed + '-unavailable';
+    renameSync(installed, parkedInstallation);
+    try {
+        const expanded = retainedConfig.args.map((value) =>
+            value.replaceAll('${PLUGIN_ROOT}', retainedPanel),
+        );
+        const response = spawnSync(process.execPath, expanded, {
+            cwd: retainedPanel,
+            env: environment,
+            encoding: 'utf8',
+            timeout: 10000,
+            input: panelFrames.map(JSON.stringify).join('\n') + '\n',
+        });
+        assert.equal(response.status, 0, response.stderr);
+        const replies = response.stdout.trim().split('\n').map(JSON.parse);
+        assert.equal(replies.find((reply) => reply.id === 2).result.tools.length, 9);
+        assert.equal(
+            replies.find((reply) => reply.id === 3).result.contents[0].text,
+            readFileSync(join(retainedPanel, 'runtime/assets/skill-panel.html'), 'utf8'),
+        );
+        const eligible = replies
+            .find((reply) => reply.id === 5)
+            .result.structuredContent.skills.find((row) => row.source === 'global');
+        assert.equal(eligible.read_only, false);
+        const exercise = `
+            import assert from 'node:assert/strict';
+            import fs from 'node:fs';
+            import { SkillPanelConfiguration } from ${JSON.stringify(pathToFileURL(join(retainedPanel, 'runtime/dist/config/SkillPanelConfiguration.js')).href)};
+            import { SkillPanelService } from ${JSON.stringify(pathToFileURL(join(retainedPanel, 'runtime/dist/service/SkillPanelService.js')).href)};
+            const service = new SkillPanelService(new SkillPanelConfiguration(${JSON.stringify(panel.collection)},${JSON.stringify(panel.state)},${JSON.stringify(globalPanel)},true));
+            const target = service.open({}).skills.find(row => row.source === 'global');
+            const before = service.inspect({skill:target.skill});
+            const after = before.text + '\\nPreserve evidence for the selected input.\\n';
+            const proposal = service.propose({skill:target.skill,base_sha256:before.package_sha256,after,rationale:'Improve the synthetic global workflow.'});
+            const approval = {action:'apply',proposal_id:proposal.proposal_id,base_sha256:proposal.base_sha256,candidate_sha256:proposal.candidate_sha256,approved:true};
+            assert.throws(() => service.apply({...approval,approved:false}));
+            assert.equal(service.inspect({skill:target.skill}).text,before.text);
+            const applied = service.apply(approval);
+            assert.equal(service.inspect({skill:target.skill}).text,after);
+            assert.throws(() => service.recover({...approval,action:'recover',approved:false}));
+            const recovered = service.recover({...approval,action:'recover'});
+            assert.equal(service.inspect({skill:target.skill}).package_sha256,before.package_sha256);
+            console.log(JSON.stringify({applied:applied.status,recovered:recovered.status,restored:true}));
+        `;
+        assert.deepEqual(
+            JSON.parse(
+                run(process.execPath, ['--input-type=module', '-e', exercise], retainedPanel),
+            ),
+            { applied: 'applied', recovered: 'recovered', restored: true },
+        );
+    } finally {
+        renameSync(parkedInstallation, installed);
+    }
 
     // npx/node_modules remain valid MCP consumers, but persistent observers need
     // a separately selected, read-only runtime with its own dependency closure.

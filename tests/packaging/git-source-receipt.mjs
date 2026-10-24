@@ -74,6 +74,8 @@ test('clean synthetic Git preparation retains its SHA through npm packing and co
         'package-lock.json',
         '.codex-plugin/plugin.json',
         'assets/plugin-icon.png',
+        'assets/skill-panel.html',
+        'assets/skill-panel-icon.svg',
         'tsconfig.json',
         'tsconfig.build.json',
         '.github/scripts/build.mjs',
@@ -123,7 +125,11 @@ test('clean synthetic Git preparation retains its SHA through npm packing and co
     assert.equal(existsSync(join(installed, 'src')), false);
     symlinkSync(join(repository, 'node_modules'), join(installed, 'node_modules'), 'dir');
     const receipt = JSON.parse(readFileSync(join(installed, 'dist/source-receipt.json'), 'utf8'));
-    for (const path of ['.codex-plugin/plugin.json', 'assets/plugin-icon.png']) {
+    for (const path of [
+        '.codex-plugin/plugin.json',
+        'assets/plugin-icon.png',
+        'assets/skill-panel-icon.svg',
+    ]) {
         assert.ok(
             packed.files.some((file) => file.path === path),
             path,

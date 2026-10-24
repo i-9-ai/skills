@@ -64,7 +64,36 @@ export const messages = {
             action: 'View in English',
             dismiss: 'Not now',
         },
-        nav: { workflow: 'Workflow', catalog: 'Catalog', install: 'Install', docs: 'Docs' },
+        nav: {
+            workflow: 'Workflow',
+            dashboard: 'Dashboard',
+            catalog: 'Catalog',
+            install: 'Install',
+            docs: 'Docs',
+        },
+        dashboard: {
+            title: 'Understand the skill.',
+            emphasis: 'Approve the change.',
+            badge: 'Local dashboard pilot',
+            description:
+                'A working library for selected and global skills, with the evidence beside the decision.',
+            steps: [
+                {
+                    title: 'Read the whole package',
+                    body: 'Browse supported references and scripts as inert text at the inspected revision. See what is available and what could not be previewed.',
+                },
+                {
+                    title: 'Bring the review back',
+                    body: 'Track the saved request, recorded result and opened proposal as separate stages. The host agent’s report and declared file coverage return here, including findings with no proposed change.',
+                },
+                {
+                    title: 'Compare, then decide',
+                    body: 'Move between changed blocks, inspect word-level changes, the exact diff and actual checks. Application and recovery each require your explicit approval.',
+                },
+            ],
+            limit: 'Explicit local MCP setup is required; the skills-only plugin does not include this dashboard. Only SKILL.md can be changed. Supporting files are read only, and agent-reported coverage is not certification. Native rendering and public distribution depend on the host.',
+            link: 'Set up and understand the dashboard',
+        },
         hero: {
             title: 'Better skills.',
             emphasis: 'By design.',
@@ -167,6 +196,10 @@ export const messages = {
                 },
             ],
             link: 'Read compatibility and evidence',
+            panel: 'Local skill-change panel: browse selected copies and global skills, ask the host agent for a review and open a real numbered diff without copying IDs. Explicit configuration enables eligible global evolution; unsupported packages remain read only with a reason. Applying or recovering requires separate exact approval. Prepare a self-contained local plugin with its compiled runtime and YAML dependency so switching development branches does not remove its code. Open it through the native MCP panel; a standalone HTML preview cannot load skills. Host messaging, native rendering and official/behavioral checks remain distinct. Public local-MCP submission requires provider organization eligibility; skills-only plugins do not include the panel.',
+            panelReview:
+                'See changed words inside each edited line and distinguish agent-reported reading of supporting files from the package inventory. Only SKILL.md is changed after exact approval.',
+            panelLink: 'Understand the local panel pilot',
             providers:
                 'Codex and Claude plugin pilots exercise selected native paths. Copilot CLI evidence covers ephemeral legacy-plugin MCP discovery and direct calls, without a model turn or persistent installation. Icons and hooks remain host-dependent.',
         },
@@ -191,7 +224,36 @@ export const messages = {
             action: 'Ver em português',
             dismiss: 'Agora não',
         },
-        nav: { workflow: 'Fluxo', catalog: 'Catálogo', install: 'Instalar', docs: 'Docs' },
+        nav: {
+            workflow: 'Fluxo',
+            dashboard: 'Painel',
+            catalog: 'Catálogo',
+            install: 'Instalar',
+            docs: 'Docs',
+        },
+        dashboard: {
+            title: 'Entenda a skill.',
+            emphasis: 'Aprove a mudança.',
+            badge: 'Piloto de painel local',
+            description:
+                'Uma biblioteca de trabalho para skills selecionadas e globais, com as evidências ao lado da decisão.',
+            steps: [
+                {
+                    title: 'Leia o pacote inteiro',
+                    body: 'Consulte referências e scripts compatíveis como texto, sem executá-los, na revisão inspecionada. Veja o que está disponível e o que não pôde ser visualizado.',
+                },
+                {
+                    title: 'Traga a revisão de volta',
+                    body: 'Acompanhe pedido salvo, resultado registrado e proposta aberta como etapas distintas. O relatório do agente e a cobertura declarada voltam ao painel, inclusive quando há apontamentos sem proposta de alteração.',
+                },
+                {
+                    title: 'Compare e decida',
+                    body: 'Navegue entre os blocos alterados e confira as palavras modificadas, o diff exato e as verificações realizadas. Aplicar e recuperar exigem sua aprovação explícita, separadamente.',
+                },
+            ],
+            limit: 'Exige configuração explícita de MCP local; o plugin somente de skills não inclui este painel. Apenas SKILL.md pode ser alterado. Arquivos de apoio são somente leitura e a cobertura declarada pelo agente não é certificação. A renderização nativa e a distribuição pública dependem do host.',
+            link: 'Configure e entenda o painel',
+        },
         hero: {
             title: 'Skills melhores.',
             emphasis: 'Por design.',
@@ -297,6 +359,10 @@ export const messages = {
                 },
             ],
             link: 'Ler compatibilidade e evidências',
+            panel: 'Painel local de evolução: consulte cópias selecionadas e skills globais, peça uma revisão ao agente e abra o diff real numerado sem copiar IDs. A configuração explícita habilita a evolução global elegível; pacotes incompatíveis permanecem somente para leitura, com o motivo indicado. Aplicar e recuperar exigem aprovações exatas separadas. Prepare um plugin local completo com runtime compilado e dependência YAML para que trocar a branch de desenvolvimento não remova seu código. Abra pelo painel MCP nativo; o HTML isolado não carrega skills. Mensagens do host, renderização nativa e validações oficial e comportamental são verificações distintas. A submissão pública de MCP local exige elegibilidade da organização no provedor; plugins somente de skills não incluem o painel.',
+            panelReview:
+                'Veja as palavras alteradas em cada linha e diferencie os arquivos de apoio que o agente declara ter lido do inventário do pacote. Apenas SKILL.md é alterado após aprovação exata.',
+            panelLink: 'Entenda o piloto local do painel',
             providers:
                 'Os pilotos de plugin do Codex e Claude exercitam caminhos nativos específicos. A evidência do Copilot CLI cobre descoberta MCP e chamadas diretas de plugin legado efêmero, sem turno de modelo nem instalação persistente. Ícones e hooks dependem do host.',
         },
@@ -321,7 +387,36 @@ export const messages = {
             action: 'Ver en español',
             dismiss: 'Ahora no',
         },
-        nav: { workflow: 'Flujo', catalog: 'Catálogo', install: 'Instalar', docs: 'Docs' },
+        nav: {
+            workflow: 'Flujo',
+            dashboard: 'Panel',
+            catalog: 'Catálogo',
+            install: 'Instalar',
+            docs: 'Docs',
+        },
+        dashboard: {
+            title: 'Entienda la skill.',
+            emphasis: 'Apruebe el cambio.',
+            badge: 'Piloto de panel local',
+            description:
+                'Una biblioteca de trabajo para skills seleccionadas y globales, con las evidencias junto a la decisión.',
+            steps: [
+                {
+                    title: 'Lea el paquete completo',
+                    body: 'Consulte referencias y scripts compatibles como texto inerte en la revisión inspeccionada. Vea lo que está disponible y lo que no se pudo visualizar.',
+                },
+                {
+                    title: 'Traiga la revisión de vuelta',
+                    body: 'Distinga la solicitud guardada, el resultado registrado y la propuesta abierta. El informe del agente y la cobertura declarada regresan al panel, incluso cuando hay hallazgos sin una propuesta de cambio.',
+                },
+                {
+                    title: 'Compare y decida',
+                    body: 'Navegue entre los bloques modificados y revise las palabras cambiadas, el diff exacto y las comprobaciones realizadas. Aplicar y recuperar requieren su aprobación explícita por separado.',
+                },
+            ],
+            limit: 'Requiere configuración explícita de MCP local; el plugin de solo skills no incluye este panel. Solo SKILL.md puede cambiar. Los archivos de apoyo son de solo lectura y la cobertura declarada no es una certificación. La visualización nativa y la distribución pública dependen del host.',
+            link: 'Configure y entienda el panel',
+        },
         hero: {
             title: 'Mejores skills.',
             emphasis: 'Por diseño.',
@@ -429,6 +524,10 @@ export const messages = {
                 },
             ],
             link: 'Leer compatibilidad y evidencia',
+            panel: 'Panel local de evolución: consulte copias seleccionadas y skills globales, solicite una revisión al agente y abra el diff real numerado sin copiar IDs. La configuración explícita habilita la evolución global elegible; los paquetes incompatibles siguen siendo de solo lectura con un motivo. Aplicar y recuperar requieren aprobaciones exactas separadas. Prepare un plugin local completo con runtime compilado y dependencia YAML para que cambiar la rama de desarrollo no elimine su código. Ábralo mediante el panel MCP nativo; el HTML aislado no carga skills. La mensajería del host, la visualización nativa y las validaciones oficial y de comportamiento son verificaciones distintas. La presentación pública de MCP local exige elegibilidad de la organización ante el proveedor; los plugins de solo skills no incluyen el panel.',
+            panelReview:
+                'Vea las palabras modificadas dentro de cada línea y distinga los archivos de apoyo que el agente declara haber leído del inventario del paquete. Solo SKILL.md cambia tras la aprobación exacta.',
+            panelLink: 'Conozca el piloto local del panel',
             providers:
                 'Los pilotos de plugins de Codex y Claude prueban rutas nativas específicas. La evidencia de Copilot CLI cubre descubrimiento MCP y llamadas directas de un plugin legado efímero, sin turno de modelo ni instalación persistente. Los iconos y hooks dependen del host.',
         },

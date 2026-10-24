@@ -12,16 +12,25 @@ import { SkillEvidenceService } from './SkillEvidenceService.ts';
 import { SkillBumpReportService } from './SkillBumpReportService.ts';
 import { SkillQualityService } from './SkillQualityService.ts';
 import { SkillOnboardingService } from './SkillOnboardingService.ts';
+import { SkillPanelConfiguration } from '../config/SkillPanelConfiguration.ts';
+import { SkillPanelService } from './SkillPanelService.ts';
 
 export type SkillMcpOptions = {
     database?: string;
     host?: 'codex' | 'claude' | 'copilot';
     environment?: NodeJS.ProcessEnv;
     callerRoot?: string;
+    panel?: {
+        collection: string;
+        state: string;
+        globalCollection?: string;
+        globalWrite?: boolean;
+    };
 };
 
 /** Shares catalog operations and acquires usage storage only for explicit usage calls. */
 export class SkillMcpService {
+    readonly panel?: SkillPanelService;
     private readonly options: SkillMcpOptions;
     private readonly configuration: InstalledCollectionConfiguration;
     private readonly installed: InstalledSkillRepository;
@@ -37,6 +46,15 @@ export class SkillMcpService {
         this.configuration = configuration;
         this.installed = new InstalledSkillRepository(configuration);
         this.catalog = new SkillCatalogService(this.installed);
+        if (options.panel)
+            this.panel = new SkillPanelService(
+                new SkillPanelConfiguration(
+                    options.panel.collection,
+                    options.panel.state,
+                    options.panel.globalCollection,
+                    options.panel.globalWrite,
+                ),
+            );
     }
 
     async serve(): Promise<void> {

@@ -78,6 +78,36 @@ test('protocol state prevents storage calls before initialization and closes onc
     assert.equal(running.responses()[0].error.code, -32602);
 });
 
+test('normal MCP mode exposes no optional panel resource API', async () => {
+    const running = transport();
+    const frames = [
+        { jsonrpc: '2.0', id: 1, method: 'initialize' },
+        { jsonrpc: '2.0', method: 'notifications/initialized' },
+        { jsonrpc: '2.0', id: 2, method: 'resources/list' },
+        { jsonrpc: '2.0', id: 3, method: 'resources/templates/list' },
+        {
+            jsonrpc: '2.0',
+            id: 4,
+            method: 'resources/read',
+            params: {
+                uri: 'ui://i9-skills/skill-panel/v1.html',
+                _meta: { progressToken: 'fixture-read' },
+            },
+        },
+    ];
+    running.input.end(frames.map(JSON.stringify).join('\n') + '\n');
+    await running.done;
+    assert.equal(running.responses()[0].result.capabilities.resources, undefined);
+    assert.deepEqual(
+        running
+            .responses()
+            .slice(1)
+            .map((reply) => reply.error.code),
+        [-32601, -32601, -32601],
+    );
+    assert.deepEqual(running.calls, [['close']]);
+});
+
 test('oversized protocol input never reaches storage or echoes the supplied content', async () => {
     const running = transport();
     running.input.end('x'.repeat(1_048_577));

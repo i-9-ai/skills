@@ -134,19 +134,29 @@ i9-skills/
 
 The catalog is checked for freshness. Each package passes the local package
 validator, and all package bytes are inspected before any output is created.
-Only actual catalog packages and the root license/optional notice are included.
+By default, only actual catalog packages and the root license/optional notice are included.
 Repository instructions, CLI implementation, host configuration and local logs
 are excluded. Package scripts are copied as inert bytes and never executed.
 
 The staged root `plugin.json` targets Agent Plugins 1.0.0 with discovery through
 `skills/`. Its compatibility manifest declares the same identity/version and
 skills path, plus minimal OpenAI presentation metadata. Both derive shared
-fields from package.json. Neither advertises hooks, apps, MCP connections or
+fields from package.json. Without panel selections, neither advertises hooks, apps, MCP connections or
 model gains. These staged manifests are distinct from the tracked root host
 manifests, which reference `.agents/skills` directly.
 The [official packaging contract](https://developers.openai.com/plugins/build/plugins)
 and [portable manifest schema](https://agent-plugins.org/schemas/1.0.0/plugin.schema.json)
 were checked on 2026-09-19; native ingestion and UI rendering remain untested.
+
+For a self-contained local interactive plugin, select both `--panel-collection`
+and `--panel-state` on `plugin prepare`. The resulting local profile additionally
+retains its compiled MCP runtime, UI, portable helpers and pinned YAML dependency,
+with a root `mcp.json` and desktop-only declaration. Global discovery and writes
+remain separate explicit choices. No existing data is installed or changed;
+machine-local selectors stay outside tracked source. See the complete
+[panel setup](https://github.com/i-9-ai/skills/wiki/Skill-Change-Panel#retain-an-independent-plugin-runtime).
+This profile is separate from `plugin submission` and does not establish public
+local-MCP submission eligibility or provider acceptance.
 
 `artifact-receipt.json` records sorted paths, byte sizes, normalized file modes
 and SHA-256 digests. Its inventory includes both manifests and excludes the
