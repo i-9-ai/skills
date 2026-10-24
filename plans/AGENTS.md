@@ -22,6 +22,8 @@ Verify every requirement has an implementation and a check or an explicit limit.
 
 ## Child DOX index
 
+- [Dashboard resource workflow](2026-10-24-04-40-27-dashboard-resource-workflow.md): resilient retained history, revision-bound file previews and multilingual product explanation; real mutations and public distribution remain separately approved.
+
 - [Precise panel diffs and review coverage](2026-10-20-01-48-06-panel-diff-and-review-coverage.md): bounded word-level comparison, inert supporting-file reads and explicit agent-reported coverage; approval still changes only SKILL.md.
 
 - [Self-contained panel delivery](2026-10-18-02-35-00-self-contained-panel-delivery.md): compiled local plugin runtime and isolated launch verification independent of the development branch; real skills/state, public approval and publishing stay separately controlled.

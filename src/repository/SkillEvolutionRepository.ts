@@ -257,6 +257,7 @@ export class SkillEvolutionRepository {
                     .filter((name) => /^[a-f0-9-]{36}$/.test(name));
                 if (ids.length > 16) throw new SkillOperationError('panel_storage_unavailable');
                 const proposals = ids
+                    .filter((id) => this.hasCommittedRecord(state, `${id}/proposal.json`))
                     .filter((id) => this.recordHasSkill(state, `${id}/proposal.json`, skill))
                     .map((id) => this.readProposalReceipt(state, collection, this.validator.id(id)))
                     .map(
@@ -299,6 +300,11 @@ export class SkillEvolutionRepository {
     private recordHasSkill(state: SafeRoot, filename: string, skill: string): boolean {
         const record = this.readRecord(state, filename) as Record<string, unknown> | null;
         return this.validator.inspection({ skill: record?.skill }) === skill;
+    }
+
+    /** An absent commit receipt is retained preparation evidence, never a proposal. */
+    private hasCommittedRecord(state: SafeRoot, filename: string): boolean {
+        return state.inspect(filename, { allowMissingLeaf: true }).info !== null;
     }
 
     private readRequest(state: SafeRoot, collection: SafeRoot, id: string): ReviewRequest {

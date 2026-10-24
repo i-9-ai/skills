@@ -219,3 +219,60 @@ test('request capacity is bounded without pruning old evidence', (t) => {
     assert.throws(() => start(f), { code: 'panel_storage_unavailable' });
     assert.equal(f.service.activity({ skill: 'example-skill' }).requests.length, 32);
 });
+
+test('an incomplete proposal cannot hide valid reviews or another skill history', (t) => {
+    const f = skillPanelFixture(t);
+    const { request } = start(f);
+    f.service.complete(finish(request));
+    const valid = f.propose();
+    const pending = '00000000-0000-4000-8000-000000000001';
+    fs.mkdirSync(join(f.state, pending));
+    fs.writeFileSync(join(f.state, pending, 'partial.txt'), 'Retained preparation evidence.');
+    assert.equal(f.service.activity({ skill: 'example-skill' }).requests.length, 1);
+    assert.equal(
+        f.service.activity({ skill: 'example-skill' }).proposals[0].proposal_id,
+        valid.proposal_id,
+    );
+    assert.deepEqual(f.service.activity({ skill: 'another-skill' }).proposals, []);
+    assert.equal(
+        fs.readFileSync(join(f.state, pending, 'partial.txt'), 'utf8'),
+        'Retained preparation evidence.',
+    );
+    fs.writeFileSync(join(f.state, pending, 'proposal.json'), '{}');
+    assert.throws(
+        () => f.service.activity({ skill: 'example-skill' }),
+        'A malformed committed receipt must not be skipped',
+    );
+});
+
+test('candidate byte-limit failure retains evidence without poisoning successful retry or other skills', (t) => {
+    const f = skillPanelFixture(t);
+    const other = join(f.collection, 'other-skill');
+    fs.cpSync(f.skill, other, { recursive: true });
+    fs.writeFileSync(join(other, 'SKILL.md'), f.before.replaceAll('example-skill', 'other-skill'));
+    const unrelated = f.service.propose({
+        skill: 'other-skill',
+        base_sha256: f.service.inspect({ skill: 'other-skill' }).package_sha256,
+        after: f.after.replaceAll('example-skill', 'other-skill'),
+        rationale: 'Clarify the other synthetic package.',
+    });
+    const padding = 8_388_608 - f.inspect().bytes - 10;
+    fs.writeFileSync(join(f.skill, 'padding-a'), Buffer.alloc(3_000_000, 97));
+    fs.writeFileSync(join(f.skill, 'padding-b'), Buffer.alloc(3_000_000, 97));
+    fs.writeFileSync(join(f.skill, 'padding-c'), Buffer.alloc(padding - 6_000_000, 97));
+    assert.throws(() => f.propose());
+    const pending = fs
+        .readdirSync(f.state)
+        .filter((id) => !fs.existsSync(join(f.state, id, 'proposal.json')));
+    assert.equal(pending.length, 1);
+    const retry = f.propose({ after: f.before.replace('selected', 'given') });
+    assert.equal(
+        f.service.activity({ skill: 'example-skill' }).proposals[0].proposal_id,
+        retry.proposal_id,
+    );
+    assert.equal(
+        f.service.activity({ skill: 'other-skill' }).proposals[0].proposal_id,
+        unrelated.proposal_id,
+    );
+    assert.equal(fs.existsSync(join(f.state, pending[0])), true);
+});

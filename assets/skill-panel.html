@@ -82,6 +82,13 @@
                 border: 1px solid var(--line);
                 cursor: pointer;
             }
+            #resource-select {
+                width: 100%;
+                min-height: 44px;
+                padding: 8px 12px;
+                background: var(--surface);
+                border: 1px solid var(--line);
+            }
             button:hover:not(:disabled) {
                 background: var(--raised);
                 border-color: var(--muted);
@@ -1107,6 +1114,7 @@
                             Select a skill, then ask the agent for a review.
                         </p>
                         <p id="result-summary" class="result-summary"></p>
+                        <p id="result-coverage" class="footnote"></p>
                         <p id="diff-status" class="footnote">
                             A diff becomes available when a proposed change is saved.
                         </p>
@@ -1121,6 +1129,7 @@
                         <details id="current-result-details" class="identity-details" hidden>
                             <summary>Read full review result</summary>
                             <p id="result-full" class="result-summary"></p>
+                            <p id="result-files" class="footnote"></p>
                         </details>
                     </section>
                     <p id="selected-description">
@@ -1149,7 +1158,7 @@
                             tabindex="-1"
                             disabled
                         >
-                            SKILL.md
+                            Files
                         </button>
                         <button
                             id="tab-compare"
@@ -1250,9 +1259,10 @@
                         aria-labelledby="tab-source"
                         hidden
                     >
-                        <label for="source"
-                            >Last inspected SKILL.md · actual bytes · read only</label
-                        >
+                        <label for="resource-select">Package file · read only</label>
+                        <select id="resource-select" disabled aria-label="Package file"></select>
+                        <p id="resource-status" class="footnote" role="status" aria-live="polite">Select a skill to inspect its files.</p>
+                        <label id="source-label" for="source">Last inspected SKILL.md · actual bytes · read only</label>
                         <textarea
                             id="source"
                             class="source-text"
@@ -1260,8 +1270,8 @@
                             spellcheck="false"
                         ></textarea>
                         <p class="footnote">
-                            This is the inspected entrypoint. Reinspect the skill to read subsequent
-                            disk changes.
+                            Read-only UTF-8 preview. Files are never executed. Reinspect the skill
+                            to observe subsequent disk changes. Binary and oversized files cannot be previewed.
                         </p>
                     </section>
                     <dialog
@@ -1522,6 +1532,7 @@
                     this.el('keep-proposal').addEventListener('click', () =>
                         this.setWorkspace('overview'),
                     );
+                    this.el('resource-select').addEventListener('change', () => this.loadResource());
                     this.el('review').addEventListener('click', () =>
                         this.run(() => this.askAgent('review')),
                     );
@@ -1813,6 +1824,7 @@
 
                 async inspect(skill) {
                     if (this.unresolved) return this.showUnresolved();
+                    this.resourceVersion = (this.resourceVersion || 0) + 1;
                     this.stopPolling();
                     this.activityVersion++;
                     const result = await this.call('skill_panel_inspect', { skill });
@@ -1822,6 +1834,8 @@
                     this.currentDiff = null;
                     this.el('review-outcome').textContent = 'Loading saved work';
                     this.el('result-summary').textContent = '';
+                    this.el('result-coverage').textContent = '';
+                    this.el('result-files').textContent = '';
                     this.el('diff-status').textContent = 'Checking whether a retained diff exists…';
                     this.el('current-result-details').hidden = true;
                     this.el('continue-current').hidden = true;
@@ -1865,8 +1879,54 @@
                         ' bytes. Review and behavioral state are not inferred.' +
                         (result.read_only_reason ? ' ' + result.read_only_reason : '');
                     this.el('source').value = result.text;
+                    this.renderResources(result);
                     this.el('review').disabled = false;
                     this.el('evolve').disabled = Boolean(result.read_only);
+                }
+
+                renderResources(result) {
+                    const select = this.el('resource-select');
+                    select.replaceChildren();
+                    const files = [{ path: 'SKILL.md' }, ...(result.resources || []).filter(file => file.path !== 'SKILL.md')];
+                    for (const file of files) {
+                        const option = document.createElement('option');
+                        option.value = file.path;
+                        option.textContent = file.path;
+                        select.append(option);
+                    }
+                    select.value = 'SKILL.md';
+                    select.disabled = files.length < 2;
+                    this.el('source-label').textContent = 'SKILL.md · actual bytes · read only';
+                    this.el('resource-status').textContent = result.resources
+                        ? files.length + ' listed files. Supporting text previews are limited to 128 KiB. Reading a file does not record an agent review.' + (result.resource_omitted ? ' ' + result.resource_omitted + ' unsupported paths omitted; package integrity still covers them.' : '')
+                        : 'This connection exposes only SKILL.md. Supporting-file coverage is unverified.';
+                }
+
+                async loadResource() {
+                    if (!this.selected) return;
+                    const selected = this.selected;
+                    const path = this.el('resource-select').value;
+                    const version = this.resourceVersion = (this.resourceVersion || 0) + 1;
+                    this.el('source').value = '';
+                    this.el('source-label').textContent = path + ' · read only';
+                    if (path === 'SKILL.md') {
+                        this.el('source').value = selected.text;
+                        this.el('resource-status').textContent = 'Last inspected SKILL.md. Reinspect to refresh its bytes.';
+                        return;
+                    }
+                    this.el('resource-status').textContent = 'Reading the selected resource at the inspected package revision…';
+                    try {
+                        const result = await this.call('skill_panel_inspect', { skill: selected.skill, resource: path, base_sha256: selected.package_sha256 });
+                        if (this.selected !== selected || this.resourceVersion !== version) return;
+                        if (result.skill !== selected.skill || result.package_sha256 !== selected.package_sha256 || result.resource?.path !== path)
+                            throw new Error('The resource identity did not match.');
+                        this.el('source').value = result.resource.text;
+                        this.el('resource-status').textContent = 'Actual UTF-8 bytes at the inspected revision. Read only; no script was executed or review coverage inferred.';
+                    } catch {
+                        if (this.selected !== selected || this.resourceVersion !== version) return;
+                        this.el('source').value = '';
+                        this.el('resource-status').textContent = 'Preview unavailable: the source may have changed, or the file is not supported UTF-8 text up to 128 KiB. Reinspect the skill before retrying. No files were changed.';
+                    }
                 }
 
                 openDialog(id) {
@@ -2133,10 +2193,15 @@
                         : 'Review with agent starts a review; inspecting the skill alone creates no diff.';
                     const summary = latest?.result?.summary || '';
                     const points = [...summary];
+                    const coverage = latest?.result?.reviewed_files;
+                    this.el('result-coverage').textContent = latest?.result
+                        ? coverage ? 'Agent reports reading ' + coverage.length + ' files. Open the full result for the list; this is not proof of comprehension.' : 'File-by-file reading coverage was not recorded for this review.'
+                        : '';
+                    this.el('result-files').textContent = coverage ? 'Agent-reported files: ' + (coverage.length ? coverage.join(', ') : 'none') : '';
                     this.el('result-summary').textContent =
                         points.length > 240 ? points.slice(0, 240).join('') + '…' : summary;
                     this.el('result-full').textContent = summary;
-                    this.el('current-result-details').hidden = points.length <= 240;
+                    this.el('current-result-details').hidden = points.length <= 240 && !coverage;
                     this.el('current-result-details').open = false;
                     this.el('continue-current').hidden = !latest || Boolean(latest.result);
                     this.el('view-diff').textContent = this.currentDiff

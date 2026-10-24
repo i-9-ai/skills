@@ -64,7 +64,36 @@ export const messages = {
             action: 'View in English',
             dismiss: 'Not now',
         },
-        nav: { workflow: 'Workflow', catalog: 'Catalog', install: 'Install', docs: 'Docs' },
+        nav: {
+            workflow: 'Workflow',
+            dashboard: 'Dashboard',
+            catalog: 'Catalog',
+            install: 'Install',
+            docs: 'Docs',
+        },
+        dashboard: {
+            title: 'Understand the skill.',
+            emphasis: 'Approve the change.',
+            badge: 'Local dashboard pilot',
+            description:
+                'A working library for selected and global skills, with the evidence beside the decision.',
+            steps: [
+                {
+                    title: 'Read the whole package',
+                    body: 'Browse supported references and scripts as inert text at the inspected revision. See what is available and what could not be previewed.',
+                },
+                {
+                    title: 'Bring the review back',
+                    body: 'Ask your host agent for a review. Its saved report and declared file coverage return to the dashboard, including findings with no proposed change.',
+                },
+                {
+                    title: 'Compare, then decide',
+                    body: 'Inspect word-level changes, the exact diff and actual checks. Application and recovery each require your explicit approval.',
+                },
+            ],
+            limit: 'Explicit local MCP setup is required; the skills-only plugin does not include this dashboard. Only SKILL.md can be changed. Supporting files are read only, and agent-reported coverage is not certification. Native rendering and public distribution depend on the host.',
+            link: 'Set up and understand the dashboard',
+        },
         hero: {
             title: 'Better skills.',
             emphasis: 'By design.',
@@ -195,7 +224,36 @@ export const messages = {
             action: 'Ver em português',
             dismiss: 'Agora não',
         },
-        nav: { workflow: 'Fluxo', catalog: 'Catálogo', install: 'Instalar', docs: 'Docs' },
+        nav: {
+            workflow: 'Fluxo',
+            dashboard: 'Painel',
+            catalog: 'Catálogo',
+            install: 'Instalar',
+            docs: 'Docs',
+        },
+        dashboard: {
+            title: 'Entenda a skill.',
+            emphasis: 'Aprove a mudança.',
+            badge: 'Piloto de painel local',
+            description:
+                'Uma biblioteca de trabalho para skills selecionadas e globais, com as evidências ao lado da decisão.',
+            steps: [
+                {
+                    title: 'Leia o pacote inteiro',
+                    body: 'Consulte referências e scripts compatíveis como texto, sem executá-los, na revisão inspecionada. Veja o que está disponível e o que não pôde ser visualizado.',
+                },
+                {
+                    title: 'Traga a revisão de volta',
+                    body: 'Peça uma revisão ao agente do seu host. O relatório salvo e a cobertura de arquivos declarada voltam ao painel, inclusive quando há apontamentos sem proposta de alteração.',
+                },
+                {
+                    title: 'Compare e decida',
+                    body: 'Confira as palavras alteradas, o diff exato e as verificações realizadas. Aplicar e recuperar exigem sua aprovação explícita, separadamente.',
+                },
+            ],
+            limit: 'Exige configuração explícita de MCP local; o plugin somente de skills não inclui este painel. Apenas SKILL.md pode ser alterado. Arquivos de apoio são somente leitura e a cobertura declarada pelo agente não é certificação. A renderização nativa e a distribuição pública dependem do host.',
+            link: 'Configure e entenda o painel',
+        },
         hero: {
             title: 'Skills melhores.',
             emphasis: 'Por design.',
@@ -329,7 +387,36 @@ export const messages = {
             action: 'Ver en español',
             dismiss: 'Ahora no',
         },
-        nav: { workflow: 'Flujo', catalog: 'Catálogo', install: 'Instalar', docs: 'Docs' },
+        nav: {
+            workflow: 'Flujo',
+            dashboard: 'Panel',
+            catalog: 'Catálogo',
+            install: 'Instalar',
+            docs: 'Docs',
+        },
+        dashboard: {
+            title: 'Entienda la skill.',
+            emphasis: 'Apruebe el cambio.',
+            badge: 'Piloto de panel local',
+            description:
+                'Una biblioteca de trabajo para skills seleccionadas y globales, con las evidencias junto a la decisión.',
+            steps: [
+                {
+                    title: 'Lea el paquete completo',
+                    body: 'Consulte referencias y scripts compatibles como texto inerte en la revisión inspeccionada. Vea lo que está disponible y lo que no se pudo visualizar.',
+                },
+                {
+                    title: 'Traiga la revisión de vuelta',
+                    body: 'Solicite una revisión al agente de su host. El informe guardado y la cobertura declarada regresan al panel, incluso cuando hay hallazgos sin una propuesta de cambio.',
+                },
+                {
+                    title: 'Compare y decida',
+                    body: 'Revise las palabras modificadas, el diff exacto y las comprobaciones realizadas. Aplicar y recuperar requieren su aprobación explícita por separado.',
+                },
+            ],
+            limit: 'Requiere configuración explícita de MCP local; el plugin de solo skills no incluye este panel. Solo SKILL.md puede cambiar. Los archivos de apoyo son de solo lectura y la cobertura declarada no es una certificación. La visualización nativa y la distribución pública dependen del host.',
+            link: 'Configure y entienda el panel',
+        },
         hero: {
             title: 'Mejores skills.',
             emphasis: 'Por diseño.',

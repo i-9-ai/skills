@@ -256,6 +256,13 @@ the catalog layout and page order remain unchanged.
 
 ## Design evidence and deliberate exceptions
 
+The dashboard section is an authorized extension of the field-manual structure:
+a ruled two-column reading order, three concrete workflow steps and an explicit
+local-setup/approval boundary. Keep it static and usable without JavaScript;
+do not turn it into an invented screenshot, a compatibility badge wall or an
+unverified public-install promise. The mobile layout stacks the steps below the
+introduction and retains the setup-guide link.
+
 The generated opening's preview caption “From idea to impact” is discarded; the
 dedicated lifecycle concept governs that section. The catalog concept's sample
 icons are replaced by each real package's existing asset, as required by the real

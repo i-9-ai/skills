@@ -271,6 +271,11 @@ inventing categories, quality scores or related-skill recommendations.
    readable or reviewed. Their bytes still participate in package integrity.
    Other read-only globals still expose only `SKILL.md` and an explicit reason.
    Inventory and preserved package bytes do not establish analysis coverage.
+   In the **Files** tab, the package-file selector uses this same revision-bound
+   API to preview references and scripts as inert text. A failed or stale read
+   clears the preview and asks for reinspection; switching files never records
+   agent coverage or authorizes a write. Older/read-only connections exposing
+   only the entrypoint show that limitation explicitly.
    If a focused improvement is justified, the agent
    authors complete candidate text and calls `skill_panel_propose` with the frozen
    package `base_sha256`. This retains both packages, the exact diff and local
@@ -291,6 +296,8 @@ inventing categories, quality scores or related-skill recommendations.
    partial coverage in the summary. These are revision-bound agent assertions,
    not proof of understanding. Older outcomes without the field have unknown
    coverage; they are not retroactively credited with reading the inventory.
+   The current-review summary exposes declared coverage even for findings with
+   no candidate. Open the full review result for the reported file list.
 5. Inspect the side-by-side retained versions, numbered lines, changed words
    and actual checks. The comparison initially scrolls toward the change;
    scroll either pane to inspect the full text. The detail disclosure retains
@@ -396,6 +403,10 @@ entries, 8 MiB per package and 32 KiB UTF-8 entrypoint/candidate text. It reject
 package links, hardlinks, special entries and unsafe or overlapping state.
 At most 16 retained proposal directories are accepted per state directory;
 at most 32 immutable review requests are retained, with no automatic pruning.
+An interrupted preparation without its final `proposal.json` remains retained
+and consumes capacity, but does not hide valid proposals or review history.
+Malformed or unsafe committed records still fail closed; absence is not an
+approval or permission to delete evidence.
 History reads bounded integrity-checked summaries; opening a proposal rechecks
 its full original/candidate bytes and live state before any decision. Completion
 must match the request skill and base. Read-only requests cannot link a proposal;

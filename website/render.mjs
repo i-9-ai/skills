@@ -113,6 +113,7 @@ function header(locale, prefix, navigationRoot = '') {
     const m = messages[locale];
     const nav = [
         link(m.nav.workflow, navigationRoot + '#workflow'),
+        link(m.nav.dashboard, navigationRoot + '#dashboard'),
         link(m.nav.catalog, navigationRoot + '#catalog'),
         link(m.nav.install, navigationRoot + '#install'),
         link(m.nav.docs, documentation),
@@ -200,6 +201,45 @@ function workflow(locale) {
         'section',
         { id: 'workflow', class: 'workflow section' },
         element('div', { class: 'container' }, intro + element('ol', { class: 'stages' }, stages)),
+    );
+}
+
+function dashboard(locale) {
+    const m = messages[locale].dashboard;
+    return element(
+        'section',
+        { id: 'dashboard', class: 'dashboard section', 'aria-labelledby': 'dashboard-title' },
+        element(
+            'div',
+            { class: 'container dashboard-layout' },
+            element(
+                'div',
+                {},
+                text('p', m.badge, { class: 'eyebrow' }) +
+                    heading(m.title, m.emphasis, 'h2', { id: 'dashboard-title' }) +
+                    text('p', m.description, { class: 'lead' }) +
+                    link(m.link, documentation + '/Skill-Change-Panel', { class: 'text-link' }),
+            ) +
+                element(
+                    'ol',
+                    { class: 'dashboard-steps' },
+                    m.steps
+                        .map((step, index) =>
+                            element(
+                                'li',
+                                {},
+                                text('span', String(index + 1).padStart(2, '0'), {
+                                    class: 'dashboard-number',
+                                    'aria-hidden': true,
+                                }) +
+                                    text('h3', step.title) +
+                                    text('p', step.body),
+                            ),
+                        )
+                        .join(''),
+                ) +
+                text('p', m.limit, { class: 'dashboard-limit' }),
+        ),
     );
 }
 
@@ -554,6 +594,7 @@ export function renderPage({ locale, rootPage = false, skills, publicUrl = null 
             { id: 'main' },
             hero(locale, prefix, skills.length) +
                 workflow(locale) +
+                dashboard(locale) +
                 catalog(locale, prefix, skills) +
                 installation(locale) +
                 evidence(locale),

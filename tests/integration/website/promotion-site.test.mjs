@@ -89,6 +89,11 @@ test('build renders every canonical package in all locales, escapes source data 
         assert.equal((html.match(/data-skill=/g) ?? []).length, f.catalog.skills.length);
         assert.equal((html.match(/<h1/g) ?? []).length, 1);
         assert.ok(html.includes(messages[locale].hero.title));
+        assert.ok(html.includes('id="dashboard"'));
+        assert.ok(html.includes(messages[locale].dashboard.title));
+        assert.ok(html.includes(messages[locale].dashboard.limit));
+        assert.ok(html.includes('href="#dashboard"'));
+        assert.ok(html.includes('https://github.com/i-9-ai/skills/wiki/Skill-Change-Panel'));
         assert.ok(html.includes('lang="' + (locale === 'pt-br' ? 'pt-BR' : locale) + '"'));
         assert.ok(html.includes('&lt;img src=&quot;x&quot; onerror=&quot;sentinel&quot;&gt;'));
         assert.ok(!html.includes('<img src="x"'));

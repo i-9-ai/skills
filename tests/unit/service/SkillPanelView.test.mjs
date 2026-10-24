@@ -197,6 +197,88 @@ test('large comparisons retain full text without an unbounded row-node expansion
     assert.match(panel.el('before-ending').textContent, /Full plain text/);
 });
 
+test('package file reader uses the frozen identity and never treats a text resource as executable', async () => {
+    const panel = view();
+    const selected = {
+        ...panel.selected,
+        name: 'example-skill',
+        resources: [{ path: 'SKILL.md' }, { path: 'references/guide.md' }],
+        files: 2,
+        bytes: 100,
+        description: 'Synthetic skill.',
+    };
+    panel.selected = selected;
+    panel.renderSelection(selected);
+    assert.equal(panel.el('resource-select').children.length, 2);
+    assert.equal(panel.el('resource-select').disabled, false);
+    panel.el('resource-select').value = 'references/guide.md';
+    panel.call = async (name, args) => {
+        assert.equal(name, 'skill_panel_inspect');
+        assert.deepEqual(JSON.parse(JSON.stringify(args)), {
+            skill: 'example-skill',
+            resource: 'references/guide.md',
+            base_sha256: 'base',
+        });
+        return {
+            ...selected,
+            resource: { path: 'references/guide.md', text: '<script>inert</script>' },
+        };
+    };
+    await panel.loadResource();
+    assert.equal(panel.el('source').value, '<script>inert</script>');
+    assert.match(panel.el('resource-status').textContent, /no script was executed/);
+    assert.equal(panel.selected, selected);
+});
+
+test('a late or failed resource preview cannot replace a later selection or imply current bytes', async () => {
+    const panel = view();
+    panel.el('resource-select').value = 'references/guide.md';
+    let deliver;
+    panel.call = () =>
+        new Promise((resolve) => {
+            deliver = resolve;
+        });
+    const pending = panel.loadResource();
+    panel.el('resource-select').value = 'SKILL.md';
+    await panel.loadResource();
+    deliver({ ...panel.selected, resource: { path: 'references/guide.md', text: 'late' } });
+    await pending;
+    assert.equal(panel.el('source').value, 'original');
+    panel.el('resource-select').value = 'assets/icon.png';
+    panel.call = async () => {
+        throw new Error('Unsupported or changed');
+    };
+    await panel.loadResource();
+    assert.equal(panel.el('source').value, '');
+    assert.match(panel.el('resource-status').textContent, /Preview unavailable.*Reinspect/);
+    assert.equal(panel.proposal.proposal_id, 'retained-identity');
+});
+
+test('findings without a proposal still expose reported resource reading without inventing a diff', () => {
+    const panel = view();
+    panel.renderCurrentResult(
+        {
+            requests: [
+                {
+                    base_sha256: 'base',
+                    result: {
+                        outcome: 'findings',
+                        summary: 'The reference needs clarification.',
+                        proposal_id: null,
+                        reviewed_files: ['SKILL.md', 'references/guide.md'],
+                    },
+                },
+            ],
+            proposals: [],
+        },
+        { findings: 'Review findings' },
+    );
+    assert.match(panel.el('result-coverage').textContent, /reading 2 files/);
+    assert.match(panel.el('result-files').textContent, /references\/guide.md/);
+    assert.equal(panel.el('current-result-details').hidden, false);
+    assert.equal(panel.currentDiff, null);
+});
+
 test('word highlights leave shared text neutral and coverage never infers analysis from inventory', () => {
     const panel = view();
     const before = 'Keep the old value and <unsafe> text.\nunchanged\n';
