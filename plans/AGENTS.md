@@ -22,6 +22,8 @@ Verify every requirement has an implementation and a check or an explicit limit.
 
 ## Child DOX index
 
+- [Development editor dependencies](2026-10-24-07-41-09-development-editor-dependency-remediation.md): scoped lock refresh for Changesets editor advisories; no runtime capability, publishing or native acceptance claim.
+
 - [Recorded dashboard progress](2026-10-24-06-42-22-dashboard-recorded-progress-and-onboarding.md): saved workflow stages and complete private local onboarding; no inferred agent execution, consent or public/native acceptance.
 
 - [Dashboard change navigation](2026-10-24-05-49-40-dashboard-change-navigation.md): bounded changed-block navigation and resilient local history reads; consent, write boundaries and public/native acceptance remain separate.
