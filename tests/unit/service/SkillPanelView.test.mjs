@@ -195,6 +195,66 @@ test('large comparisons retain full text without an unbounded row-node expansion
     assert.equal(panel.el('after').textContent, after);
     assert.equal(panel.el('before').children.length, 0);
     assert.match(panel.el('before-ending').textContent, /Full plain text/);
+    assert.equal(panel.el('change-previous').disabled, true);
+    assert.equal(panel.el('change-next').disabled, true);
+    assert.match(panel.el('change-position').textContent, /navigation unavailable/);
+});
+
+test('changed-block controls scroll each pane independently and never infer consent or call tools', () => {
+    const panel = view();
+    const before = 'first\nkeep\nremove\nlast\n';
+    const after = 'insert one\ninsert two\nfirst\nkeep\nlast\nappend\n';
+    panel.proposal.before = before;
+    panel.proposal.after = after;
+    panel.proposal.comparison = new SkillPanelDiffService().compare(before, after);
+    panel.call = () => assert.fail('Reading a changed block must not call a tool');
+    panel.renderProposal(panel.proposal);
+    for (const [id, stride] of [
+        ['before', 100],
+        ['after', 150],
+    ]) {
+        const pane = panel.el(id);
+        pane.scrollHeight = 2000;
+        pane.clientHeight = 300;
+        pane.offsetTop = 500;
+        pane.children.forEach((row, i) => (row.offsetTop = i * stride));
+    }
+    assert.match(panel.el('change-position').textContent, /^Change 1 of 3/);
+    assert.equal(panel.el('change-previous').disabled, true);
+    panel.navigateChange(1);
+    assert.equal(panel.el('before').scrollTop, 136);
+    assert.equal(panel.el('after').scrollTop, 536);
+    assert.match(
+        panel.el('change-position').textContent,
+        /Change 2 of 3.*left line 3 \/ right line 5/,
+    );
+    assert.equal(panel.el('approval').checked, false);
+    assert.equal(panel.el('apply').disabled, true);
+    panel.el('approval').checked = true;
+    panel.navigateChange(1);
+    assert.equal(
+        panel.el('before').scrollTop,
+        236,
+        'EOF insertion anchors the last available left line',
+    );
+    assert.equal(panel.el('after').scrollTop, 686);
+    assert.equal(panel.el('change-next').disabled, true);
+    panel.navigateChange(1);
+    assert.equal(panel.changeIndex, 2);
+    panel.navigateChange(-1);
+    assert.equal(panel.changeIndex, 1);
+    assert.equal(panel.el('approval').checked, true, 'Navigation preserves exact operator consent');
+    assert.equal(panel.proposal.proposal_id, 'retained-identity');
+
+    panel.mode = 'recover';
+    panel.renderProposal(panel.proposal);
+    panel.navigateChange(1);
+    assert.match(panel.el('change-position').textContent, /left line 5 \/ right line 3/);
+    assert.equal(panel.el('approval').checked, false, 'Recovery requires new approval');
+    panel.renderComparison('', 'new\n', new SkillPanelDiffService().compare('', 'new\n'));
+    panel.scrollComparison();
+    assert.equal(panel.el('before').scrollTop, 0);
+    assert.equal(panel.el('change-next').disabled, true);
 });
 
 test('package file reader uses the frozen identity and never treats a text resource as executable', async () => {

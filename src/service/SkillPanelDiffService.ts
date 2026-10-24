@@ -15,6 +15,7 @@ export class SkillPanelDiffService {
         const edits = this.match(lines(before), lines(after));
         const left: Row[] = [];
         const right: Row[] = [];
+        const blocks: { left_line: number; right_line: number }[] = [];
         for (let index = 0; index < edits.length;) {
             const edit = edits[index];
             if (edit.kind === 'equal') {
@@ -25,6 +26,7 @@ export class SkillPanelDiffService {
             }
             const removed: string[] = [];
             const added: string[] = [];
+            blocks.push({ left_line: left.length + 1, right_line: right.length + 1 });
             while (index < edits.length && edits[index].kind !== 'equal') {
                 const item = edits[index++];
                 (item.kind === 'removed' ? removed : added).push(item.text);
@@ -59,10 +61,11 @@ export class SkillPanelDiffService {
         const plain =
             left.length > 4096 ||
             right.length > 4096 ||
-            Buffer.byteLength(JSON.stringify({ left, right })) > 262_144;
+            Buffer.byteLength(JSON.stringify({ left, right, blocks })) > 262_144;
         return {
             left: plain ? null : left,
             right: plain ? null : right,
+            blocks: plain ? null : blocks,
             added: right.filter((row) => row.changed).length,
             removed: left.filter((row) => row.changed).length,
             limited: this.limited,

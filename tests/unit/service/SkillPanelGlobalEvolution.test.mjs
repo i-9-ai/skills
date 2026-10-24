@@ -93,6 +93,57 @@ test('single-target inspection and history resolution do not inventory unrelated
     assert.deepEqual(inspected, []);
 });
 
+for (const globalWrite of [false, true]) {
+    test(`a missing optional global root preserves local history with global writes ${globalWrite ? 'enabled' : 'disabled'}`, (t) => {
+        const f = skillPanelFixture(t);
+        const global = join(f.root, 'optional globals');
+        fs.mkdirSync(global);
+        const service = new SkillPanelService(
+            new SkillPanelConfiguration(f.collection, f.state, global, globalWrite),
+        );
+        const request = service.request({
+            skill: 'example-skill',
+            kind: 'review',
+            focus: null,
+        }).request;
+        const proposal = service.propose({
+            skill: 'example-skill',
+            base_sha256: f.inspect().package_sha256,
+            after: f.after,
+            rationale: 'Retain an independently selected local change.',
+        });
+        service.complete(finish(request, proposal));
+        const activity = service.activity({ skill: 'example-skill' });
+        const retained = service.proposal({ proposal_id: proposal.proposal_id });
+        fs.rmdirSync(global);
+
+        assert.equal(service.open({}).skills[0].skill, 'example-skill');
+        assert.deepEqual(service.activity({ skill: 'example-skill' }), activity);
+        assert.equal(
+            service.request({ request_id: request.request_id }).request.request_id,
+            request.request_id,
+        );
+        assert.deepEqual(service.proposal({ proposal_id: proposal.proposal_id }), retained);
+        for (const mutation of [
+            () => service.request({ skill: 'example-skill', kind: 'review', focus: null }),
+            () =>
+                service.propose({
+                    skill: 'example-skill',
+                    base_sha256: proposal.base_sha256,
+                    after: f.after,
+                    rationale: 'Unsafe boundary must still refuse a new proposal.',
+                }),
+            () => service.apply(f.approval(proposal)),
+            () => service.recover(f.approval(proposal, 'recover')),
+        ]) {
+            assert.throws(mutation, { code: 'panel_storage_unavailable' });
+            assert.equal(fs.readFileSync(f.entrypoint, 'utf8'), f.before);
+            assert.deepEqual(service.activity({ skill: 'example-skill' }), activity);
+            assert.equal(fs.existsSync(join(f.state, 'mutation.lock')), false);
+        }
+    });
+}
+
 test('explicit global evolution retains a real diff, rejects missing approval and applies/reverses only the exact global entrypoint', (t) => {
     const f = fixture(t);
     fs.chmodSync(f.globalEntrypoint, 0o640);

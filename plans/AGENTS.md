@@ -22,6 +22,8 @@ Verify every requirement has an implementation and a check or an explicit limit.
 
 ## Child DOX index
 
+- [Dashboard change navigation](2026-10-24-05-49-40-dashboard-change-navigation.md): bounded changed-block navigation and resilient local history reads; consent, write boundaries and public/native acceptance remain separate.
+
 - [Dashboard resource workflow](2026-10-24-04-40-27-dashboard-resource-workflow.md): resilient retained history, revision-bound file previews and multilingual product explanation; real mutations and public distribution remain separately approved.
 
 - [Precise panel diffs and review coverage](2026-10-20-01-48-06-panel-diff-and-review-coverage.md): bounded word-level comparison, inert supporting-file reads and explicit agent-reported coverage; approval still changes only SKILL.md.

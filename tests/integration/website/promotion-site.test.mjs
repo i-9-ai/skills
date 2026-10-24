@@ -92,6 +92,7 @@ test('build renders every canonical package in all locales, escapes source data 
         assert.ok(html.includes('id="dashboard"'));
         assert.ok(html.includes(messages[locale].dashboard.title));
         assert.ok(html.includes(messages[locale].dashboard.limit));
+        assert.ok(html.includes(messages[locale].dashboard.steps[2].body));
         assert.ok(html.includes('href="#dashboard"'));
         assert.ok(html.includes('https://github.com/i-9-ai/skills/wiki/Skill-Change-Panel'));
         assert.ok(html.includes('lang="' + (locale === 'pt-br' ? 'pt-BR' : locale) + '"'));

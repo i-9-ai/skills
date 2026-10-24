@@ -13,6 +13,10 @@ test('separated edits preserve equal lines and highlight only changed words in l
     const diff = service.compare(before, after);
     assert.equal(diff.added, 2);
     assert.equal(diff.removed, 2);
+    assert.deepEqual(diff.blocks, [
+        { left_line: 1, right_line: 1 },
+        { left_line: 14, right_line: 14 },
+    ]);
     assert.equal(diff.left[4].changed, false);
     assert.deepEqual(
         diff.left[0].parts.filter((part) => part.changed).map((part) => part.text),
@@ -73,4 +77,26 @@ test('work bounds disclose less precise highlighting without losing text or emit
     const many = service.compare('x y\n'.repeat(4000), 'x z\n'.repeat(4000));
     assert.equal(many.left, null, 'Serialized projection is bounded below the MCP response budget');
     assert.equal(many.right, null);
+    assert.equal(many.blocks, null);
+});
+
+test('block coordinates preserve independent line positions after insertions and deletions', () => {
+    const service = new SkillPanelDiffService();
+    const before = 'first\nkeep\nremove\nlast\n';
+    const after = 'insert one\ninsert two\nfirst\nkeep\nlast\nappend\n';
+    const blocks = service.compare(before, after).blocks;
+    assert.deepEqual(blocks, [
+        { left_line: 1, right_line: 1 },
+        { left_line: 3, right_line: 5 },
+        { left_line: 5, right_line: 6 },
+    ]);
+    assert.deepEqual(
+        service.compare(after, before).blocks,
+        blocks.map((block) => ({
+            left_line: block.right_line,
+            right_line: block.left_line,
+        })),
+    );
+    assert.deepEqual(service.compare('', 'new\n').blocks, [{ left_line: 1, right_line: 1 }]);
+    assert.deepEqual(service.compare('same\n', 'same\n').blocks, []);
 });

@@ -690,10 +690,13 @@ export class SkillEvolutionRepository {
                 allowMissingLeaf: true,
             });
             this.configuration.assertSeparate(collection.path, target.absolute);
-            new SkillPanelCatalogRepository(this.configuration).assertWritableTargets(
-                collection.path,
-                target.absolute,
-            );
+            // Retained local reads do not require an available optional global root.
+            // Every mutation still verifies the complete physical write boundary.
+            if (write)
+                new SkillPanelCatalogRepository(this.configuration).assertWritableTargets(
+                    collection.path,
+                    target.absolute,
+                );
             if (target.info === null) {
                 if (!write && missing) return missing();
                 if (!write) throw new SkillOperationError('panel_storage_unavailable');

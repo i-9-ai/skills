@@ -227,6 +227,10 @@ Retained global records bind their relative identity and root without requiring
 the live package merely to list history or record a blocked review. A removed
 or unsafe global cannot disable another skill's history, and still cannot be
 opened as a writable proposal, linked as a candidate or applied/recovered.
+If the optional global root itself disappears, saved local requests, activity
+and proposals remain readable. Mutations still require its full physical boundary
+check and refuse until that boundary can be verified; reading history does not
+grant a fallback write permission.
 Removing the switch disables new global mutation; preserve all retained state.
 No global catalog, telemetry or public plugin configuration is synchronized.
 
@@ -299,14 +303,21 @@ inventing categories, quality scores or related-skill recommendations.
    The current-review summary exposes declared coverage even for findings with
    no candidate. Open the full review result for the reported file list.
 5. Inspect the side-by-side retained versions, numbered lines, changed words
-   and actual checks. The comparison initially scrolls toward the change;
-   scroll either pane to inspect the full text. The detail disclosure retains
+   and actual checks. **Previous change** and **Next change** move through
+   separated changed blocks with an explicit position and per-side line anchors.
+   Both panes scroll independently to their corresponding block, including after
+   an insertion or deletion; an anchor beyond EOF uses the last available row.
+   The comparison initially opens at the first block. Scroll either pane to
+   inspect the full text. Navigating never approves a change or calls a tool;
+   recovery reverses the anchors and still requires new consent.
+   The detail disclosure retains
    exact proposal hashes, local validation detail and the complete unified diff,
    including separate hunks and EOF-only changes. Changed lines use a light
    background; stronger underlined spans identify the changed words, punctuation
    or whitespace, while unchanged text remains neutral. Bounded matching may
    fall back to whole changed ranges and discloses that limit. Large files use full plain text to bound rendered
-   row nodes. Official Agent Skills conformance and
+   row nodes, disabling block navigation while preserving the exact diff.
+   Official Agent Skills conformance and
    behavioral evaluation are explicitly `not_run` by this pilot; a local
    structural pass cannot establish semantic quality or release readiness.
    A failed local check disables application. Run required official and task

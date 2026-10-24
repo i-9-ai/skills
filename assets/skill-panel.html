@@ -1317,6 +1317,15 @@
                             <h3 id="proposal-title" class="sr-only">Review the exact change</h3>
                             <p id="proposal-rationale"></p>
                             <p id="comparison-summary" class="footnote"></p>
+                            <nav class="panel-actions" aria-label="Changed blocks">
+                                <button id="change-previous" type="button" disabled>
+                                    Previous change
+                                </button>
+                                <span id="change-position" class="footnote" role="status" aria-live="polite"></span>
+                                <button id="change-next" type="button" disabled>
+                                    Next change
+                                </button>
+                            </nav>
                             <details class="proposal-details">
                                 <summary>Files and review coverage</summary>
                                 <p id="review-coverage"></p>
@@ -1565,6 +1574,12 @@
                         this.run(() => this.preview()),
                     );
                     this.el('approval').addEventListener('change', () => this.actions());
+                    this.el('change-previous').addEventListener('click', () =>
+                        this.navigateChange(-1),
+                    );
+                    this.el('change-next').addEventListener('click', () =>
+                        this.navigateChange(1),
+                    );
                     this.el('apply').addEventListener('click', () => this.run(() => this.commit()));
                     this.el('inspect-proposal').addEventListener('click', () =>
                         this.run(() => this.refreshProposal()),
@@ -2357,7 +2372,17 @@
                         recovery ? proposal.after : proposal.before,
                         recovery ? proposal.before : proposal.after,
                         proposal.comparison && (recovery
-                            ? { ...proposal.comparison, left: proposal.comparison.right, right: proposal.comparison.left, added: proposal.comparison.removed, removed: proposal.comparison.added }
+                            ? {
+                                ...proposal.comparison,
+                                left: proposal.comparison.right,
+                                right: proposal.comparison.left,
+                                added: proposal.comparison.removed,
+                                removed: proposal.comparison.added,
+                                blocks: proposal.comparison.blocks?.map((block) => ({
+                                    left_line: block.right_line,
+                                    right_line: block.left_line,
+                                })),
+                            }
                             : proposal.comparison),
                     );
                     this.renderCoverage(proposal);
@@ -2409,17 +2434,39 @@
                 }
 
                 scrollComparison() {
-                    const codes = [this.el('before'), this.el('after')];
-                    const changed =
-                        [...codes[0].children].find((row) => row.className !== 'code-line') ||
-                        [...codes[1].children].find((row) => row.className !== 'code-line');
-                    if (!changed) return;
-                    const maximum = Math.max(
-                        0,
-                        Math.min(...codes.map((code) => code.scrollHeight - code.clientHeight)),
-                    );
-                    const offset = Math.min(maximum, Math.max(0, changed.offsetTop - 64));
-                    for (const code of codes) code.scrollTop = offset;
+                    const block = this.changeBlocks?.[this.changeIndex];
+                    if (!block) return;
+                    for (const [id, line] of [['before', block.left_line], ['after', block.right_line]]) {
+                        const code = this.el(id);
+                        const row = code.children[Math.min(line, code.children.length) - 1];
+                        const maximum = Math.max(0, code.scrollHeight - code.clientHeight);
+                        // Each code pane is positioned; row offsets belong to that pane.
+                        code.scrollTop = row
+                            ? Math.min(maximum, Math.max(0, row.offsetTop - 64))
+                            : 0;
+                    }
+                }
+
+                navigateChange(direction) {
+                    const next = this.changeIndex + direction;
+                    if (!this.changeBlocks?.length || next < 0 || next >= this.changeBlocks.length)
+                        return;
+                    this.changeIndex = next;
+                    this.renderChangePosition();
+                    this.scrollComparison();
+                }
+
+                renderChangePosition() {
+                    const block = this.changeBlocks?.[this.changeIndex];
+                    this.el('change-previous').disabled = !block || this.changeIndex === 0;
+                    this.el('change-next').disabled =
+                        !block || this.changeIndex === this.changeBlocks.length - 1;
+                    this.el('change-position').textContent = block
+                        ? 'Change ' + (this.changeIndex + 1) + ' of ' + this.changeBlocks.length +
+                            ' · left line ' + block.left_line + ' / right line ' + block.right_line
+                        : this.changeBlocks
+                            ? 'No changed blocks.'
+                            : 'Block navigation unavailable; use the exact diff below.';
                 }
 
                 scrollToComparison() {
@@ -2458,6 +2505,18 @@
                 renderComparison(before, after, comparison) {
                     this.renderCode('before', before, comparison?.left, 'removed');
                     this.renderCode('after', after, comparison?.right, 'added');
+                    this.changeBlocks =
+                        comparison?.left && comparison?.right && Array.isArray(comparison.blocks)
+                            ? comparison.blocks.slice(0, 4096).filter((block) =>
+                                Number.isInteger(block?.left_line) &&
+                                block.left_line >= 1 &&
+                                block.left_line <= comparison.left.length + 1 &&
+                                Number.isInteger(block?.right_line) &&
+                                block.right_line >= 1 &&
+                                block.right_line <= comparison.right.length + 1)
+                            : null;
+                    this.changeIndex = this.changeBlocks?.length ? 0 : -1;
+                    this.renderChangePosition();
                     this.el('comparison-summary').textContent = comparison
                         ? 'SKILL.md · +' + comparison.added + ' / −' + comparison.removed + ' lines. ' + (comparison.left && comparison.right ? 'Strong highlights mark changed words; neutral text is unchanged.' : 'Large file: full text without inline highlighting.') + (comparison.limited ? ' Detailed matching reached its work limit; some changed ranges use full-line highlighting. The complete text and exact diff remain available.' : '')
                         : 'SKILL.md · Full text. Detailed comparison is unavailable; use the exact diff below.';
