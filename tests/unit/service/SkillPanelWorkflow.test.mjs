@@ -220,6 +220,82 @@ test('request capacity is bounded without pruning old evidence', (t) => {
     assert.equal(f.service.activity({ skill: 'example-skill' }).requests.length, 32);
 });
 
+test('failed request receipt writes preserve completed reviews, comparisons and a fresh retry', (t) => {
+    const f = skillPanelFixture(t);
+    const other = join(f.collection, 'other-skill');
+    fs.cpSync(f.skill, other, { recursive: true });
+    fs.writeFileSync(join(other, 'SKILL.md'), f.before.replaceAll('example-skill', 'other-skill'));
+    const { request } = start(f);
+    const otherRequest = start(f, { skill: 'other-skill' }).request;
+    const proposal = f.propose();
+    f.service.complete(finish(request, { outcome: 'proposal', proposal_id: proposal.proposal_id }));
+    f.service.complete(finish(otherRequest));
+    const history = f.service.activity({ skill: request.skill });
+    const otherHistory = f.service.activity({ skill: otherRequest.skill });
+    const write = fs.writeFileSync;
+    const failure = t.mock.method(fs, 'writeFileSync', (path, ...args) => {
+        if (String(path).startsWith(f.state) && String(path).endsWith('/request.json'))
+            throw Object.assign(new Error('Synthetic request receipt failure.'), {
+                code: 'ENOSPC',
+            });
+        return write(path, ...args);
+    });
+    try {
+        assert.throws(() => start(f), { code: 'panel_storage_unavailable' });
+    } finally {
+        failure.mock.restore();
+    }
+    const directory = join(f.state, 'request');
+    const pending = fs
+        .readdirSync(directory)
+        .filter((id) => !fs.existsSync(join(directory, id, 'request.json')));
+    assert.equal(pending.length, 1);
+    assert.equal(fs.existsSync(join(f.state, 'mutation.lock')), false);
+    assert.deepEqual(f.service.activity({ skill: request.skill }), history);
+    assert.deepEqual(f.service.activity({ skill: otherRequest.skill }), otherHistory);
+    assert.deepEqual(f.service.request({ request_id: request.request_id }).request, request);
+    assert.equal(f.service.proposal({ proposal_id: proposal.proposal_id }).diff, proposal.diff);
+    const retry = start(f).request;
+    assert(
+        f.service
+            .activity({ skill: request.skill })
+            .requests.some(
+                (entry) => entry.request_id === retry.request_id && entry.result === null,
+            ),
+    );
+    assert.equal(fs.existsSync(join(directory, pending[0])), true);
+    assert.equal(fs.readFileSync(f.entrypoint, 'utf8'), f.before);
+});
+
+test('incomplete request directories retain evidence and consume the bounded request capacity', (t) => {
+    const f = skillPanelFixture(t);
+    const { request } = start(f);
+    f.service.complete(finish(request));
+    const directory = join(f.state, 'request');
+    const pending = Array.from({ length: 31 }, (_, index) =>
+        join(directory, `00000000-0000-4000-8000-${String(index).padStart(12, '0')}`),
+    );
+    for (const path of pending) fs.mkdirSync(path);
+    const evidence = join(pending[0], 'partial.txt');
+    fs.writeFileSync(evidence, 'Retained request preparation evidence.');
+    assert.equal(
+        f.service.activity({ skill: request.skill }).requests[0].request_id,
+        request.request_id,
+    );
+    assert.equal(f.service.activity({ skill: request.skill }).requests.length, 1);
+    assert.deepEqual(f.service.activity({ skill: 'another-skill' }).requests, []);
+    assert.throws(() => start(f), { code: 'panel_storage_unavailable' });
+    assert.equal(fs.readdirSync(directory).length, 32);
+    assert.equal(fs.readFileSync(evidence, 'utf8'), 'Retained request preparation evidence.');
+    fs.writeFileSync(join(pending[0], 'request.json'), '{}');
+    assert.throws(() => f.service.activity({ skill: request.skill }), {
+        code: 'invalid_input',
+    });
+    assert.throws(() => f.service.activity({ skill: 'another-skill' }), {
+        code: 'invalid_input',
+    });
+});
+
 test('an incomplete proposal cannot hide valid reviews or another skill history', (t) => {
     const f = skillPanelFixture(t);
     const { request } = start(f);

@@ -482,8 +482,11 @@ entries, 8 MiB per package and 32 KiB UTF-8 entrypoint/candidate text. It reject
 package links, hardlinks, special entries and unsafe or overlapping state.
 At most 16 retained proposal directories are accepted per state directory;
 at most 32 immutable review requests are retained, with no automatic pruning.
-An interrupted preparation without its final `proposal.json` remains retained
-and consumes capacity, but does not hide valid proposals or review history.
+An interrupted request or proposal preparation without its final `request.json`
+or `proposal.json` remains retained and consumes its respective capacity, but
+does not hide saved reviews, valid proposals or another skill's history. A fresh
+request can be saved while capacity remains available; incomplete evidence is
+never automatically pruned.
 Malformed or unsafe committed records still fail closed; absence is not an
 approval or permission to delete evidence.
 History reads bounded integrity-checked summaries; opening a proposal rechecks

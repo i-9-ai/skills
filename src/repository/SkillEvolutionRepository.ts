@@ -248,6 +248,7 @@ export class SkillEvolutionRepository {
             false,
             (state, collection) => {
                 const requests = this.requestIds(state)
+                    .filter((id) => this.hasCommittedRecord(state, `request/${id}/request.json`))
                     .filter((id) => this.recordHasSkill(state, `request/${id}/request.json`, skill))
                     .map((id) => this.readRequest(state, collection, id))
                     .map((request) => ({ ...request, result: this.readCompletion(state, request) }))
@@ -302,7 +303,7 @@ export class SkillEvolutionRepository {
         return this.validator.inspection({ skill: record?.skill }) === skill;
     }
 
-    /** An absent commit receipt is retained preparation evidence, never a proposal. */
+    /** An absent commit receipt is retained preparation evidence, never a saved record. */
     private hasCommittedRecord(state: SafeRoot, filename: string): boolean {
         return state.inspect(filename, { allowMissingLeaf: true }).info !== null;
     }

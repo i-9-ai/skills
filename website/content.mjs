@@ -84,7 +84,7 @@ export const messages = {
                 },
                 {
                     title: 'Bring the review back',
-                    body: 'Track the saved request, recorded result and opened proposal as separate stages. The host agent’s report and declared file coverage return here, including findings with no proposed change.',
+                    body: 'Track the saved request, recorded result and opened proposal as separate stages. The host agent’s report and declared file coverage return here, including findings with no proposed change. Interrupted preparation keeps completed reviews accessible.',
                 },
                 {
                     title: 'Compare, then decide',
@@ -244,7 +244,7 @@ export const messages = {
                 },
                 {
                     title: 'Traga a revisão de volta',
-                    body: 'Acompanhe pedido salvo, resultado registrado e proposta aberta como etapas distintas. O relatório do agente e a cobertura declarada voltam ao painel, inclusive quando há apontamentos sem proposta de alteração.',
+                    body: 'Acompanhe pedido salvo, resultado registrado e proposta aberta como etapas distintas. O relatório do agente e a cobertura declarada voltam ao painel, inclusive quando há apontamentos sem proposta de alteração. Uma preparação interrompida mantém as revisões concluídas acessíveis.',
                 },
                 {
                     title: 'Compare e decida',
@@ -407,7 +407,7 @@ export const messages = {
                 },
                 {
                     title: 'Traiga la revisión de vuelta',
-                    body: 'Distinga la solicitud guardada, el resultado registrado y la propuesta abierta. El informe del agente y la cobertura declarada regresan al panel, incluso cuando hay hallazgos sin una propuesta de cambio.',
+                    body: 'Distinga la solicitud guardada, el resultado registrado y la propuesta abierta. El informe del agente y la cobertura declarada regresan al panel, incluso cuando hay hallazgos sin una propuesta de cambio. Una preparación interrumpida mantiene accesibles las revisiones completadas.',
                 },
                 {
                     title: 'Compare y decida',
