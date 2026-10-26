@@ -1,5 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
 const messages = {
+    panel_conflict:
+        'Panel source or proposal changed; inspect again and prepare a new exact proposal.',
+    panel_validation_failed:
+        'The candidate failed local structural validation and cannot be applied.',
+    panel_storage_unavailable:
+        'Panel state unavailable or busy; preserve retained recovery files and inspect the selected local workspace.',
+    panel_recovery_required:
+        'The write may have completed; preserve the proposal and inspect its recovery state before continuing.',
     evidence_conflict:
         'Evidence conflicts with an existing occurrence or attempt; preserve the original identity.',
     schema_upgrade_required:

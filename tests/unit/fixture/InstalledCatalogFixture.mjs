@@ -93,7 +93,7 @@ export function catalogFixture(t, { runtime = false } = {}) {
     if (runtime) {
         fs.cpSync(join(repository, 'src'), join(installed, 'src'), { recursive: true });
         for (const [name, resource] of [
-            ['skill-authoring', 'scripts/lib'],
+            ['skill-authoring', 'scripts'],
             ['skills-catalog', 'scripts'],
         ]) {
             const path = `.agents/skills/${name}/${resource}`;

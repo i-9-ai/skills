@@ -34,6 +34,16 @@ flowchart LR
     MCP -->|skill_quality_record / skill_quality_inspect| Quality
     Quality --> Evidence
     MCP -->|catalog tools| Catalog
+    MCP -->|explicit panel collection and state| Panel[Optional local change panel]
+    Prepared[Prepared plugin with retained compiled runtime] -->|installed local MCP| Panel
+    Panel -->|user-clicked host message| Review[Host agent review]
+    Review -->|recorded outcome| Activity[Saved reviews and proposals]
+    Activity -->|selected proposal| Proposal
+    Panel -->|supplied candidate| Proposal[Retained preimage, exact diff and local checks]
+    Globals[Explicit global collection] -->|read only by default| Panel
+    Panel -->|optional global write capability| GlobalGuard[Confined ordinary package and source-root identity]
+    GlobalGuard --> Proposal
+    Proposal -->|explicit exact approval| Apply[Guarded SKILL.md apply or recovery]
     Catalog --> Read
     Read --> Work[Portable meta-skill workflow]
 ```
@@ -52,6 +62,23 @@ queries; the MCP exposes the catalog, onboarding, bump reports and explicit
 evidence tools. See [CLI distribution](https://github.com/i-9-ai/skills/wiki/Distribution-Readiness),
 [plugin preparation](https://github.com/i-9-ai/skills/wiki/Plugin-Preparation) and
 the [interactive entry-path map](https://i-9-ai.github.io/skills/skill-management-entry-paths.html).
+
+The [local change panel](https://github.com/i-9-ai/skills/wiki/Skill-Change-Panel)
+uses this same MCP with explicit collection and proposal-state selections.
+It inspects actual files and can hand a user-clicked request to an advertised
+host agent, retaining no-change/findings/blocked outcomes or matching proposals.
+Saved work is selectable after reopening; message acceptance alone does not
+establish execution. Supplied candidate text is retained with its diff and
+local structural validation. Apply/recovery require operator approval of exact
+source and candidate identities. The backend does not generate text, execute
+candidate scripts or certify official/behavioral validation. Public skills-only
+plugins and ordinary MCP startup do not enable this optional pilot.
+An explicit `--panel-global-write` capability extends the same retained proposal
+and approval engine to eligible ordinary packages inside a selected global root.
+Discovery alone and external aliases grant no writes. Unsupported globals retain
+read-only inspection with a reason; old read-only reports remain distinct from
+new complete-package requests. Each global diff identifies its real target,
+requires fresh exact approval and retains the original for separate recovery.
 
 The explicit [native pilot operator](https://github.com/i-9-ai/skills/wiki/Native-Plugin-Pilot)
 uses the same CLI and statically bundled observation parser. Selected collector

@@ -22,6 +22,39 @@ Verify every requirement has an implementation and a check or an explicit limit.
 
 ## Child DOX index
 
+- [Development editor dependencies](2026-10-24-07-41-09-development-editor-dependency-remediation.md): scoped lock refresh for Changesets editor advisories; no runtime capability, publishing or native acceptance claim.
+
+- [Recorded dashboard progress](2026-10-24-06-42-22-dashboard-recorded-progress-and-onboarding.md): saved workflow stages and complete private local onboarding; no inferred agent execution, consent or public/native acceptance.
+
+- [Dashboard change navigation](2026-10-24-05-49-40-dashboard-change-navigation.md): bounded changed-block navigation and resilient local history reads; consent, write boundaries and public/native acceptance remain separate.
+
+- [Dashboard resource workflow](2026-10-24-04-40-27-dashboard-resource-workflow.md): resilient retained history, revision-bound file previews and multilingual product explanation; real mutations and public distribution remain separately approved.
+
+- [Precise panel diffs and review coverage](2026-10-20-01-48-06-panel-diff-and-review-coverage.md): bounded word-level comparison, inert supporting-file reads and explicit agent-reported coverage; approval still changes only SKILL.md.
+
+- [Self-contained panel delivery](2026-10-18-02-35-00-self-contained-panel-delivery.md): compiled local plugin runtime and isolated launch verification independent of the development branch; real skills/state, public approval and publishing stay separately controlled.
+
+- [Approved global skill evolution](2026-10-17-22-26-00-approved-global-skill-evolution.md): explicit global capability, retained source-bound proposals and exact approved single-entrypoint apply/recover; default discovery, external aliases and unsupported packages remain read only.
+
+- [Guided panel agent workflow](2026-10-17-04-04-59-guided-panel-agent-workflow.md): user-clicked host handoff, retained review outcomes and selectable proposals; no automatic application, global mutation or provider-execution claim.
+
+- [Panel library and comparison workspace](2026-10-17-01-32-15-panel-library-comparison.md): approved compact library and real candidate comparison in the existing pilot; read-only globals, exact approval and retained write identity remain intact.
+
+- [Panel monogram and release intent](2026-10-17-00-10-58-panel-monogram.md): distinct transparent I-9 theme variants and one package-bound minor release note; no wider rebranding or new authority.
+
+- [Panel entrypoint icon](2026-10-16-23-54-57-panel-entrypoint-icon.md): bundled icon metadata for the optional opening tool; no external asset requests or automatic native-rendering claim.
+
+- [Global panel catalog](2026-10-16-23-13-34-global-panel-catalog.md): source-qualified read-only global discovery alongside selected editable packages; no global package copies, mutations or automatic setup.
+
+- [Native panel resource compatibility](2026-10-16-22-54-28-native-panel-resource-compatibility.md): fixed-resource reads with reserved client metadata and friendly sidebar naming; no added file access, mutation authority or native acceptance claim.
+
+- [Functional skill-change panel pilot](2026-10-16-21-05-42-native-skill-change-pilot.md): real selected-package inspection, supplied candidate diff and explicit guarded apply/recover through the shared MCP; no autonomous generation or public delivery.
+
+- [Sidebar review experience](2026-10-16-20-01-32-sidebar-review-experience.md): accessible action explanations, honest snapshot state and illustrative diff approval; no live editor or skill mutation.
+
+- [Local sidebar feasibility](2026-10-16-19-35-25-local-sidebar-feasibility.md): reversible read-only MCP Apps lab and native installation checks; visible Codex sidebar acceptance remains a separate observation.
+
+- [Optional sidebar panel proposal](2026-10-10-11-03-38-skills-sidebar-panel-proposal.md): proposed MCP App entry, local read-only catalog/evidence views and disposable visual preview; native registration, implementation and public delivery remain unverified.
 - [Changesets action rehearsal](2026-10-17-23-35-19-changesets-action-rehearsal.md): disposable action-by-action release evidence and plugin/artifact alignment; registry and GitHub publication remain unexercised unless explicitly represented by synthetic adapters.
 
 - [Simplified Changesets automation](2026-10-17-23-50-00-simplify-changesets.md): official action-driven versioning and publication with package/plugin synchronization; retires manual release commands and replay without changing external publisher settings.

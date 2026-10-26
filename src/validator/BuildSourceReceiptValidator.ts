@@ -25,6 +25,7 @@ export class BuildSourceReceiptValidator {
         'skills-catalog.json',
         '.codex-plugin/plugin.json',
         'assets/plugin-icon.png',
+        'assets/skill-panel-icon.svg',
         'bin/index.mjs',
         'bin/index.md',
         'README.md',

@@ -91,6 +91,19 @@ not a remote endpoint. The current submission process also does not support
 adding MCP to an existing skills-only plugin. A hosted service or supported local
 submission would need its own reviewed architecture and initial submission path.
 
+The separately prepared interactive panel is a local MCP plugin, not this
+skills-only artifact. The official
+[desktop-only submission instructions](https://developers.openai.com/plugins/deploy/desktop-only),
+checked on 2026-10-18, require approved-partner organization allowlisting for
+local MCP submissions, bundled server dependencies and a clean desktop workflow
+test. That route uses Skills only in the portal after eligibility is confirmed;
+the UI choice does not mean the package lacks a local server. Do not upload a
+machine-configured private lab as a universal public package, fabricate an HTTPS
+endpoint, or silently omit the panel while claiming to submit it. The retained
+[local panel artifact](https://github.com/i-9-ai/skills/wiki/Skill-Change-Panel#retain-an-independent-plugin-runtime)
+supports local testing; public eligibility and provider acceptance remain
+separate unresolved facts until confirmed for the submitting organization.
+
 For the human delivery steps, follow the official
 [submission process](https://developers.openai.com/plugins/deploy/submission):
 select the owning organization/project and verified publishing identity in

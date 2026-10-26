@@ -8,8 +8,11 @@ import { SkillQualityToolConfiguration } from '../config/SkillQualityToolConfigu
 import { SkillEvidenceToolConfiguration } from '../config/SkillEvidenceToolConfiguration.ts';
 import { SkillBumpToolConfiguration } from '../config/SkillBumpToolConfiguration.ts';
 import { SkillBumpReportError } from '../validator/SkillBumpReportError.ts';
+import { SkillPanelToolConfiguration } from '../config/SkillPanelToolConfiguration.ts';
+import type { SkillPanelService } from '../service/SkillPanelService.ts';
 
 export type SkillMcpOperations = {
+    panel?: SkillPanelService;
     record(value: unknown): unknown;
     rank(value: unknown): unknown;
     search(value: unknown): unknown;
@@ -178,13 +181,42 @@ export class SkillMcpTransport {
         let ready = false;
         let buffer = Buffer.alloc(0);
         const serverInfo = this.serverInfo;
+        const advertisedTools = store.panel
+            ? SkillPanelToolConfiguration.tools.map((tool) =>
+                  tool.name === 'skill_panel_open'
+                      ? { ...tool, icons: store.panel!.icons() }
+                      : tool,
+              )
+            : tools;
 
         function callTool(params: Request['params']) {
             const name = params?.name;
             const args = params?.arguments === undefined ? {} : params.arguments;
 
             try {
+                if (
+                    store.panel &&
+                    !SkillPanelToolConfiguration.tools.some((tool) => tool.name === name)
+                ) {
+                    throw new SkillOperationError('unknown_tool');
+                }
                 const handlers: Record<string, (input: unknown) => unknown> = {
+                    ...(store.panel
+                        ? {
+                              skill_panel_open: (value: unknown) => store.panel!.open(value),
+                              skill_panel_inspect: (value: unknown) => store.panel!.inspect(value),
+                              skill_panel_propose: (value: unknown) => store.panel!.propose(value),
+                              skill_panel_proposal: (value: unknown) =>
+                                  store.panel!.proposal(value),
+                              skill_panel_request: (value: unknown) => store.panel!.request(value),
+                              skill_panel_complete: (value: unknown) =>
+                                  store.panel!.complete(value),
+                              skill_panel_activity: (value: unknown) =>
+                                  store.panel!.activity(value),
+                              skill_panel_apply: (value: unknown) => store.panel!.apply(value),
+                              skill_panel_recover: (value: unknown) => store.panel!.recover(value),
+                          }
+                        : {}),
                     skill_read_record: (value) => store.record(value),
                     skill_read_rankings: (value) => store.rank(value),
                     skill_catalog_search: (value) => store.search(value),
@@ -209,7 +241,14 @@ export class SkillMcpTransport {
 
                 const value = handler(args);
                 return {
-                    content: [{ type: 'text', text: JSON.stringify(value) }],
+                    content: [
+                        {
+                            type: 'text',
+                            text: store.panel
+                                ? 'Local skill panel result. Exact source, proposal and validation data are in structuredContent.'
+                                : JSON.stringify(value),
+                        },
+                    ],
                     structuredContent: value,
                 };
             } catch (error) {
@@ -227,14 +266,31 @@ export class SkillMcpTransport {
                 initialized = true;
                 return {
                     protocolVersion: '2025-11-25',
-                    capabilities: { tools: {} },
+                    capabilities: { tools: {}, ...(store.panel ? { resources: {} } : {}) },
                     serverInfo,
                 };
             }
 
             if (request.method === 'ping') return {};
             if (!ready) throw new Error('Initialize first');
-            if (request.method === 'tools/list') return { tools };
+            if (request.method === 'tools/list') return { tools: advertisedTools };
+            if (store.panel && request.method === 'resources/list')
+                return { resources: [SkillPanelToolConfiguration.resource] };
+            if (store.panel && request.method === 'resources/templates/list')
+                return { resourceTemplates: [] };
+            if (store.panel && request.method === 'resources/read') {
+                const params = request.params;
+                const metadata = params?._meta;
+                if (
+                    !params ||
+                    Object.keys(params).some((key) => key !== 'uri' && key !== '_meta') ||
+                    params.uri !== SkillPanelToolConfiguration.resource.uri ||
+                    (Object.hasOwn(params, '_meta') &&
+                        (!metadata || typeof metadata !== 'object' || Array.isArray(metadata)))
+                )
+                    throw new Error('Unknown panel resource');
+                return { contents: [store.panel.resource()] };
+            }
             if (request.method === 'tools/call') return callTool(request.params);
             return undefined;
         }

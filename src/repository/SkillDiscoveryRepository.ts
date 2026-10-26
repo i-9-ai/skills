@@ -20,7 +20,12 @@ export type SkillSummary = {
 };
 
 export type Discovery = { skills: SkillSummary[]; warnings: string[]; sources?: string[] };
-export type CollectionSource = { directory: string; label: string };
+export type CollectionSource = {
+    directory: string;
+    label: string;
+    followPackageLinks?: boolean;
+    maxDepth?: number;
+};
 
 const MAX_FILE_BYTES = 131_072;
 const MAX_ENTRIES = 4096;
@@ -102,6 +107,12 @@ export class SkillDiscoveryRepository {
                         throw new Error('Discovery limit');
                     if (entry.name.startsWith('.')) continue;
                     if (!entry.isDirectory() && !entry.isSymbolicLink()) continue;
+                    if (entry.isSymbolicLink() && source.followPackageLinks === false) {
+                        warnings.push(
+                            `${source.label}: skipped a package link outside the direct-package pilot.`,
+                        );
+                        continue;
+                    }
 
                     const candidate = join(item.directory, entry.name);
                     let canonical: string;
@@ -131,7 +142,7 @@ export class SkillDiscoveryRepository {
 
                     // Follow explicit package links, but never traverse a linked namespace.
                     if (entry.isSymbolicLink()) continue;
-                    if (item.depth >= MAX_DEPTH) {
+                    if (item.depth >= (source.maxDepth ?? MAX_DEPTH)) {
                         const warning = `${source.label}: discovery incomplete; directory depth limit reached.`;
                         if (!warnings.includes(warning)) warnings.push(warning);
                         continue;

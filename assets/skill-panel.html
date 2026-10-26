@@ -1,0 +1,2841 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>I-9 Skills · Local change pilot</title>
+        <style>
+            :root {
+                color-scheme: dark;
+                --background: #111d19;
+                --surface: #17251f;
+                --raised: #20352a;
+                --ink: #f0f3e9;
+                --muted: #b3c1b5;
+                --line: #3b4e42;
+                --accent: #d1ef88;
+                --accent-ink: #192c20;
+                --accent-soft: #273e25;
+                --focus: #d1ef88;
+                --added: #243f2a;
+                --removed: #492c29;
+                --removed-ink: #ffd1c7;
+            }
+            [data-theme='light'] {
+                color-scheme: light;
+                --background: #faf9f5;
+                --surface: #fdfcf9;
+                --raised: #f0f1e9;
+                --ink: #132e29;
+                --muted: #56635e;
+                --line: #d5dbd1;
+                --accent: #d1ef88;
+                --accent-ink: #192c20;
+                --accent-soft: #eef4d6;
+                --focus: #356a43;
+                --added: #e5f3df;
+                --removed: #fbe9e3;
+                --removed-ink: #9a342c;
+            }
+            * {
+                box-sizing: border-box;
+            }
+            body {
+                margin: 0;
+                background: var(--background);
+                color: var(--ink);
+                font:
+                    14px/1.5 -apple-system,
+                    BlinkMacSystemFont,
+                    'Segoe UI',
+                    sans-serif;
+            }
+            h1,
+            h2,
+            h3,
+            p {
+                margin: 0;
+            }
+            h1,
+            h2 {
+                font-family: Georgia, 'Times New Roman', serif;
+                line-height: 1.15;
+            }
+            button,
+            input,
+            select,
+            textarea {
+                font: inherit;
+                color: inherit;
+            }
+            button,
+            input,
+            select,
+            textarea,
+            summary {
+                border-radius: 4px;
+            }
+            button {
+                min-height: 38px;
+                padding: 8px 14px;
+                background: var(--surface);
+                border: 1px solid var(--line);
+                cursor: pointer;
+            }
+            #resource-select {
+                width: 100%;
+                min-height: 44px;
+                padding: 8px 12px;
+                background: var(--surface);
+                border: 1px solid var(--line);
+            }
+            button:hover:not(:disabled) {
+                background: var(--raised);
+                border-color: var(--muted);
+            }
+            button:disabled {
+                opacity: 0.48;
+                cursor: not-allowed;
+            }
+            button.primary {
+                background: var(--accent);
+                border-color: #98ba59;
+                color: var(--accent-ink);
+                font-weight: 650;
+            }
+            button.primary:hover:not(:disabled) {
+                background: #c2e777;
+                border-color: #789d39;
+            }
+            :focus-visible {
+                outline: 2px solid var(--focus);
+                outline-offset: 3px;
+            }
+            .muted,
+            .footnote,
+            .help-copy,
+            .result-note {
+                color: var(--muted);
+            }
+            .footnote {
+                font-size: 12px;
+                line-height: 1.55;
+            }
+            .eyebrow {
+                font-size: 10px;
+                font-weight: 700;
+                letter-spacing: 0.12em;
+                text-transform: uppercase;
+            }
+            .sr-only {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                padding: 0;
+                margin: -1px;
+                overflow: hidden;
+                clip-path: inset(50%);
+                white-space: nowrap;
+                border: 0;
+            }
+            .frame {
+                height: 100dvh;
+                min-height: 500px;
+                display: flex;
+                flex-direction: column;
+            }
+            .app-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 24px;
+                padding: 22px 28px;
+                border-bottom: 1px solid var(--ink);
+            }
+            .brand {
+                display: flex;
+                align-items: center;
+                gap: 18px;
+            }
+            .brand-mark {
+                width: 64px;
+                height: 64px;
+                flex: 0 0 auto;
+            }
+            .wordmark {
+                font:
+                    700 38px/1.05 Georgia,
+                    'Times New Roman',
+                    serif;
+                letter-spacing: -0.025em;
+            }
+            .brand-subtitle {
+                font:
+                    16px/1.4 Georgia,
+                    'Times New Roman',
+                    serif;
+                margin-top: 5px;
+            }
+            .header-right {
+                display: flex;
+                align-items: center;
+                gap: 22px;
+            }
+            .pilot-note {
+                border-left: 2px solid #98ba59;
+                padding-left: 16px;
+                max-width: 340px;
+            }
+            .pilot-note p {
+                color: var(--muted);
+                font-size: 12px;
+                margin-top: 3px;
+            }
+            .theme-button {
+                font-size: 12px;
+                white-space: nowrap;
+            }
+            .panel-status {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 14px;
+                padding: 9px 28px;
+                border-bottom: 1px solid var(--line);
+                font-size: 12px;
+                background: var(--surface);
+            }
+            #connection {
+                overflow-wrap: anywhere;
+            }
+            .utility-actions {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 6px;
+                flex: 0 0 auto;
+            }
+            .utility-actions button {
+                min-height: 30px;
+                padding: 4px 9px;
+                font-size: 11px;
+            }
+            .library {
+                display: grid;
+                grid-template-columns: clamp(280px, 33.2vw, 494px) minmax(0, 1fr);
+                flex: 1;
+                min-height: 0;
+            }
+            .catalog-pane {
+                padding: 26px 22px;
+                border-right: 1px solid var(--line);
+                overflow: auto;
+            }
+            .catalog-pane h1 {
+                font-size: 30px;
+            }
+            .catalog-intro {
+                color: var(--muted);
+                font-size: 14px;
+                margin-top: 9px;
+                max-width: 400px;
+            }
+            .search-label {
+                display: block;
+                font-size: 11px;
+                font-weight: 650;
+                margin-top: 24px;
+                margin-bottom: 6px;
+            }
+            #search {
+                width: 100%;
+                min-height: 42px;
+                padding: 10px 12px;
+                background: var(--surface);
+                border: 1px solid var(--line);
+            }
+            .source-filters {
+                display: flex;
+                gap: 5px;
+                margin-top: 12px;
+            }
+            .source-filters button {
+                flex: 1;
+                min-height: 34px;
+                padding: 6px;
+                font-size: 11px;
+                white-space: nowrap;
+            }
+            .source-filters button[aria-pressed='true'] {
+                background: var(--ink);
+                border-color: var(--ink);
+                color: var(--background);
+            }
+            .result-note {
+                font-size: 11px;
+                padding: 12px 0 18px;
+            }
+            .results {
+                display: grid;
+                gap: 0;
+            }
+            .package-card {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto;
+                align-items: center;
+                gap: 8px;
+                width: 100%;
+                padding: 12px 9px;
+                text-align: left;
+                border: 0;
+                border-bottom: 1px solid var(--line);
+                border-radius: 0;
+                background: transparent;
+            }
+            .package-card strong {
+                font-weight: 550;
+                font-size: 14px;
+                overflow-wrap: anywhere;
+            }
+            .package-card small {
+                font-size: 10px;
+                color: var(--muted);
+            }
+            .package-card p {
+                display: none;
+            }
+            .package-card[aria-pressed='true'] {
+                background: var(--accent-soft);
+                box-shadow: inset 3px 0 #98ba59;
+            }
+            .package-card[aria-pressed='true'] strong {
+                font-weight: 750;
+            }
+            .empty-result {
+                color: var(--muted);
+                padding: 20px 0;
+                font-size: 13px;
+            }
+            .inspector {
+                padding: 26px 28px;
+                min-width: 0;
+                overflow: auto;
+            }
+            .selection-header {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 20px;
+            }
+            #selected-origin {
+                color: var(--muted);
+                margin-bottom: 8px;
+            }
+            #selected-title {
+                font-size: clamp(28px, 2.6vw, 38px);
+                overflow-wrap: anywhere;
+            }
+            #selected-description {
+                margin-top: 22px;
+                font-size: 16px;
+                max-width: 880px;
+            }
+            .selection-actions {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: flex-end;
+                gap: 8px;
+                max-width: 375px;
+            }
+            .action-row {
+                display: flex;
+                gap: 5px;
+                align-items: center;
+            }
+            .action-row > button:first-child {
+                font-size: 12px;
+                white-space: nowrap;
+            }
+            .help-button {
+                border-radius: 50%;
+                width: 26px;
+                min-height: 26px;
+                height: 26px;
+                padding: 0;
+                font-family: Georgia, serif;
+                font-weight: 700;
+            }
+            .action-caption {
+                width: 100%;
+                font-size: 11px;
+                color: var(--muted);
+                text-align: right;
+            }
+            .snapshot-status {
+                margin-top: 12px;
+                color: var(--muted);
+                font-size: 12px;
+                overflow-wrap: anywhere;
+            }
+            .workspace-tabs {
+                display: flex;
+                margin: 24px 0 22px;
+                border-bottom: 1px solid var(--line);
+            }
+            .workspace-tabs button {
+                padding: 11px 18px;
+                border: 0;
+                border-radius: 0;
+                background: none;
+                color: var(--muted);
+            }
+            .workspace-tabs button[aria-selected='true'] {
+                color: var(--ink);
+                box-shadow: inset 0 -3px #7fa943;
+                font-weight: 650;
+            }
+            .workspace-view {
+                min-width: 0;
+            }
+            .overview-lead {
+                font:
+                    26px/1.25 Georgia,
+                    'Times New Roman',
+                    serif;
+                max-width: 550px;
+                margin: 28px 0 12px;
+            }
+            .overview-copy {
+                color: var(--muted);
+                max-width: 660px;
+            }
+            .workflow-steps {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 24px;
+                margin: 36px 0;
+                padding: 24px 0;
+                border-top: 1px solid var(--line);
+                border-bottom: 1px solid var(--line);
+            }
+            .workflow-steps h3 {
+                font-size: 13px;
+                margin-bottom: 8px;
+            }
+            .workflow-steps p {
+                color: var(--muted);
+                font-size: 12px;
+            }
+            .identity-details {
+                margin: 22px 0;
+                font-size: 12px;
+            }
+            summary {
+                cursor: pointer;
+                padding: 7px 0;
+                font-weight: 600;
+            }
+            .panel-hash {
+                overflow-wrap: anywhere;
+                font:
+                    11px/1.65 ui-monospace,
+                    SFMono-Regular,
+                    Consolas,
+                    monospace;
+                color: var(--muted);
+            }
+            .facts {
+                display: grid;
+                gap: 14px;
+            }
+            .facts dt {
+                font-weight: 650;
+                margin-bottom: 4px;
+            }
+            .facts dd {
+                margin: 0;
+            }
+            label {
+                display: block;
+                font-size: 12px;
+                font-weight: 600;
+                margin-bottom: 8px;
+            }
+            .source-text,
+            .candidate-text,
+            .rationale-text,
+            #resume-id {
+                width: 100%;
+                padding: 16px;
+                border: 1px solid var(--line);
+                border-radius: 4px;
+                background: var(--surface);
+                color: var(--ink);
+                resize: vertical;
+            }
+            .source-text,
+            .candidate-text {
+                min-height: 380px;
+                font:
+                    12px/1.7 ui-monospace,
+                    SFMono-Regular,
+                    Consolas,
+                    monospace;
+                tab-size: 4;
+            }
+            .source-text {
+                height: 53dvh;
+            }
+            .candidate-text {
+                margin-bottom: 20px;
+            }
+            .rationale-text {
+                min-height: 90px;
+                margin-bottom: 16px;
+                font-weight: 400;
+            }
+            dialog:not(.workflow-dialog) {
+                max-width: min(680px, calc(100% - 36px));
+                width: 100%;
+                padding: 26px;
+                border: 1px solid var(--line);
+                background: var(--background);
+                color: var(--ink);
+                max-height: 86dvh;
+            }
+            dialog::backdrop {
+                background: #06120db3;
+            }
+            dialog h2 {
+                font-size: 28px;
+                margin: 18px 0 12px;
+            }
+            dialog:not(.workflow-dialog) p {
+                margin: 12px 0 20px;
+            }
+            .workflow-dialog {
+                position: static;
+                inset: auto;
+                margin: 0;
+                padding: 0;
+                width: 100%;
+                max-width: none;
+                max-height: none;
+                border: 0;
+                background: transparent;
+                color: var(--ink);
+                overflow: visible;
+            }
+            .workflow-header {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 16px;
+                margin-bottom: 10px;
+            }
+            .workflow-header h2 {
+                font:
+                    600 14px/1.5 -apple-system,
+                    BlinkMacSystemFont,
+                    'Segoe UI',
+                    sans-serif;
+                margin: 0;
+            }
+            .workflow-header button {
+                min-height: 30px;
+                font-size: 11px;
+                padding: 4px 9px;
+            }
+            .workflow-purpose {
+                color: var(--muted);
+                font-size: 12px;
+                margin-bottom: 8px;
+                overflow-wrap: anywhere;
+            }
+            #workflow-base {
+                margin-bottom: 18px;
+            }
+            #proposal-title {
+                font-size: 15px;
+                margin-bottom: 8px;
+            }
+            #proposal-rationale {
+                margin-bottom: 16px;
+                font-size: 13px;
+                color: var(--muted);
+            }
+            .panel-checks {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px 24px;
+                padding: 12px 14px;
+                margin-bottom: 14px;
+                border: 1px solid var(--line);
+                border-radius: 4px;
+            }
+            .check-state {
+                display: grid;
+                gap: 2px;
+                font-size: 12px;
+            }
+            .check-state strong {
+                font-weight: 650;
+            }
+            .check-state small {
+                color: var(--muted);
+                font-size: 10px;
+            }
+            .example-files {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+                gap: 8px;
+            }
+            .workflow-card {
+                min-width: 0;
+                border: 1px solid var(--line);
+                border-radius: 4px;
+                overflow: hidden;
+                background: var(--surface);
+            }
+            .activity-list {
+                display: grid;
+                gap: 12px;
+                margin: 16px 0 24px;
+            }
+            .review-result {
+                margin: 20px 0;
+                padding: 16px;
+                border: 1px solid var(--line);
+                border-radius: 4px;
+                background: var(--raised);
+            }
+            .result-heading,
+            .result-actions {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                justify-content: space-between;
+                gap: 10px;
+            }
+            .result-heading h3 {
+                margin: 0;
+                font-size: 15px;
+            }
+            .result-heading button {
+                min-height: 30px;
+                padding: 4px 9px;
+                font-size: 11px;
+            }
+            .review-result p {
+                margin: 10px 0;
+                overflow-wrap: anywhere;
+            }
+            .result-summary {
+                font-size: 13px;
+                line-height: 1.6;
+            }
+            .review-progress {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+                gap: 12px;
+                padding: 12px 0;
+                margin: 12px 0;
+                list-style: none;
+                border-block: 1px solid var(--line);
+            }
+            .review-progress li {
+                min-width: 0;
+                font-size: 12px;
+                line-height: 1.5;
+                overflow-wrap: anywhere;
+            }
+            .review-progress strong {
+                display: block;
+                margin-bottom: 4px;
+            }
+            .result-actions {
+                justify-content: flex-start;
+                margin-top: 14px;
+            }
+            .saved-work {
+                padding: 16px;
+            }
+            .saved-work p {
+                margin: 8px 0;
+                font-size: 13px;
+                overflow-wrap: anywhere;
+            }
+            .saved-work small {
+                display: block;
+                color: var(--muted);
+                font-size: 11px;
+            }
+            .saved-work button {
+                margin-top: 12px;
+            }
+            .file-heading {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 8px;
+                padding: 10px 12px;
+                background: var(--raised);
+            }
+            .file-heading h3 {
+                font-size: 12px;
+                font-weight: 600;
+            }
+            .file-heading span {
+                color: var(--muted);
+                font:
+                    10px/1.5 ui-monospace,
+                    SFMono-Regular,
+                    Consolas,
+                    monospace;
+            }
+            .panel-code,
+            .panel-diff {
+                margin: 0;
+                white-space: pre-wrap;
+                overflow-wrap: anywhere;
+                font:
+                    13px/1.6 ui-monospace,
+                    SFMono-Regular,
+                    Consolas,
+                    monospace;
+                tab-size: 4;
+            }
+            .panel-code {
+                max-height: clamp(220px, calc(100dvh - 750px), 600px);
+                min-height: 220px;
+                overflow: auto;
+                padding: 10px 0;
+                position: relative;
+            }
+            .code-line {
+                display: block;
+                position: relative;
+                min-height: 1.65em;
+                padding: 0 10px 0 42px;
+            }
+            .code-line::before {
+                content: attr(data-line);
+                position: absolute;
+                left: 0;
+                width: 30px;
+                text-align: right;
+                color: var(--muted);
+                font-size: 10px;
+                user-select: none;
+            }
+            .code-line.added,
+            .panel-diff .added {
+                background: var(--added);
+            }
+            .code-line.removed,
+            .panel-diff .removed {
+                background: var(--removed);
+                color: var(--removed-ink);
+            }
+            .word-change {
+                border-radius: 2px;
+                font-weight: 700;
+                text-decoration: underline;
+                text-underline-offset: 3px;
+            }
+            .added .word-change {
+                background: color-mix(in srgb, var(--added) 65%, #18864b 35%);
+            }
+            .removed .word-change {
+                background: color-mix(in srgb, var(--removed) 65%, #c84b55 35%);
+            }
+            .file-ending {
+                padding: 6px 12px;
+                border-top: 1px solid var(--line);
+                font-size: 10px;
+                color: var(--muted);
+            }
+            .panel-diff {
+                max-height: 380px;
+                overflow: auto;
+                padding: 12px;
+                background: var(--surface);
+            }
+            .panel-diff > span {
+                display: block;
+                min-height: 1.65em;
+            }
+            .proposal-details {
+                margin-top: 16px;
+                border-top: 1px solid var(--line);
+                font-size: 12px;
+            }
+            .proposal-details > div {
+                margin: 8px 0 14px;
+            }
+            .approval-bar {
+                display: grid;
+                grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) auto;
+                align-items: start;
+                gap: 18px;
+                margin-top: 20px;
+                padding: 18px 0 14px;
+                border-top: 1px solid var(--line);
+                background: var(--background);
+            }
+            .approval-choice {
+                display: flex;
+                align-items: flex-start;
+                gap: 10px;
+                margin: 0;
+            }
+            .approval-choice input {
+                margin: 3px 0 0;
+                width: 19px;
+                height: 19px;
+                flex: 0 0 auto;
+                accent-color: #466d38;
+            }
+            .approval-choice span {
+                font-size: 12px;
+                line-height: 1.5;
+                font-weight: 550;
+            }
+            .apply-action {
+                display: grid;
+                gap: 7px;
+            }
+            .apply-action button {
+                width: 100%;
+            }
+            .approval-bar .footnote {
+                font-size: 10px;
+                font-weight: 400;
+            }
+            .panel-actions {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin-top: 16px;
+            }
+            .panel-actions button {
+                font-size: 11px;
+            }
+            [hidden] {
+                display: none !important;
+            }
+            @media (max-width: 1120px) {
+                .app-header {
+                    padding: 18px 22px;
+                }
+                .wordmark {
+                    font-size: 30px;
+                }
+                .brand-mark {
+                    width: 48px;
+                    height: 48px;
+                }
+                .brand-subtitle {
+                    font-size: 14px;
+                }
+                .pilot-note {
+                    max-width: 240px;
+                }
+                .inspector {
+                    padding: 24px 20px;
+                }
+                .selection-header {
+                    flex-wrap: wrap;
+                }
+                .selection-actions {
+                    max-width: none;
+                    justify-content: flex-start;
+                }
+                .action-caption {
+                    text-align: left;
+                }
+                .workflow-steps {
+                    gap: 15px;
+                }
+                .package-card {
+                    grid-template-columns: 1fr;
+                    gap: 4px;
+                }
+                .approval-bar {
+                    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+                }
+                .keep-action {
+                    grid-column: 2;
+                }
+            }
+            @media (max-width: 760px) {
+                .frame {
+                    height: auto;
+                    min-height: 100dvh;
+                }
+                .app-header {
+                    padding: 16px;
+                    gap: 14px;
+                    align-items: flex-start;
+                }
+                .brand {
+                    gap: 10px;
+                }
+                .wordmark {
+                    font-size: 27px;
+                }
+                .brand-mark {
+                    width: 42px;
+                    height: 42px;
+                }
+                .brand-subtitle {
+                    font-size: 12px;
+                }
+                .header-right {
+                    flex-direction: column;
+                    gap: 8px;
+                    align-items: flex-end;
+                }
+                .pilot-note {
+                    display: none;
+                }
+                .theme-button {
+                    font-size: 10px;
+                    min-height: 30px;
+                    padding: 5px 8px;
+                }
+                .panel-status {
+                    padding: 9px 16px;
+                    align-items: flex-start;
+                    flex-direction: column;
+                    gap: 8px;
+                }
+                .library {
+                    display: block;
+                }
+                .catalog-pane {
+                    padding: 22px 16px 8px;
+                    border-right: 0;
+                    border-bottom: 1px solid var(--line);
+                }
+                .catalog-pane h1 {
+                    font-size: 27px;
+                }
+                .catalog-intro {
+                    max-width: none;
+                }
+                .search-label {
+                    margin-top: 16px;
+                }
+                .results {
+                    max-height: 245px;
+                    overflow: auto;
+                    margin-bottom: 14px;
+                }
+                .package-card {
+                    padding: 10px 8px;
+                }
+                .inspector {
+                    padding: 24px 16px;
+                    overflow: visible;
+                }
+                .selection-header {
+                    gap: 16px;
+                }
+                #selected-title {
+                    font-size: 31px;
+                }
+                #selected-description {
+                    margin-top: 18px;
+                    font-size: 14px;
+                }
+                .workspace-tabs {
+                    margin-top: 20px;
+                }
+                .workspace-tabs button {
+                    padding: 10px 12px;
+                    font-size: 12px;
+                }
+                .overview-lead {
+                    font-size: 24px;
+                }
+                .workflow-steps {
+                    grid-template-columns: 1fr;
+                    gap: 18px;
+                    margin: 24px 0;
+                }
+                .example-files {
+                    grid-template-columns: 1fr;
+                    gap: 14px;
+                }
+                .panel-code {
+                    max-height: 360px;
+                    min-height: 150px;
+                }
+                .approval-bar {
+                    grid-template-columns: 1fr;
+                    gap: 16px;
+                    position: static;
+                }
+                .keep-action {
+                    grid-column: auto;
+                }
+            }
+            @media (prefers-reduced-motion: reduce) {
+                *,
+                *::before,
+                *::after {
+                    animation: none !important;
+                    transition: none !important;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="frame">
+            <header class="app-header">
+                <div class="brand">
+                    <svg
+                        class="brand-mark"
+                        aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="64"
+                        height="64"
+                        viewBox="0 0 64 64"
+                        fill="currentColor"
+                    >
+                        <path
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="4"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M17 10V9a4 4 0 0 1 4-4h34a4 4 0 0 1 4 4v37M10 16V15a4 4 0 0 1 4-4h35a4 4 0 0 1 4 4v38"
+                        />
+                        <path
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="4"
+                            d="M7 18h37a4 4 0 0 1 4 4v35a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V22a4 4 0 0 1 4-4Z"
+                        />
+                        <g transform="translate(4.7 19) scale(0.64)">
+                            <path d="M4 12h14v6h-4v28h4v6H4v-6h4V18H4Z" />
+                            <path d="M22 30h9v4h-9Z" />
+                            <path
+                                fill-rule="evenodd"
+                                d="M47 11c-8 0-13 6-13 14s5 13 13 13c3 0 5-1 7-2-1 7-5 11-13 11h-3v6h3c14 0 20-8 20-24v-4c0-8-6-14-14-14Zm0 6c5 0 8 3 8 8s-3 7-8 7-7-3-7-7 2-8 7-8Z"
+                            />
+                        </g>
+                    </svg>
+                    <div>
+                        <div class="wordmark">I-9 Skills</div>
+                        <p class="brand-subtitle">A working library for your skills</p>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="pilot-note">
+                        <div class="eyebrow">Local functional pilot</div>
+                        <p>
+                            Selected copies + optional global skills.<br />Changes apply only after
+                            explicit approval.
+                        </p>
+                    </div>
+                    <button id="theme" class="theme-button" type="button">Use light theme</button>
+                </div>
+            </header>
+            <div class="panel-status">
+                <p id="connection" role="status">
+                    Initializing the host bridge. No file has been changed.
+                </p>
+                <div class="utility-actions">
+                    <button id="refresh" type="button" disabled>Refresh catalog</button>
+                    <button id="resume" type="button" disabled>Advanced: open by ID</button>
+                    <button id="unresolved-write" type="button" hidden>
+                        Inspect unresolved write
+                    </button>
+                </div>
+            </div>
+            <main class="library">
+                <aside class="catalog-pane" aria-labelledby="library-title">
+                    <h1 id="library-title">Library</h1>
+                    <p class="catalog-intro">
+                        Browse selected copies and global skills. Read the actual SKILL.md to
+                        understand each skill.
+                    </p>
+                    <label for="search" class="search-label">Find a skill</label>
+                    <input id="search" type="search" placeholder="Search name or responsibility…" />
+                    <input id="source-filter" type="hidden" value="all" />
+                    <div class="source-filters" role="group" aria-label="Filter skills by source">
+                        <button id="filter-all" type="button" aria-pressed="true">
+                            All skills
+                        </button>
+                        <button id="filter-selected" type="button" aria-pressed="false">
+                            Selected copies
+                        </button>
+                        <button id="filter-global" type="button" aria-pressed="false">
+                            Global skills
+                        </button>
+                    </div>
+                    <p id="result-note" class="result-note" role="status">
+                        Waiting for the catalog.
+                    </p>
+                    <div id="results" class="results" aria-label="Skill results"></div>
+                </aside>
+                <section id="workspace-pane" class="inspector" aria-labelledby="selected-title">
+                    <div class="selection-header">
+                        <div>
+                            <div class="eyebrow" id="selected-origin">Your skill workspace</div>
+                            <h2 id="selected-title">Select a skill</h2>
+                        </div>
+                        <div class="selection-actions">
+                            <div class="action-row">
+                                <button id="review" type="button" class="primary" disabled>
+                                    Review with agent
+                                </button>
+                                <button
+                                    class="help-button"
+                                    id="review-help"
+                                    aria-label="Explain Review with agent"
+                                    type="button"
+                                >
+                                    ?
+                                </button>
+                            </div>
+                            <div class="action-row">
+                                <button id="evolve" type="button" disabled>
+                                    Describe a change
+                                </button>
+                                <button
+                                    class="help-button"
+                                    id="evolve-help"
+                                    aria-label="Explain Describe a change"
+                                    type="button"
+                                >
+                                    ?
+                                </button>
+                            </div>
+                            <p id="action-caption" class="action-caption">
+                                Review → diff → explicit approval.
+                            </p>
+                        </div>
+                    </div>
+                    <section
+                        id="review-result"
+                        class="review-result"
+                        aria-labelledby="review-outcome"
+                    >
+                        <div class="result-heading">
+                            <h3 id="review-outcome">Current review</h3>
+                            <button id="activity-refresh" type="button" disabled>
+                                Check for results
+                            </button>
+                        </div>
+                        <p id="request-status" class="footnote" role="status" aria-live="polite">
+                            Select a skill, then ask the agent for a review.
+                        </p>
+                        <ol id="review-progress" class="review-progress" aria-label="Last observed workflow stages" hidden>
+                            <li><strong>01 / Request</strong><span id="progress-request"></span></li>
+                            <li><strong>02 / Agent result</strong><span id="progress-result"></span></li>
+                            <li><strong>03 / Proposal &amp; decision</strong><span id="progress-decision"></span></li>
+                        </ol>
+                        <p id="result-summary" class="result-summary"></p>
+                        <p id="result-coverage" class="footnote"></p>
+                        <p id="diff-status" class="footnote">
+                            A diff becomes available when a proposed change is saved.
+                        </p>
+                        <div class="result-actions">
+                            <button id="view-diff" type="button" class="primary" disabled>
+                                View diff
+                            </button>
+                            <button id="continue-current" type="button" hidden>
+                                Continue review
+                            </button>
+                        </div>
+                        <details id="current-result-details" class="identity-details" hidden>
+                            <summary>Read full review result</summary>
+                            <p id="result-full" class="result-summary"></p>
+                            <p id="result-files" class="footnote"></p>
+                        </details>
+                    </section>
+                    <p id="selected-description">
+                        Choose a skill from the library to inspect its purpose, source and current
+                        text.
+                    </p>
+                    <div id="selected-state" class="snapshot-status">
+                        No package has been inspected.
+                    </div>
+                    <nav class="workspace-tabs" role="tablist" aria-label="Skill workspace">
+                        <button
+                            id="tab-overview"
+                            type="button"
+                            role="tab"
+                            aria-selected="true"
+                            aria-controls="overview-view"
+                        >
+                            Overview
+                        </button>
+                        <button
+                            id="tab-source"
+                            type="button"
+                            role="tab"
+                            aria-selected="false"
+                            aria-controls="source-view"
+                            tabindex="-1"
+                            disabled
+                        >
+                            Files
+                        </button>
+                        <button
+                            id="tab-compare"
+                            type="button"
+                            role="tab"
+                            aria-selected="false"
+                            aria-controls="workflow-dialog"
+                            tabindex="-1"
+                            disabled
+                        >
+                            Diff &amp; approval
+                        </button>
+                    </nav>
+                    <section
+                        id="overview-view"
+                        class="workspace-view"
+                        role="tabpanel"
+                        aria-labelledby="tab-overview"
+                    >
+                        <details class="identity-details">
+                            <summary>How review and diff approval work</summary>
+                            <div class="workflow-steps">
+                                <div>
+                                    <h3>01 / Ask for a review</h3>
+                                    <p>
+                                        Select a skill and click Review with agent. Describe a
+                                        change adds your focus. The host sends your request to this
+                                        conversation.
+                                    </p>
+                                </div>
+                                <div>
+                                    <h3>02 / Read the result</h3>
+                                    <p>
+                                        The current result appears above. A proposed change enables
+                                        View proposed diff. Findings alone and read-only reviews
+                                        have no diff.
+                                    </p>
+                                </div>
+                                <div>
+                                    <h3>03 / Decide explicitly</h3>
+                                    <p>
+                                        Eligible globals can change only when explicitly enabled.
+                                        Applying and recovering each require exact approval.
+                                    </p>
+                                </div>
+                            </div>
+                        </details>
+                        <details class="identity-details">
+                            <summary id="activity-title">
+                                Review history and saved proposals
+                            </summary>
+                            <p id="activity-note" class="footnote">
+                                Select a skill to see its saved work.
+                            </p>
+                            <div
+                                id="activity-list"
+                                class="activity-list"
+                                aria-label="Saved skill work"
+                            ></div>
+                        </details>
+                        <details class="identity-details">
+                            <summary>Advanced: supply candidate text yourself</summary>
+                            <p class="footnote">
+                                Use this when you already have complete SKILL.md text. The agent
+                                flow above does not require copying text or proposal IDs.
+                            </p>
+                            <button id="manual-candidate" type="button" disabled>
+                                Edit a candidate manually
+                            </button>
+                        </details>
+                        <details class="identity-details">
+                            <summary>Inspected identity and evidence limits</summary>
+                            <dl class="facts">
+                                <div>
+                                    <dt id="selected-hash-label">Package identity</dt>
+                                    <dd class="panel-hash" id="selected-hash">Not inspected</dd>
+                                </div>
+                                <div>
+                                    <dt>Official / behavioral evidence</dt>
+                                    <dd class="muted">
+                                        Not loaded by this pilot. Review and readiness are not
+                                        inferred from a read.
+                                    </dd>
+                                </div>
+                            </dl>
+                        </details>
+                        <p class="footnote">
+                            The host agent prepares suggestions after your click; the backend only
+                            retains requests, results and supplied candidates. An unanswered request
+                            stays pending. Opening the panel never starts a review or enables
+                            telemetry.
+                        </p>
+                    </section>
+                    <section
+                        id="source-view"
+                        class="workspace-view"
+                        role="tabpanel"
+                        aria-labelledby="tab-source"
+                        hidden
+                    >
+                        <label for="resource-select">Package file · read only</label>
+                        <select id="resource-select" disabled aria-label="Package file"></select>
+                        <p id="resource-status" class="footnote" role="status" aria-live="polite">Select a skill to inspect its files.</p>
+                        <label id="source-label" for="source">Last inspected SKILL.md · actual bytes · read only</label>
+                        <textarea
+                            id="source"
+                            class="source-text"
+                            readonly
+                            spellcheck="false"
+                        ></textarea>
+                        <p class="footnote">
+                            Read-only UTF-8 preview. Files are never executed. Reinspect the skill
+                            to observe subsequent disk changes. Binary and oversized files cannot be previewed.
+                        </p>
+                    </section>
+                    <dialog
+                        id="workflow-dialog"
+                        class="workflow-dialog"
+                        aria-labelledby="workflow-title"
+                    >
+                        <div id="workflow-header" class="workflow-header">
+                            <h2 id="workflow-title">Propose a change</h2>
+                            <button id="workflow-close" type="button">Back to overview</button>
+                        </div>
+                        <p
+                            id="workflow-status"
+                            class="workflow-purpose"
+                            role="status"
+                            tabindex="-1"
+                        >
+                            No candidate has been retained.
+                        </p>
+                        <div id="candidate-editor">
+                            <label for="candidate">Proposed SKILL.md · supplied text</label>
+                            <textarea
+                                id="candidate"
+                                class="candidate-text"
+                                spellcheck="false"
+                            ></textarea>
+                            <label for="rationale">Why should this change?</label>
+                            <textarea
+                                id="rationale"
+                                class="rationale-text"
+                                maxlength="2000"
+                                placeholder="Describe the evidence, intended improvement and any limits."
+                            ></textarea>
+                            <button id="preview" type="button" class="primary" disabled>
+                                Preview and validate
+                            </button>
+                        </div>
+                        <section
+                            id="proposal-view"
+                            aria-label="Retained proposal and validation"
+                            hidden
+                        >
+                            <h3 id="proposal-title" class="sr-only">Review the exact change</h3>
+                            <p id="proposal-rationale"></p>
+                            <p id="comparison-summary" class="footnote"></p>
+                            <nav class="panel-actions" aria-label="Changed blocks">
+                                <button id="change-previous" type="button" disabled>
+                                    Previous change
+                                </button>
+                                <span id="change-position" class="footnote" role="status" aria-live="polite"></span>
+                                <button id="change-next" type="button" disabled>
+                                    Next change
+                                </button>
+                            </nav>
+                            <details class="proposal-details">
+                                <summary>Files and review coverage</summary>
+                                <p id="review-coverage"></p>
+                                <ul id="proposal-files"></ul>
+                            </details>
+                            <div
+                                id="checks"
+                                class="panel-checks"
+                                aria-label="Actual validation results"
+                            ></div>
+                            <div class="example-files">
+                                <section class="workflow-card">
+                                    <div class="file-heading">
+                                        <h3 id="before-title">Current · preserved original</h3>
+                                        <span>SKILL.md</span>
+                                    </div>
+                                    <pre
+                                        id="before"
+                                        class="panel-code"
+                                        aria-label="Current retained SKILL.md"
+                                    ></pre>
+                                    <p id="before-ending" class="file-ending"></p>
+                                </section>
+                                <section class="workflow-card">
+                                    <div class="file-heading">
+                                        <h3 id="after-title">Proposed · retained candidate</h3>
+                                        <span>SKILL.md</span>
+                                    </div>
+                                    <pre
+                                        id="after"
+                                        class="panel-code"
+                                        aria-label="Proposed retained SKILL.md"
+                                    ></pre>
+                                    <p id="after-ending" class="file-ending"></p>
+                                </section>
+                            </div>
+                            <div class="approval-bar">
+                                <label class="approval-choice"
+                                    ><input id="approval" type="checkbox" /><span
+                                        id="approval-label"
+                                        >I reviewed this exact diff and the validation limits and
+                                        approve applying this change.</span
+                                    ></label
+                                >
+                                <div class="apply-action">
+                                    <button id="apply" type="button" class="primary" disabled>
+                                        Approve &amp; apply
+                                    </button>
+                                    <p id="write-scope" class="footnote">
+                                        Only the selected SKILL.md changes, after exact approval.
+                                    </p>
+                                </div>
+                                <div class="apply-action keep-action">
+                                    <button id="keep-proposal" type="button">Keep proposal</button>
+                                    <p class="footnote">Leave without applying.</p>
+                                </div>
+                            </div>
+                            <details class="proposal-details">
+                                <summary>
+                                    Proposal identity, exact diff and validation detail
+                                </summary>
+                                <div>
+                                    <p class="panel-hash" id="workflow-base"></p>
+                                    <p class="panel-hash" id="proposal-id"></p>
+                                    <p id="validation-detail" class="footnote"></p>
+                                </div>
+                                <pre
+                                    id="diff"
+                                    class="panel-diff"
+                                    aria-label="Exact proposed file diff"
+                                ></pre>
+                            </details>
+                            <div class="panel-actions">
+                                <button id="inspect-proposal" type="button">
+                                    Refresh proposal state
+                                </button>
+                                <button id="edit" type="button">
+                                    Request changes / edit candidate
+                                </button>
+                                <button id="recover-prepare" type="button" hidden>
+                                    Review recovery
+                                </button>
+                            </div>
+                            <p class="footnote">
+                                Local structural checks do not replace official Agent Skills
+                                conformance or behavioral evaluation. Keep the state directory to
+                                preserve recovery. This pilot never certifies release readiness.
+                            </p>
+                        </section>
+                    </dialog>
+                </section>
+            </main>
+        </div>
+        <dialog id="help-dialog" aria-labelledby="help-title">
+            <button id="help-close" type="button">Close explanation</button>
+            <h2 id="help-title"></h2>
+            <p id="help-copy" class="help-copy"></p>
+        </dialog>
+        <dialog id="draft-dialog" aria-labelledby="draft-title">
+            <button id="draft-close" type="button">Close task draft</button>
+            <h2 id="draft-title">Manual host fallback · not sent</h2>
+            <p>
+                This host has not advertised text messaging. Copy this request to the agent in this
+                conversation. Its recorded result will still appear in Reviews and proposals.
+            </p>
+            <textarea
+                id="task-draft"
+                class="candidate-text"
+                aria-label="Review task draft"
+            ></textarea>
+        </dialog>
+        <dialog id="request-dialog" aria-labelledby="request-title">
+            <button id="request-close" type="button">Cancel change request</button>
+            <h2 id="request-title">What should improve?</h2>
+            <p>
+                Describe the result you want. The agent reads the skill and returns findings or a
+                proposal here. Nothing is applied automatically.
+            </p>
+            <label for="request-focus">Optional focus</label>
+            <textarea
+                id="request-focus"
+                class="rationale-text"
+                maxlength="2000"
+                placeholder="For example: clarify the inputs and add a complete invocation example."
+            ></textarea>
+            <button id="request-send" type="button" class="primary">Send change request</button>
+        </dialog>
+        <dialog id="resume-dialog" aria-labelledby="resume-title">
+            <button id="resume-close" type="button">Close retained proposal lookup</button>
+            <h2 id="resume-title">Inspect a retained proposal</h2>
+            <p>
+                Enter its ID from an earlier result. This reads existing state without applying
+                anything.
+            </p>
+            <label for="resume-id">Proposal ID</label>
+            <input id="resume-id" type="text" maxlength="36" />
+            <button id="resume-load" type="button">Inspect retained proposal</button>
+        </dialog>
+        <script>
+            class SkillChangePanel {
+                pending = new Map();
+                nextId = 0;
+                connected = false;
+                busy = false;
+                selected = null;
+                proposal = null;
+                mode = 'apply';
+                uncertain = false;
+                unresolved = null;
+                catalog = [];
+                lastFocus = null;
+                incoming = null;
+                incomingResult = null;
+                workspace = 'overview';
+                editing = false;
+                hostCapabilities = {};
+                activityVersion = 0;
+                activity = null;
+                currentReview = null;
+                currentDiff = null;
+                pollTimer = null;
+                pollRemaining = 0;
+
+                constructor() {
+                    this.el = (id) => document.getElementById(id);
+                    window.addEventListener('message', (event) => this.receive(event));
+                    this.el('refresh').addEventListener('click', () =>
+                        this.run(() => this.loadCatalog()),
+                    );
+                    this.el('search').addEventListener('input', () => this.renderCatalog());
+                    for (const source of ['all', 'selected', 'global']) {
+                        this.el('filter-' + source).addEventListener('click', () => {
+                            this.el('source-filter').value = source;
+                            this.renderCatalog();
+                        });
+                    }
+                    for (const view of ['overview', 'source', 'compare']) {
+                        this.el('tab-' + view).addEventListener('click', () =>
+                            this.chooseWorkspace(view),
+                        );
+                        this.el('tab-' + view).addEventListener('keydown', (event) =>
+                            this.navigateTabs(event, view),
+                        );
+                    }
+                    this.el('theme').addEventListener('click', () => {
+                        const light = document.documentElement.dataset.theme !== 'light';
+                        document.documentElement.dataset.theme = light ? 'light' : 'dark';
+                        this.el('theme').textContent = light ? 'Use dark theme' : 'Use light theme';
+                    });
+                    for (const type of ['review', 'evolve']) {
+                        this.el(type + '-help').addEventListener('click', () => this.help(type));
+                    }
+                    for (const [button, dialog] of [
+                        ['help-close', 'help-dialog'],
+                        ['draft-close', 'draft-dialog'],
+                        ['resume-close', 'resume-dialog'],
+                        ['request-close', 'request-dialog'],
+                        ['workflow-close', 'workflow-dialog'],
+                    ]) {
+                        this.el(button).addEventListener('click', () => this.el(dialog).close());
+                        this.el(dialog).addEventListener('close', () => {
+                            if (dialog === 'workflow-dialog') {
+                                if (this.el(dialog).open) return;
+                                if (this.workspace === 'compare') {
+                                    this.setWorkspace('overview');
+                                    this.el('tab-overview').focus();
+                                }
+                                return;
+                            }
+                            this.lastFocus?.focus();
+                        });
+                    }
+                    this.el('keep-proposal').addEventListener('click', () =>
+                        this.setWorkspace('overview'),
+                    );
+                    this.el('resource-select').addEventListener('change', () => this.loadResource());
+                    this.el('review').addEventListener('click', () =>
+                        this.run(() => this.askAgent('review')),
+                    );
+                    this.el('evolve').addEventListener('click', () => {
+                        this.el('request-focus').value = '';
+                        this.openDialog('request-dialog');
+                    });
+                    this.el('request-send').addEventListener('click', () =>
+                        this.run(() => this.askAgent('proposal')),
+                    );
+                    this.el('manual-candidate').addEventListener('click', () => this.startEditor());
+                    this.el('activity-refresh').addEventListener('click', () =>
+                        this.run(() => this.loadActivity(true)),
+                    );
+                    this.el('view-diff').addEventListener('click', () =>
+                        this.run(() => this.openCurrentDiff()),
+                    );
+                    this.el('continue-current').addEventListener('click', () => {
+                        const request = this.currentReview;
+                        if (request && !request.result)
+                            this.run(() => this.askAgent(request.kind, request.request_id));
+                    });
+                    document.addEventListener('visibilitychange', () => {
+                        if (document.hidden) this.stopPolling();
+                    });
+                    window.addEventListener('pagehide', () => this.stopPolling());
+                    for (const id of ['candidate', 'rationale'])
+                        this.el(id).addEventListener('input', () => this.invalidate());
+                    this.el('preview').addEventListener('click', () =>
+                        this.run(() => this.preview()),
+                    );
+                    this.el('approval').addEventListener('change', () => this.actions());
+                    this.el('change-previous').addEventListener('click', () =>
+                        this.navigateChange(-1),
+                    );
+                    this.el('change-next').addEventListener('click', () =>
+                        this.navigateChange(1),
+                    );
+                    this.el('apply').addEventListener('click', () => this.run(() => this.commit()));
+                    this.el('inspect-proposal').addEventListener('click', () =>
+                        this.run(() => this.refreshProposal()),
+                    );
+                    this.el('unresolved-write').addEventListener('click', () =>
+                        this.showUnresolved(),
+                    );
+                    this.el('edit').addEventListener('click', () => {
+                        this.mode = 'apply';
+                        this.editing = true;
+                        this.el('candidate-editor').hidden = false;
+                        this.invalidate();
+                        this.el('candidate').focus();
+                    });
+                    this.el('recover-prepare').addEventListener('click', () => {
+                        this.mode = 'recover';
+                        this.renderProposal(this.proposal);
+                        this.el('workflow-status').textContent =
+                            'Review the reverse diff. Recovery requires a new explicit approval.';
+                    });
+                    this.el('resume').addEventListener('click', () =>
+                        this.openDialog('resume-dialog'),
+                    );
+                    this.el('resume-load').addEventListener('click', () =>
+                        this.run(async () => {
+                            const result = await this.call('skill_panel_proposal', {
+                                proposal_id: this.el('resume-id').value.trim(),
+                            });
+                            this.el('resume-dialog').close();
+                            await this.acceptIncoming(result);
+                        }),
+                    );
+                    this.initialize();
+                }
+
+                receive(event) {
+                    if (
+                        event.source !== window.parent ||
+                        !event.data ||
+                        event.data.jsonrpc !== '2.0'
+                    )
+                        return;
+                    const message = event.data;
+                    if (message.method === 'ping' && Object.hasOwn(message, 'id')) {
+                        window.parent.postMessage(
+                            { jsonrpc: '2.0', id: message.id, result: {} },
+                            '*',
+                        );
+                        return;
+                    }
+                    if (this.pending.has(message.id)) {
+                        const request = this.pending.get(message.id);
+                        this.pending.delete(message.id);
+                        clearTimeout(request.timer);
+                        if (message.error)
+                            request.reject(new Error('The host refused the panel request.'));
+                        else request.resolve(message.result);
+                        return;
+                    }
+                    if (message.method === 'ui/notifications/tool-result') {
+                        const result = message.params?.structuredContent;
+                        if (
+                            result?.proposal_id &&
+                            (!this.selected || result.skill === this.selected.skill)
+                        ) {
+                            this.incoming = result;
+                            if (this.connected && !this.busy)
+                                this.run(() => this.acceptIncoming(result));
+                            return;
+                        }
+                        if (
+                            result?.request?.skill &&
+                            (!this.selected || result.request.skill === this.selected.skill)
+                        ) {
+                            this.incomingResult = result;
+                            if (this.connected && !this.busy)
+                                this.run(() => this.showCompleted(result));
+                        }
+                    }
+                }
+
+                request(method, params) {
+                    const id = ++this.nextId;
+                    return new Promise((resolve, reject) => {
+                        const timer = setTimeout(() => {
+                            this.pending.delete(id);
+                            reject(
+                                new Error(
+                                    'No host response within 8 seconds. The result is unknown: check saved reviews and proposals, and inspect any unresolved write before retrying.',
+                                ),
+                            );
+                        }, 8000);
+                        this.pending.set(id, { resolve, reject, timer });
+                        window.parent.postMessage({ jsonrpc: '2.0', id, method, params }, '*');
+                    });
+                }
+
+                async call(name, arguments_) {
+                    const result = await this.request('tools/call', {
+                        name,
+                        arguments: arguments_,
+                    });
+                    if (result?.isError || !result?.structuredContent)
+                        throw new Error(
+                            result?.structuredContent?.error?.message ||
+                                'The panel operation returned no usable result.',
+                        );
+                    return result.structuredContent;
+                }
+
+                async initialize() {
+                    if (window.parent === window) {
+                        this.el('connection').textContent =
+                            'This HTML file is a standalone preview, not the installed panel. In Codex, open I-9 Skills from the sidebar or ask the configured plugin to call skill_panel_open. If that entry is missing, verify the plugin MCP runtime and reopen the panel. No skills are loaded or changed here.';
+                        return;
+                    }
+                    try {
+                        const host = await this.request('ui/initialize', {
+                            appInfo: { name: 'i9-skills-local-panel', version: '1.0.0' },
+                            appCapabilities: {},
+                            protocolVersion: '2026-01-26',
+                        });
+                        this.hostCapabilities = host?.hostCapabilities || {};
+                        window.parent.postMessage(
+                            { jsonrpc: '2.0', method: 'ui/notifications/initialized', params: {} },
+                            '*',
+                        );
+                        this.connected = true;
+                        this.el('refresh').disabled = false;
+                        this.el('resume').disabled = false;
+                        await this.loadCatalog();
+                        if (this.incoming) await this.acceptIncoming(this.incoming);
+                        else if (this.incomingResult) await this.showCompleted(this.incomingResult);
+                    } catch (error) {
+                        this.el('connection').textContent =
+                            error.message +
+                            ' Close and reopen this component to retry initialization.';
+                        if (!this.connected) this.el('refresh').disabled = true;
+                    }
+                }
+
+                async run(operation) {
+                    if (this.busy) return;
+                    this.busy = true;
+                    this.actions();
+                    try {
+                        await operation();
+                    } catch (error) {
+                        this.el('connection').textContent = error.message;
+                        this.el('workflow-status').textContent = error.message;
+                    } finally {
+                        this.busy = false;
+                        this.actions();
+                    }
+                }
+
+                async loadCatalog() {
+                    let result = await this.call('skill_panel_open', {});
+                    const catalog = [...result.skills];
+                    const warnings = new Set(result.warnings);
+                    const revision = result.catalog_revision;
+                    let offset = 0;
+                    let pages = 1;
+                    while (result.next_offset != null) {
+                        if (
+                            !Number.isInteger(result.next_offset) ||
+                            result.next_offset <= offset ||
+                            ++pages > 16
+                        ) {
+                            throw new Error(
+                                'Catalog pagination changed; refresh the selected collections.',
+                            );
+                        }
+                        offset = result.next_offset;
+                        result = await this.call('skill_panel_open', { offset });
+                        if (result.catalog_revision !== revision) {
+                            throw new Error(
+                                'Catalog changed while loading; refresh the selected collections.',
+                            );
+                        }
+                        catalog.push(...result.skills);
+                        for (const warning of result.warnings) warnings.add(warning);
+                    }
+                    this.catalog = catalog;
+                    this.el('connection').textContent =
+                        'Connected to selected collection "' +
+                        result.collection +
+                        '"' +
+                        (catalog.some((item) => item.source === 'global')
+                            ? ' and global skills (editability is shown per package)'
+                            : '') +
+                        '. Live reads; no telemetry is enabled. ' +
+                        [...warnings].join(' ');
+                    this.renderCatalog();
+                }
+
+                renderCatalog() {
+                    const query = this.el('search').value.toLowerCase();
+                    const source = this.el('source-filter').value || 'all';
+                    const matches = this.catalog.filter(
+                        (item) =>
+                            (source === 'all' || (item.source || 'selected') === source) &&
+                            ((item.name || item.skill) + ' ' + item.description)
+                                .toLowerCase()
+                                .includes(query),
+                    );
+                    this.el('results').replaceChildren();
+                    for (const filter of ['all', 'selected', 'global']) {
+                        this.el('filter-' + filter).setAttribute(
+                            'aria-pressed',
+                            String(source === filter),
+                        );
+                    }
+                    for (const item of matches) {
+                        const button = document.createElement('button');
+                        button.type = 'button';
+                        button.className = 'package-card';
+                        const name = item.name || item.skill;
+                        const origin =
+                            item.source === 'global'
+                                ? 'Global · ' +
+                                  (item.read_only ? 'read only' : 'editable') +
+                                  ' · ' +
+                                  item.skill.slice(7, 15)
+                                : 'Selected collection · editable';
+                        button.setAttribute('aria-label', 'Inspect ' + name + ' · ' + origin);
+                        button.setAttribute(
+                            'aria-pressed',
+                            String(this.selected?.skill === item.skill),
+                        );
+                        const title = document.createElement('strong');
+                        title.textContent = name;
+                        const badge = document.createElement('small');
+                        badge.textContent = origin;
+                        const text = document.createElement('p');
+                        text.textContent = item.description;
+                        button.title = item.description;
+                        button.append(title, badge, text);
+                        button.addEventListener('click', () =>
+                            this.run(() => this.inspect(item.skill)),
+                        );
+                        this.el('results').append(button);
+                    }
+                    this.el('result-note').textContent =
+                        matches.length +
+                        (matches.length === 1 ? ' skill shown · ' : ' skills shown · ') +
+                        this.catalog.length +
+                        ' in the catalog';
+                    if (!matches.length) {
+                        const empty = document.createElement('p');
+                        empty.className = 'empty-result';
+                        empty.textContent =
+                            'No matching skills. Try another search or source filter.';
+                        this.el('results').append(empty);
+                    }
+                }
+
+                async inspect(skill) {
+                    if (this.unresolved) return this.showUnresolved();
+                    this.resourceVersion = (this.resourceVersion || 0) + 1;
+                    this.stopPolling();
+                    this.activityVersion++;
+                    const result = await this.call('skill_panel_inspect', { skill });
+                    this.selected = result;
+                    this.activity = null;
+                    this.currentReview = null;
+                    this.currentDiff = null;
+                    this.el('review-outcome').textContent = 'Loading saved work';
+                    this.el('result-summary').textContent = '';
+                    this.el('result-coverage').textContent = '';
+                    this.el('result-files').textContent = '';
+                    this.el('diff-status').textContent = 'Checking whether a retained diff exists…';
+                    this.el('current-result-details').hidden = true;
+                    this.el('continue-current').hidden = true;
+                    this.el('activity-list').replaceChildren();
+                    this.el('activity-note').textContent = 'Loading saved work for this skill…';
+                    this.el('request-status').textContent = 'Loading saved reviews and proposals…';
+                    this.proposal = null;
+                    this.editing = false;
+                    this.uncertain = false;
+                    this.el('approval').checked = false;
+                    this.el('proposal-view').hidden = true;
+                    this.renderSelection(result);
+                    this.setWorkspace('overview');
+                    this.renderCatalog();
+                    this.actions();
+                    await this.loadActivity(true);
+                }
+
+                renderSelection(result) {
+                    this.el('selected-title').textContent = result.name || result.skill;
+                    this.el('selected-origin').textContent =
+                        (result.source === 'global'
+                            ? 'Global collection'
+                            : 'Selected local collection') +
+                        (result.read_only ? ' · read only' : ' · editable');
+                    this.el('action-caption').textContent = result.read_only
+                        ? 'Review only · global evolution is unavailable for this package.'
+                        : 'Review → diff → explicit approval.';
+                    this.el('selected-hash-label').textContent = result.read_only
+                        ? 'SKILL.md identity'
+                        : 'Package identity';
+                    this.el('selected-description').textContent = result.description;
+                    this.el('selected-hash').textContent = result.package_sha256 || result.sha256;
+                    this.el('selected-state').textContent =
+                        (result.read_only
+                            ? 'Read-only global SKILL.md · '
+                            : 'Actual disk read · ') +
+                        result.files +
+                        ' files · ' +
+                        result.bytes +
+                        ' bytes. Review and behavioral state are not inferred.' +
+                        (result.read_only_reason ? ' ' + result.read_only_reason : '');
+                    this.el('source').value = result.text;
+                    this.renderResources(result);
+                    this.el('review').disabled = false;
+                    this.el('evolve').disabled = Boolean(result.read_only);
+                }
+
+                renderResources(result) {
+                    const select = this.el('resource-select');
+                    select.replaceChildren();
+                    const files = [{ path: 'SKILL.md' }, ...(result.resources || []).filter(file => file.path !== 'SKILL.md')];
+                    for (const file of files) {
+                        const option = document.createElement('option');
+                        option.value = file.path;
+                        option.textContent = file.path;
+                        select.append(option);
+                    }
+                    select.value = 'SKILL.md';
+                    select.disabled = files.length < 2;
+                    this.el('source-label').textContent = 'SKILL.md · actual bytes · read only';
+                    this.el('resource-status').textContent = result.resources
+                        ? files.length + ' listed files. Supporting text previews are limited to 128 KiB. Reading a file does not record an agent review.' + (result.resource_omitted ? ' ' + result.resource_omitted + ' unsupported paths omitted; package integrity still covers them.' : '')
+                        : 'This connection exposes only SKILL.md. Supporting-file coverage is unverified.';
+                }
+
+                async loadResource() {
+                    if (!this.selected) return;
+                    const selected = this.selected;
+                    const path = this.el('resource-select').value;
+                    const version = this.resourceVersion = (this.resourceVersion || 0) + 1;
+                    this.el('source').value = '';
+                    this.el('source-label').textContent = path + ' · read only';
+                    if (path === 'SKILL.md') {
+                        this.el('source').value = selected.text;
+                        this.el('resource-status').textContent = 'Last inspected SKILL.md. Reinspect to refresh its bytes.';
+                        return;
+                    }
+                    this.el('resource-status').textContent = 'Reading the selected resource at the inspected package revision…';
+                    try {
+                        const result = await this.call('skill_panel_inspect', { skill: selected.skill, resource: path, base_sha256: selected.package_sha256 });
+                        if (this.selected !== selected || this.resourceVersion !== version) return;
+                        if (result.skill !== selected.skill || result.package_sha256 !== selected.package_sha256 || result.resource?.path !== path)
+                            throw new Error('The resource identity did not match.');
+                        this.el('source').value = result.resource.text;
+                        this.el('resource-status').textContent = 'Actual UTF-8 bytes at the inspected revision. Read only; no script was executed or review coverage inferred.';
+                    } catch {
+                        if (this.selected !== selected || this.resourceVersion !== version) return;
+                        this.el('source').value = '';
+                        this.el('resource-status').textContent = 'Preview unavailable: the source may have changed, or the file is not supported UTF-8 text up to 128 KiB. Reinspect the skill before retrying. No files were changed.';
+                    }
+                }
+
+                openDialog(id) {
+                    this.lastFocus = document.activeElement;
+                    if (id === 'workflow-dialog') {
+                        this.setWorkspace('compare');
+                        return;
+                    }
+                    this.el(id).showModal();
+                }
+
+                setWorkspace(view) {
+                    if (view === 'source' && !this.selected) return;
+                    if (view === 'compare' && !this.proposal && !this.editing) return;
+                    this.workspace = view;
+                    for (const tab of ['overview', 'source', 'compare']) {
+                        this.el('tab-' + tab).setAttribute('aria-selected', String(view === tab));
+                        this.el('tab-' + tab).setAttribute('tabindex', view === tab ? '0' : '-1');
+                    }
+                    this.el('overview-view').hidden = view !== 'overview';
+                    this.el('source-view').hidden = view !== 'source';
+                    const workflow = this.el('workflow-dialog');
+                    if (view === 'compare') {
+                        if (!workflow.open) workflow.show();
+                        this.scrollComparison();
+                        this.scrollToComparison();
+                        return;
+                    }
+                    this.el('approval').checked = false;
+                    this.el('apply').disabled = true;
+                    if (workflow.open) workflow.close();
+                    this.el('workspace-pane').scrollTop = 0;
+                }
+
+                navigateTabs(event, current) {
+                    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+                    const available = ['overview', 'source', 'compare'].filter(
+                        (view) => !this.el('tab-' + view).disabled,
+                    );
+                    const index = available.indexOf(current);
+                    let next =
+                        event.key === 'ArrowLeft'
+                            ? (index + available.length - 1) % available.length
+                            : (index + 1) % available.length;
+                    if (event.key === 'Home') next = 0;
+                    if (event.key === 'End') next = available.length - 1;
+                    event.preventDefault();
+                    this.chooseWorkspace(available[next]);
+                    this.el('tab-' + available[next]).focus();
+                }
+
+                chooseWorkspace(view) {
+                    if (
+                        view === 'compare' &&
+                        !this.editing &&
+                        (this.currentDiff || this.proposal?.proposal_id)
+                    )
+                        return this.run(() => this.openCurrentDiff());
+                    this.setWorkspace(view);
+                }
+
+                help(type) {
+                    this.el('help-title').textContent =
+                        type === 'review'
+                            ? 'What does Review with agent do?'
+                            : 'What does Describe a change do?';
+                    this.el('help-copy').textContent =
+                        type === 'review'
+                            ? 'Your click saves a request at the live source identity and asks the host agent to review it in this conversation. The agent records its result here: no changes, findings, a retained proposal, or a blocker. A sent message is not proof the agent is running. Check for results or explicitly continue a pending review; the panel never resends by itself. Global evolution requires explicit runtime opt-in and an eligible package; it never implies approval.'
+                            : 'Describe your intended improvement in plain language. The host agent reads the skill and, if justified, supplies a complete candidate. Its retained diff appears in Reviews and proposals. Compare it, review the checks and explicitly approve to apply. You do not need to copy text or IDs. Official conformance and behavioral checks are separate.';
+                    this.openDialog('help-dialog');
+                }
+
+                async askAgent(kind, requestId = null) {
+                    if (this.unresolved) return this.showUnresolved();
+                    if (!this.selected || (kind === 'proposal' && this.selected.read_only)) return;
+                    const skill = this.selected.skill;
+                    this.el('request-dialog').close();
+                    const result = await this.call(
+                        'skill_panel_request',
+                        requestId
+                            ? { request_id: requestId }
+                            : {
+                                  skill,
+                                  kind,
+                                  focus:
+                                      kind === 'proposal'
+                                          ? this.el('request-focus').value.trim() || null
+                                          : null,
+                              },
+                    );
+                    if (this.selected?.skill !== skill || result.request.skill !== skill) return;
+                    this.el('task-draft').value = result.instructions;
+                    await this.loadActivity(false);
+                    this.setWorkspace('overview');
+                    if (!this.hostCapabilities?.message?.text) {
+                        this.el('request-status').textContent =
+                            'Request saved, not sent. This host has not advertised text messaging. Use the manual fallback, then Check for results.';
+                        this.openDialog('draft-dialog');
+                        return;
+                    }
+                    this.el('request-status').textContent =
+                        'Request saved. Asking the host to send it to this conversation…';
+                    try {
+                        const params = {
+                            role: 'user',
+                            content: [{ type: 'text', text: result.instructions }],
+                        };
+                        if (this.hostCapabilities.experimental?.['openai/message'])
+                            params._meta = { 'openai/message': { target: 'active', send: true } };
+                        const response = await this.request('ui/message', params);
+                        if (response?.isError)
+                            throw new Error('The host did not accept this message.');
+                        this.el('request-status').textContent =
+                            'Request sent to this conversation. Awaiting a recorded agent result here; the message alone does not confirm execution.';
+                    } catch (error) {
+                        this.el('request-status').textContent =
+                            'Message delivery is unconfirmed. Check this conversation and saved results before explicitly choosing Continue review. Nothing will be resent automatically. ' +
+                            error.message;
+                    }
+                    this.pollRemaining = 30;
+                    this.scheduleActivity();
+                }
+
+                stopPolling() {
+                    if (this.pollTimer) clearTimeout(this.pollTimer);
+                    this.pollTimer = null;
+                }
+
+                scheduleActivity() {
+                    this.stopPolling();
+                    if (document.hidden || !this.selected || this.pollRemaining <= 0) return;
+                    this.pollTimer = setTimeout(async () => {
+                        this.pollTimer = null;
+                        this.pollRemaining--;
+                        if (!this.busy && !document.hidden) {
+                            try {
+                                await this.loadActivity(false);
+                            } catch {
+                                this.el('activity-note').textContent =
+                                    'Results could not be refreshed. Existing work is retained; use Check for results.';
+                            }
+                        }
+                        if (this.activity?.requests.some((item) => !item.result))
+                            this.scheduleActivity();
+                    }, 4000);
+                }
+
+                async loadActivity(watch = false) {
+                    if (!this.selected) return;
+                    const skill = this.selected.skill;
+                    const version = ++this.activityVersion;
+                    const result = await this.call('skill_panel_activity', { skill });
+                    if (this.selected?.skill !== skill || this.activityVersion !== version) return;
+                    if (JSON.stringify(this.activity) !== JSON.stringify(result)) {
+                        this.activity = result;
+                        this.renderActivity(result);
+                        if (watch && this.workspace === 'overview')
+                            this.el('review-result').scrollIntoView({ block: 'nearest' });
+                    }
+                    if (watch && result.requests.some((item) => !item.result)) {
+                        this.pollRemaining = 30;
+                        this.scheduleActivity();
+                    }
+                }
+
+                async showCompleted(incoming) {
+                    if (this.unresolved) return this.showUnresolved();
+                    if (!this.selected) return this.inspect(incoming.request.skill);
+                    if (this.selected.skill === incoming.request.skill)
+                        await this.loadActivity(true);
+                }
+
+                renderActivity(activity) {
+                    if (this.proposal) this.renderCoverage(this.proposal);
+                    this.el('activity-list').replaceChildren();
+                    const labels = {
+                        no_changes: 'No changes proposed',
+                        findings: 'Review findings',
+                        proposal: 'Proposal ready to compare',
+                        blocked: 'Review blocked',
+                    };
+                    const currentHash = this.selected.package_sha256 || this.selected.sha256;
+                    this.renderCurrentResult(activity, labels);
+                    this.el('activity-note').textContent =
+                        activity.requests.length +
+                        ' reviews · ' +
+                        activity.proposals.length +
+                        ' proposals retained. Results are agent reports; open a proposal to verify its current bytes.';
+                    for (const request of activity.requests) {
+                        const card = document.createElement('article');
+                        card.className = 'workflow-card saved-work';
+                        const title = document.createElement('h4');
+                        title.textContent = request.result
+                            ? labels[request.result.outcome]
+                            : 'Awaiting recorded result';
+                        const summary = document.createElement('p');
+                        summary.textContent =
+                            request.result?.summary ||
+                            'A request is saved; this does not establish that an agent is running.';
+                        const time = document.createElement('small');
+                        time.textContent =
+                            new Date(request.created_at).toLocaleString() +
+                            (request.base_sha256 !== currentHash
+                                ? ' · different source revision'
+                                : ' · inspected source revision');
+                        card.append(title, summary, time);
+                        if (!request.result) {
+                            const button = document.createElement('button');
+                            button.type = 'button';
+                            button.textContent = 'Continue review';
+                            button.disabled = this.busy || Boolean(this.unresolved);
+                            button.addEventListener('click', () =>
+                                this.run(() => this.askAgent(request.kind, request.request_id)),
+                            );
+                            card.append(button);
+                        }
+                        if (request.result?.proposal_id)
+                            this.proposalButton(card, request.result.proposal_id);
+                        this.el('activity-list').append(card);
+                    }
+                    for (const proposal of activity.proposals) {
+                        if (
+                            activity.requests.some(
+                                (request) => request.result?.proposal_id === proposal.proposal_id,
+                            )
+                        )
+                            continue;
+                        const card = document.createElement('article');
+                        card.className = 'workflow-card saved-work';
+                        const title = document.createElement('h4');
+                        title.textContent = 'Retained proposal';
+                        const rationale = document.createElement('p');
+                        rationale.textContent = proposal.rationale;
+                        const note = document.createElement('small');
+                        note.textContent =
+                            'Open to verify source, validation and application state.';
+                        card.append(title, rationale, note);
+                        this.proposalButton(card, proposal.proposal_id);
+                        this.el('activity-list').append(card);
+                    }
+                }
+
+                renderCurrentResult(activity, labels) {
+                    const latest = activity.requests[0] || null;
+                    this.currentReview = latest;
+                    const linked = latest?.result?.proposal_id;
+                    this.currentDiff = this.selected.read_only
+                        ? null
+                        : linked || activity.proposals[0]?.proposal_id || null;
+                    this.el('review-outcome').textContent = latest
+                        ? latest.result
+                            ? labels[latest.result.outcome]
+                            : 'Awaiting recorded result'
+                        : this.currentDiff
+                          ? 'Saved proposal available'
+                          : 'No review yet';
+                    const currentHash = this.selected.package_sha256 || this.selected.sha256;
+                    this.el('request-status').textContent = latest
+                        ? (latest.result
+                              ? 'Agent result saved.'
+                              : 'The request is saved; the agent has not recorded a result yet.') +
+                          (latest.base_sha256 !== currentHash ? ' Different source revision.' : '')
+                        : 'Review with agent starts a review; inspecting the skill alone creates no diff.';
+                    const summary = latest?.result?.summary || '';
+                    const points = [...summary];
+                    const coverage = latest?.result?.reviewed_files;
+                    this.el('result-coverage').textContent = latest?.result
+                        ? coverage ? 'Agent reports reading ' + coverage.length + ' files. Open the full result for the list; this is not proof of comprehension.' : 'File-by-file reading coverage was not recorded for this review.'
+                        : '';
+                    this.el('result-files').textContent = coverage ? 'Agent-reported files: ' + (coverage.length ? coverage.join(', ') : 'none') : '';
+                    this.el('result-summary').textContent =
+                        points.length > 240 ? points.slice(0, 240).join('') + '…' : summary;
+                    this.el('result-full').textContent = summary;
+                    this.el('current-result-details').hidden = points.length <= 240 && !coverage;
+                    this.el('current-result-details').open = false;
+                    this.el('continue-current').hidden = !latest || Boolean(latest.result);
+                    this.el('view-diff').textContent = this.currentDiff
+                        ? linked
+                            ? 'View proposed diff'
+                            : 'Open saved diff'
+                        : 'View diff';
+                    this.el('diff-status').textContent = this.diffExplanation(latest, linked);
+                    this.actions();
+                }
+
+                diffExplanation(latest, linked) {
+                    if (this.selected.read_only)
+                        return (
+                            'This global skill is read only. ' +
+                            (this.selected.read_only_reason ||
+                                'Global evolution requires explicit runtime opt-in and an eligible ordinary package.')
+                        );
+                    if (this.currentDiff)
+                        return linked
+                            ? 'Next: view the saved diff and current state. Application or recovery requires a separate exact approval.'
+                            : 'A retained proposal has a saved diff. Open it to inspect its current application and validation state.';
+                    if (latest?.result)
+                        return 'This review returned no candidate. Use Describe a change to request a proposal; then review its diff before approving.';
+                    return 'No diff yet. A diff appears after the agent saves a proposed SKILL.md change.';
+                }
+
+                async openCurrentDiff() {
+                    if (this.unresolved) return this.showUnresolved();
+                    if (this.selected?.read_only) return;
+                    const proposalId = this.currentDiff || this.proposal?.proposal_id;
+                    if (!proposalId) return;
+
+                    await this.acceptIncoming({ proposal_id: proposalId });
+                    this.el('workflow-status').focus({ preventScroll: true });
+                }
+
+                proposalButton(card, id) {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.textContent = 'Compare proposal';
+                    button.disabled = this.busy || Boolean(this.unresolved);
+                    button.addEventListener('click', () =>
+                        this.run(() => this.acceptIncoming({ proposal_id: id })),
+                    );
+                    card.append(button);
+                }
+
+                startEditor() {
+                    if (this.unresolved) return this.showUnresolved();
+                    if (!this.selected || this.selected.read_only) return;
+                    this.mode = 'apply';
+                    this.proposal = null;
+                    this.editing = true;
+                    this.uncertain = false;
+                    this.el('workflow-title').textContent =
+                        'Evolve ' + (this.selected.name || this.selected.skill);
+                    this.el('workflow-base').textContent =
+                        'Selected package SHA256: ' + this.selected.package_sha256;
+                    this.el('candidate').value = this.selected.text;
+                    this.el('rationale').value = '';
+                    this.el('candidate-editor').hidden = false;
+                    this.el('workflow-header').hidden = false;
+                    this.el('workflow-status').textContent =
+                        'No candidate has been retained. Edit the actual text and explain the change.';
+                    this.invalidate();
+                    this.openDialog('workflow-dialog');
+                }
+
+                invalidate() {
+                    if (this.unresolved) return this.showUnresolved();
+                    this.proposal = null;
+                    this.uncertain = false;
+                    this.el('proposal-view').hidden = true;
+                    this.el('workflow-header').hidden = false;
+                    this.el('approval').checked = false;
+                    this.el('preview').disabled =
+                        this.busy ||
+                        !this.selected ||
+                        this.selected.read_only ||
+                        this.el('candidate').value === this.selected.text ||
+                        !this.el('rationale').value.trim();
+                    this.actions();
+                }
+
+                async preview() {
+                    if (this.unresolved) return this.showUnresolved();
+                    if (!this.selected || this.selected.read_only) return;
+                    const result = await this.call('skill_panel_propose', {
+                        skill: this.selected.skill,
+                        base_sha256: this.selected.package_sha256,
+                        after: this.el('candidate').value,
+                        rationale: this.el('rationale').value,
+                    });
+                    this.mode = 'apply';
+                    this.uncertain = false;
+                    this.renderProposal(result);
+                    this.el('workflow-status').textContent =
+                        'Candidate and preimage retained. Review the actual diff and performed validation; no source file has changed.';
+                    this.el('workflow-status').focus({ preventScroll: true });
+                }
+
+                renderProposal(proposal) {
+                    this.proposal = proposal;
+                    this.editing = false;
+                    const recovery = this.mode === 'recover';
+                    this.el('candidate-editor').hidden = true;
+                    this.el('workflow-header').hidden = false;
+                    this.el('proposal-view').hidden = false;
+                    this.el('proposal-id').textContent =
+                        'Proposal ' +
+                        proposal.proposal_id +
+                        ' · last observed state: ' +
+                        proposal.status +
+                        ' · source: ' +
+                        (this.uncertain || this.unresolved
+                            ? 'unknown; previous observation: '
+                            : '') +
+                        proposal.source_state +
+                        ' · last observed intent: ' +
+                        (proposal.write_intent || 'none') +
+                        ' · base: ' +
+                        proposal.base_sha256 +
+                        ' · candidate: ' +
+                        proposal.candidate_sha256;
+                    this.el('proposal-title').textContent = recovery
+                        ? 'Review recovery of the preserved version'
+                        : 'Review the exact retained change';
+                    this.el('proposal-rationale').textContent = proposal.rationale;
+                    const beforeCurrent =
+                        proposal.source_state === (recovery ? 'candidate' : 'original');
+                    const afterCurrent =
+                        proposal.source_state === (recovery ? 'original' : 'candidate');
+                    this.el('before-title').textContent = this.versionLabel(
+                        recovery ? 'candidate' : 'preserved original',
+                        beforeCurrent,
+                        'Retained',
+                    );
+                    this.el('after-title').textContent = this.versionLabel(
+                        recovery ? 'preserved original' : 'candidate',
+                        afterCurrent,
+                        recovery ? 'Restore' : 'Proposed',
+                    );
+                    this.el('before').setAttribute(
+                        'aria-label',
+                        this.el('before-title').textContent + ' SKILL.md',
+                    );
+                    this.el('after').setAttribute(
+                        'aria-label',
+                        this.el('after-title').textContent + ' SKILL.md',
+                    );
+                    this.renderComparison(
+                        recovery ? proposal.after : proposal.before,
+                        recovery ? proposal.before : proposal.after,
+                        proposal.comparison && (recovery
+                            ? {
+                                ...proposal.comparison,
+                                left: proposal.comparison.right,
+                                right: proposal.comparison.left,
+                                added: proposal.comparison.removed,
+                                removed: proposal.comparison.added,
+                                blocks: proposal.comparison.blocks?.map((block) => ({
+                                    left_line: block.right_line,
+                                    right_line: block.left_line,
+                                })),
+                            }
+                            : proposal.comparison),
+                    );
+                    this.renderCoverage(proposal);
+                    this.el('diff').replaceChildren();
+                    const diff = recovery ? proposal.recovery_diff : proposal.diff;
+                    const diffLines = diff.split('\n');
+                    if (diffLines.length > 4096) this.el('diff').textContent = diff;
+                    else {
+                        for (const line of diffLines) {
+                            const span = document.createElement('span');
+                            span.textContent = line;
+                            if (line.startsWith('+')) span.className = 'added';
+                            if (line.startsWith('-')) span.className = 'removed';
+                            this.el('diff').append(span);
+                        }
+                    }
+                    this.el('validation-detail').textContent =
+                        'Actual local structural validation: ' +
+                        proposal.validation.local.status +
+                        '. ' +
+                        proposal.validation.local.detail +
+                        ' Official validation: ' +
+                        proposal.validation.official +
+                        '. Behavioral evaluation: ' +
+                        proposal.validation.behavioral +
+                        '.';
+                    this.renderChecks(proposal.validation);
+                    this.el('approval').checked = false;
+                    this.el('approval-label').textContent = recovery
+                        ? 'I reviewed this exact reverse diff and approve restoring the preserved version.'
+                        : 'I reviewed this exact diff and the validation limits and approve applying this change.';
+                    const global = this.selected?.source === 'global';
+                    if (global)
+                        this.el('approval-label').textContent +=
+                            ' Target: global skill ' +
+                            (this.selected.name || this.selected.skill) +
+                            '.';
+                    this.el('write-scope').textContent = global
+                        ? 'This changes the actual global SKILL.md, not a private copy. Its original package is retained for separately approved recovery.'
+                        : 'Only SKILL.md in the selected copy changes. Its original package remains retained.';
+                    this.el('apply').textContent = recovery
+                        ? 'Restore approved version'
+                        : 'Approve & apply';
+                    this.actions();
+                    if (this.workspace === 'compare') {
+                        this.scrollComparison();
+                        this.scrollToComparison();
+                    }
+                }
+
+                scrollComparison() {
+                    const block = this.changeBlocks?.[this.changeIndex];
+                    if (!block) return;
+                    for (const [id, line] of [['before', block.left_line], ['after', block.right_line]]) {
+                        const code = this.el(id);
+                        const row = code.children[Math.min(line, code.children.length) - 1];
+                        const maximum = Math.max(0, code.scrollHeight - code.clientHeight);
+                        // Each code pane is positioned; row offsets belong to that pane.
+                        code.scrollTop = row
+                            ? Math.min(maximum, Math.max(0, row.offsetTop - 64))
+                            : 0;
+                    }
+                }
+
+                navigateChange(direction) {
+                    const next = this.changeIndex + direction;
+                    if (!this.changeBlocks?.length || next < 0 || next >= this.changeBlocks.length)
+                        return;
+                    this.changeIndex = next;
+                    this.renderChangePosition();
+                    this.scrollComparison();
+                }
+
+                renderChangePosition() {
+                    const block = this.changeBlocks?.[this.changeIndex];
+                    this.el('change-previous').disabled = !block || this.changeIndex === 0;
+                    this.el('change-next').disabled =
+                        !block || this.changeIndex === this.changeBlocks.length - 1;
+                    this.el('change-position').textContent = block
+                        ? 'Change ' + (this.changeIndex + 1) + ' of ' + this.changeBlocks.length +
+                            ' · left line ' + block.left_line + ' / right line ' + block.right_line
+                        : this.changeBlocks
+                            ? 'No changed blocks.'
+                            : 'Block navigation unavailable; use the exact diff below.';
+                }
+
+                scrollToComparison() {
+                    const pane = this.el('workspace-pane');
+                    pane.scrollTop = Math.max(
+                        0,
+                        this.el('workflow-dialog').offsetTop - pane.offsetTop - 16,
+                    );
+                }
+
+                versionLabel(version, current, next) {
+                    if (this.uncertain || this.unresolved) return 'Retained · ' + version;
+                    if (current) return 'Current · ' + version;
+                    return next + ' · ' + version;
+                }
+
+                renderCoverage(proposal) {
+                    const review = this.activity?.requests.find((request) =>
+                        request.result?.proposal_id === proposal.proposal_id && request.base_sha256 === proposal.base_sha256);
+                    const reported = review?.result?.reviewed_files;
+                    this.el('review-coverage').textContent = reported
+                        ? 'Agent-reported reading: ' + reported.length + ' files. This is a report, not proof of comprehension. Files not listed were not reported as reviewed.'
+                        : 'Review coverage was not recorded for this proposal. Preserving or inventorying a file does not mean the agent analyzed it.';
+                    if (proposal.resource_omitted)
+                        this.el('review-coverage').textContent += ' ' + proposal.resource_omitted + ' file paths exceed the text inspection path profile and are omitted from this list; their bytes remain covered by package integrity.';
+                    this.el('proposal-files').replaceChildren();
+                    for (const file of proposal.resources || [{ path: 'SKILL.md' }]) {
+                        const item = document.createElement('li');
+                        item.textContent = file.path + (file.path === 'SKILL.md'
+                            ? ' · proposed change'
+                            : ' · unchanged; preserved for integrity') + (reported?.includes(file.path) ? ' · agent reports reading' : ' · reading not reported');
+                        this.el('proposal-files').append(item);
+                    }
+                }
+
+                renderComparison(before, after, comparison) {
+                    this.renderCode('before', before, comparison?.left, 'removed');
+                    this.renderCode('after', after, comparison?.right, 'added');
+                    this.changeBlocks =
+                        comparison?.left && comparison?.right && Array.isArray(comparison.blocks)
+                            ? comparison.blocks.slice(0, 4096).filter((block) =>
+                                Number.isInteger(block?.left_line) &&
+                                block.left_line >= 1 &&
+                                block.left_line <= comparison.left.length + 1 &&
+                                Number.isInteger(block?.right_line) &&
+                                block.right_line >= 1 &&
+                                block.right_line <= comparison.right.length + 1)
+                            : null;
+                    this.changeIndex = this.changeBlocks?.length ? 0 : -1;
+                    this.renderChangePosition();
+                    this.el('comparison-summary').textContent = comparison
+                        ? 'SKILL.md · +' + comparison.added + ' / −' + comparison.removed + ' lines. ' + (comparison.left && comparison.right ? 'Strong highlights mark changed words; neutral text is unchanged.' : 'Large file: full text without inline highlighting.') + (comparison.limited ? ' Detailed matching reached its work limit; some changed ranges use full-line highlighting. The complete text and exact diff remain available.' : '')
+                        : 'SKILL.md · Full text. Detailed comparison is unavailable; use the exact diff below.';
+                }
+
+                renderCode(id, text, rows, change) {
+                    const container = this.el(id);
+                    container.replaceChildren();
+                    const lines = text.match(/[^\n]*\n|[^\n]+$/g) || [];
+                    const plain = !rows || rows.length > 4096;
+                    if (plain) container.textContent = text;
+                    else {
+                        rows.forEach((line) => {
+                            const row = document.createElement('span');
+                            row.className =
+                                'code-line' + (line.changed ? ' ' + change : '');
+                            row.setAttribute('data-line', String(line.line));
+                            for (const part of line.parts) {
+                                const token = document.createElement('span');
+                                token.textContent = part.text;
+                                if (part.changed) token.className = 'word-change';
+                                row.append(token);
+                            }
+                            container.append(row);
+                        });
+                    }
+                    const endings = text.includes('\r\n')
+                        ? text.replaceAll('\r\n', '').includes('\n')
+                            ? 'Mixed CRLF / LF'
+                            : 'CRLF'
+                        : 'LF';
+                    this.el(id + '-ending').textContent =
+                        lines.length +
+                        ' lines · ' +
+                        endings +
+                        ' · ' +
+                        (text.endsWith('\n') ? 'Final newline' : 'No final newline') +
+                        (plain ? ' · Full plain text; no inline highlighting' : '');
+                }
+
+                renderChecks(validation) {
+                    this.el('checks').replaceChildren();
+                    for (const [label, status, detail] of [
+                        [
+                            'Local structure only',
+                            validation.local.status,
+                            'No release certification',
+                        ],
+                        ['Official validation', validation.official, 'Agent Skills conformance'],
+                        [
+                            'Behavioral evaluation',
+                            validation.behavioral,
+                            'Agent execution not inferred',
+                        ],
+                    ]) {
+                        const state = document.createElement('div');
+                        state.className = 'check-state';
+                        const title = document.createElement('strong');
+                        title.textContent =
+                            label + ' · ' + (status === 'not_run' ? 'not run' : status);
+                        const note = document.createElement('small');
+                        note.textContent = detail;
+                        state.append(title, note);
+                        this.el('checks').append(state);
+                    }
+                }
+
+                actions() {
+                    this.renderReviewProgress();
+                    const proposal = this.proposal;
+                    const blocked = this.uncertain || Boolean(this.unresolved);
+                    const canApply =
+                        proposal?.status === 'proposed' &&
+                        proposal.validation.local.status === 'passed' &&
+                        (proposal.source_state === 'original' ||
+                            (proposal.source_state === 'candidate' &&
+                                proposal.write_intent === 'apply'));
+                    const canRecover =
+                        proposal &&
+                        ((proposal.source_state === 'candidate' &&
+                            (proposal.status === 'applied' || proposal.write_intent)) ||
+                            (proposal.source_state === 'original' &&
+                                proposal.write_intent === 'recover'));
+                    const allowed =
+                        proposal &&
+                        !this.selected?.read_only &&
+                        !blocked &&
+                        (this.mode === 'recover' ? canRecover : canApply);
+                    this.el('apply').disabled =
+                        this.busy || !allowed || !this.el('approval').checked;
+                    this.el('approval').disabled = this.busy || !allowed;
+                    this.el('recover-prepare').hidden = !canRecover || this.mode === 'recover';
+                    this.el('recover-prepare').disabled = this.busy || blocked;
+                    this.el('edit').disabled =
+                        this.busy ||
+                        blocked ||
+                        !proposal ||
+                        proposal.status !== 'proposed' ||
+                        proposal.source_state !== 'original' ||
+                        Boolean(proposal.write_intent) ||
+                        this.mode === 'recover';
+                    this.el('preview').disabled =
+                        this.busy ||
+                        blocked ||
+                        !this.selected ||
+                        this.selected.read_only ||
+                        this.el('candidate').value === this.selected.text ||
+                        !this.el('rationale').value.trim();
+                    this.el('inspect-proposal').disabled = this.busy || !proposal;
+                    this.el('unresolved-write').hidden = !this.unresolved;
+                    this.el('unresolved-write').disabled = this.busy;
+                    this.el('tab-source').disabled = !this.selected;
+                    this.el('tab-compare').disabled =
+                        !proposal && !this.editing && !this.currentDiff;
+                    this.el('review').disabled = this.busy || blocked || !this.selected;
+                    this.el('evolve').disabled =
+                        this.busy || blocked || !this.selected || this.selected.read_only;
+                    this.el('manual-candidate').disabled = this.el('evolve').disabled;
+                    this.el('request-send').disabled = this.el('evolve').disabled;
+                    this.el('activity-refresh').disabled = this.busy || !this.selected;
+                    this.el('view-diff').disabled =
+                        this.busy ||
+                        blocked ||
+                        !this.currentDiff ||
+                        Boolean(this.selected?.read_only);
+                    this.el('continue-current').disabled =
+                        this.busy ||
+                        blocked ||
+                        !this.currentReview ||
+                        Boolean(this.currentReview.result);
+                    for (const button of this.el('activity-list').querySelectorAll('button'))
+                        button.disabled = this.busy || blocked;
+                }
+
+                renderReviewProgress() {
+                    this.el('review-progress').hidden = !this.selected;
+                    if (!this.selected) return;
+                    const review = this.currentReview;
+                    const history = Boolean(this.activity);
+                    const hash = this.selected.package_sha256 || this.selected.sha256;
+                    this.el('progress-request').textContent = review
+                        ? 'Saved' + (review.base_sha256 !== hash ? ' · different inspected revision' : '')
+                        : history ? 'None recorded' : 'History not loaded';
+                    const outcomes = {
+                        no_changes: 'Recorded · no changes proposed',
+                        findings: 'Recorded · findings only',
+                        proposal: 'Recorded · candidate supplied',
+                        blocked: 'Recorded · blocked; read the report',
+                    };
+                    this.el('progress-result').textContent = review?.result
+                        ? outcomes[review.result.outcome] || 'Recorded · inspect full result'
+                        : review
+                            ? 'Awaiting a recorded result; agent execution is unverified'
+                            : history ? 'None recorded' : 'History not loaded';
+                    this.el('progress-decision').textContent = this.decisionProgress();
+                }
+
+                decisionProgress() {
+                    if (this.uncertain || this.unresolved)
+                        return 'Write outcome unconfirmed · refresh the retained proposal';
+                    if (this.selected.read_only)
+                        return 'Read only · no change can be approved';
+                    const proposal = this.proposal?.skill === this.selected.skill && !this.editing
+                        ? this.proposal : null;
+                    if (!proposal) {
+                        if (this.currentDiff) return 'Saved candidate · open its diff to inspect state';
+                        if (this.currentReview?.result) return 'No candidate · nothing to approve';
+                        return this.activity ? 'No candidate recorded' : 'Proposal state not inspected';
+                    }
+                    // This may be an older saved proposal, not the latest review's result.
+                    const prefix = 'Opened proposal · ';
+                    if (proposal.write_intent)
+                        return prefix + 'retained write intent; inspect before deciding';
+                    if (proposal.source_state === 'changed')
+                        return prefix + 'source changed; create a new proposal';
+                    if (proposal.status === 'applied' && proposal.source_state === 'candidate')
+                        return prefix + (this.mode === 'recover'
+                            ? 'reverse diff open; new exact approval required'
+                            : 'last inspected as applied; recovery needs separate approval');
+                    if (proposal.status === 'recovered' && proposal.source_state === 'original')
+                        return prefix + 'last inspected as recovered';
+                    if (proposal.validation.local.status !== 'passed')
+                        return prefix + 'local checks failed; application is disabled';
+                    if (this.mode === 'recover')
+                        return prefix + 'reverse diff; new exact approval required';
+                    if (proposal.status === 'proposed' && proposal.source_state === 'original')
+                        return prefix + 'diff available; exact approval required';
+                    return prefix + 'refresh its actual source state';
+                }
+
+                showUnresolved(detail = '') {
+                    if (!this.unresolved) return;
+                    this.mode = this.unresolved.action;
+                    this.uncertain = true;
+                    this.renderProposal(this.unresolved.proposal);
+                    this.el('workflow-title').textContent =
+                        'Inspect unresolved ' + this.mode + ' · ' + this.proposal.skill;
+                    this.el('workflow-base').textContent =
+                        'Retained proposal ID: ' + this.proposal.proposal_id;
+                    this.el('workflow-status').textContent =
+                        (detail ? detail + ' ' : '') +
+                        'The write result is unknown. Refresh this retained proposal to inspect actual source bytes and recorded intent before changing selection, editing or approving another write.';
+                    if (!this.el('workflow-dialog').open) this.openDialog('workflow-dialog');
+                    this.el('inspect-proposal').focus();
+                }
+
+                async refreshProposal() {
+                    const proposal = this.unresolved?.proposal || this.proposal;
+                    if (!proposal) return;
+                    const result = await this.call('skill_panel_proposal', {
+                        proposal_id: proposal.proposal_id,
+                    });
+                    this.unresolved = null;
+                    this.uncertain = false;
+                    this.renderProposal(result);
+                    this.el('workflow-status').textContent =
+                        'Retained proposal state re-read: ' +
+                        result.status +
+                        '; actual source: ' +
+                        result.source_state +
+                        '; pending write intent: ' +
+                        (result.write_intent || 'none') +
+                        '. No source write requested. Any next write requires fresh approval.';
+                }
+
+                async acceptIncoming(incoming) {
+                    if (this.unresolved) return this.showUnresolved();
+                    this.el('approval').checked = false;
+                    this.actions();
+                    let result = await this.call('skill_panel_proposal', {
+                        proposal_id: incoming.proposal_id,
+                    });
+                    await this.inspect(result.skill);
+                    if (this.selected.package_sha256 !== result.source_sha256) {
+                        result = await this.call('skill_panel_proposal', {
+                            proposal_id: result.proposal_id,
+                        });
+                    }
+                    this.mode = 'apply';
+                    this.uncertain = false;
+                    this.el('workflow-title').textContent =
+                        'Review ' + (this.selected.name || result.skill);
+                    this.el('workflow-base').textContent =
+                        'Exact proposal source: ' + result.base_sha256;
+                    this.el('candidate').value = result.after;
+                    this.el('rationale').value = result.rationale;
+                    this.renderProposal(result);
+                    this.el('workflow-status').textContent =
+                        'Retained proposal loaded from the server. No approval is assumed.';
+                    if (!this.el('workflow-dialog').open) this.openDialog('workflow-dialog');
+                }
+
+                async commit() {
+                    if (
+                        !this.proposal ||
+                        this.selected?.read_only ||
+                        !this.el('approval').checked ||
+                        this.uncertain ||
+                        this.unresolved
+                    )
+                        return;
+                    const proposal = this.proposal;
+                    const action = this.mode;
+                    this.el('approval').checked = false;
+                    try {
+                        const result = await this.call(
+                            action === 'recover' ? 'skill_panel_recover' : 'skill_panel_apply',
+                            {
+                                action,
+                                proposal_id: proposal.proposal_id,
+                                base_sha256: proposal.base_sha256,
+                                candidate_sha256: proposal.candidate_sha256,
+                                approved: true,
+                            },
+                        );
+                        this.unresolved = null;
+                        this.uncertain = false;
+                        this.renderProposal(result);
+                        const current = await this.call('skill_panel_inspect', {
+                            skill: result.skill,
+                        });
+                        this.selected = current;
+                        this.renderSelection(current);
+                        this.el('workflow-status').textContent =
+                            result.status === 'recovered'
+                                ? 'Preserved entrypoint restored. The proposal and recovery evidence remain retained.'
+                                : 'Approved entrypoint applied. The original package remains retained for guarded recovery.';
+                        this.el('workflow-status').focus({ preventScroll: true });
+                    } catch (error) {
+                        this.unresolved = { proposal, action };
+                        this.showUnresolved(error.message);
+                    }
+                }
+            }
+            new SkillChangePanel();
+        </script>
+    </body>
+</html>

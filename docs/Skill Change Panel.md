@@ -1,0 +1,510 @@
+# Local skill-change panel
+
+This is an explicitly configured local MCP Apps
+resource, not a hosted service or a generally accepted marketplace extension.
+Native rendering depends on the selected host; protocol and browser-test results
+do not certify persistent global sidebar support.
+
+## Select a private pilot
+
+Use a trusted owned collection with ordinary direct skill directories. For a
+first exercise, copy one real skill into a private development collection while
+preserving its license and resources. Do not point a first test at installed
+global packages or the canonical source. Keep state outside the collection and
+ensure its parent already exists. The backend creates private state only when a
+review request or candidate is explicitly retained, not when the panel opens or
+absent history is read.
+
+With Node 24+ and explicit `npm ci`, configure the existing local stdio MCP:
+
+```sh
+node bin/index.mjs mcp serve \
+  --panel-collection /absolute/local-pilot/skills \
+  --panel-state /absolute/local-pilot/proposals
+```
+
+Both flags are required together. The dependency-free local plugin entrypoint
+accepts the same selections after `--host codex`, `--host claude` or
+`--host copilot`. This is an explicit configuration choice; existing manifests
+do not silently turn the panel or its write operations on. The explicitly selected
+pilot mode exposes only its nine panel tools; unrelated evidence/database writes
+are unavailable. Without these flags, the normal catalog and telemetry MCP keeps
+its existing tools and contracts.
+
+Open `skill_panel_open` in an MCP Apps-capable host. A plain MCP client can read
+its structured result and the fixed `ui://i9-skills/skill-panel/v1.html` resource.
+Opening the panel does not enable hooks, record usage or create a database.
+Inspection needs no remote assets, model call or hosted panel service.
+User-clicked reviews use the host agent's existing connectivity and permissions.
+
+The sidebar entry is titled **I-9 Skills**; `skill_panel_open` remains its stable
+technical tool name. Fixed-resource reads accept standard client request metadata
+and template discovery returns an empty list. Metadata never selects another
+resource or grants access. After updating a local lab, verify which version the
+host actually loaded; an already open component may retain its prior process.
+Tool discovery, successful HTML retrieval and visible native rendering are
+separate checks when investigating a host's “could not display” message.
+
+## Retain an independent plugin runtime
+
+Opening `assets/skill-panel.html` directly is a standalone preview. It cannot
+connect to the native bridge or load real skills. Open **I-9 Skills** in the
+configured host sidebar, or ask that plugin to call `skill_panel_open`.
+
+For a persistent local installation, prepare a self-contained artifact instead
+of pointing an installed plugin at `src/` in a branch-changing checkout. After
+explicit `npm ci` and `npm run build`, use a new neutral staging parent:
+
+```sh
+mkdir -p .work/retained-panel
+node bin/index.mjs plugin prepare \
+  --output .work/retained-panel/i9-skills \
+  --panel-collection /absolute/local-pilot/skills \
+  --panel-state /absolute/local-pilot/proposals \
+  --panel-global-collection "$HOME/.agents/skills"
+```
+
+Preview writes nothing. Repeat with `--write` to create the artifact. Add
+`--panel-global-write` only to explicitly enable eligible global evolution;
+this does not approve an individual change. The output must be outside all
+selected skill and proposal paths. Data stays in those selected directories;
+no existing skill or proposal is copied into the plugin as mutable state.
+
+The local profile includes root `mcp.json`, a compiled `runtime/dist/` entrypoint,
+bundled helpers/catalog/UI and the already-installed pinned YAML dependency with
+its license. It never installs packages or downloads runtime code. Node24+ must
+already be available. `${PLUGIN_ROOT}` binds server and working-directory paths
+to the installed artifact, so moving it or switching development branches does
+not remove its code. Ordinary skills-only preparation is unchanged.
+
+Preparation verifies the successful build's retained inventory against every
+compiled module, helper, catalog and UI asset, and against TypeScript/configuration
+bytes when source is present. Missing modules, changed assets and stale source
+require a fresh explicit build; neither preview nor write repairs them. This is
+integrity evidence, not publisher authentication. Output boundaries are checked
+physically as well as lexically, including aliases into protected data roots and
+external global references, before derivation and immediately before emission.
+
+### Register the retained artifact locally
+
+The output is a plugin folder, not a marketplace root. For Codex, create the
+following **new private** wrapper at
+`.work/retained-panel/.agents/plugins/marketplace.json`, beside the prepared
+`i9-skills/` folder. Do not replace an existing marketplace document.
+
+```json
+{
+  "name": "i9-skills-local",
+  "interface": { "displayName": "I-9 Skills local panel" },
+  "plugins": [{
+    "name": "i9-skills",
+    "source": { "source": "local", "path": "./i9-skills" },
+    "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL" },
+    "category": "Developer Tools"
+  }]
+}
+```
+
+The relative path starts at `.work/retained-panel`, not `.agents/plugins`.
+The distinct marketplace name avoids replacing the public marketplace source;
+the prepared plugin keeps its `i9-skills` identity. Select one active installation
+of this collection in a session to avoid duplicate skills/tools. Inspect any
+existing installation before deciding which one to enable.
+
+```sh
+codex plugin marketplace add .work/retained-panel
+codex plugin add i9-skills@i9-skills-local
+codex plugin list
+codex mcp list --json
+```
+
+These are explicit operator steps, not preparation side effects. Clients without
+the install command can choose this local marketplace in their Plugins Directory;
+workspace policy may restrict availability. The
+[official marketplace guide](https://developers.openai.com/plugins/build/plugins#add-a-marketplace-from-the-cli)
+defines registration and relative paths. Verify the loaded runtime and working
+directory resolve inside the retained/installed artifact; `skill_panel_open`
+must expose the selected library and fixed UI resource. A new consumer supplies
+their own collection/state/global paths when preparing the artifact. Never share
+the machine-configured wrapper/artifact as a universal public upload.
+
+For another MCP Apps-capable host, register the prepared `mcp.json` stdio command
+through its supported settings. Resolve `${PLUGIN_ROOT}` to that installed
+artifact only if the host does not expand it. Do not point it back at `src/`.
+Plain MCP clients can use structured panel tools without native rendering.
+
+For upgrades, build the reviewed source and prepare a **fresh** artifact while
+keeping the same external data selections. Point this wrapper at that fresh
+relative folder, then use the host's supported refresh/install flow. Verify the
+actually loaded bytes; an unchanged version may remain cached. Never repair a
+cache directly, delete proposal state or fabricate a published version to reload.
+To remove only this local installation, use
+`codex plugin remove i9-skills@i9-skills-local`, then optionally
+`codex plugin marketplace remove i9-skills-local`. These remove the selected
+registration/cache, not the external collection or recovery directory; preserve
+those paths and the original artifact independently.
+
+Preserve selected state on upgrade and verify a fresh MCP process.
+If a host still displays an older component, close/reopen the panel first; do not
+assume a metadata update reloaded a running server. Inspect runtime startup,
+tools and the fixed UI resource separately from native rendering.
+
+This profile contains explicit machine-local path selections. Keep it private;
+it is not a universally configured public upload. OpenAI's
+[desktop-only submission route](https://developers.openai.com/plugins/deploy/desktop-only)
+requires approved-partner organization allowlisting for local MCP submissions.
+Do not use the skills-only submission command and claim it includes this panel.
+Preparation reports that submission eligibility remains unverified.
+
+## Native entry icon
+
+The opening tool advertises a distinct I-9 monogram through standard MCP `icons`
+metadata. Its bounded SVG data URLs share one transparent, path-based I-9 mark
+over stacked skill cards, retaining a small hyphen. Explicit light/dark variants
+resolve every fill and outline to pure black or white. Neutral endpoints preserve
+uniform raster colors at antialiased edges, avoiding a near-white SVG becoming
+almost transparent in a host's monochrome luminance mask. No external image
+request, font or local absolute path is needed. A supporting host can use it for
+the native entry, including monochrome presentation. Actual display and caching
+depend on that host.
+Missing optional branding falls back to its generic icon without disabling the
+panel. The public listing/site cube logo is unchanged; plugin listing `logo` and
+`composerIcon` describe separate presentation surfaces.
+
+## Include global skills
+
+Add an explicitly selected global collection without copying its packages:
+
+```sh
+node bin/index.mjs mcp serve \
+  --panel-collection /absolute/local-pilot/skills \
+  --panel-state /absolute/local-pilot/proposals \
+  --panel-global-collection "$HOME/.agents/skills"
+```
+
+The plugin entrypoint accepts the same optional flag after both pilot paths.
+Global reference parsing uses the existing production YAML dependency: prepare
+the checkout with `npm ci` or use the prepared artifact. Selected-only plugin
+discovery keeps its dependency-free parser.
+Omitting it preserves selected-only discovery. The server never guesses a home
+directory. Global discovery follows package links and ordinary namespaces,
+excludes hidden system directories, and deduplicates real package paths. Equal
+names at different paths remain separate, with stable opaque `global:` IDs;
+names alone cannot redirect inspection to another package.
+An alias of the configured global root remains usable for read-only discovery
+and inspection. Enabling global writes does not grant mutation through that
+root alias; select its actual ordinary root explicitly for eligible editing.
+
+An alias of a package already in the selected private collection deduplicates to
+that selected entry and preserves its existing editing authority. Other global
+references remain read-only unless global evolution is explicitly enabled below.
+Before creating proposal state or acquiring a write
+lock, the backend compares physical global roots and filesystem reference paths
+with the selected collection and state destination, including an existing
+destination's actual case. This check is independent of metadata validity:
+invalid YAML cannot remove a linked package's protection. Ancestor aliases cannot
+silently place state inside a global reference.
+
+The boundary walk inspects ordinary global directories up to 32 levels and
+16,384 entries, protects whole linked targets without crawling external
+repositories, and refuses writes on unavailable, broken, overlapping or
+incompletely checked boundaries. Available read-only references remain visible
+with a warning. Correct the selected paths or reference coverage before writing;
+there is no fallback that disables this protection automatically.
+
+Use **All skills**, **Selected copies** or **Global skills**, then
+search by human name or description. **Refresh catalog** reloads available
+pages from actual source metadata. The MCP tool accepts optional integer `offset`
+and `limit` (1–128, default 128), returning `total` and `next_offset`. Plain clients
+must follow `next_offset` until null. The combined catalog is bounded at 1,024
+packages, with 4,096 inspected directory entries per source, and reports incomplete coverage or broken sources;
+catalog descriptions are shortened to 256 code points for display.
+The UI checks `catalog_revision` between pages and requests a fresh load when
+source metadata changes during pagination.
+
+Without write opt-in, selecting a global reference reads only its bounded UTF-8 `SKILL.md` (128 KiB),
+with its entrypoint hash, rather than asserting a complete package fingerprint.
+Returned text preserves exact UTF-8 bytes, including a leading BOM; parsing
+normalizes only a separate metadata view.
+**Review with agent** can request a read-only assessment in the current
+conversation. **Describe a change** and manual candidate editing are
+disabled for these references, and the backend rejects global candidate
+writes. The existing selected-package workflow below retains its explicit approval
+and recovery rules. A global reference does not need this repository's icon or
+license layout to appear. Its text is source material, never permission to run a
+script, modify a package or broaden access. The current-result card explains
+that these reviews have no candidate diff; disabled comparison is not a pending
+approval step. No global catalog or usage state is written.
+
+## Enable approved global evolution
+
+For an owned global collection, explicitly add `--panel-global-write`:
+
+```sh
+node bin/index.mjs mcp serve \
+  --panel-collection /absolute/local-pilot/skills \
+  --panel-state /absolute/local-pilot/proposals \
+  --panel-global-collection "$HOME/.agents/skills" \
+  --panel-global-write
+```
+
+The plugin entrypoint accepts the same final switch after both panel paths and
+the global collection. The switch requires all three selected paths. It enables
+the capability to prepare and approve a global proposal; it never approves an
+individual change. Opening or installing the panel does not edit any skill.
+
+Eligible ordinary packages physically inside the configured global root display
+**Global · editable**. Their complete package revision is frozen before the
+request and candidate, using the same bounded retained original/candidate,
+local-check, intent, stale-source and recovery workflow as selected copies.
+The saved global identity includes its source-qualified ID and configured global
+root identity. It cannot be redirected to another same-name package or root.
+The diff and approval explicitly identify the real global target, rather than a
+private copy. Only its `SKILL.md` is replaced, after exact approval.
+
+Global eligibility requires the existing safely preservable package profile,
+including supported portable frontmatter, matching directory/name, retained
+license/resources, ordinary files and the package bounds below. Unsupported
+formats, packages outside the global root through aliases, reserved `.system`
+entries, hardlinks and unsafe trees never gain mutation authority. Inspection
+falls back to the read-only entrypoint with a visible reason. Metadata discovery
+or a path alias alone cannot authorize a global write. No scripts execute.
+
+Choose **Describe a change**, let the host agent record its proposal, then click
+**View proposed diff**. Inspect both versions and checks, acknowledge the exact
+global change and choose **Approve & apply**. The server verifies the current
+package and retained bytes again. A changed sibling resource or source revision
+requires a new proposal, not reuse of the old approval. **Keep proposal** changes
+nothing. Recovery requires reviewing and approving the separate reverse diff.
+
+Existing selected-copy proposals and old read-only global review records are
+preserved. Enabling global evolution does not reinterpret a prior findings-only
+review as an editable request or fabricate its missing candidate. Start a new
+review/change request for the complete global package revision.
+Retained global records bind their relative identity and root without requiring
+the live package merely to list history or record a blocked review. A removed
+or unsafe global cannot disable another skill's history, and still cannot be
+opened as a writable proposal, linked as a candidate or applied/recovered.
+If the optional global root itself disappears, saved local requests, activity
+and proposals remain readable. Mutations still require its full physical boundary
+check and refuse until that boundary can be verified; reading history does not
+grant a fallback write permission.
+Removing the switch disables new global mutation; preserve all retained state.
+No global catalog, telemetry or public plugin configuration is synchronized.
+
+## Review a real candidate
+
+The three **Last observed workflow stages** near the selected title separate a
+saved request, an agent-recorded result and the opened proposal's decision state.
+Unloaded history is not called empty, and a pending result never implies an
+agent is running. Findings, no-change and blocked reports do not invent a diff.
+The proposal stage describes the last opened candidate, which may belong to an
+older review; a new no-change review does not erase that saved candidate. Applied
+or recovered labels describe the last inspected bytes, not a fresh disk watch.
+An unconfirmed write or changed source overrides apparent success. Refresh the
+proposal before deciding; this summary supplies no consent or extra tool calls.
+
+The compact library stays beside one skill workspace on desktop and stacks above
+it at narrow widths. **Overview** explains the source boundary and exposes the
+inspected identity. **SKILL.md** shows the last inspected read-only entrypoint;
+it does not claim to observe later disk changes automatically.
+The **current result** sits immediately below the selected skill title, before
+its description, evidence detail and workspace tabs. It shows a bounded report
+excerpt, a **Read full review result** disclosure for long reports, and the reason
+a diff is or is not available. The full report uses normal document flow rather
+than a separately scrolling text box. Older work and generic instructions live
+under collapsed **Review history and saved proposals** and **How review and diff
+approval work** disclosures.
+
+**View proposed diff** and the **Diff & approval** tab become available as soon
+as a retained proposal is listed. Either action reloads its authoritative state
+before showing the comparison; metadata alone does not establish readiness.
+**Open saved diff** distinguishes a retained proposal from a newer review that
+returned no candidate. A normal review does not require filling in a complete
+file. Arrow keys, Home and End move through available workspace
+tabs. Source filters and search operate on the loaded real catalog, without
+inventing categories, quality scores or related-skill recommendations.
+
+1. Select a skill. The panel reads actual `SKILL.md` content, file count, byte
+   count and an exact package fingerprint including ordinary file modes.
+2. Click **Review with agent**, or **Describe a change** to supply an optional
+   natural-language focus. The panel saves a request at the live source identity
+   and asks the host to send it to this conversation through `ui/message`, only
+   when the host advertises text messaging. A message acknowledgement does not
+   prove that an agent is running. Unsupported hosts show an explicit unsent
+   manual fallback; no hidden server-side model call is made.
+3. The agent reads the actual source and relevant supporting resources. Eligible
+   package inspection returns a `resources` inventory; read a listed UTF-8 file
+   inertly with `skill_panel_inspect` using `skill`, `resource` (package-relative
+   path) and the frozen package `base_sha256`. Reads are limited to 128 KiB per
+   resource; binary, linked, oversized, external or changed resources are refused.
+   Paths must be ordinary non-hidden relative paths of at most 200 UTF-8 bytes;
+   unsupported names are counted in `resource_omitted`, not silently credited as
+   readable or reviewed. Their bytes still participate in package integrity.
+   Other read-only globals still expose only `SKILL.md` and an explicit reason.
+   Inventory and preserved package bytes do not establish analysis coverage.
+   In the **Files** tab, the package-file selector uses this same revision-bound
+   API to preview references and scripts as inert text. A failed or stale read
+   clears the preview and asks for reinspection; switching files never records
+   agent coverage or authorizes a write. Older/read-only connections exposing
+   only the entrypoint show that limitation explicitly.
+   If a focused improvement is justified, the agent
+   authors complete candidate text and calls `skill_panel_propose` with the frozen
+   package `base_sha256`. This retains both packages, the exact diff and local
+   structural checks, without editing the selected skill. Only `SKILL.md` can
+   change; preserve the package name. If supporting files also need changes,
+   report findings or a blocker; do not imply those changes are in this proposal.
+4. The agent calls `skill_panel_complete` to record **no changes**, **findings**,
+   a matching **proposal**, or a **blocker**. The current-result card shows that
+   outcome near the skill title. Click **View proposed diff** to open its verified
+   retained comparison; no
+   proposal ID or pasted candidate is required. Check for results manually or
+   leave the panel visible for bounded polling (up to 30 checks, four seconds
+   apart). Closing the chat does not imply completion. **Continue review** is an
+   explicit user action that reuses the saved request; messages are never retried
+   automatically. An uncertain delivery remains unconfirmed until inspected.
+   New completions should include `reviewed_files`, the unique package-relative
+   paths actually read (up to 128 and 2 KiB serialized JSON in total). Report any
+   partial coverage in the summary. These are revision-bound agent assertions,
+   not proof of understanding. Older outcomes without the field have unknown
+   coverage; they are not retroactively credited with reading the inventory.
+   The current-review summary exposes declared coverage even for findings with
+   no candidate. Open the full review result for the reported file list.
+5. Inspect the side-by-side retained versions, numbered lines, changed words
+   and actual checks. **Previous change** and **Next change** move through
+   separated changed blocks with an explicit position and per-side line anchors.
+   Both panes scroll independently to their corresponding block, including after
+   an insertion or deletion; an anchor beyond EOF uses the last available row.
+   The comparison initially opens at the first block. Scroll either pane to
+   inspect the full text. Navigating never approves a change or calls a tool;
+   recovery reverses the anchors and still requires new consent.
+   The detail disclosure retains
+   exact proposal hashes, local validation detail and the complete unified diff,
+   including separate hunks and EOF-only changes. Changed lines use a light
+   background; stronger underlined spans identify the changed words, punctuation
+   or whitespace, while unchanged text remains neutral. Bounded matching may
+   fall back to whole changed ranges and discloses that limit. Large files use full plain text to bound rendered
+   row nodes, disabling block navigation while preserving the exact diff.
+   Official Agent Skills conformance and
+   behavioral evaluation are explicitly `not_run` by this pilot; a local
+   structural pass cannot establish semantic quality or release readiness.
+   A failed local check disables application. Run required official and task
+   validation separately before accepting a package for distribution.
+   **Files and review coverage** lists the proposed `SKILL.md` change separately
+   from unchanged supporting files retained for integrity. It displays matching
+   agent-reported reading or explicitly unknown coverage. No supporting file is
+   silently edited by approval or recovery.
+6. Acknowledge the exact diff and limits, then choose **Approve & apply**.
+   The backend verifies the entire package, retained artifacts and approval
+   hashes again before replacing the entrypoint. Editing the candidate or
+   changing selection, leaving the comparison or refreshing its proposal clears
+   UI consent. **Keep proposal** returns to the overview without applying; the
+   comparison remains selectable under **Review history and saved proposals** after reopening
+   the panel, and the server retains its ID and artifacts.
+   No approval is inferred from a task
+   request, model output or earlier proposal.
+
+Reading a skill alone creates neither a review result nor a diff. A no-change
+result is displayed explicitly and has no fabricated comparison. Recorded agent
+reports are assertions, not quality certification; a request at a different source
+revision is labeled accordingly. Pending requests remain pending when an agent
+stops without recording an outcome. A host refusal or message timeout never
+authorizes a resend, application or broader access.
+
+The normal flow is host-assisted, not autonomous. The server does not generate
+text or call a provider. The panel uses the advertised standard text-message
+capability and, when available, the OpenAI active-conversation message extension.
+See the [official extension contract](https://github.com/openai/mcp-extensions/blob/main/docs/spec.md).
+Actual message delivery, model execution and return-tool use must be exercised
+in the selected native host separately from browser fixtures.
+
+**Advanced: supply candidate text yourself** remains available for a prepared
+complete file and rationale. Its **Preview and validate** runs the same retained
+proposal workflow; it is not the expected first step for an agent review.
+
+The agent may prepare a candidate; applying and restoring are advertised as
+app-only tools and belong to an explicit operator action. `ui.visibility` is
+discovery metadata, not authentication: an arbitrary MCP client can assert
+approval. Use this pilot only inside the trusted local host and stable owned
+workspace. Do not expose its stdio input as an unauthenticated remote service.
+
+## Recovery and interruption
+
+The result contains a proposal UUID. Review requests/results live alongside those
+proposals in the same private selected state. Retain the entire directory:
+
+```text
+proposals/<proposal-id>/
+  before/<skill>/        preserved original package
+  candidate/<skill>/     supplied candidate package
+  proposal.json         byte-bound proposal and observed local validation
+  applying.json         write intent, if application was requested
+  applied.json          completed application, when observed
+  recovering.json       recovery intent, when requested
+  recovered.json        completed recovery, when observed
+proposals/request/<request-id>/
+  request.json          source-bound user intent, kind and optional focus
+  result.json           immutable agent report, when recorded
+```
+
+After reopening, select the skill and choose **View proposed diff**, **Open saved
+diff**, or **Compare proposal** in its history. **Advanced: open by ID** is only a
+fallback for a known UUID. After
+application, **Review recovery** shows the reverse diff. Restoring needs a new
+explicit acknowledgement and **Restore approved version**. Recovery restores
+only `SKILL.md` and refuses intervening package edits, preserving the original
+instead of overwriting newer work. Repeating a completed operation verifies the
+expected current bytes and returns a no-op rather than repeating a write.
+
+If a response times out, the write result is unknown. Use **Refresh proposal
+state** before another write. Both comparison columns are labeled retained
+versions until that inspection confirms the source again; the detail view marks
+previous status and intent as earlier observations. Reopening an incoming tool
+result reloads its proposal by ID instead of trusting the earlier result's state.
+Closing the workflow, selecting another skill or
+receiving another proposal cannot discard the pending operation; **Inspect
+unresolved write** reopens it. Inspection compares actual source bytes with the
+retained original/candidate and reports `source_state`, `source_sha256` and
+`write_intent` separately from recorded completion. It never writes or invents a
+completion receipt. Changed source disables application and recovery; an
+inspected interrupted replacement can be finalized only with fresh approval.
+Persisted intents let the backend reconcile an already completed replacement
+without replaying it. A crash may leave a
+`mutation.lock`; preserve its state and inspect the owner/process before a human
+removes a stale lock. There is no automatic lock reset or recovery-data deletion.
+Root identity rechecks detect some concurrent changes; they are not a race-proof
+sandbox for an attacker-controlled filesystem.
+
+## Bounds and current limits
+
+The editable pilot supports direct packages only, 512 package
+entries, 8 MiB per package and 32 KiB UTF-8 entrypoint/candidate text. It rejects
+package links, hardlinks, special entries and unsafe or overlapping state.
+At most 16 retained proposal directories are accepted per state directory;
+at most 32 immutable review requests are retained, with no automatic pruning.
+An interrupted request or proposal preparation without its final `request.json`
+or `proposal.json` remains retained and consumes its respective capacity, but
+does not hide saved reviews, valid proposals or another skill's history. A fresh
+request can be saved while capacity remains available; incomplete evidence is
+never automatically pruned.
+Malformed or unsafe committed records still fail closed; absence is not an
+approval or permission to delete evidence.
+History reads bounded integrity-checked summaries; opening a proposal rechecks
+its full original/candidate bytes and live state before any decision. Completion
+must match the request skill and base. Read-only requests cannot link a proposal;
+an enabled eligible global request can link only its matching source, root and base.
+An exact completion retry is idempotent; conflicting results are rejected.
+Retention and removal remain manual. Scripts are inspected inertly and never
+executed for candidate validation. Full source copies can contain local/private
+material: keep the state directory local and outside publication or discovery.
+
+This first workflow has English UI, dark/light themes and a noninteractive MCP
+fallback. It does not implement autonomous evolution, multi-file patches,
+catalog synchronization, official validation execution, lifecycle telemetry,
+signing, public hosting or provider approval. If an approved description changes,
+perform the collection's explicit catalog synchronization separately.
+
+See [architecture](https://github.com/i-9-ai/skills/wiki/Architecture),
+[skill MCP](https://github.com/i-9-ai/skills/wiki/Skill-MCP) and
+[validation](https://github.com/i-9-ai/skills/wiki/Validation) for their separate
+contracts.

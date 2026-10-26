@@ -146,6 +146,40 @@ a svg {
     align-items: center;
     gap: 40px;
 }
+.dashboard {
+    border-block: 1px solid var(--line);
+}
+.dashboard-layout {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 40px 64px;
+}
+.dashboard-steps {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.dashboard-steps li {
+    border-top: 1px solid var(--line);
+    padding-block: 24px;
+}
+.dashboard-number {
+    float: right;
+    font-family: monospace;
+    color: var(--muted);
+}
+.dashboard-limit {
+    grid-column: 1 / -1;
+    margin: 0;
+    max-width: 78ch;
+    color: var(--muted);
+}
+@media (max-width: 760px) {
+    .dashboard-layout {
+        grid-template-columns: 1fr;
+        gap: 32px;
+    }
+}
 .primary-nav a,
 .languages a {
     display: inline-flex;

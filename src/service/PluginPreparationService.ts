@@ -6,6 +6,8 @@ import type { PluginFile } from '../repository/PluginArtifactRepository.ts';
 import { LIMITS } from '../repository/CollectionFilesystemRepository.ts';
 import { relativeParts } from '../../.agents/skills/skill-authoring/scripts/skill_tools.mjs';
 import { PluginListingValidator } from '../validator/PluginListingValidator.ts';
+import { SkillPanelConfiguration } from '../config/SkillPanelConfiguration.ts';
+import { PluginPanelRuntimeRepository } from '../repository/PluginPanelRuntimeRepository.ts';
 
 const jsonFile = (path: string, value: unknown): PluginFile => ({
     path,
@@ -22,8 +24,16 @@ export class PluginPreparationService {
         this.repository = repository;
     }
 
-    prepare(configuration: ProjectConfiguration, output: string, write = false) {
-        const { files, file_count, ...artifact } = this.derive(configuration);
+    prepare(
+        configuration: ProjectConfiguration,
+        output: string,
+        write = false,
+        panel?: SkillPanelConfiguration,
+    ) {
+        const runtime = new PluginPanelRuntimeRepository();
+        if (panel) runtime.assertDestination(panel, output);
+        const { files, file_count, ...artifact } = this.derive(configuration, [], panel);
+        if (panel) runtime.assertDestination(panel, output);
         const destination = this.repository.emit(output, files, write);
         return {
             written: write,
@@ -40,6 +50,7 @@ export class PluginPreparationService {
     derive(
         configuration: ProjectConfiguration,
         exclusions: { name: string; reason: string }[] = [],
+        panel?: SkillPanelConfiguration,
     ) {
         const source = this.repository.read(configuration);
         new PluginListingValidator().validate(source.listing);
@@ -72,16 +83,63 @@ export class PluginPreparationService {
             license: source.license,
             keywords: ['agent-skills', 'skill-authoring', 'skill-lifecycle'],
         };
+        const listing = panel
+            ? {
+                  ...source.listing,
+                  capabilities: ['Skills', 'Interactive'],
+                  longDescription:
+                      'Browse selected local skills, request an agent review, inspect a retained diff and explicitly approve application or recovery. Global editing requires explicit opt-in and package eligibility. Local execution only; no scripts, telemetry or model calls run in the server.',
+                  defaultPrompt: [
+                      'Open I-9 Skills with skill_panel_open. Record review results; I approve any application or recovery in the panel.',
+                  ],
+              }
+            : source.listing;
         const manifest = {
             $schema: 'https://agent-plugins.org/schemas/1.0.0/plugin.schema.json',
             ...identity,
-            extensions: { 'com.openai': { interface: source.listing } },
+            extensions: {
+                'com.openai': {
+                    interface: listing,
+                    ...(panel ? { requires_local_executor: true } : {}),
+                },
+            },
         };
         const compatibility = {
             ...identity,
             skills: './skills/',
-            interface: source.listing,
+            interface: listing,
+            ...(panel ? { mcpServers: './mcp.json', requires_local_executor: true } : {}),
         };
+        if (panel) {
+            selectedFiles.push(
+                ...new PluginPanelRuntimeRepository().read(configuration, selectedFiles),
+            );
+            selectedFiles.push(
+                jsonFile('mcp.json', {
+                    $schema: 'https://agent-plugins.org/schemas/1.0.0/mcp.schema.json',
+                    mcpServers: {
+                        'i9-skills': {
+                            type: 'stdio',
+                            command: 'node',
+                            cwd: '${PLUGIN_ROOT}',
+                            args: [
+                                '${PLUGIN_ROOT}/runtime/dist/transport/PluginMcpServer.js',
+                                '--host',
+                                'codex',
+                                '--panel-collection',
+                                panel.collection,
+                                '--panel-state',
+                                panel.state,
+                                ...(panel.globalCollection
+                                    ? ['--panel-global-collection', panel.globalCollection]
+                                    : []),
+                                ...(panel.globalWrite ? ['--panel-global-write'] : []),
+                            ],
+                        },
+                    },
+                }),
+            );
+        }
         const manifests = [
             jsonFile('.codex-plugin/plugin.json', compatibility),
             jsonFile('plugin.json', manifest),
@@ -120,6 +178,13 @@ export class PluginPreparationService {
             excluded_skills: excluded,
             file_count: inventory.length + 1,
             inventory_sha256: receipt.inventory_sha256,
+            ...(panel
+                ? {
+                      profile: 'local-panel',
+                      submission_eligibility: 'organization_allowlisting_unverified',
+                      global_write: panel.globalWrite,
+                  }
+                : {}),
         };
     }
 }

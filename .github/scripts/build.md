@@ -4,7 +4,12 @@
 locked development dependencies. The script resolves the repository relative
 to its own location, type-checks source using the installed TypeScript compiler,
 clears only its generated `dist/`, compiles the distribution and appends its
-source receipt using the existing compiled runner. A failed command stops the
+source receipt using the existing compiled runner. That runner also records a
+bounded panel build inventory over compiled modules, bundled helpers, catalog,
+UI and available TypeScript/configuration sources. Explicit panel preparation
+requires that inventory to match, rejecting partial or stale builds without
+executing the server. The receipt records byte integrity, not publisher identity
+or native acceptance. A failed command stops the
 build. Type-check failure preserves the previous build; compilation failure can
 leave a partial `dist/` that a subsequent successful build replaces.
 

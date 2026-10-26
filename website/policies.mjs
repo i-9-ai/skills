@@ -8,7 +8,7 @@ export const policies = {
         title: 'Privacy policy',
         description: 'How I-9 Skills handles local observations, website visits and support.',
         introduction:
-            'I-9 Skills is an open-source skill-management toolkit and collection published by I-9 AI. This page describes the current product and website. Updated October 2, 2026.',
+            'I-9 Skills is an open-source skill-management toolkit and collection published by I-9 AI. This page describes the current product and website. Updated October 18, 2026.',
         sections: [
             {
                 title: 'Local skill observations',
@@ -28,6 +28,20 @@ export const policies = {
                             href: documentation + '/Skill-Telemetry',
                         },
                         ' for storage configuration and inspection.',
+                    ],
+                ],
+            },
+            {
+                title: 'Local skill-change panel',
+                paragraphs: [
+                    [
+                        'The optional local panel reads the skill directories you explicitly select. Saving a review or proposed change retains request text, review results, complete original and candidate package contents, file identities and application or recovery receipts in your selected local proposal directory. This content storage is separate from metadata-only telemetry. It can contain private information present in the selected skill packages.',
+                    ],
+                    [
+                        'The panel server has no central I-9 AI collection endpoint. A user-triggered review asks your host agent to work with the selected information under that provider’s permissions and policies. It does not send a review automatically when opened. Installation, a review request or a saved candidate does not approve replacing a skill; application and recovery require separate exact approval in the trusted local host.',
+                    ],
+                    [
+                        'Proposal state remains in the external directory you selected when the runtime is updated or removed. It is not automatically pruned. You control its retention and any sharing; removing original or candidate records can make the corresponding comparison and recovery unavailable. Stop active panel writers before managing that directory.',
                     ],
                 ],
             },
