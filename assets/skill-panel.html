@@ -782,6 +782,21 @@
                 border-top: 1px solid var(--line);
                 background: var(--background);
             }
+            .write-feedback {
+                margin-top: 20px;
+                padding: 16px;
+                border: 1px solid var(--line);
+                border-left: 4px solid var(--accent);
+                background: var(--surface);
+            }
+            .write-feedback p {
+                margin: 7px 0 0;
+                font-size: 12px;
+                line-height: 1.6;
+            }
+            .write-feedback .panel-actions {
+                margin-top: 12px;
+            }
             .approval-choice {
                 display: flex;
                 align-items: flex-start;
@@ -1386,8 +1401,26 @@
                                     <p id="after-ending" class="file-ending"></p>
                                 </section>
                             </div>
+                            <div
+                                id="write-feedback"
+                                class="write-feedback"
+                                role="status"
+                                aria-live="polite"
+                                tabindex="-1"
+                            >
+                                <strong id="write-feedback-title"></strong>
+                                <p id="write-feedback-detail"></p>
+                                <div class="panel-actions">
+                                    <button id="inspect-proposal" type="button">
+                                        Refresh proposal state
+                                    </button>
+                                    <button id="recover-prepare" type="button" hidden>
+                                        Review recovery
+                                    </button>
+                                </div>
+                            </div>
                             <div class="approval-bar">
-                                <label class="approval-choice"
+                                <label id="approval-choice" class="approval-choice"
                                     ><input id="approval" type="checkbox" /><span
                                         id="approval-label"
                                         >I reviewed this exact diff and the validation limits and
@@ -1404,7 +1437,7 @@
                                 </div>
                                 <div class="apply-action keep-action">
                                     <button id="keep-proposal" type="button">Keep proposal</button>
-                                    <p class="footnote">Leave without applying.</p>
+                                    <p id="keep-caption" class="footnote">Leave without applying.</p>
                                 </div>
                             </div>
                             <details class="proposal-details">
@@ -1423,14 +1456,8 @@
                                 ></pre>
                             </details>
                             <div class="panel-actions">
-                                <button id="inspect-proposal" type="button">
-                                    Refresh proposal state
-                                </button>
                                 <button id="edit" type="button">
                                     Request changes / edit candidate
-                                </button>
-                                <button id="recover-prepare" type="button" hidden>
-                                    Review recovery
                                 </button>
                             </div>
                             <p class="footnote">
@@ -2447,9 +2474,6 @@
                     this.el('write-scope').textContent = global
                         ? 'This changes the actual global SKILL.md, not a private copy. Its original package is retained for separately approved recovery.'
                         : 'Only SKILL.md in the selected copy changes. Its original package remains retained.';
-                    this.el('apply').textContent = recovery
-                        ? 'Restore approved version'
-                        : 'Approve & apply';
                     this.actions();
                     if (this.workspace === 'compare') {
                         this.scrollComparison();
@@ -2610,8 +2634,10 @@
 
                 actions() {
                     this.renderReviewProgress();
+                    this.renderWriteFeedback();
                     const proposal = this.proposal;
-                    const blocked = this.uncertain || Boolean(this.unresolved);
+                    const blocked =
+                        this.uncertain || Boolean(this.unresolved) || Boolean(this.pendingWrite);
                     const canApply =
                         proposal?.status === 'proposed' &&
                         proposal.validation.local.status === 'passed' &&
@@ -2650,8 +2676,12 @@
                         this.el('candidate').value === this.selected.text ||
                         !this.el('rationale').value.trim();
                     this.el('inspect-proposal').disabled = this.busy || !proposal;
+                    this.el('keep-proposal').disabled = Boolean(this.pendingWrite);
                     this.el('unresolved-write').hidden = !this.unresolved;
                     this.el('unresolved-write').disabled = this.busy;
+                    this.el('unresolved-write').textContent = this.unresolved?.confirmed
+                        ? 'Refresh skill details'
+                        : 'Inspect unresolved write';
                     this.el('tab-source').disabled = !this.selected;
                     this.el('tab-compare').disabled =
                         !proposal && !this.editing && !this.currentDiff;
@@ -2699,6 +2729,8 @@
                 }
 
                 decisionProgress() {
+                    if (this.unresolved?.confirmed)
+                        return 'Write confirmed · refresh skill details before another decision';
                     if (this.uncertain || this.unresolved)
                         return 'Write outcome unconfirmed · refresh the retained proposal';
                     if (this.selected.read_only)
@@ -2731,18 +2763,130 @@
                     return prefix + 'refresh its actual source state';
                 }
 
+                writeFeedback() {
+                    const proposal = this.proposal;
+                    const recovery = this.mode === 'recover';
+                    const completed = this.completedWrite(proposal);
+                    const label = recovery ? 'Restore approved version' : 'Approve & apply';
+                    if (this.pendingWrite)
+                        return {
+                            label: recovery ? 'Restoring…' : 'Applying…',
+                            title: recovery ? 'Restoring the preserved version…' : 'Applying the approved change…',
+                            detail: 'Waiting for the server to confirm this exact operation. Do not submit it again.',
+                        };
+                    if (this.unresolved?.confirmed)
+                        return {
+                            complete: true,
+                            label: recovery ? 'Recovered · refresh needed' : 'Applied · refresh needed',
+                            title: 'Write confirmed · skill details need a refresh',
+                            detail:
+                                'The server confirmed the ' +
+                                (recovery ? 'recovery' : 'application') +
+                                ', but skill details did not refresh. Use Refresh proposal state before another decision. Do not submit the operation again.',
+                        };
+                    if (this.uncertain || this.unresolved)
+                        return {
+                            label,
+                            title: 'Inspect the saved operation',
+                            detail: 'The write result is unknown. Refresh proposal state to inspect actual source bytes and the saved receipt. No write is retried automatically.',
+                        };
+                    if (proposal?.source_state === 'changed')
+                        return {
+                            label,
+                            title: 'Source changed · approval unavailable',
+                            detail: 'The current package no longer matches either retained version. Reinspect the skill and prepare a new proposal; this saved change cannot be applied or recovered.',
+                        };
+                    if (proposal?.write_intent)
+                        return {
+                            label,
+                            title: 'Saved operation needs a decision',
+                            detail: 'The operation receipt is still pending. Inspect this diff and its current source state before granting fresh approval to finalize the saved operation or review recovery.',
+                        };
+                    if (completed === 'apply' && !recovery)
+                        return {
+                            complete: true,
+                            label: 'Applied',
+                            title: 'Change applied',
+                            detail: 'The current SKILL.md matches the approved candidate. Apply is disabled because this proposal is already applied. Review recovery to inspect the reverse diff; restoring it requires separate approval.',
+                        };
+                    if (completed === 'recover')
+                        return {
+                            complete: true,
+                            label: 'Recovered',
+                            title: 'Preserved version restored',
+                            detail: 'The current SKILL.md matches the preserved original. This proposal is recovered, so there is no application to repeat. Prepare a new proposal for another change.',
+                        };
+                    if (this.selected?.read_only)
+                        return {
+                            label,
+                            title: 'Read-only skill',
+                            detail: 'This package is available for inspection. Applying changes is disabled.',
+                        };
+                    if (proposal?.validation.local.status !== 'passed')
+                        return {
+                            label,
+                            title: 'Approval unavailable',
+                            detail: 'Local structural validation must pass before this proposal can be applied.',
+                        };
+                    return {
+                        label,
+                        title: recovery ? 'Review recovery before restoring' : 'Ready for your decision',
+                        detail: recovery
+                            ? 'Review the exact reverse diff, then select the approval checkbox to enable Restore approved version. Nothing is restored by opening this view.'
+                            : 'Review this exact diff and the validation limits, then select the approval checkbox to enable Approve & apply. No source file changes before that action.',
+                    };
+                }
+
+                completedWrite(proposal) {
+                    if (!proposal || proposal.write_intent) return null;
+                    if (proposal.status === 'applied' && proposal.source_state === 'candidate')
+                        return 'apply';
+                    if (proposal.status === 'recovered' && proposal.source_state === 'original')
+                        return 'recover';
+                    return null;
+                }
+
+                renderWriteFeedback() {
+                    const state = this.writeFeedback();
+                    this.el('write-feedback-title').textContent = state.title;
+                    this.el('write-feedback-detail').textContent = state.detail;
+                    this.el('apply').textContent = state.label;
+                    this.el('approval-choice').hidden = Boolean(state.complete);
+                    this.el('keep-proposal').textContent = state.complete
+                        ? 'Back to skill'
+                        : 'Keep proposal';
+                    this.el('keep-caption').textContent = state.complete
+                        ? 'The proposal and operation evidence remain saved.'
+                        : 'Leave this view. The retained proposal remains available.';
+                    if (state.complete)
+                        this.el('write-scope').textContent =
+                            'Operation confirmed for the selected ' +
+                            (this.selected?.source === 'global'
+                                ? 'global SKILL.md'
+                                : 'SKILL.md copy') +
+                            '. The original package and operation evidence remain retained.';
+                }
+
+                focusWriteFeedback() {
+                    this.el('write-feedback').focus();
+                    this.el('write-feedback').scrollIntoView({ block: 'nearest' });
+                }
+
                 showUnresolved(detail = '') {
                     if (!this.unresolved) return;
                     this.mode = this.unresolved.action;
                     this.uncertain = true;
                     this.renderProposal(this.unresolved.proposal);
                     this.el('workflow-title').textContent =
-                        'Inspect unresolved ' + this.mode + ' · ' + this.proposal.skill;
+                        (this.unresolved.confirmed ? 'Refresh confirmed ' : 'Inspect unresolved ') +
+                        (this.mode === 'recover' ? 'recovery' : 'application') +
+                        ' · ' +
+                        (this.selected?.name || this.proposal.skill);
                     this.el('workflow-base').textContent =
                         'Retained proposal ID: ' + this.proposal.proposal_id;
                     this.el('workflow-status').textContent =
                         (detail ? detail + ' ' : '') +
-                        'The write result is unknown. Refresh this retained proposal to inspect actual source bytes and recorded intent before changing selection, editing or approving another write.';
+                        this.writeFeedback().detail;
                     if (!this.el('workflow-dialog').open) this.openDialog('workflow-dialog');
                     this.el('inspect-proposal').focus();
                 }
@@ -2750,20 +2894,55 @@
                 async refreshProposal() {
                     const proposal = this.unresolved?.proposal || this.proposal;
                     if (!proposal) return;
-                    const result = await this.call('skill_panel_proposal', {
+                    let result = await this.call('skill_panel_proposal', {
                         proposal_id: proposal.proposal_id,
                     });
+                    const completed = this.completedWrite(result);
+                    if (this.unresolved?.confirmed || completed) {
+                        try {
+                            result = await this.refreshProposalSelection(result);
+                        } catch (error) {
+                            const action = this.unresolved?.action || completed;
+                            this.unresolved = {
+                                proposal: result,
+                                action,
+                                confirmed: Boolean(this.unresolved?.confirmed || completed === action),
+                            };
+                            this.showUnresolved(error.message);
+                            return;
+                        }
+                    }
                     this.unresolved = null;
                     this.uncertain = false;
                     this.renderProposal(result);
+                    this.el('workflow-title').textContent =
+                        'Review ' + (this.selected?.name || result.skill);
                     this.el('workflow-status').textContent =
-                        'Retained proposal state re-read: ' +
+                        this.writeFeedback().detail +
+                        ' Retained proposal state re-read: ' +
                         result.status +
                         '; actual source: ' +
                         result.source_state +
                         '; pending write intent: ' +
                         (result.write_intent || 'none') +
                         '. No source write requested. Any next write requires fresh approval.';
+                    this.focusWriteFeedback();
+                }
+
+                async refreshProposalSelection(proposal) {
+                    const current = await this.call('skill_panel_inspect', {
+                        skill: proposal.skill,
+                    });
+                    this.selected = current;
+                    this.renderSelection(current);
+                    if (
+                        proposal.source_sha256 &&
+                        current.package_sha256 !== proposal.source_sha256
+                    )
+                        return this.call('skill_panel_proposal', {
+                            proposal_id: proposal.proposal_id,
+                        });
+                    return proposal;
                 }
 
                 async acceptIncoming(incoming) {
@@ -2789,7 +2968,8 @@
                     this.el('rationale').value = result.rationale;
                     this.renderProposal(result);
                     this.el('workflow-status').textContent =
-                        'Retained proposal loaded from the server. No approval is assumed.';
+                        this.writeFeedback().detail +
+                        ' Retained proposal loaded from the server. No approval is assumed.';
                     if (!this.el('workflow-dialog').open) this.openDialog('workflow-dialog');
                 }
 
@@ -2798,6 +2978,7 @@
                         !this.proposal ||
                         this.selected?.read_only ||
                         !this.el('approval').checked ||
+                        this.pendingWrite ||
                         this.uncertain ||
                         this.unresolved
                     )
@@ -2805,8 +2986,12 @@
                     const proposal = this.proposal;
                     const action = this.mode;
                     this.el('approval').checked = false;
+                    this.pendingWrite = action;
+                    this.actions();
+                    this.focusWriteFeedback();
+                    let confirmed = null;
                     try {
-                        const result = await this.call(
+                        let result = await this.call(
                             action === 'recover' ? 'skill_panel_recover' : 'skill_panel_apply',
                             {
                                 action,
@@ -2816,21 +3001,24 @@
                                 approved: true,
                             },
                         );
+                        confirmed = result;
+                        this.pendingWrite = null;
                         this.unresolved = null;
                         this.uncertain = false;
                         this.renderProposal(result);
-                        const current = await this.call('skill_panel_inspect', {
-                            skill: result.skill,
-                        });
-                        this.selected = current;
-                        this.renderSelection(current);
+                        result = await this.refreshProposalSelection(result);
+                        if (result !== this.proposal) this.renderProposal(result);
+                        this.actions();
                         this.el('workflow-status').textContent =
-                            result.status === 'recovered'
-                                ? 'Preserved entrypoint restored. The proposal and recovery evidence remain retained.'
-                                : 'Approved entrypoint applied. The original package remains retained for guarded recovery.';
-                        this.el('workflow-status').focus({ preventScroll: true });
+                            this.writeFeedback().detail;
+                        this.focusWriteFeedback();
                     } catch (error) {
-                        this.unresolved = { proposal, action };
+                        this.pendingWrite = null;
+                        this.unresolved = {
+                            proposal: confirmed || proposal,
+                            action,
+                            confirmed: Boolean(confirmed),
+                        };
                         this.showUnresolved(error.message);
                     }
                 }

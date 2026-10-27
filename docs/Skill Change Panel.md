@@ -401,6 +401,11 @@ inventing categories, quality scores or related-skill recommendations.
    UI consent. **Keep proposal** returns to the overview without applying; the
    comparison remains selectable under **Review history and saved proposals** after reopening
    the panel, and the server retains its ID and artifacts.
+   A status beside the approval controls shows the operation in progress and its
+   observed outcome. After a confirmed application, the disabled button reads
+   **Applied**, the approval checkbox is hidden and **Back to skill** returns to
+   the overview. A completed recovery reads **Recovered**. These labels describe
+   the last inspected source and receipt; they are not a live filesystem watch.
    No approval is inferred from a task
    request, model output or earlier proposal.
 
@@ -468,6 +473,15 @@ retained original/candidate and reports `source_state`, `source_sha256` and
 `write_intent` separately from recorded completion. It never writes or invents a
 completion receipt. Changed source disables application and recovery; an
 inspected interrupted replacement can be finalized only with fresh approval.
+If the write response was received but refreshing the skill details failed,
+the panel preserves the confirmed outcome and says **Applied · refresh needed**
+or **Recovered · refresh needed**. This is a display refresh failure, not an
+unknown write. **Refresh proposal state** re-reads that same proposal and the
+skill details before enabling another decision; it never repeats application
+or recovery. A read that discovers an already completed operation shows its
+completed state without requesting new approval. If the subsequent skill read
+observes another revision, the panel rechecks the proposal instead of leaving
+stale recovery controls enabled.
 Persisted intents let the backend reconcile an already completed replacement
 without replaying it. A crash may leave a
 `mutation.lock`; preserve its state and inspect the owner/process before a human
