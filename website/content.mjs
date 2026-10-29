@@ -88,7 +88,7 @@ export const messages = {
                 },
                 {
                     title: 'Compare, then decide',
-                    body: 'Move between changed blocks, inspect word-level changes, the exact diff and actual checks. Application and recovery each require your explicit approval.',
+                    body: 'Move between changed blocks, inspect word-level changes, the exact diff and actual checks. Application and recovery each require your explicit approval. See the confirmed outcome beside the controls; refresh an uncertain result without repeating the write.',
                 },
             ],
             limit: 'Explicit local MCP setup is required; the skills-only plugin does not include this dashboard. Only SKILL.md can be changed. Supporting files are read only, and agent-reported coverage is not certification. Native rendering and public distribution depend on the host.',
@@ -248,7 +248,7 @@ export const messages = {
                 },
                 {
                     title: 'Compare e decida',
-                    body: 'Navegue entre os blocos alterados e confira as palavras modificadas, o diff exato e as verificações realizadas. Aplicar e recuperar exigem sua aprovação explícita, separadamente.',
+                    body: 'Navegue entre os blocos alterados e confira as palavras modificadas, o diff exato e as verificações realizadas. Aplicar e recuperar exigem sua aprovação explícita, separadamente. Veja o resultado confirmado junto aos controles e consulte um resultado incerto sem repetir a gravação.',
                 },
             ],
             limit: 'Exige configuração explícita de MCP local; o plugin somente de skills não inclui este painel. Apenas SKILL.md pode ser alterado. Arquivos de apoio são somente leitura e a cobertura declarada pelo agente não é certificação. A renderização nativa e a distribuição pública dependem do host.',
@@ -411,7 +411,7 @@ export const messages = {
                 },
                 {
                     title: 'Compare y decida',
-                    body: 'Navegue entre los bloques modificados y revise las palabras cambiadas, el diff exacto y las comprobaciones realizadas. Aplicar y recuperar requieren su aprobación explícita por separado.',
+                    body: 'Navegue entre los bloques modificados y revise las palabras cambiadas, el diff exacto y las comprobaciones realizadas. Aplicar y recuperar requieren su aprobación explícita por separado. Vea el resultado confirmado junto a los controles y consulte un resultado incierto sin repetir la escritura.',
                 },
             ],
             limit: 'Requiere configuración explícita de MCP local; el plugin de solo skills no incluye este panel. Solo SKILL.md puede cambiar. Los archivos de apoyo son de solo lectura y la cobertura declarada no es una certificación. La visualización nativa y la distribución pública dependen del host.',

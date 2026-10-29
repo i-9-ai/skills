@@ -725,6 +725,192 @@ test('the served panel binds apply/recovery controls to reviewed, valid, certain
 
 for (const action of ['apply', 'recover']) {
     test(
+        'a confirmed ' + action + ' stays confirmed when refreshing skill details fails',
+        async () => {
+            const panel = view();
+            panel.mode = action;
+            if (action === 'recover') {
+                panel.proposal.status = 'applied';
+                panel.proposal.source_state = 'candidate';
+            }
+            const confirmed = {
+                ...panel.proposal,
+                status: action === 'apply' ? 'applied' : 'recovered',
+                source_state: action === 'apply' ? 'candidate' : 'original',
+                write_intent: null,
+            };
+            const calls = [];
+            panel.call = async (name) => {
+                calls.push(name);
+                if (name === 'skill_panel_' + action) return confirmed;
+                assert.equal(name, 'skill_panel_inspect');
+                throw new Error('Fixture details refresh failed.');
+            };
+            panel.el('approval').checked = true;
+            await panel.commit();
+
+            assert.equal(
+                panel.proposal,
+                confirmed,
+                'Keep the acknowledged result, not the pre-write state',
+            );
+            assert.equal(panel.unresolved.confirmed, true);
+            assert.equal(panel.unresolved.proposal, confirmed);
+            assert.match(panel.el('write-feedback-detail').textContent, /confirmed.*refresh/i);
+            assert.doesNotMatch(
+                panel.el('workflow-status').textContent,
+                /write result is unknown/i,
+            );
+            assert.equal(panel.el('approval').checked, false);
+            assert.equal(panel.el('apply').disabled, true);
+            assert.equal(panel.el('evolve').disabled, true);
+            panel.el('approval').checked = true;
+            await panel.commit();
+            assert.equal(
+                calls.length,
+                2,
+                'A display failure must never replay the confirmed write',
+            );
+
+            panel.call = async (name) => {
+                calls.push(name);
+                if (name === 'skill_panel_proposal') return confirmed;
+                assert.equal(name, 'skill_panel_inspect');
+                return {
+                    ...panel.selected,
+                    text: action === 'apply' ? 'candidate' : 'original',
+                    package_sha256: action === 'apply' ? 'candidate' : 'base',
+                };
+            };
+            await panel.refreshProposal();
+            assert.equal(panel.unresolved, null);
+            assert.equal(panel.uncertain, false);
+            assert.equal(panel.selected.text, action === 'apply' ? 'candidate' : 'original');
+            assert.equal(panel.el('approval').checked, false);
+            assert.equal(
+                panel.el('apply').textContent,
+                action === 'apply' ? 'Applied' : 'Recovered',
+            );
+            assert.equal(panel.el('apply').disabled, true);
+        },
+    );
+
+    test('reopening a completed ' + action + ' explains why approval is disabled', () => {
+        const panel = view();
+        panel.proposal.status = action === 'apply' ? 'applied' : 'recovered';
+        panel.proposal.source_state = action === 'apply' ? 'candidate' : 'original';
+        panel.call = () => assert.fail('Showing a receipt must not request another write');
+        panel.renderProposal(panel.proposal);
+
+        assert.equal(panel.el('apply').textContent, action === 'apply' ? 'Applied' : 'Recovered');
+        assert.match(panel.el('write-feedback-detail').textContent, /current.*matches/i);
+        assert.equal(panel.el('apply').disabled, true);
+        assert.equal(panel.el('approval').disabled, true);
+        assert.equal(panel.el('keep-proposal').textContent, 'Back to skill');
+        assert.doesNotMatch(panel.el('keep-caption').textContent, /without applying/i);
+        assert.equal(panel.el('recover-prepare').hidden, action !== 'apply');
+    });
+}
+
+test('a pending write shows progress and cannot submit a second operation', async () => {
+    const panel = view();
+    let finish;
+    let calls = 0;
+    panel.call = async () => {
+        calls++;
+        await new Promise((resolve) => {
+            finish = resolve;
+        });
+        throw new Error('Fixture acknowledgement lost.');
+    };
+    panel.el('approval').checked = true;
+    const pending = panel.commit();
+    assert.match(panel.el('write-feedback-title').textContent, /applying/i);
+    assert.match(panel.el('write-feedback-detail').textContent, /waiting/i);
+    assert.equal(panel.el('apply').disabled, true);
+    panel.el('approval').checked = true;
+    await panel.commit();
+    assert.equal(calls, 1);
+    finish();
+    await pending;
+    assert.match(panel.el('write-feedback-detail').textContent, /result.*unknown.*refresh/i);
+    assert.equal(panel.el('inspect-proposal').disabled, false);
+});
+
+test('matching candidate bytes with an unfinished receipt are not presented as completed', () => {
+    const panel = view();
+    panel.proposal.source_state = 'candidate';
+    panel.proposal.write_intent = 'apply';
+    panel.renderProposal(panel.proposal);
+    assert.notEqual(panel.el('apply').textContent, 'Applied');
+    assert.match(panel.el('write-feedback-detail').textContent, /receipt.*pending/i);
+    assert.equal(panel.el('apply').disabled, true);
+    panel.el('approval').checked = true;
+    panel.actions();
+    assert.equal(
+        panel.el('apply').disabled,
+        false,
+        'Inspected intent still needs fresh exact approval',
+    );
+});
+
+test('refreshing a lost acknowledgement discovers completion without replaying application', async () => {
+    const panel = view();
+    panel.call = async () => {
+        throw new Error('Fixture acknowledgement lost.');
+    };
+    panel.el('approval').checked = true;
+    await panel.commit();
+    const completed = { ...panel.proposal, status: 'applied', source_state: 'candidate' };
+    panel.call = async (name, args) => {
+        if (name === 'skill_panel_inspect') {
+            assert.equal(args.skill, 'example-skill');
+            return { ...panel.selected, text: 'candidate', package_sha256: 'candidate' };
+        }
+        assert.equal(name, 'skill_panel_proposal');
+        assert.equal(args.proposal_id, 'retained-identity');
+        return completed;
+    };
+    await panel.refreshProposal();
+    assert.equal(panel.unresolved, null);
+    assert.equal(panel.selected.text, 'candidate', 'The Files view must show the applied text too');
+    assert.equal(panel.el('apply').textContent, 'Applied');
+    assert.equal(panel.el('apply').disabled, true);
+    assert.equal(panel.el('approval').checked, false);
+    assert.match(panel.el('workflow-status').textContent, /already applied/);
+    assert.equal(panel.el('recover-prepare').hidden, false);
+});
+
+test('a source edit observed after write confirmation cannot leave completed recovery controls enabled', async () => {
+    const panel = view();
+    const completed = {
+        ...panel.proposal,
+        status: 'applied',
+        source_state: 'candidate',
+        source_sha256: 'candidate',
+    };
+    const changed = { ...completed, source_state: 'changed', source_sha256: 'intervening-edit' };
+    panel.call = async (name) => {
+        if (name === 'skill_panel_apply') return completed;
+        if (name === 'skill_panel_inspect')
+            return {
+                ...panel.selected,
+                text: 'intervening edit',
+                package_sha256: 'intervening-edit',
+            };
+        assert.equal(name, 'skill_panel_proposal');
+        return changed;
+    };
+    panel.el('approval').checked = true;
+    await panel.commit();
+    assert.equal(panel.proposal.source_state, 'changed');
+    assert.equal(panel.el('recover-prepare').hidden, true);
+    assert.match(panel.el('write-feedback-detail').textContent, /no longer matches/);
+    assert.equal(panel.el('apply').disabled, true);
+});
+
+for (const action of ['apply', 'recover']) {
+    test(
         'an unknown ' +
             action +
             ' retains its identity across closing, reopening, selection and incoming proposals',
