@@ -1,10 +1,10 @@
 ---
 name: skill-optimization
-description: Use to improve one skill through scored rollouts, bounded candidate edits, and held-out validation. It does not discover sources, author unrelated skills, or publish changes.
+description: Use to improve or semantically compact one skill with scored cases, bounded edits, preservation mapping and held-out acceptance. Does not discover sources or publish changes.
 license: Apache-2.0
 metadata:
   author: i-9-ai
-  tags: "skills, optimization, evaluation"
+  tags: "skills, optimization, evaluation, compression"
   source: original
   source_url: "https://github.com/i-9-ai/skills"
   reasoning-effort: high
@@ -14,13 +14,15 @@ metadata:
 
 ## Responsibility and inputs
 
-Improve one existing skill using measurable task outcomes. Accept an immutable baseline package, a scoped task corpus split into tuning, selection-validation, and final-acceptance cases, scoring rubric, execution constraints, and an authorized candidate workspace. When context cost or information density is an objective, also accept a target runtime or documented measurement proxy, required semantic coverage, and renderer, accessibility, and compatibility constraints.
+Improve one skill package or complete pre-compaction draft using measurable task outcomes. Accept an immutable baseline package, a scoped task corpus split into tuning, selection-validation, and final-acceptance cases, scoring rubric, execution constraints, and an authorized candidate workspace. When context cost or information density is an objective, also accept a target runtime or documented measurement proxy, required semantic coverage, and renderer, accessibility, and compatibility constraints.
 
 This skill turns scored rollouts into bounded candidate edits. It does not decide whether a skill needs evolution, discover external sources, alter a collection catalog, or publish a candidate. Use skill-evolution to identify supported changes and skill-evaluator to perform a broader readiness assessment.
 
 Read [the optimization loop](references/optimization-loop.md) when creating the run record or adapting a compatible optimizer.
 
 For description or activation errors, use the [activation optimization route](references/activation-optimization.md). Optimize task selection separately from the behavior after activation; successful output cannot compensate for repeatedly selecting the wrong skill.
+
+For semantic compaction, including the caller's “lossless compression” goal, read [the preservation procedure](references/semantic-compaction.md) before rewriting. Build a two-way source-to-destination ledger, preserve uncertainty and authority, and measure complete loaded routes. A newly authored or synthesized draft can be the immutable baseline. Preservation is demonstrated only within declared coverage; compression does not bypass final acceptance.
 
 ## Coverage before context reduction
 

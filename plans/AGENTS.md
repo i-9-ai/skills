@@ -137,3 +137,5 @@ Verify every requirement has an implementation and a check or an explicit limit.
 - [Skills maintenance scheduling](2026-09-13-20-52-55-skills-maintenance-scheduling.md): portable proposals for recurring, approval-gated skill maintenance.
 - [Global skills catalog](2026-09-14-23-58-02-global-skills-catalog.md): safe standalone catalog synchronization for repository and global collection layouts.
 - [Skill evolution event ledger](2026-09-15-01-52-50-skill-evolution-event-ledger.md): ordered SQLite migration and structured, rollback-aware skill evolution events.
+
+- [Semantic context compression](2026-11-04-13-45-00-semantic-context-compression.md): source-to-destination preservation and measured loaded-route acceptance in existing authoring/synthesis responsibilities; no publication or universal losslessness claim.
