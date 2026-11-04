@@ -115,8 +115,9 @@
     {
       "name": "skill-optimization",
       "path": ".agents/skills/skill-optimization",
-      "description": "Use to improve one skill through scored rollouts, bounded candidate edits, and held-out validation. It does not discover sources, author unrelated skills, or publish changes.",
+      "description": "Use to improve or semantically compact one skill with scored cases, bounded edits, preservation mapping and held-out acceptance. Does not discover sources or publish changes.",
       "tags": [
+        "compression",
         "evaluation",
         "optimization",
         "skills"

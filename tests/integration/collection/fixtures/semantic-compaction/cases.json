@@ -1,0 +1,21 @@
+{
+  "method": "Deterministic synthetic policy interpreter; not natural-language or model evaluation",
+  "threshold": 0.1,
+  "splits": {
+    "tuning": [
+      { "id": "preview", "input": {}, "expected": "preview" },
+      { "id": "approved", "input": { "approved": "report.csv" }, "expected": "write" }
+    ],
+    "selection": [
+      { "id": "wrong-file", "input": { "approved": "other.csv" }, "expected": "preview" },
+      { "id": "missing-schema", "input": { "schema": false, "approved": "report.csv" }, "expected": "reject-schema" }
+    ],
+    "acceptance": [
+      { "id": "invalid-row", "input": { "row": false, "approved": "report.csv" }, "expected": "reject-row" },
+      { "id": "dependency", "input": { "dependency": false, "approved": "report.csv" }, "expected": "blocked-dependency" },
+      { "id": "uncertainty", "input": { "evidence": "proposed", "approved": "report.csv" }, "expected": "blocked-evidence" },
+      { "id": "conflict", "input": { "conflict": true, "approved": "report.csv" }, "expected": "blocked-conflict" },
+      { "id": "precedence", "input": { "schema": false, "row": false }, "expected": "reject-schema" }
+    ]
+  }
+}

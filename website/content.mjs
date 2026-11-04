@@ -112,7 +112,7 @@ export const messages = {
             stages: [
                 {
                     title: 'Create',
-                    body: 'Find the job. Research the domain. Build a complete package.',
+                    body: 'Find the job. Research the domain. Build a complete package; compact context only with preservation evidence.',
                     skill: 'skill-authoring',
                 },
                 {
@@ -272,7 +272,7 @@ export const messages = {
             stages: [
                 {
                     title: 'Criar',
-                    body: 'Defina a tarefa. Pesquise o domínio. Crie um pacote completo.',
+                    body: 'Defina a tarefa. Pesquise o domínio. Crie um pacote completo; compacte o contexto somente com evidências de preservação.',
                     skill: 'skill-authoring',
                 },
                 {
@@ -435,7 +435,7 @@ export const messages = {
             stages: [
                 {
                     title: 'Crear',
-                    body: 'Define la tarea. Investiga el dominio. Crea un paquete completo.',
+                    body: 'Define la tarea. Investiga el dominio. Crea un paquete completo; compacta el contexto solo con evidencia de preservación.',
                     skill: 'skill-authoring',
                 },
                 {

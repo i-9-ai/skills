@@ -1,0 +1,23 @@
+{
+  "encoding": "UTF-8",
+  "required": "id",
+  "unique": true,
+  "output": "report.csv",
+  "approval": "exact-output",
+  "evidence": "confirmed",
+  "dependency": "bundled-parser",
+  "example": {
+    "input": "id\n7\n7",
+    "output": [
+      "7"
+    ]
+  },
+  "order": [
+    "conflict",
+    "evidence",
+    "dependency",
+    "schema",
+    "row",
+    "approval"
+  ]
+}
