@@ -12,7 +12,7 @@
 
 For each required semantic unit record: stable ID; immutable source/file/section and claim; conditions, modality, bounds and exceptions; context and evidence state; precedence and dependencies; proposed destination/loading condition or equivalent canonical unit; and ordinary/boundary acceptance cases. Trace proposed rules back to their sources too. Record blocked conflicts rather than discarding a losing claim without justification.
 
-Retain the complete pre-compaction draft identity, case splits, baseline/candidate loaded-route inventories, tokenizer/version or labeled proxy, navigation cost, frozen improvement threshold, rejected alternatives and rollback. The creator performs the measured optimization and final evaluation; this plan certifies neither.
+Specify what the creator must freeze and return: complete pre-compaction draft identity, case splits, baseline/candidate loaded-route inventories, tokenizer/version or labeled proxy, navigation cost, improvement threshold, rejected alternatives and rollback. At synthesis time, record proposed routes, cases and measurement criteria; include actual identities, measurements or rejected candidates only when supplied, otherwise mark them pending authoring/optimization. Do not create a draft or invent observations to complete this plan. The creator performs the measured optimization and final evaluation; this plan certifies neither.
 
 ## Proposed package
 

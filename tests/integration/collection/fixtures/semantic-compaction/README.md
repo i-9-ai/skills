@@ -2,7 +2,7 @@
 
 This fixture demonstrates the compaction rubric on a tiny report policy. It is
 original synthetic data, not a deployable skill package. Every ordinary route
-loads its entrypoint and policy.json once. Both versions use the same bounded
+loads its entrypoint and policy.json once, as declared by the test-only route contract in cases.json. The contract controls this interpreter's resource loading; it is not parsed from natural-language instructions. Both versions use the same bounded
 policy interpreter in the integration test; neither executes external code.
 
 The corpus and 10% UTF-8 byte reduction threshold were written before the first
@@ -22,7 +22,7 @@ meaning, prove an agent reads the policy, or evaluate the modified meta-skills.
 | Parser dependency | entrypoint + policy | entrypoint + policy dependency | Missing-dependency case and omitted-gate mutant |
 | Proposed evidence stays unresolved | entrypoint + policy | entrypoint + policy evidence | Proposed-state case and omitted-gate mutant |
 | Source conflict blocks | entrypoint + policy | entrypoint + policy conflict gate | Conflict case and omitted-gate mutant |
-| Mandatory resource remains ordinary | baseline entrypoint routing | candidate entrypoint routing | Manual route inspection and dependency cost counted |
+| Mandatory resource remains ordinary | baseline entrypoint routing | candidate entrypoint routing | Declared-route loading and hidden-preview-route mutant; dependency cost counted |
 
 Forward inspection maps all listed units; reverse inspection finds no added
 permission. Duplicate prose in the baseline is replaced by a canonical policy

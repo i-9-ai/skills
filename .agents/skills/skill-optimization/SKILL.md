@@ -14,7 +14,7 @@ metadata:
 
 ## Responsibility and inputs
 
-Improve one existing skill using measurable task outcomes. Accept an immutable baseline package, a scoped task corpus split into tuning, selection-validation, and final-acceptance cases, scoring rubric, execution constraints, and an authorized candidate workspace. When context cost or information density is an objective, also accept a target runtime or documented measurement proxy, required semantic coverage, and renderer, accessibility, and compatibility constraints.
+Improve one skill package or complete pre-compaction draft using measurable task outcomes. Accept an immutable baseline package, a scoped task corpus split into tuning, selection-validation, and final-acceptance cases, scoring rubric, execution constraints, and an authorized candidate workspace. When context cost or information density is an objective, also accept a target runtime or documented measurement proxy, required semantic coverage, and renderer, accessibility, and compatibility constraints.
 
 This skill turns scored rollouts into bounded candidate edits. It does not decide whether a skill needs evolution, discover external sources, alter a collection catalog, or publish a candidate. Use skill-evolution to identify supported changes and skill-evaluator to perform a broader readiness assessment.
 

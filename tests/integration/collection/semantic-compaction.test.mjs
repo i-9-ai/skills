@@ -37,23 +37,37 @@ function run(policy, overrides = {}) {
     return 'unresolved';
 }
 
+function loadRoute(name, input, contract = corpus.routes[name]) {
+    return new Map(
+        contract
+            .filter((resource) => resource.when === 'always' ||
+                (resource.when === 'approved' && input.approved))
+            .map((resource) => [resource.file, read(`${name}/${resource.file}`)]),
+    );
+}
+
+function exercise(name, input, contract) {
+    const loaded = loadRoute(name, input, contract);
+    const policy = loaded.get('policy.json');
+    return policy ? run(JSON.parse(policy), input) : 'blocked-resource';
+}
+
 for (const [split, tasks] of Object.entries(corpus.splits)) {
     test(`synthetic compaction preserves ${split} decisions`, () => {
         for (const task of tasks) {
-            assert.equal(run(baseline, task.input), task.expected, `baseline ${task.id}`);
-            assert.equal(run(candidate, task.input), task.expected, `candidate ${task.id}`);
+            assert.equal(exercise('baseline', task.input), task.expected, `baseline ${task.id}`);
+            assert.equal(exercise('candidate', task.input), task.expected, `candidate ${task.id}`);
         }
     });
 }
 
 test('counts the complete loaded route, including its mandatory dependency', () => {
-    const cost = (name) =>
-        ['SKILL.md', 'policy.json'].reduce(
-            (total, path) => total + Buffer.byteLength(read(`${name}/${path}`)),
-            0,
-        );
-    assert.ok(cost('candidate') <= cost('baseline') * (1 - corpus.threshold));
-    assert.ok(cost('candidate') > Buffer.byteLength(read('candidate/SKILL.md')));
+    const cost = (name, input) => [...loadRoute(name, input).values()]
+        .reduce((total, content) => total + Buffer.byteLength(content), 0);
+    for (const task of cases) {
+        assert.ok(cost('candidate', task.input) <= cost('baseline', task.input) * (1 - corpus.threshold));
+        assert.ok(cost('candidate', task.input) > Buffer.byteLength(read('candidate/SKILL.md')));
+    }
 });
 
 test('negative controls reject exception loss, precedence reversal and missing gates', () => {
@@ -85,4 +99,14 @@ test('coverage checks reject omitted examples and incompatible input/output cont
         delete mutation[key];
         assert.equal(required(mutation), false);
     }
+});
+
+
+test('route contract rejects hiding a mandatory resource on the preview path', () => {
+    const hidden = corpus.routes.candidate.map((resource) =>
+        resource.file === 'policy.json' ? { ...resource, when: 'approved' } : resource);
+    const preview = corpus.splits.tuning.find((task) => task.id === 'preview');
+    assert.equal(exercise('candidate', preview.input, hidden), 'blocked-resource');
+    assert.notEqual(exercise('candidate', preview.input, hidden), preview.expected);
+    assert.equal(exercise('candidate', { approved: 'report.csv' }, hidden), 'write');
 });
