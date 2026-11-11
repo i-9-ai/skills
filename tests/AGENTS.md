@@ -50,3 +50,5 @@ Run `npm test` from the repository root. Tests make no network requests and leav
 - [Transport unit tests](unit/transport): protocol state, input bounds, lifecycle cleanup and no inferred evidence.
 - [CLI integration tests](integration/cli): real command help/errors, Codex registration, MCP stdio and concurrent SQLite writers.
 - [Collection integration tests](integration/collection): package helpers, catalogs, publication hygiene, distribution and cross-layer validation using disposable repositories.
+
+- [Semantic compaction rubric](integration/collection/semantic-compaction.test.mjs): original synthetic policy decisions, complete fixture-route bytes and loss/conflict mutants; no natural-language equivalence or model rollout claim.
