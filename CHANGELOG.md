@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.1.0
+
+### Minor Changes
+
+- [#112](https://github.com/i-9-ai/skills/pull/112) [`bdea3b7`](https://github.com/i-9-ai/skills/commit/bdea3b7267593d287fa6dda6dc8c0f31ceb75f55) Thanks [@coisa](https://github.com/coisa)! - Add semantic compaction to the existing skill-optimization procedure and connect it to skill creation and synthesis. Require two-way source mappings for rules, exceptions, authority, dependencies, uncertainty and examples, with complete loaded-route measurements and negative acceptance cases. Preserve complete drafts and existing evaluation gates; demonstrated coverage is not mathematical losslessness or automatic publication.
+
+### Patch Changes
+
+- [#110](https://github.com/i-9-ai/skills/pull/110) [`32cb16e`](https://github.com/i-9-ai/skills/commit/32cb16e97451ed674f26fe59e4f17333c328b65e) Thanks [@coisa](https://github.com/coisa)! - Show application and recovery progress beside the local skill-change panel's
+  approval controls. Completed proposals explicitly read Applied or Recovered
+  instead of leaving an unexplained disabled Approve & apply button. The panel
+  keeps a confirmed write distinct from a failed skill-details refresh, retains
+  its proposal identity and offers a read-only refresh without repeating the write.
+  An intervening source edit disables stale recovery controls. Unacknowledged
+  writes still require inspection, and any further write requires fresh exact
+  approval. Update the panel guide and English, Portuguese and Spanish site copy.
+
 ## 1.0.0
 
 ### Major Changes
