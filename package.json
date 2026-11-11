@@ -105,10 +105,10 @@
   },
   "devDependencies": {
     "@changesets/changelog-github": "1.0.1",
-    "@changesets/cli": "3.0.2",
-    "@types/node": "^24.13.4",
-    "prettier": "3.9.6",
-    "typescript": "5.9.3"
+    "@changesets/cli": "3.0.3",
+    "@types/node": "^26.6.6",
+    "prettier": "3.9.10",
+    "typescript": "7.0.2"
   },
   "dependencies": {
     "@oclif/core": "5.0.0",
