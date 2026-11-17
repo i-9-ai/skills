@@ -27,6 +27,8 @@ Run `npm run check` and inspect the required official workflow result for the ex
 
 ## Child DOX index
 
+- [Routing collection](../docs/Lifecycle%20Evidence.md#collect-one-routing-decision): shared CLI/MCP selection recording, inert package fingerprints and atomic lifecycle batches; task decisions stay with the caller.
+
 - [Local skill-change panel](../docs/Skill%20Change%20Panel.md): user-clicked host review, retained outcomes and selectable candidate diffs through the shared MCP, with guarded operator-approved entrypoint apply/recover; no backend model execution or readiness certification.
 - [Retained panel runtime](repository/PluginPanelRuntimeRepository.ts): bounded inert compiled runtime and pinned local YAML inventory for explicit panel artifacts; no dependency installation, selected-data copying or native/provider acceptance.
 - [Panel catalog](repository/SkillPanelCatalogRepository.ts): source-qualified discovery, global edit eligibility and read-only fallback reasons; discovery never approves a mutation or opens proposal state.

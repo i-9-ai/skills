@@ -6,6 +6,12 @@ tools only read bundled files; they do not record
 usage, activate skills, scan the caller's home or execute package scripts.
 Recording evidence requires a separate explicit call with evidence from its emitter.
 
+After selecting skills for one task, `skill_routing_record` accepts a complete
+decision with one correlation UUID and 1–24 selected package directories. It
+observes inert package identities and atomically records co-routing evidence in
+the server-selected database. See the complete request, retry contract and CLI
+fallback in [Lifecycle Evidence](https://github.com/i-9-ai/skills/wiki/Lifecycle-Evidence#collect-one-routing-decision).
+
 An optional [local skill-change panel](https://github.com/i-9-ai/skills/wiki/Skill-Change-Panel)
 in candidate source extends this same server only when `--panel-collection` and
 `--panel-state` are explicitly selected. It supplies live inspection, user-clicked

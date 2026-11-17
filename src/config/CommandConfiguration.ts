@@ -34,6 +34,7 @@ import OfficialSkillsValidateCommand from '../command/repo/OfficialSkillsValidat
 import RepositoryValidateCommand from '../command/repo/RepositoryValidateCommand.ts';
 import TelemetryRankingsCommand from '../command/telemetry/TelemetryRankingsCommand.ts';
 import TelemetryRecordCommand from '../command/telemetry/TelemetryRecordCommand.ts';
+import TelemetryRouteCommand from '../command/telemetry/TelemetryRouteCommand.ts';
 import TelemetryTrendsCommand from '../command/telemetry/TelemetryTrendsCommand.ts';
 
 import TelemetryLifecycleCommand from '../command/telemetry/TelemetryLifecycleCommand.ts';
@@ -109,6 +110,7 @@ export class CommandConfiguration {
         'telemetry:catalog-observe': TelemetryCatalogObserveCommand,
         'telemetry:rankings': TelemetryRankingsCommand,
         'telemetry:record': TelemetryRecordCommand,
+        'telemetry:route': TelemetryRouteCommand,
         'telemetry:trends': TelemetryTrendsCommand,
     } satisfies Record<string, Command.Class>;
 }

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import {
     chmodSync,
     cpSync,
@@ -591,6 +591,52 @@ test('clean source prepares an allowlisted artifact that runs from node_modules 
     const evidenceRoot = join(root, 'evidence');
     mkdirSync(evidenceRoot);
     const evidenceDatabase = join(evidenceRoot, 'usage.db');
+    const routingDatabase = join(evidenceRoot, 'routing.db');
+    const routingInput = join(evidenceRoot, 'decision.json');
+    writeFileSync(
+        routingInput,
+        JSON.stringify({
+            correlation_id: randomUUID(),
+            session: randomUUID(),
+            occurred_at: '2026-09-19T12:00:00.000Z',
+            source_host: 'manual',
+            source_adapter: 'packed-cli',
+            selections: [
+                { collection: 'packed', path: join(installed, '.agents/skills/skill-routing') },
+                { collection: 'packed', path: join(installed, '.agents/skills/skill-evaluator') },
+            ],
+        }),
+    );
+    const collectRouting = () =>
+        JSON.parse(
+            run(
+                process.execPath,
+                [launcher, 'telemetry', 'route', '--db', routingDatabase, '--file', routingInput],
+                root,
+            ),
+        );
+    assert.equal(collectRouting().events.length, 2);
+    assert.equal(collectRouting().recorded, false);
+    const packedOverlap = JSON.parse(
+        run(
+            process.execPath,
+            [
+                launcher,
+                'telemetry',
+                'overlap',
+                '--db',
+                routingDatabase,
+                '--from',
+                period.from,
+                '--until',
+                period.until,
+            ],
+            root,
+        ),
+    );
+    assert.equal(packedOverlap.rows[0].joint_decisions, 1);
+    assert.equal(packedOverlap.rows[0].union_decisions, 1);
+    assert.equal(packedOverlap.rows[0].overlap.rate, 1);
     const evidenceWrite = (operation, event) => {
         const input = join(evidenceRoot, 'event.json');
         writeFileSync(input, JSON.stringify(event));

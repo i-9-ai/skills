@@ -28,6 +28,7 @@ const tools = [
     'skill_read_record',
     'skill_resource_read',
     'skill_routing_overlap',
+    'skill_routing_record',
 ];
 const observedRead = {
     event_id: 'synthetic-observed-read',

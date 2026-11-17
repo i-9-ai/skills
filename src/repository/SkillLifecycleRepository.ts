@@ -45,60 +45,83 @@ export class SkillLifecycleRepository {
 
     record(value: unknown) {
         const event = new SkillEvidenceValidator().lifecycle(value);
-        const database = this.connection.database;
+        return this.connection.transaction(() => this.insert(event));
+    }
+
+    recordRouting(events: LifecycleEvent[]) {
         return this.connection.transaction(() => {
-            const recorded = new SkillEvidenceEventRepository(database).claim(event);
-            if (!recorded)
-                return { recorded, event_id: event.event_id, event_type: event.event_type };
-            const session = database
+            const correlation = events[0].correlation_id;
+            const existing = this.connection.database
                 .prepare(
-                    'SELECT session FROM lifecycle_events INDEXED BY lifecycle_attempt WHERE correlation_id=? LIMIT 1',
+                    "SELECT event_id FROM lifecycle_events WHERE correlation_id=? AND event_type='skill.routed' ORDER BY event_id",
                 )
-                .get(event.correlation_id);
-            if (session && session.session !== event.session) this.conflict();
-            const previous = database
-                .prepare(
-                    'SELECT * FROM lifecycle_events INDEXED BY lifecycle_attempt WHERE correlation_id=? AND collection=? AND skill=? LIMIT 4',
-                )
-                .all(
-                    event.correlation_id,
-                    event.payload.collection,
-                    event.payload.skill,
-                ) as unknown as LifecycleRow[];
-            const identity = SkillEvidenceContractValidator.identityKey(event.payload.source);
-            for (const row of previous) {
-                if (
-                    row.identity_key !== identity ||
-                    row.session !== event.session ||
-                    stage(row.event_type) === stage(event.event_type)
-                )
-                    this.conflict();
-                const before = stage(row.event_type) < stage(event.event_type);
-                if (
-                    before
-                        ? row.occurred_at > event.occurred_at
-                        : row.occurred_at < event.occurred_at
-                )
-                    this.conflict();
-            }
-            database
-                .prepare(`INSERT INTO lifecycle_events VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-                .run(
-                    event.event_id,
-                    event.correlation_id,
-                    event.payload.collection,
-                    event.payload.skill,
-                    SkillEvidenceContractValidator.sourceKey(event.payload.source),
-                    identity,
-                    JSON.stringify(event.payload.source),
-                    event.session,
-                    event.occurred_at,
-                    new Date().toISOString(),
-                    event.event_type,
-                    event.payload.reason,
-                );
-            return { recorded: true, event_id: event.event_id, event_type: event.event_type };
+                .all(correlation)
+                .map((row) => row.event_id);
+            const expected = events.map((event) => event.event_id).sort();
+            if (existing.length && JSON.stringify(existing) !== JSON.stringify(expected))
+                this.conflict();
+            const receipts = events.map((event) => ({
+                ...this.insert(event),
+                collection: event.payload.collection,
+                skill: event.payload.skill,
+                source: event.payload.source,
+            }));
+            return {
+                correlation_id: correlation,
+                recorded: receipts.some((receipt) => receipt.recorded),
+                events: receipts,
+            };
         });
+    }
+
+    private insert(event: LifecycleEvent) {
+        const database = this.connection.database;
+        const recorded = new SkillEvidenceEventRepository(database).claim(event);
+        if (!recorded) return { recorded, event_id: event.event_id, event_type: event.event_type };
+        const session = database
+            .prepare(
+                'SELECT session FROM lifecycle_events INDEXED BY lifecycle_attempt WHERE correlation_id=? LIMIT 1',
+            )
+            .get(event.correlation_id);
+        if (session && session.session !== event.session) this.conflict();
+        const previous = database
+            .prepare(
+                'SELECT * FROM lifecycle_events INDEXED BY lifecycle_attempt WHERE correlation_id=? AND collection=? AND skill=? LIMIT 4',
+            )
+            .all(
+                event.correlation_id,
+                event.payload.collection,
+                event.payload.skill,
+            ) as unknown as LifecycleRow[];
+        const identity = SkillEvidenceContractValidator.identityKey(event.payload.source);
+        for (const row of previous) {
+            if (
+                row.identity_key !== identity ||
+                row.session !== event.session ||
+                stage(row.event_type) === stage(event.event_type)
+            )
+                this.conflict();
+            const before = stage(row.event_type) < stage(event.event_type);
+            if (before ? row.occurred_at > event.occurred_at : row.occurred_at < event.occurred_at)
+                this.conflict();
+        }
+        database
+            .prepare(`INSERT INTO lifecycle_events VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+            .run(
+                event.event_id,
+                event.correlation_id,
+                event.payload.collection,
+                event.payload.skill,
+                SkillEvidenceContractValidator.sourceKey(event.payload.source),
+                identity,
+                JSON.stringify(event.payload.source),
+                event.session,
+                event.occurred_at,
+                new Date().toISOString(),
+                event.event_type,
+                event.payload.reason,
+            );
+        return { recorded: true, event_id: event.event_id, event_type: event.event_type };
     }
 
     metrics(value: unknown) {

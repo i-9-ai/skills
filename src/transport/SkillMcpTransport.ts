@@ -21,6 +21,7 @@ export type SkillMcpOperations = {
     recordQuality(value: unknown): unknown;
     inspectQuality(value: unknown): unknown;
     recordLifecycle(value: unknown): unknown;
+    recordRouting(value: unknown): unknown;
     observeCatalog(value: unknown): unknown;
     lifecycle(value: unknown): unknown;
     overlap(value: unknown): unknown;
@@ -225,6 +226,7 @@ export class SkillMcpTransport {
                     skill_quality_record: (value) => store.recordQuality(value),
                     skill_quality_inspect: (value) => store.inspectQuality(value),
                     skill_lifecycle_record: (value) => store.recordLifecycle(value),
+                    skill_routing_record: (value) => store.recordRouting(value),
                     skill_catalog_observe: (value) => store.observeCatalog(value),
                     skill_lifecycle_metrics: (value) => store.lifecycle(value),
                     skill_routing_overlap: (value) => store.overlap(value),

@@ -12,6 +12,29 @@ export type EvidenceQueryKind = 'lifecycle' | 'overlap' | 'inactivity' | 'histor
 
 /** CLI and MCP share validation before any writer or host data-directory creation. */
 export class SkillEvidenceService {
+    recordRouting(database: DatabaseSelection, values: unknown[]) {
+        const events = values.map((value) => new SkillEvidenceValidator().lifecycle(value));
+        if (
+            events.length < 1 ||
+            events.length > 24 ||
+            events.some(
+                (event) =>
+                    event.event_type !== 'skill.routed' ||
+                    event.correlation_id !== events[0].correlation_id ||
+                    event.session !== events[0].session,
+            ) ||
+            new Set(
+                events.map((event) =>
+                    JSON.stringify([event.payload.collection, event.payload.skill]),
+                ),
+            ).size !== events.length
+        )
+            throw new SkillOperationError('invalid_input');
+        return this.store(database, false, (connection) =>
+            new SkillLifecycleRepository(connection).recordRouting(events),
+        );
+    }
+
     recordLifecycle(database: DatabaseSelection, value: unknown) {
         const event = new SkillEvidenceValidator().lifecycle(value);
         return this.store(database, false, (connection) =>

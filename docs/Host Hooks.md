@@ -249,6 +249,13 @@ when telemetry storage is unavailable.
 All adapters use the shared default `~/.agents/skills-usage.db` even when a host
 automatically supplies a plugin DATA variable. `I9_AGENT_STATE_ROOT` selects
 another root; `I9_SKILLS_USAGE_DB` explicitly preserves any legacy filename.
+
+The overview asks an enabled routing caller to submit its complete selected
+route through `skill_routing_record` or `telemetry route --file decision.json`.
+The [routing collection contract](https://github.com/i-9-ai/skills/wiki/Lifecycle-Evidence#collect-one-routing-decision)
+binds all selected packages to one correlation UUID atomically. The caller makes
+this explicit handoff after selection. A session hook has no task decision to
+record, and read events retain their existing meaning.
 See [shared state and legacy preservation](https://github.com/i-9-ai/skills/wiki/Skill-Telemetry).
 A valid observation may create only its selected external data directories.
 Linked ancestors, database/sidecar links, overlap with the plugin/caller,

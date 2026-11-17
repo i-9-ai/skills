@@ -10,6 +10,10 @@ export type NativeTelemetryObservation = {
 
 /** Stable opaque identities deduplicate retries without persisting native identifiers. */
 export class TelemetryIdentityService {
+    routingEventId(correlation: string, collection: string, skill: string): string {
+        return this.uuid(['i9-skills', 'skill.routed', correlation, collection, skill]);
+    }
+
     event(
         host: string,
         adapter: string,
