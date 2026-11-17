@@ -4,6 +4,7 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
+import { randomUUID } from 'node:crypto';
 import {
     catalogFixture,
     digest,
@@ -99,6 +100,64 @@ function error(row, code) {
     assert.equal(row.result.structuredContent.error.code, code);
     assert.ok(row.result.structuredContent.error.message.length < 512);
 }
+
+test('MCP-only catalog selection records bundled relative locators and queries overlap without an installed-root input', (t) => {
+    const target = catalogFixture(t, { runtime: true });
+    const database = join(target.root, 'routing-state', 'usage.db');
+    const environment = { I9_SKILLS_USAGE_DB: database };
+    const catalog = successful(
+        run(target, [call('skill_catalog_search', { query: 'guide' })], environment)[1],
+    );
+    const selections = catalog.skills
+        .slice(0, 2)
+        .map((skill) => ({ collection: 'bundled', path: skill.path }));
+    assert.equal(selections.length, 2);
+    assert(selections.every((selection) => selection.path.startsWith('.agents/skills/')));
+    const decision = {
+        correlation_id: randomUUID(),
+        session: randomUUID(),
+        occurred_at: '2026-09-19T12:00:00.000Z',
+        source_host: 'manual',
+        source_adapter: 'mcp-catalog',
+        selections,
+    };
+    const rows = run(
+        target,
+        [
+            call('skill_routing_record', decision),
+            call('skill_routing_record', { ...decision, selections: [...selections].reverse() }),
+            call('skill_routing_overlap', {
+                from: '2026-09-01T00:00:00.000Z',
+                until: '2026-10-01T00:00:00.000Z',
+            }),
+        ],
+        environment,
+    );
+    assert.equal(successful(rows[1]).events.length, 2);
+    assert.equal(successful(rows[2]).recorded, false);
+    assert.equal(successful(rows[3]).rows[0].overlap.rate, 1);
+    for (const path of [
+        '../.agents/skills/alpha-guide',
+        './.agents/skills/alpha-guide',
+        '.agents/skills/missing',
+        'alpha-guide',
+    ]) {
+        const rejectedDatabase = join(target.root, 'uncreated-relative', 'usage.db');
+        const rejected = run(
+            target,
+            [
+                call('skill_routing_record', {
+                    ...decision,
+                    correlation_id: randomUUID(),
+                    selections: [{ collection: 'bundled', path }],
+                }),
+            ],
+            { I9_SKILLS_USAGE_DB: rejectedDatabase },
+        );
+        error(rejected[1], 'invalid_input');
+        assert.equal(fs.existsSync(join(target.root, 'uncreated-relative')), false);
+    }
+});
 
 test('installed MCP preserves a leading UTF-8 BOM in returned resource provenance', (t) => {
     const target = catalogFixture(t, { runtime: true });

@@ -8,6 +8,8 @@ packages, then atomically emit `skill.routed` events sharing one correlation
 UUID. Deterministic member IDs deduplicate retries and conflicting decisions
 roll back completely. Store logical identities and package digests without
 local paths or package contents. The available-skills overview describes the
-explicit caller handoff. Startup and read hooks continue to report their own
+caller handoff. MCP accepts exact bundled paths returned by its own catalog,
+resolving them within the verified installation; CLI paths remain absolute.
+Startup and read hooks continue to report their own
 observations. CLI/MCP integration tests cover collection, retries, concurrent
 writers, rollback and overlap results in disposable state.

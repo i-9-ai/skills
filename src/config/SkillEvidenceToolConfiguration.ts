@@ -69,7 +69,7 @@ export class SkillEvidenceToolConfiguration {
                             type: 'string',
                             maxLength: 4096,
                             description:
-                                'Absolute selected skill package directory. Only inert package inspection occurs.',
+                                'Absolute selected package directory, or an exact relative path returned by this installed MCP catalog. Only inert package inspection occurs.',
                         },
                     }),
                 },

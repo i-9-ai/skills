@@ -4,7 +4,7 @@ import { SkillEvidenceContractValidator } from './SkillEvidenceContractValidator
 
 /** Explicit selections only; metadata discovery and file reads are not decisions. */
 export class SkillRoutingValidator {
-    decision(value: unknown) {
+    decision(value: unknown, resolvePath = (path: string) => path) {
         const contract = new SkillEvidenceContractValidator();
         if (Buffer.byteLength(JSON.stringify(value) ?? '', 'utf8') > 32768) contract.invalid();
         const input = contract.object(value, [
@@ -26,7 +26,7 @@ export class SkillRoutingValidator {
                 const selection = contract.object(value, ['collection', 'path']);
                 let path: string;
                 try {
-                    path = AgentStateConfiguration.absolute(selection.path as string);
+                    path = AgentStateConfiguration.absolute(resolvePath(selection.path as string));
                 } catch {
                     return contract.invalid();
                 }

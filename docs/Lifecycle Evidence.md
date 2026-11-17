@@ -57,7 +57,14 @@ node bin/index.mjs telemetry route --db /absolute/local-data/usage.db --file - <
 
 Use `i9-skills` in place of `node bin/index.mjs` with a prepared installed CLI.
 MCP `skill_routing_record` accepts the same request and uses its server-selected
-database. A decision accepts 1–24 selections within 32 KiB. An ambiguous
+database. A decision accepts 1–24 selections within 32 KiB.
+MCP selections may also use the exact collection-relative `path` returned by
+`skill_catalog_search`. The server verifies that path against its installed
+catalog and resolves it from its own installation. Other relative spellings,
+traversal and caller-working-directory paths are rejected. CLI selections
+require absolute package directories.
+
+An ambiguous
 shortlist and a `none` route have no selected members, so skip recording them.
 The caller retains a fresh correlation UUID for each subsequent decision.
 

@@ -9,8 +9,12 @@ import { TelemetryIdentityService } from './TelemetryIdentityService.ts';
 
 /** Materializes one explicit decision before opening its shared evidence writer. */
 export class SkillRoutingService {
-    record(database: string | ((protectedRoots: string[]) => string), value: unknown) {
-        const decision = new SkillRoutingValidator().decision(value);
+    record(
+        database: string | ((protectedRoots: string[]) => string),
+        value: unknown,
+        resolvePath?: (path: string) => string,
+    ) {
+        const decision = new SkillRoutingValidator().decision(value, resolvePath);
         let events;
         const seenPaths = new Set<string>();
         try {

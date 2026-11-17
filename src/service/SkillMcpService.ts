@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
+import { isAbsolute, join } from 'node:path';
 import { InstalledCollectionConfiguration } from '../config/InstalledCollectionConfiguration.ts';
 import { PluginDataConfiguration } from '../config/PluginDataConfiguration.ts';
 import { InstalledSkillRepository } from '../repository/InstalledSkillRepository.ts';
@@ -132,7 +133,16 @@ export class SkillMcpService {
         return new SkillEvidenceService().recordLifecycle(() => this.database(true), value);
     }
     recordRouting(value: unknown) {
-        return new SkillRoutingService().record((paths) => this.database(true, paths), value);
+        return new SkillRoutingService().record(
+            (paths) => this.database(true, paths),
+            value,
+            (path) => {
+                if (isAbsolute(path)) return path;
+                if (!this.installed.catalog().skills.some((skill) => skill.path === path))
+                    throw new SkillOperationError('invalid_input');
+                return join(this.configuration.root(), path);
+            },
+        );
     }
     observeCatalog(value: unknown) {
         return new SkillEvidenceService().recordCatalog(() => this.database(true), value);

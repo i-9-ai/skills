@@ -52,6 +52,9 @@ existing evidence. Previously collected schema-2 events remain queryable.
 - A separate single-skill decision yields joint=1, union=2 and overlap=0.5.
 - Invalid selections and conflicting membership leave no partial route.
 - CLI and MCP share results and select the existing default/explicit database.
+- An MCP-only caller can use exact bundled catalog locators without supplying
+  the installation root. Unknown/traversing relative paths fail before storage;
+  the CLI continues requiring absolute package directories.
 - Session overview asks for recording only after an explicit selection. Startup,
   discovery, reads, ambiguous shortlists and a `none` route create no routes.
 - Run focused integration/regression tests, explicit `npm ci`, `npm run check`,
