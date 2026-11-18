@@ -17,6 +17,45 @@ npm run changeset:status
 The note must cover the delivered interfaces, capabilities and meaningful limits.
 Use the usual protected PR process. Do not edit pending content into `CHANGELOG.md`.
 
+## Dependabot contributions
+
+The [Dependabot Changesets workflow](https://github.com/i-9-ai/skills/blob/main/.github/workflows/dependabot-changesets.yml)
+runs after release-note validation completes. For an open, same-repository
+Dependabot branch targeting `main`, it adds `.changeset/dependabot-<PR>.md` when
+the PR has no changed Changeset. Existing notes are preserved, including notes
+written by maintainers; inherited pending notes on `main` do not count.
+
+Root npm manifest/lockfile updates receive a patch note, including development
+dependencies. GitHub Actions-only updates receive an empty Changeset and do not
+request a package release. Review the generated note and adjust its release
+intent when dependency compatibility warrants a different package version.
+Other changed paths require manual review. This does not fix unrelated build,
+dependency or official-validation failures.
+
+The follow-up job executes only default-branch code, installs no dependencies,
+downloads no PR artifacts, and never checks out contribution code. It reads live
+PR metadata and commits only one note through an expected-head API operation;
+stale runs and repeated runs make no changes. It uses `contents: write` and
+`pull-requests: read` with the ephemeral repository token, without a stored token.
+
+GitHub may require a maintainer to select **Approve workflows to run** for PR
+checks triggered by the generated `GITHUB_TOKEN` commit. Wait for checks on the
+new head; do not merge based on checks from its parent. See
+[GitHub workflow triggering](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow).
+The initial missing-note check can fail before this follow-up adds the note.
+
+After this workflow reaches `main`, backfill a PR or retry a transient API error
+from the workflow's **Run workflow** form on `main`, or run:
+
+```sh
+gh workflow run dependabot-changesets.yml --ref main -f pull-request=123
+```
+
+The offline helper tests use synthetic API responses to check policy, pagination,
+idempotence and head-race rejection. They do not establish hosted event delivery
+or automatic approval of generated-commit checks. No skill package or consumer
+interface is changed by this repository maintenance workflow.
+
 ## Automatic versioning and publication
 
 The [release workflow](https://github.com/i-9-ai/skills/blob/main/.github/workflows/release.yml)
