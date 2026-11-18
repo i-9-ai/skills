@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
+import { isAbsolute, join } from 'node:path';
 import { InstalledCollectionConfiguration } from '../config/InstalledCollectionConfiguration.ts';
 import { PluginDataConfiguration } from '../config/PluginDataConfiguration.ts';
 import { InstalledSkillRepository } from '../repository/InstalledSkillRepository.ts';
@@ -9,6 +10,7 @@ import { SkillOperationError } from '../validator/SkillOperationError.ts';
 import { SkillReadValidator } from '../validator/SkillReadValidator.ts';
 import { SkillCatalogService } from './SkillCatalogService.ts';
 import { SkillEvidenceService } from './SkillEvidenceService.ts';
+import { SkillRoutingService } from './SkillRoutingService.ts';
 import { SkillBumpReportService } from './SkillBumpReportService.ts';
 import { SkillQualityService } from './SkillQualityService.ts';
 import { SkillOnboardingService } from './SkillOnboardingService.ts';
@@ -130,6 +132,18 @@ export class SkillMcpService {
     recordLifecycle(value: unknown) {
         return new SkillEvidenceService().recordLifecycle(() => this.database(true), value);
     }
+    recordRouting(value: unknown) {
+        return new SkillRoutingService().record(
+            (paths) => this.database(true, paths),
+            value,
+            (path) => {
+                if (isAbsolute(path)) return path;
+                if (!this.installed.catalog().skills.some((skill) => skill.path === path))
+                    throw new SkillOperationError('invalid_input');
+                return join(this.configuration.root(), path);
+            },
+        );
+    }
     observeCatalog(value: unknown) {
         return new SkillEvidenceService().recordCatalog(() => this.database(true), value);
     }
@@ -162,12 +176,12 @@ export class SkillMcpService {
         );
     }
 
-    private database(write: boolean): string {
+    private database(write: boolean, selectedPackages: string[] = []): string {
         const configured = this.options.database;
         const filename =
             configured ??
             new PluginDataConfiguration(this.options.environment).usageDatabase(this.options.host);
-        const protectedRoots = [this.configuration.root()];
+        const protectedRoots = [this.configuration.root(), ...selectedPackages];
         // Explicit CLI paths remain caller-selected. Host defaults cannot create
         // state in the consuming project or the immutable installed collection.
         if (configured === undefined) protectedRoots.push(this.options.callerRoot!);

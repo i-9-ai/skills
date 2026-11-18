@@ -264,6 +264,10 @@ optional bounded logs retain categories and IDs. Read the complete
 
 Schema-2 `telemetry record` explicitly reports routing, activation or one terminal
 outcome. `telemetry catalog-observe` records a complete caller inventory.
+`telemetry route --file decision.json` collects all explicitly selected local
+packages in one transaction with a shared correlation UUID. MCP
+`skill_routing_record` accepts the same decision. The collector fingerprints
+package bytes and retains logical identities, with deterministic retry IDs.
 `telemetry lifecycle`, `overlap`, `inactivity` and `catalog-history` query that
 evidence with an explicit period of at most 366 days; matching MCP tools use the
 same services. Queries never create or upgrade storage. Read the

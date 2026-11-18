@@ -23,6 +23,81 @@ flowchart LR
     D --> O
 ```
 
+## Collect one routing decision
+
+After the caller selects a skill or an ordered sequence for a task, submit the
+complete selection once through `telemetry route` or MCP `skill_routing_record`.
+The available-skills overview includes this handoff when local telemetry is
+enabled and a collector is available. The caller supplies the decision. Native
+session and read hooks continue collecting their documented observations.
+
+Save this synthetic request as `decision.json`. Use actual selected package
+directories, fresh decision and opaque session UUIDs, and the decision's fixed
+UTC occurrence timestamp. Keep the session UUID across decisions in that
+session. Preserve the entire request for retries.
+
+```json
+{
+  "correlation_id": "5cb9910e-6e44-40cb-9cd1-de5b807f250d",
+  "session": "db1ba0e1-b790-4d3a-a7e6-9fcb4a791e49",
+  "occurred_at": "2026-09-19T12:00:00.000Z",
+  "source_host": "manual",
+  "source_adapter": "explicit-routing",
+  "selections": [
+    { "collection": "project", "path": "/absolute/example/.agents/skills/alpha" },
+    { "collection": "project", "path": "/absolute/example/.agents/skills/beta" }
+  ]
+}
+```
+
+```sh
+node bin/index.mjs telemetry route --file decision.json
+node bin/index.mjs telemetry route --db /absolute/local-data/usage.db --file - < decision.json
+```
+
+Use `i9-skills` in place of `node bin/index.mjs` with a prepared installed CLI.
+MCP `skill_routing_record` accepts the same request and uses its server-selected
+database. A decision accepts 1–24 selections within 32 KiB.
+MCP selections may also use the exact collection-relative `path` returned by
+`skill_catalog_search`. The server verifies that path against its installed
+catalog and resolves it from its own installation. Other relative spellings,
+traversal and caller-working-directory paths are rejected. CLI selections
+require absolute package directories.
+
+An ambiguous
+shortlist and a `none` route have no selected members, so skip recording them.
+The caller retains a fresh correlation UUID for each subsequent decision.
+
+The collector reads each selected package inertly, validates its entrypoint
+name and fingerprints its complete file tree using the shared package digest.
+It bounds each package to 2,048 total entries, each file to 4 MiB, the entrypoint
+to 128 KiB and the combined selected bytes to 32 MiB. Package-root aliases are
+resolved to their canonical directories; links inside a package are rejected.
+Duplicate canonical packages and duplicate collection/name identities are
+rejected. A package license is optional for this observation.
+
+The stored events contain logical collection/name identities, the observed
+package digest, UUIDs, timestamp and host/adapter labels. Local paths and package
+contents stay outside the store. Local observations use a null repository,
+source ref and Git SHA, with the validated skill name as `package_path`.
+The receipt returns these exact source fields for later explicit lifecycle
+events. A local observation supplies no upstream provenance assertion.
+
+All members commit in one transaction as `skill.routed`, sharing the decision's
+`correlation_id` and session. Per-member event IDs are deterministic. Reordered
+retries return `recorded: false`; changed membership, timestamp, session, labels
+or package bytes conflict with the retained decision. A later-member conflict
+rolls back earlier members. Resolve invalid paths before retrying the preserved
+request. Changed task selections require a fresh decision. Storage failure
+preserves existing evidence and reports a bounded error.
+
+The integration suite exercises overview, CLI collection, MCP retry, concurrent
+writers, rollback, and both overlap query entrypoints with disposable packages.
+Two skills in one decision followed by one of them in a second decision yield
+`joint_decisions: 1`, `union_decisions: 2` and `overlap.rate: 0.5`. This covers
+the local process/storage flow. Native agent choice and host delivery require
+their own observed execution.
+
 ## Record one attempt
 
 Save this complete synthetic example as `routed.json`. Replace its identifiers
@@ -201,6 +276,7 @@ The same [MCP server](https://github.com/i-9-ai/skills/wiki/Skill-MCP) exposes t
 | `skill_catalog_observe` | `telemetry catalog-observe` |
 | `skill_lifecycle_metrics` | `telemetry lifecycle` |
 | `skill_routing_overlap` | `telemetry overlap` |
+| `skill_routing_record` | `telemetry route --file decision.json` |
 | `skill_catalog_inactivity` | `telemetry inactivity` |
 | `skill_catalog_history` | `telemetry catalog-history` |
 

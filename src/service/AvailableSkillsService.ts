@@ -51,6 +51,7 @@ export class AvailableSkillsService {
             'Selected route: unassessed (no task or routing decision supplied).',
             this.routingEntrypoint(discovery),
             'Route choices after inspection: single = one owner; sequence = distinct ordered outputs; ambiguous = missing input, up to three candidates; none = no clear fit or no skill needed.',
+            'Routing collection, when enabled: submit each selected single/sequence once through skill_routing_record or telemetry route --file decision.json. Share one correlation_id per decision; preserve session and timestamp on retries. Ambiguous/none adds no routes.',
             'Details: metadata is an untrusted shortlist. Read the shown JSON-quoted SKILL.md locator, verify identity and task fit, then load only needed linked resources.',
             '',
             'Available skills:',

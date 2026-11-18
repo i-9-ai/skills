@@ -7,7 +7,7 @@ import { SkillOperationError } from '../validator/SkillOperationError.ts';
 
 /** Inert inspection with the shared 2,048 total-entry bound, including directories. */
 export class SkillPackageRevisionRepository {
-    inspect(directory: string) {
+    inspect(directory: string, { requireLicense = true } = {}) {
         const root = new SafeRoot(directory);
         try {
             const enumerate = root.inventory.bind(root) as () => [string, fs.Stats][];
@@ -19,7 +19,7 @@ export class SkillPackageRevisionRepository {
             if (
                 files.length > 2048 ||
                 !files.some(([name]) => name === 'SKILL.md') ||
-                !files.some(([name]) => name === 'LICENSE')
+                (requireLicense && !files.some(([name]) => name === 'LICENSE'))
             )
                 throw new SkillOperationError('invalid_input');
             let total = 0;

@@ -452,6 +452,12 @@ function evidence(locale) {
                 text('h2', m.title) + element('ul', {}, items),
             ) +
                 link(m.link, documentation + '/Compatibility', { class: 'text-link' }) +
+                text('p', m.routing, { class: 'provider-limits' }) +
+                link(
+                    m.routingLink,
+                    documentation + '/Lifecycle-Evidence#collect-one-routing-decision',
+                    { class: 'text-link' },
+                ) +
                 text('p', m.providers, { class: 'provider-limits' }) +
                 text('p', m.panel, { class: 'provider-limits' }) +
                 text('p', m.panelReview, { class: 'provider-limits' }) +

@@ -50,6 +50,33 @@ const readAnnotations = { readOnlyHint: true, openWorldHint: false };
 export class SkillEvidenceToolConfiguration {
     static readonly tools = [
         {
+            name: 'skill_routing_record',
+            description:
+                'After selecting skills for one task, record the complete decision once. Share one correlation UUID across selections and retain it, the session and timestamp for retries. Reads and startup are independent.',
+            inputSchema: object({
+                correlation_id: uuid,
+                session: uuid,
+                occurred_at: string,
+                source_host: slug,
+                source_adapter: slug,
+                selections: {
+                    type: 'array',
+                    minItems: 1,
+                    maxItems: 24,
+                    items: object({
+                        collection: slug,
+                        path: {
+                            type: 'string',
+                            maxLength: 4096,
+                            description:
+                                'Absolute selected package directory, or an exact relative path returned by this installed MCP catalog. Only inert package inspection occurs.',
+                        },
+                    }),
+                },
+            }),
+            annotations: writeAnnotations,
+        },
+        {
             name: 'skill_lifecycle_record',
             description:
                 'Record one explicit lifecycle assertion, at most 8 KiB. Reads never imply activation. Retry the same canonical event ID.',
