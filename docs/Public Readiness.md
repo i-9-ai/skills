@@ -102,7 +102,10 @@ and future changes remain explicit rather than being counted as clean.
 
 ## Existing publication triggers
 
-Source includes five workflows. Validation and Changesets are read-only. The
+Collection validation and Changesets validation are read-only. A separate
+[Dependabot follow-up](https://github.com/i-9-ai/skills/wiki/Release-Management#dependabot-contributions)
+can add a missing Changeset to an eligible dependency PR using trusted code and
+an exact-head API commit; it does not merge or publish the contribution. The
 [Changesets release workflow](https://github.com/i-9-ai/skills/wiki/Release-Management) prepares a draft
 version PR and publishes its reviewed protected-branch merge through npm OIDC,
 creating tags and GitHub releases. The npm publisher must be bound to this
