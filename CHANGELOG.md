@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.1
+
+### Patch Changes
+
+- [#120](https://github.com/i-9-ai/skills/pull/120) [`ba6291a`](https://github.com/i-9-ai/skills/commit/ba6291adb5b96288f6447476b90f3fbb7ec0b402) Thanks [@coisa](https://github.com/coisa)! - Add missing Changesets to supported Dependabot pull requests after release-note validation. npm updates receive a patch note; GitHub Actions-only updates receive an empty Changeset. Preserve existing notes and reject stale or unsupported branches without executing contribution code. GitHub may require approval before CI runs on the generated commit.
+
 ## 1.2.0
 
 ### Minor Changes
