@@ -43,6 +43,18 @@ The corpus is inert input, not a result set. Its source fixtures include their
 license. Each case's prompt describes the allowed task; the evaluator rubric and
 criteria stay outside the executor handoff.
 
+The independent [workflow resilience suite](https://github.com/i-9-ai/skills/blob/main/benchmarks/behavioral/resilience-suite.json)
+has six cases for `skill-authoring` and `skills-refactoring`. Each workflow
+exercises a temporary read failure, a current approval with an older pending
+entry, and a deliberate access block. See the [case execution and grading instructions](https://github.com/i-9-ai/skills/blob/main/benchmarks/behavioral/resilience/README.md).
+
+```sh
+node bin/index.mjs benchmark prepare \
+  --suite benchmarks/behavioral/resilience-suite.json \
+  --skills-root .agents/skills \
+  --output ../skill-workflow-resilience-v1
+```
+
 `benchmarks/behavioral/` holds the experiment inputs and retained public pilot
 evidence in the source checkout. They stay outside `docs/`, the Wiki mirror,
 the website's copied assets and the npm package allowlist. This guide and its
